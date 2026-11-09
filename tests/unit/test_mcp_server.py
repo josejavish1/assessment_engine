@@ -136,3 +136,48 @@ def test_inspect_payload_artifact_blueprint_mutation_gate(tmp_path: Path) -> Non
     assert res["status"] == "valid"
     assert res["tower_code"] == "T1"
     assert res["tower_name"] == "Workplace"
+
+
+def test_job_record_immutability() -> None:
+    """Verify that JobRecord is frozen and raises FrozenInstanceError on attribute mutation."""
+    import dataclasses
+    from assessment_engine.mcp_server import JobRecord, JobState
+
+    record = JobRecord(
+        job_id="job-test-01",
+        state=JobState.PENDING,
+        result="{}",
+        created_at=1000.0,
+        updated_at=1000.0,
+    )
+    assert record.job_id == "job-test-01"
+    assert record.state == JobState.PENDING
+    assert record.legacy_status == "pending"
+
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        record.job_id = "job-mutated"  # type: ignore[misc]
+
+
+def test_persistent_job_store_deep_nesting_and_multithread(tmp_path: Path) -> None:
+    """Verify that PersistentJobStore creates parent dirs and supports multi-thread SQLite connections."""
+    import concurrent.futures
+    from assessment_engine.mcp_server import PersistentJobStore
+
+    nested_db = tmp_path / "deeply" / "nested" / "dir" / "jobs.db"
+    store = PersistentJobStore(db_path=nested_db)
+    assert nested_db.exists()
+
+    # Multi-thread connection check
+    conn = store._connect()
+    def use_conn() -> int:
+        cur = conn.cursor()
+        cur.execute("SELECT count(*) FROM jobs;")
+        return cur.fetchone()[0]
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        future = executor.submit(use_conn)
+        res = future.result()
+        assert res == 0
+    conn.close()
+
+

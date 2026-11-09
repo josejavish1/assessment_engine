@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import pytest
 
 from scripts.simulate_multinational_archetypes import (
     ARCHETYPES,
@@ -12,12 +13,15 @@ from scripts.simulate_multinational_archetypes import (
 )
 
 
+@pytest.mark.xdist_group(name="multinational_sim")
 def test_empirical_multinational_simulation_all_archetypes():
     """Verify that all 4 global enterprise archetypes compile valid physical DOCX deliverables."""
     assert len(ARCHETYPES) == 4, "Debe haber exactamente 4 arquetipos globales definidos."
 
+    summary_results = []
     for archetype in ARCHETYPES:
         result = simulate_archetype(archetype)
+        summary_results.append(result)
         assert result["checks_passed"] is True, f"Archetype {archetype.archetype_id} failed quality checks."
         assert len(result["generated_files"]) >= 4, f"Archetype {archetype.archetype_id} produced fewer than 4 files."
 
@@ -28,7 +32,11 @@ def test_empirical_multinational_simulation_all_archetypes():
             min_size = 10000 if f_path.suffix == ".docx" else 50
             assert f_path.stat().st_size > min_size, f"Deliverable {f_path} is unexpectedly small."
 
+    summary_file = BASE_OUTPUT_DIR / "SIMULATION_SUMMARY.json"
+    summary_file.write_text(json.dumps(summary_results, indent=2, ensure_ascii=False), encoding="utf-8")
 
+
+@pytest.mark.xdist_group(name="multinational_sim")
 def test_simulation_summary_log_structure():
     """Verify that SIMULATION_SUMMARY.json exists and certifies zero template leaks and correct currencies."""
     summary_path = BASE_OUTPUT_DIR / "SIMULATION_SUMMARY.json"

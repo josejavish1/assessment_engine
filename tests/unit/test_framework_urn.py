@@ -60,6 +60,10 @@ class TestFrameworkURNResolution:
         urn2 = FrameworkURN("ISO/IEC 27001:2022")
         assert urn1 == urn2
         assert urn1 == "ISO-27001"
+        assert (urn1 == "urn:invalid_syntax_without_pattern") is False
+        assert (urn1 == "completely_unknown_unresolvable_framework_xyz_999") is False
+        assert (urn1 == 123456) is False
+        assert (urn1 == None) is False
 
     def test_normalize_framework_list(self) -> None:
         raw_list = ["ISO27001", "ISO-27001", "NIST CSF", "NIST-CSF-2.0"]

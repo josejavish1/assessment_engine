@@ -224,7 +224,7 @@ To guarantee that downstream financial models (Monte Carlo simulations, FAIR der
 
 ### 3.1. Architectural Data Flow
 
-```
+```text
 [Raw Assessment Input] + [Assessment Manifest: active_towers_scope]
           │
           ▼

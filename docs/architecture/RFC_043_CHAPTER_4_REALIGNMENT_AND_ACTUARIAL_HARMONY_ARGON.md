@@ -22,7 +22,7 @@ A rigorous audit of the compiler’s current Abstract Syntax Tree (AST) generati
 
 To ensure the assessment reads as a unified, Tier-1 actuarial instrument, the compiler enforces strict state synchronization across chapters via the immutable `fin_telemetry` dictionary:
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
 │                     IMMUTABLE ACTUARIAL STATE (fin_telemetry)                            │
 │  • R_hourly_est = C_op_est + C_sla_est + C_rec_est                                       │

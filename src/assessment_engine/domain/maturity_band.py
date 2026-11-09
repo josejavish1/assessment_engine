@@ -4,7 +4,6 @@ Zero static infrastructure dependencies and zero natural language hardcoding.
 """
 from __future__ import annotations
 
-import importlib
 import logging
 import math
 from collections.abc import Iterable, Sequence
@@ -107,25 +106,16 @@ def resolve_maturity_band(
         band_key = f"band_{raw_label}" if raw_label else "band_initial"
         band_dict["band_key"] = band_key
 
-    # Resolve localized presentation label via injected translator port or late-binding resolution
-    if locale:
-        active_translator = translator
-        if active_translator is None:
-            try:
-                loc_mod = importlib.import_module("assessment_engine.infrastructure.localization")
-                active_translator = getattr(loc_mod, "get_localized_string", None)
-            except (ImportError, AttributeError):
-                active_translator = None
-
-        if active_translator is not None:
-            try:
-                localized_label = active_translator(
-                    band_key, locale=locale, default=band_dict.get("label")
-                )
-                if localized_label:
-                    band_dict["label"] = localized_label
-            except Exception as ex:
-                logger.debug("[MaturityBand] Translation resolution skipped: %s", ex)
+    # Resolve localized presentation label via injected translator port
+    if locale and translator is not None:
+        try:
+            localized_label = translator(
+                band_key, locale=locale, default=band_dict.get("label")
+            )
+            if localized_label:
+                band_dict["label"] = localized_label
+        except Exception as ex:
+            logger.debug("[MaturityBand] Translation resolution skipped: %s", ex)
 
     return cast(MaturityBandDefinition, band_dict)
 
@@ -335,6 +325,7 @@ class MaturityBandCatalog:
 
 __all__ = [
     "ANNEX_MATURITY_BANDS",
+    "CMMI_MATURITY_BANDS",
     "GLOBAL_MATURITY_BANDS",
     "LocalizationProviderPort",
     "MaturityBand",

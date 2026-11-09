@@ -1,45 +1,113 @@
+"""Neurosymbolic AST Topology & Transitive Closure Reachability Probe.
+
+Evaluates the architectural integrity of the codebase:
+- Constructs a directed module dependency graph (DiGraph) via AST import analysis.
+- Resolves package boundary re-exports (__init__.py) for idiomatic modular architecture.
+- Computes transitive closure reachability via BFS from canonical production roots.
+- Identifies unreachable dead islands and isolated modules with zero production impact.
 """
-Audit probe for codebase topological architecture and dead code / orphan detection.
-Constructs NetworkX AST dependency graphs to certify zero structural rot.
-"""
+
 from __future__ import annotations
 
 import ast
+from collections import deque
+import logging
 from pathlib import Path
+from typing import Any
 
 import networkx as nx
 
 from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult
 
+logger = logging.getLogger(__name__)
 
-def _extract_imports(file_path: Path) -> set[str]:
-    """Parse AST to extract imported module names."""
+PRODUCTION_ROOTS: set[str] = {
+    "application/cli.py",
+    "mcp_server.py",
+    "application/run_global_pipeline.py",
+    "application/run_tower_pipeline.py",
+    "application/run_commercial_pipeline.py",
+    "application/run_commercial_refiner.py",
+    "application/run_global_synthesizer_tobe.py",
+    "application/run_intelligence_harvesting.py",
+    "application/run_tower_blueprint_engine.py",
+    "application/build_evidence_ledger.py",
+    "application/build_global_report_payload.py",
+    "application/export_graph_state.py",
+    "application/pipelines/raw_evidence_ingestion_pipeline.py",
+    "application/sync_payload_scores.py",
+    "application/validate_tower_definition.py",
+    "application/generate_executive_roadmap_image.py",
+    "application/generate_mermaid_gantt.py",
+    "application/generate_global_radar_chart.py",
+    "application/generate_tower_radar_chart.py",
+    "adapters/compilers/docx_compiler.py",
+    "adapters/compilers/tomo_asis_ast_compiler.py",
+    "adapters/compilers/payload_to_ast.py",
+    "adapters/render_commercial_report.py",
+    "adapters/render_tower_annex_from_template.py",
+    "adapters/render_web_presentation.py",
+    "adapters/render_lineage_portal.py",
+    "application/tools/apex_dispatcher.py",
+    "application/tools/run_product_owner_orchestrator.py",
+    "cli/enrich_tower_payload_cli.py",
+}
+
+
+def _index_package_reexports(src_dir: Path) -> dict[str, set[str]]:
+    """Index package __init__.py files and map each package to its re-exported submodules."""
+    package_submodules: dict[str, set[str]] = {}
+    for init_f in src_dir.rglob("__init__.py"):
+        rel_parent = str(init_f.parent.relative_to(src_dir))
+        pkg_alias = "assessment_engine." + rel_parent.replace("/", ".")
+        if rel_parent == ".":
+            pkg_alias = "assessment_engine"
+        submods = set()
+        try:
+            tree = ast.parse(init_f.read_text(encoding="utf-8", errors="ignore"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ImportFrom) and node.module:
+                    submods.add(node.module.split(".")[-1])
+        except (SyntaxError, OSError) as err:
+            logger.debug("AST parsing error on %s: %s", init_f, err)
+        package_submodules[pkg_alias] = submods
+    return package_submodules
+
+
+def _extract_imports(file_path: Path, package_submodules: dict[str, set[str]]) -> set[str]:
+    """Parse AST to extract imported module names, resolving package re-exports."""
     imported_modules: set[str] = set()
     try:
-        tree = ast.parse(file_path.read_text(encoding="utf-8"))
-    except Exception:
-        return imported_modules
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                imported_modules.add(alias.name)
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            imported_modules.add(node.module)
+        tree = ast.parse(file_path.read_text(encoding="utf-8", errors="ignore"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imported_modules.add(alias.name)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_modules.add(node.module)
+                if node.module in package_submodules:
+                    for sm in package_submodules[node.module]:
+                        imported_modules.add(f"{node.module}.{sm}")
+            elif isinstance(node, ast.Call) and isinstance(node.func, (ast.Attribute, ast.Name)):
+                func_name = node.func.attr if isinstance(node.func, ast.Attribute) else node.func.id
+                if func_name == "import_module" and node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+                    imported_modules.add(node.args[0].value)
+    except (SyntaxError, OSError) as err:
+        logger.debug("AST parsing error on %s: %s", file_path, err)
     return imported_modules
 
 
 def run_neurosymbolic_topology_probe(target_dir: Path) -> ProbeResult:
-    """Analyze AST module dependencies to detect dead code orphans and structural debt."""
+    """Execute transitive closure reachability and AST topology audit."""
     src_dir = target_dir / "src" / "assessment_engine"
     if not src_dir.is_dir():
         src_dir = target_dir / "src"
     if not src_dir.is_dir():
         return ProbeResult(
-            probe_name="neurosymbolic_topology",
+            probe_name="Neurosymbolic AST Topology & Dead Code (Zero-Entropy)",
             score_pct=100.0,
             passed=True,
-            metrics={"total_modules": 0, "orphans_count": 0},
+            metrics={"total_modules": 0, "dead_islands_count": 0},
         )
 
     all_py = sorted(
@@ -52,6 +120,8 @@ def run_neurosymbolic_topology_probe(target_dir: Path) -> ProbeResult:
         ]
     )
 
+    package_submodules = _index_package_reexports(src_dir)
+
     G = nx.DiGraph()
     for f in all_py:
         rel = str(f.relative_to(src_dir))
@@ -59,93 +129,76 @@ def run_neurosymbolic_topology_probe(target_dir: Path) -> ProbeResult:
 
     for f in all_py:
         source_rel = str(f.relative_to(src_dir))
-        imports = _extract_imports(f)
+        imports = _extract_imports(f, package_submodules)
         for target_f in all_py:
             target_rel = str(target_f.relative_to(src_dir))
             if source_rel == target_rel:
                 continue
 
-            # Check if imported target is referenced
             target_mod = target_f.stem
             if any(target_mod in imp for imp in imports):
                 G.add_edge(source_rel, target_rel)
 
-    canonical_core = 0
-    active_leaves = 0
-    orphans: list[str] = []
+    # Compute Transitive Closure via BFS from Canonical Production Roots
+    active_roots = [r for r in PRODUCTION_ROOTS if G.has_node(r)]
+    if not active_roots:
+        active_roots = [
+            n
+            for n in G.nodes()
+            if any(
+                e in n.lower()
+                for e in ("main.py", "app.py", "cli.py", "service.py", "api.py", "index.py")
+            )
+        ] or [n for n in G.nodes() if G.in_degree(n) == 0]
+    reachable: set[str] = set()
+    queue = deque(active_roots)
+    visited = set(active_roots)
 
-    # Known CLI / Entry points that legitimately have in_degree == 0
-    entry_point_names = {
-        "cli.py",
-        "mcp_server.py",
-        "run_tower_pipeline.py",
-        "run_global_pipeline.py",
-        "run_commercial_pipeline.py",
-        "run_tower_blueprint_engine.py",
-        "build_case_input.py",
-        "build_evidence_ledger.py",
-        "run_evidence_analyst.py",
-        "run_scoring.py",
-        "run_sota_researcher.py",
-        "run_executive_annex_synthesizer.py",
-        "run_executive_refiner.py",
-        "run_commercial_refiner.py",
-        "build_global_report_payload.py",
-        "render_lineage_portal.py",
-        "render_commercial_report.py",
-        "render_tower_annex_from_template.py",
-        "render_tower_blueprint.py",
-        "render_global_report_from_template.py",
-        "generate_mermaid_gantt.py",
-        "generate_executive_roadmap_image.py",
-        "generate_global_radar_chart.py",
-        "generate_tower_radar_chart.py",
-        "generate_asis_markdown_modules.py",
-        "compile_asis_docx_from_modules.py",
-        "validate_section_output.py",
-        "validate_tower_definition.py",
-    }
+    while queue:
+        curr = queue.popleft()
+        reachable.add(curr)
+        for successor in G.successors(curr):
+            if successor not in visited:
+                visited.add(successor)
+                queue.append(successor)
 
+    total_modules = len(all_py)
+    dead_islands: list[str] = []
     findings: list[AuditFinding] = []
 
     for node in G.nodes():
-        in_deg = G.in_degree(node)
-        out_deg = G.out_degree(node)
-        fname = Path(node).name
-        is_tool_or_bootstrap = any(part in node for part in ("tools/", "bootstrap/", "evolution/"))
-
-        if in_deg >= 2:
-            canonical_core += 1
-        elif in_deg >= 1 or fname in entry_point_names or is_tool_or_bootstrap:
-            active_leaves += 1
-        elif in_deg == 0 and out_deg == 0:
-            orphans.append(node)
+        if node not in reachable:
+            if any(part in node for part in ("tools/", "bootstrap/", "evolution/")):
+                continue
+            dead_islands.append(node)
             findings.append(
                 AuditFinding(
                     category="TOPOLOGY",
                     severity="HIGH",
                     file_path=str(src_dir / node),
                     line_number=None,
-                    rule_id="TOPOLOGY-DEAD-CODE-ORPHAN",
-                    message=f"Confirmed orphan module '{node}': 0 incoming and 0 outgoing references (dead code).",
-                    recommendation="Delete module to preserve zero-entropy architecture.",
+                    rule_id="TOPOLOGY-DEAD-ISLAND",
+                    message=f"Dead island module detected: '{node}' is unreachable from production roots.",
+                    recommendation="Wire module into production pipeline DAG or delete to preserve zero-entropy.",
                 )
             )
-        else:
-            active_leaves += 1
 
-    passed = len(orphans) == 0
-    score = 100.0 if passed else max(0.0, 100.0 - (len(orphans) * 20.0))
+    reachable_count = total_modules - len(dead_islands)
+    reachability_ratio = round((reachable_count / max(1, total_modules)) * 100.0, 1)
+
+    passed = len(dead_islands) == 0
+    score = reachability_ratio if passed else min(reachability_ratio, 75.0)
 
     return ProbeResult(
-        probe_name="neurosymbolic_topology",
+        probe_name="Neurosymbolic AST Topology & Dead Code (Zero-Entropy)",
         score_pct=score,
         passed=passed,
         metrics={
-            "total_modules": len(all_py),
-            "canonical_core_count": canonical_core,
-            "active_leaves_count": active_leaves,
-            "orphans_count": len(orphans),
+            "total_modules": total_modules,
+            "production_roots_count": len(active_roots),
+            "reachable_modules_count": reachable_count,
+            "dead_islands_count": len(dead_islands),
+            "reachability_pct": reachability_ratio,
         },
         findings=findings,
     )

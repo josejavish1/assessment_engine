@@ -40,7 +40,6 @@ MIN_FLOOR_CRITICAL_EUR: Final[float] = 250.0
 REVENUE_SCALE_FACTOR_STANDARD: Final[float] = 0.00001  # 0.001% of annual turnover
 REVENUE_SCALE_FACTOR_CRITICAL: Final[float] = 0.00005  # 0.005% of annual turnover
 
-# Operational Downtime Burn Multipliers
 DOWNTIME_BURN_MULTIPLIER_STANDARD: Final[float] = 1.0  # 1 hour of operational burn
 DOWNTIME_BURN_MULTIPLIER_CRITICAL: Final[float] = 2.0  # 2 hours of operational burn
 
@@ -341,8 +340,8 @@ def _validate_thresholds(
             and thresholds[0] < thresholds[1] < thresholds[2] < thresholds[3]
         ):
             return (float(thresholds[0]), float(thresholds[1]), float(thresholds[2]), float(thresholds[3]))
-    except (TypeError, ValueError, IndexError):
-        pass
+    except (TypeError, ValueError, IndexError) as exc:
+        logger.debug("Threshold tuple validation failed, using fallback: %s", exc)
     return fallback
 
 

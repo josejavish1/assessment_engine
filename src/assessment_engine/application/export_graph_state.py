@@ -63,18 +63,14 @@ class DigitalTwinExporter:
         Returns:
             A dictionary mapping tower IDs (e.g., 'T1', 'T2') to their benchmark maturity scores.
         """
-        fallback_benchmarks = {
-            "T1": 3.0,
-            "T2": 3.0,
-            "T3": 3.0,
-            "T4": 3.0,
-            "T5": 3.0,
-            "T6": 3.0,
-            "T7": 3.0,
-            "T8": 3.0,
-            "T9": 3.0,
-            "T10": 3.0,
-        }
+        from assessment_engine.infrastructure.config_loader import load_industry_profile
+
+        try:
+            default_profile = load_industry_profile("default")
+            fallback_benchmarks = default_profile.get("benchmark_curve", {})
+        except Exception as exc:
+            logger.debug("Failed loading default industry profile for fallback benchmarks: %s", exc)
+            fallback_benchmarks = {}
 
         client_dir = resolve_client_dir(self.client_name)
         case_input_path = client_dir / "case_input.json"

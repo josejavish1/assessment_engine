@@ -1017,12 +1017,12 @@ def create_commit(
                     cwd=ROOT,
                 )
                 if "[zk-Liability-Proof]" not in log_result.stdout:
-                    print(
+                    logger.info(
                         f"⚠️  Warning: Unsigned agent commits detected. Applying soft reset to {base_sha[:7]} for signed consolidation..."
                     )
                     subprocess.run(["git", "reset", "--soft", base_sha], cwd=ROOT)
     except Exception as e:
-        print(f"⚠️  Warning: Error intentando resolver commits previos: {e}")
+        logger.info(f"⚠️  Warning: Error intentando resolver commits previos: {e}")
 
     run_git_command(["git", "add", "-A"])
 
@@ -1031,7 +1031,7 @@ def create_commit(
         ["git", "status", "--porcelain"], capture_output=True, text=True, cwd=ROOT
     )
     if not status_result.stdout.strip():
-        print(
+        logger.info(
             "⚠️  Warning: Working tree clean; zero staged changes. Skipping governance commit."
         )
         return

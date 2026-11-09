@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 """Provides functionality to augment technical findings with supplementary research.
 
 This module executes parallelized web searches via a generative model to gather
@@ -58,7 +61,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
     """
     import asyncio
 
-    print(f"        * Researching state-of-the-art (ONLINE) for: {p_name}")
+    logger.info(f"        * Researching state-of-the-art (ONLINE) for: {p_name}")
     prompt = get_sota_researcher_prompt(p_name, gap_text, grounding_json)
 
     config = types.GenerateContentConfig(
@@ -75,11 +78,11 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             )
             break
         except Exception as e:
-            print(
+            logger.info(
                 f"        ⚠️ [Retry {attempt}/{max_attempts}] Transient research query failure for {p_name}: {e}"
             )
             if attempt == max_attempts:
-                print(
+                logger.info(
                     f"        ❌ Definitive API failure in research query for {p_name}. Applying empty fallback."
                 )
                 return p_name, {}
@@ -95,7 +98,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
         if not isinstance(sota_result, dict):
             sota_result = {}
     except Exception as e:
-        print(
+        logger.info(
             f"        ⚠️ [SOTA Parser] Error extracting structured JSON for {p_name}: {e}"
         )
         sota_result = {}
@@ -105,7 +108,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
 
 async def inject_sota(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Asynchronously enriches strategic findings with state-of-the-art research.\n\n    This function orchestrates an asynchronous research task for each strategic\n    pillar defined in the `findings` dictionary. For each pillar's specified\n    gap, it queries the Gemini API to identify relevant solutions,\n    architectural patterns, and strategic benefits. Optional, pre-existing\n    client data, loaded based on `client_name`, can provide grounding context\n    for the queries. The results are integrated back into the `findings`\n    dictionary by modifying the 'candidate_initiatives' in-place with new\n    titles and detailed, evidence-supported rationales.\n\n    Args:\n        client_name (str): The client identifier used to locate and load\n            supplementary grounding data for the research queries.\n        findings (dict): A dictionary containing the initial analysis, which is\n            modified in-place. It is expected to contain a 'pillar_findings'\n            key mapping to a list of pillar dictionaries. Each pillar\n            dictionary should contain keys such as 'pillar_name', 'gaps', and\n            'candidate_initiatives'.\n\n    Returns:\n        dict: The original `findings` dictionary object, now augmented with the\n        research results.\n\n    Raises:\n        IndexError: If 'gaps' or 'candidate_initiatives' lists within a pillar\n            are empty where at least one element is expected.\n        FileNotFoundError: Propagated if the client intelligence file specified\n            by `client_name` does not exist.\n        google.api_core.exceptions.GoogleAPICallError: Propagated from the\n            `genai` client upon API errors, such as authentication failure,\n            invalid requests, or network connectivity issues."}."""
-    print(
+    logger.info(
         "    -> [Technical Research] Launching deep 2026 web research..."
     )
 
@@ -194,7 +197,7 @@ async def main(argv: list[str] | None = None) -> None:
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)
 
-    print(
+    logger.info(
         f"[System] Initializing Technical Research (Internet Grounding) for {args.client}..."
     )
     enriched = await inject_sota(args.client, findings)
@@ -202,7 +205,7 @@ async def main(argv: list[str] | None = None) -> None:
     findings_path.write_text(
         json.dumps(enriched, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"[System] Technical research context injected successfully: {findings_path}")
+    logger.info(f"[System] Technical research context injected successfully: {findings_path}")
 
 
 if __name__ == "__main__":

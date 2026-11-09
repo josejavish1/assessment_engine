@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 """Implements the core processing pipeline and foundational utilities for the Assessment Engine."""
 
 import argparse
@@ -424,8 +427,8 @@ def main() -> None:
         json.dumps(scoring, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print(f"Scoring generated at: {output_path}")
-    print(f"tower_score_exact: {scoring['tower_score_exact']}")
+    logger.info(f"Scoring generated at: {output_path}")
+    logger.info(f"tower_score_exact: {scoring['tower_score_exact']}")
 
 
 if __name__ == "__main__":

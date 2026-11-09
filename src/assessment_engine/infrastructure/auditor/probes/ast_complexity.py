@@ -147,26 +147,8 @@ def _audit_file_sloc_and_god_module(
     if is_test or "_legacy" in rel_path or "tools/" in rel_path:
         return 0, file_sloc, god_modules, findings
 
-    sloc_limit = (
-        4000
-        if any(
-            p in rel_path
-            for p in (
-                "adapters/",
-                "compilers/",
-                "docx_render_utils",
-                "orchestrator",
-                "distiller",
-                "arbiter",
-                "pipeline",
-                "intelligence",
-                "synthesizer",
-            )
-        )
-        else 1200
-    )
-    if file_sloc > sloc_limit:
-        severity = "CRITICAL" if file_sloc > (sloc_limit * 2) else "HIGH"
+    if file_sloc > 600:
+        severity = "CRITICAL" if file_sloc > 1200 else "HIGH"
         god_modules.append({"file": rel_path, "sloc": file_sloc})
         findings.append(
             AuditFinding(
@@ -175,7 +157,7 @@ def _audit_file_sloc_and_god_module(
                 file_path=rel_path,
                 line_number=1,
                 rule_id="ARCH-GOD-MODULE",
-                message=f"Monolithic file detected: '{py_file.name}' has {file_sloc} SLOC (recommended threshold <= {sloc_limit})",
+                message=f"Monolithic file detected: '{py_file.name}' has {file_sloc} SLOC (recommended threshold <= 600)",
                 recommendation="Decouple into cohesive domain submodules to reduce structural entropy.",
             )
         )
@@ -186,7 +168,7 @@ def _audit_file_sloc_and_god_module(
 def _is_ast_or_grammar_algorithm(
     node: ast.FunctionDef | ast.AsyncFunctionDef, rel_path: str
 ) -> bool:
-    """Identify canonical graph algorithms, formal grammars, AST static analysis, document DOM tree traversals, stochastic simulations, and mutation testing. Under SonarSource S3776 and ISO 25010, these diagnostic, compiler, and document DOM tools have irreducible intrinsic complexity, with a standard cognitive threshold of CoC <= 45 and nesting <= 5."""
+    """Identify canonical graph algorithms, formal grammars, AST static analysis, and mutation testing."""
     if node.name.startswith("visit_") or node.name.startswith("_visit_"):
         return True
     if any(
@@ -202,41 +184,12 @@ def _is_ast_or_grammar_algorithm(
             "audit_codebase",
             "audit_mutation",
             "audit_quality",
-            "compilers/",
-            "adapters/",
-            "fair_risk",
-            "pipeline",
-            "orchestrat",
-            "refiner",
-            "harvest",
-            "blueprint",
         )
     ):
         return True
     if any(
         k in node.name.lower()
-        for k in (
-            "ast",
-            "mutation",
-            "parse_",
-            "grammar",
-            "mccabe",
-            "halstead",
-            "render_",
-            "compile_",
-            "format_table",
-            "tree",
-            "table",
-            "simulate",
-            "monte_carlo",
-            "actuarial",
-            "pipeline",
-            "orchestrat",
-            "refiner",
-            "harvest",
-            "blueprint",
-            "validate_tower",
-        )
+        for k in ("ast", "mutation", "parse_", "grammar", "mccabe", "halstead")
     ):
         return True
     return False
@@ -276,8 +229,8 @@ def _audit_single_function(
 
     if not is_test:
         is_algo = _is_ast_or_grammar_algorithm(node, rel_path)
-        vg_limit = 140 if is_algo else 30
-        coc_limit = 45 if is_algo else 15
+        vg_limit = 35 if is_algo else 20
+        coc_limit = 35 if is_algo else 15
         nesting_limit = 5 if is_algo else 3
 
         if vg > vg_limit:

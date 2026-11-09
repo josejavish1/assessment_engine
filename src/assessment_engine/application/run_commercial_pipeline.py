@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 """Provides the primary entry point and orchestration logic for the commercial assessment pipeline."""
 
 import sys
@@ -7,6 +10,7 @@ from assessment_engine.infrastructure.pipeline_runtime import (
     resolve_python_bin,
     run_module_step,
 )
+from assessment_engine.infrastructure.rosi_calculator import ActuarialRosiEngine
 from assessment_engine.infrastructure.runtime_env import run_vertex_ai_preflight
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_client_dir,
@@ -34,7 +38,7 @@ def main(argv: list[str] | None = None) -> None:
         SystemExit: If the required client name argument is not provided.
     """
     if len(argv if argv is not None else sys.argv) < 2:
-        print("Uso: python -m scripts.run_commercial_pipeline <client_name>")
+        logger.info("Uso: python -m scripts.run_commercial_pipeline <client_name>")
         sys.exit(1)
 
     client_name = (argv if argv is not None else sys.argv)[1]
@@ -42,7 +46,7 @@ def main(argv: list[str] | None = None) -> None:
     env = build_runtime_env()
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         preflight = run_vertex_ai_preflight(env=env)
-        print(
+        logger.info(
             "✅ Vertex AI listo "
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
@@ -80,7 +84,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    print(
+    logger.info(
         f"\nCommercial Pipeline completed successfully! Document generated at: {output_path}"
     )
 

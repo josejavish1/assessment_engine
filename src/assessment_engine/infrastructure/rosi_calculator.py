@@ -92,7 +92,6 @@ class ActuarialRosiEngine:
                 f"Input FAIR vectors must match engine simulation count ({self.simulations_count})."
             )
 
-        # 1. Pre-Mitigation Baseline ALE
         ale_pre_vec = pre_lef_vector * pre_lm_vector
 
         # 2. Apply Stochastic Control Attenuation (Compound Multiplicative Damping)
@@ -130,7 +129,6 @@ class ActuarialRosiEngine:
         horizon = financial_context.amortization_horizon_years
         wacc = financial_context.discount_rate_wacc
 
-        # Annualized TCO = (CapEx / Horizon) + Annual OpEx
         annualized_tco_vec = (raw_capex_vec / float(horizon)) + raw_opex_vec
         safe_tco_vec = np.maximum(annualized_tco_vec, 1e-6)
 

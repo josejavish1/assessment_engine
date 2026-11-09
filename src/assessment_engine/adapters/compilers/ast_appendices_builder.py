@@ -137,20 +137,35 @@ def build_cmmi_methodology_and_capabilities(
             tower_id=tower_id,
         )
         p_weight = int(p.get("weight_pct", p.get("weight", 20)))
-        kpi_names = []
-        for kpi in p.get("kpis", []):
+        kpi_list = p.get("kpis", [])
+        distinct_names = []
+        for kpi in kpi_list:
             raw_kname = kpi.get("kpi_name", "KPI").strip()
-            loc_kname = resolver.resolve_capability_name(raw_kname, default=raw_kname, locale=meta_lang)
-            k_name = loc_kname
-            if k_name and not k_name.isupper() and len(k_name) > 4:
-                k_name = k_name[0].lower() + k_name[1:]
-            kpi_names.append(k_name)
+            k_id = kpi.get("kpi_id", "").strip()
+            loc_kname = kpi.get(f"kpi_name_{meta_lang}") or resolver.resolve_capability_name(
+                k_id or raw_kname, default="", locale=meta_lang
+            )
+            if loc_kname and loc_kname != raw_kname:
+                distinct_names.append(loc_kname)
+            elif meta_lang == "es" and raw_kname:
+                distinct_names.append(raw_kname)
 
-        and_str = t("connector_and", locale=meta_lang)
-        if len(kpi_names) > 1:
-            kpi_str = ", ".join(kpi_names[:-1]) + and_str + kpi_names[-1]
-        elif kpi_names:
-            kpi_str = kpi_names[0]
+        if distinct_names and len(distinct_names) == len(kpi_list):
+            formatted_names = [
+                n[0].lower() + n[1:] if n and not n.isupper() and len(n) > 4 else n
+                for n in distinct_names
+            ]
+            and_str = t("connector_and", locale=meta_lang)
+            if len(formatted_names) > 1:
+                kpi_str = ", ".join(formatted_names[:-1]) + and_str + formatted_names[-1]
+            else:
+                kpi_str = formatted_names[0]
+        elif kpi_list:
+            # Syntactic Grouping (Argon Phase 2): Group IDs under a single clean noun phrase
+            first_k = kpi_list[0].get("kpi_id", "")
+            last_k = kpi_list[-1].get("kpi_id", "")
+            range_label = f"({first_k} - {last_k})" if first_k and last_k and first_k != last_k else f"({first_k})"
+            kpi_str = f"{p_name} operational controls and verified standards {range_label}"
         else:
             kpi_str = t("lbl_default_pillar_kpis", locale=meta_lang)
 
@@ -323,7 +338,6 @@ def build_appendix_c_glossary_and_disclaimer(
         )
     )
 
-    # C.1 Abbreviations Glossary
     default_glossary_title = t("appendix_a_default_title", locale=meta_lang)
     nodes.append(
         HeadingNode(

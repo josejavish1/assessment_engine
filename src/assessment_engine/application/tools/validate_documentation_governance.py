@@ -1,4 +1,7 @@
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 
 import argparse
 import fnmatch
@@ -797,10 +800,10 @@ def main() -> int:
 
     if errors:
         for error in errors:
-            print(f"ERROR: {error}")
+            logger.info(f"ERROR: {error}")
         return 1
 
-    print("Documentation governance validation passed.")
+    logger.info("Documentation governance validation passed.")
     return 0
 
 

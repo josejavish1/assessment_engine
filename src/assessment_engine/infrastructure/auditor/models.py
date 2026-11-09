@@ -16,19 +16,13 @@ EXCLUDE_DIRS = {
     "working", ".evolution", "tmp", ".next"
 }
 
-EXCLUDE_FILES = {
-    ".env", ".env.local", ".env.production", ".env.test", ".env.development"
-}
-
 
 def find_target_files(target_dir: Path, extensions: tuple[str, ...]) -> list[Path]:
-    """Walk the directory tree safely, pruning excluded top-level directories and env files."""
+    """Walk the directory tree safely, pruning excluded top-level directories."""
     found: list[Path] = []
     for root, dirs, files in os.walk(str(target_dir), topdown=True):
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
         for f in files:
-            if f in EXCLUDE_FILES or f.startswith(".env"):
-                continue
             if any(f.endswith(ext) for ext in extensions):
                 found.append(Path(root) / f)
     return found

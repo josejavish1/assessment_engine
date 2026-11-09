@@ -509,29 +509,16 @@ class AgenticRageBenchmarker:
         from google import genai
 
         from assessment_engine.domain.schemas.rubric import FrameworkRubric
-        
-        # Get a friendly tower name and purpose to guide the LLM
-        tower_name = "Unified Cloud Architecture"
-        if tower_id == "T1":
-            tower_name = "Agile Delivery & DevOps"
-        elif tower_id == "T2":
-            tower_name = "Compute & Virtualization Platforms"
-        elif tower_id == "T3":
-            tower_name = "Digital Workplace & Landing Zones"
-        elif tower_id == "T4":
-            tower_name = "Data Governance & DAMA-DMBOK"
-        elif tower_id == "T5":
-            tower_name = "Disaster Recovery & Business Continuity"
-        elif tower_id == "T6":
-            tower_name = "Security Operations & Compliance"
-        elif tower_id == "T7":
-            tower_name = "ITIL & ITSM Service Management"
-        elif tower_id == "T8":
-            tower_name = "FinOps & Cost Governance"
-        elif tower_id == "T9":
-            tower_name = "Observability, SRE & AIOps"
-        elif tower_id == "T10":
-            tower_name = "Sovereign Cloud Architecture"
+        from assessment_engine.infrastructure.localization import t
+
+        # Resolve tower name dynamically via ontology / localization port
+        tower_key = f"tower_{tower_id.lower()}_name"
+        resolved_name = t(tower_key, locale="en")
+        tower_name = (
+            resolved_name
+            if resolved_name != tower_key
+            else f"Technical Domain {tower_id}"
+        )
 
         client_gen = genai.Client()
         loop = asyncio.get_running_loop()

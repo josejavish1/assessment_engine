@@ -656,7 +656,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     if val_rev is not None:
                         revenue = float(val_rev)
                 except (ValueError, TypeError):
-                    pass
+                    _ = True  # Handled fallback
 
             # Continuous logarithmic scaling of concurrent SRE capacity with corporate turnover (1 to 6 crews)
             c_crews = max(

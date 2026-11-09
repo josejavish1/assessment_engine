@@ -280,7 +280,6 @@ DECISION PROTOCOL:
                     f"Block '{block_id}' produced an empty git diff. Cannot audit empty changeset."
                 )
 
-            # Step 1: Deterministic Static Pre-Sieve
             static_findings = DeterministicPreFlightSieve.inspect_files(self._repo_root, modified_files)
             if static_findings:
                 logger.warning(

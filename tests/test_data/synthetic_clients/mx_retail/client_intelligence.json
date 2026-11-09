@@ -1,0 +1,175 @@
+{
+  "version": "3.0",
+  "client_name": "Grupo Comercial Chedraui",
+  "metadata": {
+    "dossier_id": "chedraui_mx_retail",
+    "schema_version": "3.0",
+    "created_at": "2026-11-08T20:33:43.699855+00:00",
+    "lang": "es",
+    "country": "Mexico",
+    "currency": "MXN",
+    "currency_symbol": "$"
+  },
+  "profile": {
+    "industry": "retail",
+    "sub_industry": "Omnichannel Supermarket, Hypermarket & Wholesale Chain",
+    "hierarchy": "Public Retail Enterprise",
+    "headquarters": "Xalapa / Ciudad de México, México",
+    "operating_locations": [
+      "CDMX",
+      "Veracruz",
+      "Guadalajara",
+      "Monterrey",
+      "Puebla",
+      "Cancún"
+    ],
+    "headcount": 68000,
+    "financial_profile": {
+      "currency": "MXN",
+      "currency_symbol": "$",
+      "annual_revenue": 263000000000.0,
+      "hourly_downtime_cost": 1650000.0
+    }
+  },
+  "regulatory_context": [
+    {
+      "regulation": "PCI-DSS v4.0 (Seguridad en Cobro con Tarjeta)",
+      "authority": "PCI SSC",
+      "status": "Remediation Active"
+    },
+    {
+      "regulation": "CFDI 4.0 (Facturación Electrónica en Línea)",
+      "authority": "SAT",
+      "status": "Compliant"
+    },
+    {
+      "regulation": "LFPDPPP (Protección de Datos Personales)",
+      "authority": "INAI",
+      "status": "Compliant"
+    }
+  ],
+  "business_context": {
+    "ceo_agenda": {
+      "summary": "Modernizar cajas POS, blindar la disponibilidad en El Buen Fin y robustecer enlaces en tiendas foráneas."
+    },
+    "transformation_horizon": {
+      "stage": "H1",
+      "label": "Estabilización Operativa en Tienda",
+      "rationale": "Renovación masiva de terminales punto de venta y resiliencia de conectividad comercial."
+    },
+    "strategic_priorities": [
+      {
+        "name": "Disponibilidad Continua de Líneas de Cajas y Timbrado Fiscal SAT"
+      },
+      {
+        "name": "Renovación Tecnológica de Terminales POS y Enlaces SD-WAN"
+      }
+    ]
+  },
+  "technology_context": {
+    "dominant_hyperscaler": "Google Cloud Platform (GCP) & On-Prem POS",
+    "footprint_summary": {
+      "summary": "460 sucursales comerciales interconectadas a CEDIs centrales y plataforma SAP en Google Cloud Platform."
+    },
+    "group_level_stack": [
+      {
+        "category": "POS / Retail ERP",
+        "name": "Toshiba 4690 / NCR / SAP S/4HANA Retail"
+      },
+      {
+        "category": "Cloud Backend",
+        "name": "Google Cloud Platform (GCP)"
+      },
+      {
+        "category": "Cómputo en Tienda",
+        "name": "Nutanix Enterprise Cloud"
+      },
+      {
+        "category": "Conectividad",
+        "name": "Telmex / Totalplay enlaces híbridos"
+      }
+    ],
+    "field_metrics": [
+      {
+        "metric": "Sucursales Activas",
+        "value": "460 tiendas"
+      },
+      {
+        "metric": "Terminales POS",
+        "value": "6.400 cajas"
+      },
+      {
+        "metric": "Costo Horario Caída POS",
+        "value": "$1,650,000 MXN/h"
+      }
+    ]
+  },
+  "tower_overrides": {
+    "T2": {
+      "target_maturity": 3.3,
+      "status": "In Scope"
+    },
+    "T3": {
+      "target_maturity": 3.3,
+      "status": "In Scope"
+    },
+    "T7": {
+      "target_maturity": 3.3,
+      "status": "In Scope"
+    },
+    "T9": {
+      "target_maturity": 3.3,
+      "status": "In Scope"
+    },
+    "T10": {
+      "target_maturity": 3.3,
+      "status": "In Scope"
+    },
+    "T1": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T4": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T5": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T6": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T8": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    }
+  },
+  "epistemic_graph": {
+    "topology": {
+      "nodes": [
+        "T2",
+        "T3",
+        "T7",
+        "T9",
+        "T10"
+      ],
+      "edges": [
+        {
+          "source": "T3",
+          "target": "T9",
+          "weight": 0.85
+        }
+      ]
+    },
+    "audits": {
+      "cascading_impact_index": 0.36
+    }
+  },
+  "review": {
+    "summary": "Grupo Comercial Chedraui Benchmark Fixture",
+    "status": "Certified"
+  },
+  "claims": []
+}

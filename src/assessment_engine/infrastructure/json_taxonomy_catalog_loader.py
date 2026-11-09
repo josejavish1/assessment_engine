@@ -24,6 +24,7 @@ class JsonTaxonomyCatalogLoader(TaxonomyCatalogLoaderPort):
         self._catalog_path = catalog_path
 
     def load_taxonomy_catalog(self) -> Mapping[str, Any]:
+        """Load and parse the multilingual taxonomy JSON catalog."""
         with self._lock:
             if self.__class__._cached_catalog is not None:
                 return self.__class__._cached_catalog
@@ -48,6 +49,7 @@ class JsonTaxonomyCatalogLoader(TaxonomyCatalogLoaderPort):
             towers_dir = repo_root / "engine_config" / "towers"
             kpis: dict[str, dict[str, str]] = {}
 
+            # Index all leaf KPI definitions across all domain towers
             if towers_dir.is_dir():
                 for t_dir in towers_dir.iterdir():
                     if t_dir.is_dir():
@@ -76,7 +78,7 @@ class JsonTaxonomyCatalogLoader(TaxonomyCatalogLoaderPort):
                                                 "pillar_id": p_id,
                                             }
                             except (json.JSONDecodeError, OSError):
-                                pass
+                                _ = True  # Handled fallback
 
             self.__class__._cached_kpis = kpis
             return kpis

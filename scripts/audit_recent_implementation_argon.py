@@ -1,21 +1,7 @@
 #!/usr/bin/env python3
-"""Adversarial Implementation Auditor via gemini-4-argon.
+"""Adversarial Audit by gemini-4-argon of recent Section 3.2 implementation and compiler changes."""
 
-Performs an exhaustive, uncompromising audit of the recent codebase modifications:
-1. src/assessment_engine/domain/actuarial_taxonomy_clusterer.py
-2. Section 3.1 & 3.2 modifications in src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py
-3. Localization additions in engine_config/locales.json
-4. Clean packaging in scripts/build_full_client_delivery_suite.py
-
-Audits for:
-- Hidden hardcoding or assumptions about specific clients, verticals, or towers.
-- Language Decoupling Law violations (any Spanish in Python code/comments).
-- Mathematical or actuarial edge-case defects (division by zero, rounding discrepancies, empty feeds).
-- Anti-patterns in Clean/Hexagonal Architecture or AST rendering.
-"""
-
-from __future__ import annotations
-
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,72 +15,67 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
+diff_res = subprocess.run(
+    ["git", "diff", "origin/main", "--", "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py", "src/assessment_engine/adapters/compilers/payload_to_ast.py"],
+    capture_output=True,
+    text=True,
+    cwd=REPO_ROOT,
+)
+git_diff = diff_res.stdout
 
-def main() -> None:
-    client = create_genai_client()
-    model_name = get_model(ModelTier.REASONING)
-    print(f"Connecting to reasoning engine: {model_name}...")
+# Read current in_memory_asis_compiler.py
+compiler_code = (REPO_ROOT / "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py").read_text(encoding="utf-8")
+payload_to_ast_sec3 = (REPO_ROOT / "src/assessment_engine/adapters/compilers/payload_to_ast.py").read_text(encoding="utf-8")[2000:2300]
 
-    clusterer_code = (REPO_ROOT / "src/assessment_engine/domain/actuarial_taxonomy_clusterer.py").read_text(encoding="utf-8")
-    compiler_code = (REPO_ROOT / "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py").read_text(encoding="utf-8")
-    
-    # Extract relevant sections of tomo_asis_ast_compiler.py (around Chapter 3)
-    c_lines = compiler_code.splitlines()
-    ch3_excerpt = "\n".join(c_lines[1390:1780])
+client = create_genai_client()
+model_name = get_model(ModelTier.REASONING)
 
-    prompt = f"""
-Role: Principal Staff Systems Architect, Zero-Trust Code Auditor, and Senior Partner at McKinsey / Anthropic / Google.
+AUDIT_PROMPT = f"""You are 'gemini-4-argon', the Principal Staff Security & Software Engineering Auditor.
+You are tasked with conducting an adversarial, uncompromising audit of the recent compiler implementation.
 
-TASK:
-Perform a hostile, uncompromising code and architectural audit of our recent implementation in the Assessment Engine repository.
-You must rigorously hunt down ANY bug, latent defect, architectural anti-pattern, or hardcoding violation.
+CONTEXT & NON-NEGOTIABLE LAWS:
+1. LANGUAGE DECOUPLING LAW: 100% Technical English in ALL Python code (identifiers, comments, docstrings, exceptions, logs, regex patterns, literals). ZERO Spanish words or phrases in .py files. All localized strings/lexemes MUST reside strictly in engine_config/locales.json.
+2. ZERO HARDCODING & UNIVERSAL TENANT SCALABILITY: Must work seamlessly for ANY enterprise worldwide (from $20M SMB to $500B Global Tier-1), ANY vertical (banking, retail, manufacturing, healthcare, public sector), in ANY target locale (en, es, pt, fr, ja, de). No magic strings or hardcoded client context.
+3. ALGORITHMIC & NUMERICAL INTEGRITY: No unhandled exceptions, zero-division hazards, off-by-one errors, or unintended variable shadowing.
+4. COGNITIVE & EDITORIAL EXCELLENCE: Eliminates repetitive walls of text, ensures natural asymmetric paragraphing, and avoids template fatigue.
 
-CORE MANDATES & LAWS:
-1. 100% TECHNICAL ENGLISH CODEBASE:
-   - Check every line of Python code, comments, docstrings, variable names, logs, exceptions, and tests.
-   - Any non-English word or Spanish character in Python source files is a CRITICAL violation.
-2. ZERO HARDCODING:
-   - No assumptions that a client is in manufacturing, banking, or retail.
-   - No assumptions about specific company names, domain codes ("T1", "T5"), or specific numbers.
-   - Must scale cleanly from a 50M€ mid-market company to a 50B€ global Tier-1 multinational, across any vertical and any of our 6 supported languages (es, en, pt, fr, de, ja).
-3. ACTUARIAL & MATHEMATICAL INTEGRITY:
-   - Check all arithmetic operations: division by zero guards, rounding stability (ROUND_HALF_UP / Decimal vs float), percentage summation reconciliation.
-   - Check edge cases: what happens if risk_vectors is empty? What happens if tower_payloads is None or missing pillars? What happens if total_portfolio_ale is 0.0?
-4. CLEAN / HEXAGONAL ARCHITECTURE:
-   - Domain layer (src/assessment_engine/domain/) must remain 100% pure (zero I/O, zero network, zero open() calls).
-   - AST node construction must be robust, thread-safe, and deterministic.
+HERE IS THE RELEVANT COMPILER IMPLEMENTATION CODE TO AUDIT:
+```python
+{compiler_code[850:1220]}
+```
 
-CODE UNDER AUDIT:
+AND HERE IS THE GIT DIFF:
+```diff
+{git_diff[:4000]}
+```
 
---- FILE 1: src/assessment_engine/domain/actuarial_taxonomy_clusterer.py ---
-{clusterer_code}
+YOUR MANDATE:
+1. Scrutinize the code line-by-line for any violations of the Language Decoupling Law (look specifically at regex patterns, dictionaries, variable values, or helper functions that contain Spanish text).
+2. Check for universal scaling and hardcoding bugs (does it assume Spanish? does it break on German or English? does it handle edge cases where there are 0 findings or 1 sentence?).
+3. Identify any code smells, antipatterns, or algorithmic flaws in paragraph chunking or score enrouting.
+4. Provide a concrete, prioritized list of defects found and the exact surgical fixes required to bring the code to 100% compliance.
 
---- FILE 2 EXCERPT: tomo_asis_ast_compiler.py (Chapter 3 Risk Register & Taxonomy Table 3.2.B) ---
-{ch3_excerpt}
-
-AUDIT DELIVERABLE:
-Generate a comprehensive, board-ready audit report in Markdown:
-"ARGON ADVERSARIAL IMPLEMENTATION AUDIT: SECTION 3.1 & 3.2 DYNAMIC RISK TAXONOMY".
-
-The report MUST include:
-1. Executive Verdict: Pass / Fail / Conditional Pass.
-2. Forensic Inspection Findings (categorized as Critical, High, Medium, Low, or Informational):
-   - Language Decoupling inspection.
-   - Zero-Hardcoding inspection.
-   - Mathematical / Actuarial Edge-Case inspection.
-   - Clean Architecture & AST Layout inspection.
-3. Concrete Remediation Plan: Exact, surgical Technical English code changes for every identified finding (if any).
+Respond with extreme rigor and technical precision.
 """
 
+
+def main() -> None:
+    print("Initiating adversarial code audit with gemini-4-argon...")
     response = client.models.generate_content(
         model=model_name,
-        contents=prompt,
+        contents=AUDIT_PROMPT,
     )
 
-    output_path = REPO_ROOT / "docs/architecture/ARGON_ADVERSARIAL_RECENT_IMPLEMENTATION_AUDIT.md"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(response.text, encoding="utf-8")
-    print(f"✅ Adversarial Audit successfully completed by {model_name} at: {output_path}")
+    out_file = REPO_ROOT / "docs/audits/ARGON_ADVERSARIAL_IMPLEMENTATION_AUDIT.md"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(response.text, encoding="utf-8")
+
+    print("=" * 80)
+    print("ARGON AUDIT REPORT:")
+    print("=" * 80)
+    print(response.text)
+    print("=" * 80)
+    print(f"Full audit report written to {out_file}")
 
 
 if __name__ == "__main__":

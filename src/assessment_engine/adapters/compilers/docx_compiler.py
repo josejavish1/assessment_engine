@@ -470,6 +470,7 @@ class TableLayoutCalculator:
 
     @classmethod
     def compute_column_widths_dxa(cls, node: TableNode, num_cols: Optional[int] = None) -> List[int]:
+        """Compute relative column widths in twips (DXA) matching printable table margins."""
         if not node.rows:
             return []
 

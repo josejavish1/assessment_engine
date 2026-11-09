@@ -1,104 +1,228 @@
+"""Comprehensive AST Mutation Testing Probe per ISO/IEC/IEEE 29119 & GEMA 54.
+
+Empirically evaluates test assertion resilience by injecting first-order syntactic mutants
+into critical domain, actuarial, and security modules and asserting that the test suite detects
+and neutralizes the corruptions.
 """
-Assess test assertion resilience via AST mutation testing per ISO/IEC/IEEE 29119. Empirically evaluate project test assertion effectiveness by injecting mutants. Deterministically pair each production module with its respective test suite.
-"""
+
 from __future__ import annotations
 
-import sys
+import ast
 from pathlib import Path
+import subprocess
+import sys
 from typing import Any
 
-from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult, find_target_files
-from assessment_engine.infrastructure.auditor.mutation_probe import MutationTestingProbe
+from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult
+from assessment_engine.infrastructure.auditor.mutation_probe import (
+    MutationTestingProbe,
+)
 
 PYTEST_CMD = [sys.executable, "-m", "pytest"]
 
+CORE_MUTATION_TARGETS: list[tuple[str, str]] = [
+    ("src/assessment_engine/mcp_server.py", "tests/unit/test_mcp_server.py"),
+    ("src/assessment_engine/domain/cfo_actuarial_gate.py", "tests/unit/test_cfo_actuarial_gate.py"),
+    ("src/assessment_engine/domain/framework_urn.py", "tests/unit/test_framework_urn.py"),
+    ("src/assessment_engine/domain/actuarial_scale_calibrator.py", "tests/unit/test_actuarial_scale_calibrator.py"),
+    ("src/assessment_engine/domain/actuarial_reconciler.py", "tests/unit/test_actuarial_reconciler.py"),
+    ("src/assessment_engine/domain/services/score_reconciler.py", "tests/unit/test_score_reconciler.py"),
+    ("src/assessment_engine/domain/bayesian_fair_copula_engine.py", "tests/unit/test_bayesian_fair_copula_engine.py"),
+    ("src/assessment_engine/infrastructure/rosi_calculator.py", "tests/unit/test_rosi_actuarial_engine.py"),
+]
 
-def run_mutation_gate_probe(target_dir: Path, max_samples: int = 6) -> ProbeResult:
-    """Execute mutation testing sampling on the project code."""
-    all_py = find_target_files(target_dir, (".py",))
-    test_files = [f for f in all_py if f.name.startswith("test_")]
-    findings: list[AuditFinding] = []
 
-    if not test_files:
-        return ProbeResult(
-            probe_name="Mutation Testing Score (ISO/IEC/IEEE 29119 & GEMA 54)",
-            score_pct=0.0,
-            passed=False,
-            metrics={"status": "NO_TESTS_FOUND", "mutants_tested": 0},
-            findings=[AuditFinding(
-                category="MUTATION",
-                severity="HIGH",
-                file_path=str(target_dir),
-                line_number=None,
-                rule_id="MUT-NO-TESTS",
-                message="Project contains zero unit test files (test_*.py)",
-                recommendation="Add unit test suite to protect business domain logic."
-            )]
-        )
+class DiscreteMutantCollector(ast.NodeVisitor):
+    """Locate all potential mutation points in the AST."""
 
-    test_map = {t.stem: t for t in test_files}
-    pairs: list[tuple[Path, Path]] = []
-    for pf in all_py:
-        if pf.name.startswith("test_") or "tests" in pf.parts:
-            continue
-        expected_test_name = f"test_{pf.stem}"
-        if expected_test_name in test_map:
-            pairs.append((pf, test_map[expected_test_name]))
+    def __init__(self) -> None:
+        self.mutation_points: list[dict[str, Any]] = []
+        self._counter = 0
 
-    tested_mutants = 0
-    killed_mutants = 0
+    def visit_Compare(self, node: ast.Compare) -> None:
+        if len(node.ops) == 1:
+            op = node.ops[0]
+            mutated_op = None
+            desc = ""
+            if isinstance(op, ast.Gt):
+                mutated_op = ast.LtE()
+                desc = f"Invert '>' to '<=' at line {node.lineno}"
+            elif isinstance(op, ast.Lt):
+                mutated_op = ast.GtE()
+                desc = f"Invert '<' to '>=' at line {node.lineno}"
+            elif isinstance(op, ast.Eq):
+                mutated_op = ast.NotEq()
+                desc = f"Invert '==' to '!=' at line {node.lineno}"
+            elif isinstance(op, ast.NotEq):
+                mutated_op = ast.Eq()
+                desc = f"Invert '!=' to '==' at line {node.lineno}"
+            elif isinstance(op, ast.In):
+                mutated_op = ast.NotIn()
+                desc = f"Invert 'in' to 'not in' at line {node.lineno}"
+            elif isinstance(op, ast.NotIn):
+                mutated_op = ast.In()
+                desc = f"Invert 'not in' to 'in' at line {node.lineno}"
 
-    candidates = pairs[:max_samples] if pairs else [(pf, test_files[0]) for pf in all_py if not pf.name.startswith("test_")][:max_samples]
+            if mutated_op:
+                self.mutation_points.append(
+                    {
+                        "id": self._counter,
+                        "lineno": node.lineno,
+                        "type": "Compare",
+                        "replacement": mutated_op,
+                        "desc": desc,
+                    }
+                )
+                self._counter += 1
 
-    for py_file, test_file in candidates:
-        rel_path = str(py_file.relative_to(target_dir))
-        cmd = [*PYTEST_CMD, str(test_file), "-q", "--tb=no"]
+        self.generic_visit(node)
+
+    def visit_Constant(self, node: ast.Constant) -> None:
+        if isinstance(node.value, bool):
+            self.mutation_points.append(
+                {
+                    "id": self._counter,
+                    "lineno": node.lineno,
+                    "type": "Boolean",
+                    "replacement": not node.value,
+                    "desc": f"Invert boolean '{node.value}' to '{not node.value}' at line {node.lineno}",
+                }
+            )
+            self._counter += 1
+        self.generic_visit(node)
+
+
+class SingleMutantInjector(ast.NodeTransformer):
+    """Inject exactly one mutation into the AST for the specified ID."""
+
+    def __init__(self, target_id: int, replacement: Any) -> None:
+        self.target_id = target_id
+        self.replacement = replacement
+        self._current_id = 0
+
+    def visit_Compare(self, node: ast.Compare) -> ast.AST:
+        if len(node.ops) == 1 and type(node.ops[0]) in (
+            ast.Gt,
+            ast.Lt,
+            ast.Eq,
+            ast.NotEq,
+            ast.In,
+            ast.NotIn,
+        ):
+            if self._current_id == self.target_id:
+                node.ops = [self.replacement]
+            self._current_id += 1
+        return self.generic_visit(node)
+
+    def visit_Constant(self, node: ast.Constant) -> ast.AST:
+        if isinstance(node.value, bool):
+            if self._current_id == self.target_id:
+                node.value = self.replacement
+            self._current_id += 1
+        return self.generic_visit(node)
+
+
+def generate_first_order_mutants(
+    source_code: str, max_mutants: int = 4
+) -> list[tuple[str, str, int]]:
+    """Generate independent syntactic variants from the source code."""
+    try:
+        base_tree = ast.parse(source_code)
+    except SyntaxError:
+        return []
+
+    collector = DiscreteMutantCollector()
+    collector.visit(base_tree)
+
+    selected = collector.mutation_points[:max_mutants]
+    mutants: list[tuple[str, str, int]] = []
+
+    for point in selected:
+        tree_copy = ast.parse(source_code)
+        injector = SingleMutantInjector(point["id"], point["replacement"])
+        mutated_tree = injector.visit(tree_copy)
+        ast.fix_missing_locations(mutated_tree)
 
         try:
-            res = MutationTestingProbe.audit_test_against_mutation(py_file, cmd)
-            if "Sin operadores mutables" in res.mutation_description:
-                continue
+            mutated_code = ast.unparse(mutated_tree)
+            mutants.append((mutated_code, point["desc"], point["lineno"]))
+        except (ValueError, SyntaxError) as err:
+            logger.debug("Failed to unparse mutant %s: %s", point["desc"], err)
 
-            tested_mutants += 1
-            if res.mutant_killed:
-                killed_mutants += 1
-            else:
-                rule_id = "MUT-SURVIVED"
-                if "AOR" in res.mutation_description:
-                    rule_id = "MUT-AOR-SURVIVED"
-                elif "LCR" in res.mutation_description:
-                    rule_id = "MUT-LCR-SURVIVED"
-                elif "ROR" in res.mutation_description:
-                    rule_id = "MUT-ROR-SURVIVED"
+    return mutants
 
-                findings.append(AuditFinding(
-                    category="MUTATION",
-                    severity="MEDIUM",
-                    file_path=rel_path,
-                    line_number=None,
-                    rule_id=rule_id,
-                    message=f"Mutant in '{py_file.name}' survived ({res.mutation_description}): test suite failed to catch corruption.",
-                    recommendation="Add direct assertions over arithmetic or logical operators evaluated."
-                ))
-        except (OSError, UnicodeDecodeError, SyntaxError):
+
+def run_mutation_gate_probe(target_dir: Path, mutants_per_module: int = 4) -> ProbeResult:
+    """Execute comprehensive AST mutation testing across core business targets."""
+    findings: list[AuditFinding] = []
+    total_mutants = 0
+    killed_mutants = 0
+
+    for target_rel, test_rel in CORE_MUTATION_TARGETS:
+        target_path = target_dir / target_rel
+        test_path = target_dir / test_rel
+
+        if not target_path.exists() or not test_path.exists():
             continue
 
-    if tested_mutants == 0:
+        try:
+            original_code = target_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+
+        mutants = generate_first_order_mutants(original_code, max_mutants=mutants_per_module)
+        if not mutants:
+            continue
+
+        try:
+            for mutated_code, desc, lineno in mutants:
+                target_path.write_text(mutated_code, encoding="utf-8")
+                total_mutants += 1
+
+                cmd = [*PYTEST_CMD, str(test_path), "-q", "--tb=no"]
+                res = subprocess.run(
+                    cmd,
+                    cwd=str(target_dir),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=30,
+                )
+
+                if res.returncode != 0:
+                    killed_mutants += 1
+                else:
+                    findings.append(
+                        AuditFinding(
+                            category="MUTATION",
+                            severity="HIGH",
+                            file_path=target_rel,
+                            line_number=lineno,
+                            rule_id="MUT-SURVIVED",
+                            message=f"Mutant in '{target_path.name}' survived ({desc}): test suite failed to catch corruption.",
+                            recommendation="Strengthen unit test assertions over boundary conditions and state transitions.",
+                        )
+                    )
+        finally:
+            target_path.write_text(original_code, encoding="utf-8")
+
+    if total_mutants == 0:
         score = 100.0
         passed = True
     else:
-        score = round((killed_mutants / tested_mutants) * 100.0, 1)
-        passed = score >= 75.0
+        score = round((killed_mutants / total_mutants) * 100.0, 1)
+        passed = score >= 80.0
 
     return ProbeResult(
         probe_name="Mutation Testing Score (ISO/IEC/IEEE 29119 & GEMA 54)",
         score_pct=score,
         passed=passed,
         metrics={
-            "mutants_tested": tested_mutants,
+            "mutants_tested": total_mutants,
             "mutants_killed": killed_mutants,
+            "mutants_survived": total_mutants - killed_mutants,
             "mutation_score_pct": score,
-            "paired_modules_count": len(pairs)
+            "target_modules_count": len(CORE_MUTATION_TARGETS),
         },
-        findings=findings
+        findings=findings,
     )

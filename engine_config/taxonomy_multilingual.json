@@ -678,35 +678,35 @@
     }
   },
   "T10": {
-    "canonical_name": "Legacy & Core Mainframe Platforms",
+    "canonical_name": "Core Transactional & Mission-Critical Systems",
     "locales": {
-      "es": "Plataformas Legacy y Mainframe Central",
-      "en": "Legacy & Core Mainframe Platforms",
-      "pt": "Plataformas Legadas e Mainframe Central",
-      "fr": "Plateformes Héritées et Mainframe Central",
-      "de": "Legacy- & Core-Mainframe-Plattformen",
-      "ja": "レガシーおよびメインフレーム基幹プラットフォーム"
+      "es": "Sistemas Transaccionales Core y Plataformas Críticas",
+      "en": "Core Transactional & Mission-Critical Systems",
+      "pt": "Sistemas Transacionais Core e Plataformas Críticas",
+      "fr": "Systèmes Transactionnels Core et Plateformes Critiques",
+      "de": "Kern-Transaktionssysteme & Missionskritische Plattformen",
+      "ja": "ミッションクリティカル基幹系およびトランザクションシステム"
     },
     "pillars": {
       "T10.P1": {
-        "canonical_name": "Core Mainframe & Legacy Platform Operations",
+        "canonical_name": "Core Transactional Platforms & High-Throughput Processing",
         "locales": {
-          "es": "Operaciones de Plataforma Mainframe y Sistemas Core",
-          "en": "Core Mainframe & Legacy Platform Operations",
-          "pt": "Operações de Mainframe e Sistemas Legados",
-          "fr": "Exploitation Mainframe et Systèmes Hérités",
-          "de": "Mainframe-Betrieb & Core-Legacy-Systeme",
-          "ja": "メインフレームおよびレガシー基幹運用"
+          "es": "Plataformas Transaccionales Core y Procesamiento Crítico",
+          "en": "Core Transactional Platforms & High-Throughput Processing",
+          "pt": "Plataformas Transacionais Core e Processamento Crítico",
+          "fr": "Plateformes Transactionnelles Core et Traitement Haute Disponibilité",
+          "de": "Kern-Transaktionsplattformen & Hochdurchsatz-Verarbeitung",
+          "ja": "基幹トランザクションプラットフォームおよび高スループット処理"
         }
       },
       "T10.P2": {
-        "canonical_name": "Legacy Change, Release & Configuration Governance",
+        "canonical_name": "Core Change, Release & Configuration Governance",
         "locales": {
-          "es": "Control de Cambios, Releases y Configuración Legacy",
-          "en": "Legacy Change, Release & Configuration Governance",
+          "es": "Control de Cambios, Releases y Configuración Core",
+          "en": "Core Change, Release & Configuration Governance",
           "pt": "Governança de Mudanças e Configurações Legadas",
           "fr": "Gouvernance des Changements et Configurations Héritées",
-          "de": "Legacy Change-, Release- & Konfigurationskontrolle",
+          "de": "Core Change-, Release- & Konfigurationskontrolle",
           "ja": "レガシー変更・リリースおよび構成統制"
         }
       },
@@ -722,10 +722,10 @@
         }
       },
       "T10.P4": {
-        "canonical_name": "Legacy Integration, Interoperability & Modern APIs",
+        "canonical_name": "Core Integration, Interoperability & Modern APIs",
         "locales": {
           "es": "Integración, Interoperabilidad y Exposición de APIs Modernas",
-          "en": "Legacy Integration, Interoperability & Modern APIs",
+          "en": "Core Integration, Interoperability & Modern APIs",
           "pt": "Integração, Interoperabilidade e Exposição de APIs Modernas",
           "fr": "Intégration, Interopérabilité et Exposition d'APIs Modernes",
           "de": "Integration, Interoperabilität & moderne APIs",

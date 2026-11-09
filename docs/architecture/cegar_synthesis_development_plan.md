@@ -32,7 +32,7 @@ We are replacing this pattern with a **Counterexample-Guided Abstraction Refinem
 
 ### 1.2 Topology & Execution Flow
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        APPLICATION LAYER (Use Case)                               |
 |                                                                                   |

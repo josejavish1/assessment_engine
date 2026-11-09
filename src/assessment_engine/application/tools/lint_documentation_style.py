@@ -1,5 +1,8 @@
-# golden-path: ignore
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
+# golden-path: ignore
 
 import argparse
 import re
@@ -69,9 +72,9 @@ def main() -> int:
     )
     if errors:
         for error in errors:
-            print(f"ERROR: {error}")
+            logger.info(f"ERROR: {error}")
         return 1
-    print("Documentation style lint passed.")
+    logger.info("Documentation style lint passed.")
     return 0
 
 

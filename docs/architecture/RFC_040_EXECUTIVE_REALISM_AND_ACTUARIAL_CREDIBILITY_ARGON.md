@@ -18,7 +18,7 @@ A critical failure in automated enterprise reporting is conflating **Group-Level
 
 To eliminate this antipattern across all company sizes (from €50M mid-market to $100B Fortune 10) and industries, economic framing is strictly partitioned into two distinct execution boundaries:
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        ENTERPRISE ASSESSMENT ARCHITECTURE                         |
 +-----------------------------------------------------------------------------------+

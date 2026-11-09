@@ -77,17 +77,21 @@ class DeduplicationPolicy(BaseSovereignPolicy):
         if not pillars:
             return payload
 
-        tower_code = payload.get("document_meta", {}).get("tower_code", "")
-        if tower_code != "T2":
+        # Identify the platform engineering target pillar dynamically via capability/typology
+        doc_lang = payload.get("document_meta", {}).get("language", "en").lower()
+        cloud_provider = payload.get("document_meta", {}).get("cloud_provider", "")
+        target_pillar = None
+        for p in pillars:
+            p_id = str(p.get("pilar_id") or p.get("pillar_id") or "")
+            p_name = str(p.get("pillar_name") or p.get("name") or "").lower()
+            if "platform" in p_name or "automation" in p_name or p_id.endswith(".P4"):
+                target_pillar = p
+                break
+
+        if target_pillar is None:
             return payload
 
-        doc_lang = (
-            payload.get("document_meta", {}).get("language", "en").lower()
-        )
-        cloud_provider = payload.get("document_meta", {}).get(
-            "cloud_provider", ""
-        )
-        target_pilar_id = "T2.P4"
+        target_pilar_id = target_pillar.get("pilar_id") or target_pillar.get("pillar_id")
         found_platform_projects: list[dict[str, Any]] = []
 
         for p in pillars:

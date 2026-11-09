@@ -40,8 +40,7 @@ class SREObservabilityVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         """Visit a call expression node."""
         if isinstance(node.func, ast.Name) and node.func.id == "print":
-            file_name = Path(self.rel_path).name
-            if self.rel_path.endswith("cli.py") or "/tools/" in self.rel_path or "cli" in self.rel_path or file_name.startswith("run_"):
+            if self.rel_path.endswith("cli.py") or "cli" in self.rel_path:
                 return
 
             self.findings.append(AuditFinding(

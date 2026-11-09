@@ -12,6 +12,9 @@ from assessment_engine.infrastructure.auditor.models import UniversalAuditReport
 from assessment_engine.infrastructure.auditor.probes.ai_safety_llm import run_ai_safety_llm_probe
 from assessment_engine.infrastructure.auditor.probes.assertion_quality import run_assertion_quality_probe
 from assessment_engine.infrastructure.auditor.probes.ast_complexity import run_ast_complexity_probe
+from assessment_engine.infrastructure.auditor.probes.autonomous_ux_critic import (
+    run_autonomous_ux_critic_probe,
+)
 from assessment_engine.infrastructure.auditor.probes.browser_accessibility import run_browser_accessibility_probe
 from assessment_engine.infrastructure.auditor.probes.code_hygiene import run_code_hygiene_probe
 from assessment_engine.infrastructure.auditor.probes.comment_quality import run_comment_quality_probe
@@ -117,6 +120,9 @@ class SoverikQualityEngine:
         topo_res = run_neurosymbolic_topology_probe(target_path)
         report.probes["neurosymbolic_topology"] = topo_res
 
+        ux_res = run_autonomous_ux_critic_probe(target_path)
+        report.probes["autonomous_ux_critic"] = ux_res
+
         weighted_score = (
             sast_res.score_pct * 0.08 +
             dast_res.score_pct * 0.08 +
@@ -126,11 +132,12 @@ class SoverikQualityEngine:
             cov_res.score_pct * 0.08 +
             assert_res.score_pct * 0.06 +
             topo_res.score_pct * 0.06 +
-            legal_res.score_pct * 0.05 +
-            sre_res.score_pct * 0.05 +
+            legal_res.score_pct * 0.04 +
+            sre_res.score_pct * 0.04 +
             perf_res.score_pct * 0.04 +
             stress_res.score_pct * 0.04 +
-            a11y_res.score_pct * 0.04 +
+            a11y_res.score_pct * 0.03 +
+            ux_res.score_pct * 0.03 +
             drift_res.score_pct * 0.04 +
             resil_res.score_pct * 0.04 +
             ai_res.score_pct * 0.04 +
@@ -142,13 +149,28 @@ class SoverikQualityEngine:
         )
         report.global_score = min(100.0, round(weighted_score, 1))
 
-        has_critical_security_failure = not sast_res.passed or not dast_res.passed
+        # Orthogonal Non-Compensatory Quality Gates (Closure Tribunal Standard)
+        security_failed = not sast_res.passed or not dast_res.passed or not sca_res.passed
+        mutation_failed = not mut_res.passed
+        topology_failed = not topo_res.passed
+        hygiene_failed = not hygiene_res.passed or not drift_res.passed
 
-        if report.global_score >= 90.0 and all(p.passed for p in report.probes.values()):
+        critical_failures_count = sum([security_failed, mutation_failed, topology_failed, hygiene_failed])
+
+        if security_failed:
+            report.global_grade = "F"
+            report.global_score = min(report.global_score, 45.0)
+        elif critical_failures_count >= 2:
+            report.global_grade = "C"
+            report.global_score = min(report.global_score, 65.0)
+        elif critical_failures_count == 1:
+            report.global_grade = "C"
+            report.global_score = min(report.global_score, 74.9)
+        elif report.global_score >= 90.0 and all(p.passed for p in report.probes.values()):
             report.global_grade = "A+"
-        elif report.global_score >= 80.0 and not has_critical_security_failure:
+        elif report.global_score >= 80.0:
             report.global_grade = "A"
-        elif report.global_score >= 70.0 and not has_critical_security_failure:
+        elif report.global_score >= 70.0:
             report.global_grade = "B"
         elif report.global_score >= 50.0:
             report.global_grade = "C"

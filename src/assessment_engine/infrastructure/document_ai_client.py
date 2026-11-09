@@ -47,3 +47,7 @@ class DocumentAIClient:
 
         result = self.client.process_document(request=request)
         return result.document
+
+
+# Backward compatibility alias
+DocumentAiClient = DocumentAIClient

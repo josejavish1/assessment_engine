@@ -69,6 +69,8 @@ def test_actuarial_physical_accounting_breakdown(tmp_path: Path):
                 "tower_code": "T2",
                 "tower_name": "Platforms",
                 "tower_id": "T2",
+                "currency_symbol": "€",
+                "currency": "EUR",
             },
             "pillars_analysis": [
                 {

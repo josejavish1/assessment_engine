@@ -89,7 +89,7 @@ Moving the **Diagnostic Triad Table** immediately below the **KPI Scorecard Tabl
 
 ### 3.1 Visual Hierarchy on Page 3 (Top-to-Bottom AST Flow)
 
-```
+```text
 +-----------------------------------------------------------------------------+
 | 1. RESUMEN EJECUTIVO Y DIAGNÓSTICO DE MADUREZ                               |
 | 1.1 Síntesis Ejecutiva: Infraestructura Física e Instalaciones (D1)         |

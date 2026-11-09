@@ -50,7 +50,7 @@ Previously, Paragraph 2 of the Executive Summary assumed that every capability t
 
 Let $F = [f_1, f_2, \dots, f_K]$ be the deterministic, severity-sorted sequence of prioritized AS-IS findings extracted for the active tower after deduplication and threshold filtering.
 
-```
+```text
                    ┌──────────────────────────────────────┐
                    │   Extract & Deduplicate Findings F   │
                    │          K = len(F)                  │

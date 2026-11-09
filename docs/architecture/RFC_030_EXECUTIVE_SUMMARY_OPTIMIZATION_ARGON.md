@@ -25,7 +25,7 @@ A forensic audit of Chapter 1 (*Executive Summary*) across the generated Tower 1
 
 To meet Tier-1 management consulting standards (McKinsey / Gartner), Chapter 1 is restructured into four distinct, high-impact visual components rendered deterministically by the AST compiler:
 
-```
+```text
 ================================================================================
 1. EXECUTIVE SUMMARY (RESUMEN EJECUTIVO)
 ================================================================================
@@ -474,7 +474,7 @@ user_prompt: |
 
   ```json
   {{ executive_handover_json }}
-  ```
+  ```text
 ```
 
 ---

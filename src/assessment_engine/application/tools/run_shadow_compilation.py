@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 import argparse
 import time
 
@@ -64,9 +67,9 @@ def run_shadow_compilation() -> None:
     )
     args = parser.parse_args()
 
-    print("🛰️  [V4 AST Shadow Compiler] Starting shadow execution for:")
-    print(f"   ├─ Blueprint: {args.blueprint_payload}")
-    print(f"   ├─ Synthesis: {args.approved_annex}")
+    logger.info("🛰️  [V4 AST Shadow Compiler] Starting shadow execution for:")
+    logger.info(f"   ├─ Blueprint: {args.blueprint_payload}")
+    logger.info(f"   ├─ Synthesis: {args.approved_annex}")
 
     start_time = time.time()
 
@@ -75,7 +78,7 @@ def run_shadow_compilation() -> None:
     ast = bridge.convert(args.blueprint_payload, args.approved_annex)
 
     conversion_time = time.time() - start_time
-    print(
+    logger.info(
         f"   ├─ In-memory AST conversion completed in {conversion_time * 1000:.2f} ms"
     )
 
@@ -156,16 +159,16 @@ def run_shadow_compilation() -> None:
     compilation_time = time.time() - (start_time + conversion_time)
     total_time = time.time() - start_time
 
-    print(
+    logger.info(
         f"   ├─ Physical DOCX compilation completed in {compilation_time * 1000:.2f} ms"
     )
-    print(
+    logger.info(
         f"🎉 V4 Shadow Compilation Completed Successfully in {total_time * 1000:.2f} ms!"
     )
-    print(f"   ├─ Archivo Generado (Full): {args.output}")
-    print(f"   ├─ Archivo Generado (Minimal): {minimal_output}")
-    print(f"   ├─ Archivo Generado (No Pictures): {nopix_output}")
-    print(f"   └─ Archivo Generado (No Tables): {notab_output}")
+    logger.info(f"   ├─ Archivo Generado (Full): {args.output}")
+    logger.info(f"   ├─ Archivo Generado (Minimal): {minimal_output}")
+    logger.info(f"   ├─ Archivo Generado (No Pictures): {nopix_output}")
+    logger.info(f"   └─ Archivo Generado (No Tables): {notab_output}")
 
 
 if __name__ == "__main__":

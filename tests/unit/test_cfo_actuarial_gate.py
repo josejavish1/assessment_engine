@@ -179,3 +179,15 @@ def test_portfolio_verification_passes_on_grounded_data() -> None:
     ]
     # Revenue = 50,000,000 EUR. Total ALE = 23,700 EUR (< 7.5M EUR ceiling).
     gate.verify_portfolio(scenarios, annual_enterprise_revenue=50000000.0)
+
+
+def test_actuarial_audit_policy_immutability() -> None:
+    """Verify that ActuarialAuditPolicy is immutable and raises FrozenInstanceError on modification."""
+    import dataclasses
+
+    policy = ActuarialAuditPolicy()
+    assert policy.min_hot_swap_mttr_hours == Decimal("1.5")
+
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        policy.tolerance = Decimal("10.0")  # type: ignore[misc]
+

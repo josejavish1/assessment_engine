@@ -608,9 +608,9 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             for cell in row.cells:
                 for p in cell.paragraphs:
                     if "[" in p.text and "]" in p.text:
-                        # Conditionally processes table rows. A row is preserved and its date placeholder is substituted if the cell contains *only* the placeholder. Otherwise, the entire row is flagged for subsequent deletion to sanitize the output.
-                        if "[Fecha]" in p.text:
-                            p.text = p.text.replace("[Fecha]", replacements["[Fecha]"])
+                        matched_key = next((k for k in replacements if k in p.text), None)
+                        if matched_key:
+                            p.text = p.text.replace(matched_key, str(replacements[matched_key]))
                         else:
                             row_has_bracket = True
                             break
@@ -619,12 +619,11 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             if row_has_bracket:
                 rows_to_remove.append(row)
 
-        #
         for row in rows_to_remove:
             try:
                 table._tbl.remove(row._tr)
             except (AttributeError, TypeError, ValueError) as ex:
-                logger.debug(f"[DocxRender] Error eliminando fila XML de tabla: {ex}")
+                logger.debug("[DocxRender] Error removing table XML row: %s", ex)
 
 
 def render_extended_variant(doc, payload) -> Any:
@@ -834,23 +833,27 @@ def main(argv: list[str] | None = None) -> None:
     variant = clean_text(meta.get("report_variant", "short")).lower()
     subtitle_suffix = " · Extended Version" if variant == "long" else ""
 
+    t_code = str(meta.get("tower_code") or meta.get("tower_id") or "TX")
+    t_name = str(meta.get("tower_name") or "Torre")
+    c_name = str(meta.get("client_name") or "CLIENTE")
+
     replace_simple_placeholder(
         doc,
         "{{ANNEX_TITLE}}",
-        f"ANEXO {meta['tower_code']} – {meta['tower_name']}",
+        f"ANEXO {t_code} – {t_name}",
         font_size=15,
         bold=True,
     )
-    replace_simple_placeholder(doc, "{{TOWER_CODE}}", meta["tower_code"], font_size=15)
-    replace_simple_placeholder(doc, "{{TOWER_NAME}}", meta["tower_name"], font_size=15)
+    replace_simple_placeholder(doc, "{{TOWER_CODE}}", t_code, font_size=15)
+    replace_simple_placeholder(doc, "{{TOWER_NAME}}", t_name, font_size=15)
     replace_simple_placeholder(
         doc,
         "{{ANNEX_SUBTITLE}}",
-        f"{meta['client_name']} · Fast Infrastructure Assessment{subtitle_suffix}",
+        f"{c_name} · Fast Infrastructure Assessment{subtitle_suffix}",
         font_size=11,
     )
     replace_simple_placeholder(
-        doc, "{{CLIENT_NAME}}", meta["client_name"], font_size=11
+        doc, "{{CLIENT_NAME}}", c_name, font_size=11
     )
 
     replace_simple_placeholder(

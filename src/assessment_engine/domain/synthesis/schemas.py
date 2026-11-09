@@ -131,6 +131,7 @@ class SimplexUtilityWeights(StrictDomainModel):
         raise KeyError(item)
 
     def items(self) -> list[tuple[OptimizationAxis, float]]:
+        """Return an iterator of schema items for dictionary compatibility."""
         return [
             (OptimizationAxis.CAPITAL_EFFICIENCY, self.capital_efficiency),
             (OptimizationAxis.OPERATIONAL_RESILIENCE, self.operational_resilience),

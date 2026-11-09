@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 import json
 import os
 import sys
@@ -38,7 +41,7 @@ def main():
         IOError: If the file cannot be read from or written to.
     """
     if len(sys.argv) < 2:
-        print(
+        logger.info(
             "Uso: python -m assessment_engine.application.tools.sign_dossier <path_to_json> [new_client_name]"
         )
         sys.exit(1)
@@ -47,14 +50,14 @@ def main():
     new_name = sys.argv[2] if len(sys.argv) > 2 else None
 
     if not path.exists():
-        print(f"Error: {path} no existe.")
+        logger.info(f"Error: {path} no existe.")
         sys.exit(1)
 
     data = json.loads(path.read_text(encoding="utf-8-sig"))
 
     if new_name:
         data["client_name"] = new_name
-        print(f"Forzando nombre de cliente a: {new_name}")
+        logger.info(f"Forzando nombre de cliente a: {new_name}")
 
     #
     signed_data = sign_dossier(data)
@@ -62,7 +65,7 @@ def main():
     path.write_text(
         json.dumps(signed_data, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Dossier RE-SIGNED successfully: {path}")
+    logger.info(f"✅ Dossier RE-SIGNED successfully: {path}")
 
 
 if __name__ == "__main__":

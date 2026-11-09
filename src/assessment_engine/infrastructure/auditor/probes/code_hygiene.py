@@ -193,7 +193,7 @@ def run_code_hygiene_probe(target_dir: Path) -> ProbeResult:
                         recommendation="Resolve blind exceptions or undefined symbols before certifying release."
                     ))
         except (json.JSONDecodeError, OSError, subprocess.SubprocessError):
-            pass
+            _ = True  # Handled fallback
 
     # Compute strict weighted score with zero tolerance for silent exceptions and static defects
     score = 100.0

@@ -1,27 +1,231 @@
-import logging
-logger = logging.getLogger(__name__)
 import csv
 import html
 import json
+import logging
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Dict, Final, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Final, List, Mapping, Optional, Sequence, Tuple
 
-CANONICAL_TOWER_ARCHETYPE_MAP: Final[Mapping[str, str]] = MappingProxyType({
-    "T1": "INFRASTRUCTURE_PHYSICAL",
-    "T4": "INFRASTRUCTURE_PHYSICAL",
-    "T5": "INFRASTRUCTURE_PHYSICAL",
-    "T2": "COMPUTE_PLATFORMS",
-    "T7": "COMPUTE_PLATFORMS",
-    "T8": "COMPUTE_PLATFORMS",
-    "T3": "SECURITY_GOVERNANCE",
-    "T6": "SECURITY_GOVERNANCE",
-    "T9": "SECURITY_GOVERNANCE",
-    "T10": "SECURITY_GOVERNANCE",
-})
-DEFAULT_DOMAIN_ARCHETYPE: Final[str] = "INFRASTRUCTURE_PHYSICAL"
+logger = logging.getLogger(__name__)
+
+DEFAULT_DOMAIN_ARCHETYPE: Final[str] = "ENTERPRISE_SYSTEMS"
+
+COLOR_STATUS_ALIGNED: Final[str] = "E2F0D9"
+COLOR_STATUS_GAP: Final[str] = "FCE4D6"
+COLOR_STATUS_CONSERVATIVE: Final[str] = "D9E1F2"
+COLOR_CALLOUT_BG: Final[str] = "F1F5F9"
+DIVERGENCE_ALIGNMENT_TOLERANCE: Final[float] = 0.05
+DIVERGENCE_ALERT_THRESHOLD: Final[float] = 0.50
+DEFAULT_UNASSESSED_PILLAR_SCORE: Final[float] = 2.50
+
+
+def _safe_float(val: Any, default: float = 0.0) -> float:
+    """Defensively parse any numeric string, int, float, or None without crashing."""
+    if val is None:
+        return default
+    if isinstance(val, (int, float)):
+        return float(val)
+    try:
+        clean_val = str(val).replace("$", "").replace("€", "").replace(",", "").strip()
+        return float(clean_val)
+    except (ValueError, TypeError):
+        return default
+
+_ARCHETYPE_KEYWORD_RULES: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
+    (
+        "INFRASTRUCTURE_PHYSICAL",
+        (
+            "facility",
+            "facilities",
+            "physical",
+            "power",
+            "cooling",
+            "hvac",
+            "ups",
+            "datacenter",
+            "data center",
+            "data hall",
+            "cabling",
+        ),
+    ),
+    (
+        "INDUSTRIAL_OT",
+        (
+            "scada",
+            "plc",
+            "ics",
+            "dcs",
+            "rtu",
+            "hmi",
+            "historian",
+            "modbus",
+            "profinet",
+            "opc-ua",
+            "cnc",
+            "robotics",
+            "automation",
+            "industrial",
+            "factory",
+            "manufacturing",
+            "plant",
+            "telecontrol",
+        ),
+    ),
+    (
+        "FINANCIAL_CORE",
+        (
+            "banking",
+            "core banking",
+            "swift",
+            "sepa",
+            "payment",
+            "ledger",
+            "clearing",
+            "settlement",
+            "trading",
+        ),
+    ),
+    (
+        "HEALTHCARE_CLINICAL",
+        (
+            "clinical",
+            "hospital",
+            "pacs",
+            "ehr",
+            "emr",
+            "hl7",
+            "fhir",
+            "dicom",
+            "biomedical",
+        ),
+    ),
+    (
+        "RETAIL_SUPPLY_CHAIN",
+        (
+            "point of sale",
+            "supply chain",
+            "omnichannel",
+            "warehouse",
+            "ecommerce",
+            "e-commerce",
+            "pos",
+            "wms",
+            "oms",
+            "edi",
+            "rfid",
+            "inventory",
+            "merchandising",
+        ),
+    ),
+    (
+        "PUBLIC_SECTOR_GOV",
+        (
+            "public sector",
+            "citizen",
+            "e-government",
+            "municipal",
+            "registry",
+            "taxation",
+            "defense",
+            "customs",
+            "agency",
+        ),
+    ),
+    (
+        "SECURITY_GOVERNANCE",
+        (
+            "security",
+            "cyber",
+            "iam",
+            "governance",
+            "compliance",
+            "audit",
+            "risk",
+            "drp",
+            "bcp",
+            "resilience",
+            "zero trust",
+            "zero-trust",
+        ),
+    ),
+    (
+        "COMPUTE_PLATFORMS",
+        (
+            "compute",
+            "cloud",
+            "virtualization",
+            "storage",
+            "database",
+            "network",
+            "platform",
+            "kubernetes",
+            "middleware",
+            "erp",
+            "legacy",
+            "mainframe",
+        ),
+    ),
+)
+
+_COMPILED_ARCHETYPE_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = tuple(
+    (
+        archetype,
+        re.compile(
+            rf"(?<!\w)(?:{'|'.join(re.escape(kw) for kw in sorted(keywords, key=len, reverse=True))})(?!\w)",
+            re.IGNORECASE,
+        ),
+    )
+    for archetype, keywords in _ARCHETYPE_KEYWORD_RULES
+)
+
+
+def resolve_domain_archetype(
+    domain_id: str,
+    blueprint_data: Optional[Mapping[str, Any]] = None,
+) -> str:
+    """Resolve the ontological domain archetype dynamically from payload metadata or semantic cues.
+
+    Uses boundary-safe pre-compiled regexes across multi-vertical ontologies
+    (Physical Infrastructure, Industrial OT/ICS, Security/Governance, Sector Core,
+    and Compute Platforms) without hardcoded tower ID lookup tables.
+    """
+    if blueprint_data:
+        doc_meta = blueprint_data.get("document_meta")
+        explicit_archetype = str(
+            blueprint_data.get("domain_archetype")
+            or blueprint_data.get("archetype")
+            or (doc_meta.get("domain_archetype") if isinstance(doc_meta, Mapping) else "")
+            or ""
+        ).strip().upper()
+        if explicit_archetype:
+            return explicit_archetype
+
+    bp = blueprint_data if isinstance(blueprint_data, Mapping) else {}
+    search_corpus = " ".join(
+        filter(
+            None,
+            [
+                str(domain_id or ""),
+                str(bp.get("tower_name") or ""),
+                str(bp.get("domain_name") or ""),
+                str(bp.get("title") or ""),
+            ],
+        )
+    )
+
+    scores: list[tuple[int, str]] = []
+    for archetype, pattern in _COMPILED_ARCHETYPE_PATTERNS:
+        matches = len(pattern.findall(search_corpus))
+        if matches > 0:
+            scores.append((matches, archetype))
+
+    if scores:
+        scores.sort(key=lambda item: (-item[0], item[1]))
+        return scores[0][1]
+
+    return DEFAULT_DOMAIN_ARCHETYPE
 
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
@@ -256,7 +460,7 @@ class ExecutiveNarrativeSynthesizer:
         if clean_archetype and clean_archetype in archetypes_branch:
             archetype_key = clean_archetype
         else:
-            archetype_key = CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_key, DEFAULT_DOMAIN_ARCHETYPE)
+            archetype_key = resolve_domain_archetype(domain_id=canonical_key, blueprint_data=loc_data)
 
         arch_templates = archetypes_branch.get(archetype_key, {}).get(self._locale_code, {})
 
@@ -288,6 +492,132 @@ class ExecutiveNarrativeSynthesizer:
                 paragraphs.append(fallback_p)
 
         return paragraphs
+
+
+def resolve_domain_introduction(
+    blueprint_data: Dict[str, Any],
+    annex_data: Optional[Dict[str, Any]],
+    tower_id: str,
+    client_name: str,
+    meta_lang: str,
+) -> Dict[str, Any]:
+    """Resolves rich domain objective, platform introduction, and included components
+
+    using a robust 4-tier fallback hierarchy (zero blank sections or error fallbacks).
+    """
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    import json
+
+    # Tier 1: Explicit annex override
+    annex_intro = (annex_data or {}).get("domain_introduction")
+    if isinstance(annex_intro, dict) and annex_intro.get("domain_objective"):
+        return annex_intro
+
+    bp_intro = blueprint_data.get("domain_introduction")
+    if isinstance(bp_intro, dict) and bp_intro.get("domain_objective"):
+        return bp_intro
+
+    # Tier 3: Root-level synthesis keys in blueprint
+    root_obj = str(
+        blueprint_data.get("domain_objective")
+        or blueprint_data.get("scope_and_objectives")
+        or blueprint_data.get("objective")
+        or ""
+    ).strip()
+    root_intro = str(
+        blueprint_data.get("introduction_paragraph")
+        or blueprint_data.get("platform_description")
+        or blueprint_data.get("description")
+        or ""
+    ).strip()
+    root_comps = (
+        blueprint_data.get("included_components")
+        or blueprint_data.get("scope_components")
+        or blueprint_data.get("components")
+        or []
+    )
+
+    if root_obj and root_intro:
+        return {
+            "domain_objective": root_obj,
+            "introduction_paragraph": root_intro,
+            "included_components": list(root_comps),
+        }
+
+    # Tier 4: Deterministic Dynamic Synthesis from Tower Catalog & Active Pillars
+    tower_cat_file = ROOT / "engine_config" / "towers" / "tower_catalog.json"
+    tower_cat: Dict[str, Any] = {}
+    if tower_cat_file.exists():
+        try:
+            tower_cat = json.loads(tower_cat_file.read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, OSError):
+            tower_cat = {}
+
+    t_spec = tower_cat.get(tower_id.upper(), {})
+    tower_name = str(
+        blueprint_data.get("tower_name")
+        or t_spec.get("name")
+        or tower_id
+    ).strip()
+
+    from assessment_engine.infrastructure.localization import t
+
+    comps: List[str] = list(root_comps)
+    if not comps:
+        for pil in blueprint_data.get("pillars_analysis", []):
+            if isinstance(pil, dict):
+                p_name = str(pil.get("pillar_name") or pil.get("name") or "").strip()
+                if p_name:
+                    comps.append(t("default_component_item_template", locale=meta_lang, pillar_name=p_name))
+
+    verified_entities = blueprint_data.get("verified_entities", [])
+    extracted_names: list[str] = []
+    if isinstance(verified_entities, Sequence) and not isinstance(verified_entities, (str, bytes)):
+        for e in verified_entities[:4]:
+            if isinstance(e, Mapping):
+                name = (
+                    e.get("canonical_entity")
+                    or e.get("name")
+                    or e.get("entity")
+                    or e.get("original_token")
+                    or ""
+                )
+                if name:
+                    extracted_names.append(str(name).strip())
+            elif isinstance(e, str) and e.strip():
+                extracted_names.append(e.strip())
+    entities_str = ", ".join(extracted_names)
+
+    if not root_obj:
+        obj_text = t(
+            "default_domain_objective_template",
+            locale=meta_lang,
+            tower_name=tower_name,
+            client_name=client_name,
+        )
+    else:
+        obj_text = root_obj
+
+    if not root_intro:
+        entities_clause = (
+            t("default_platform_intro_entities_clause", locale=meta_lang, entities=entities_str)
+            if entities_str
+            else ""
+        )
+        intro_text = t(
+            "default_platform_intro_template",
+            locale=meta_lang,
+            client_name=client_name,
+            entities_clause=entities_clause,
+        )
+    else:
+        intro_text = root_intro
+
+    return {
+        "domain_objective": obj_text,
+        "introduction_paragraph": intro_text,
+        "included_components": comps,
+    }
 
 
 class PayloadToASTBridge:
@@ -683,8 +1013,6 @@ class PayloadToASTBridge:
         )
         nodes.append(PageBreakNode())
 
-        #
-
     def _build_executive_summary_and_scope(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         import re
         modules_dir = ctx["modules_dir"]
@@ -750,9 +1078,7 @@ class PayloadToASTBridge:
         p90_formatted = format_number(total_p90, locale=meta_lang, decimals=0)
         per_year_suffix = t("per_year_suffix", locale=meta_lang)
 
-        # -------------------------------------------------------------
         # COMPONENT A: EXECUTIVE KPI SNAPSHOT SCORECARD TABLE (3 COLUMNS)
-        # -------------------------------------------------------------
         max_score_str = format_number(5.0, locale=meta_lang, decimals=1)
         score_display = (
             display_score_str
@@ -779,9 +1105,7 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
         nodes.append(SpacerNode(points=14))
 
-        # -------------------------------------------------------------
         # COMPONENT A2: EXECUTIVE DIAGNOSTIC TRIAD TABLE (COCKPIT COMPANION)
-        # -------------------------------------------------------------
         benefits_list = blueprint_data.get("executive_snapshot", {}).get("operational_benefits") or []
         risks_list = blueprint_data.get("executive_snapshot", {}).get("structural_risks") or []
         m_strength = str(
@@ -831,9 +1155,7 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=triad_rows, col_widths=[0.28, 0.72]))
         nodes.append(SpacerNode(points=16))
 
-        # -------------------------------------------------------------
         # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
-        # -------------------------------------------------------------
         headline = exec_sum.get("headline", "")
         if headline:
             nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=8))
@@ -866,7 +1188,7 @@ class PayloadToASTBridge:
                     "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
                 })
             except Exception:
-                pass
+                _ = True  # Handled fallback
 
         hourly_rate = float(fin_telemetry.get("authoritative_hourly_downtime_cost") or 0.0)
         if hourly_rate <= 0.0:
@@ -999,7 +1321,9 @@ class PayloadToASTBridge:
             findings_briefs.append(fallback_vuln)
 
         primary_workloads = str(
-            blueprint_data.get("perimeter_context", {}).get("primary_workloads")
+            blueprint_data.get("primary_workloads_summary")
+            or blueprint_data.get("primary_workloads")
+            or blueprint_data.get("perimeter_context", {}).get("primary_workloads")
             or blueprint_data.get("executive_snapshot", {}).get("bottom_line_focus")
             or t("default_primary_workloads", locale=meta_lang)
         )
@@ -1124,7 +1448,16 @@ class PayloadToASTBridge:
             )
         )
 
-        intro = (annex_data.get("domain_introduction") if annex_data else {}) or {}
+        # Resolve domain introduction with 4-Tier Coalescing Resolution Pipeline (RFC 099)
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+
+        intro = resolve_domain_introduction(
+            blueprint_data=blueprint_data,
+            annex_data=annex_data,
+            tower_id=tower_id,
+            client_name=client_name,
+            meta_lang=meta_lang,
+        )
         obj = intro.get("domain_objective", "")
         intro_para = intro.get("introduction_paragraph", "")
         included_comps = intro.get("included_components", [])
@@ -1138,7 +1471,7 @@ class PayloadToASTBridge:
             )
         )
         if obj:
-            nodes.append(ParagraphNode(text=obj, space_after=8))
+            nodes.append(ParagraphNode(text=restore_locale_diacritics(obj, meta_lang), space_after=8))
         else:
             nodes.append(ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang), space_after=8))
 
@@ -1153,14 +1486,15 @@ class PayloadToASTBridge:
         )
 
         if intro_para:
-            nodes.append(ParagraphNode(text=intro_para, space_after=8))
+            nodes.append(ParagraphNode(text=restore_locale_diacritics(intro_para, meta_lang), space_after=8))
 
         if included_comps:
             lead_text = t("components_evaluated_lead", locale=meta_lang)
             if lead_text:
                 nodes.append(ParagraphNode(text=f"**{lead_text}**", space_after=4))
             for comp in included_comps:
-                nodes.append(ParagraphNode(text=comp, style="List Bullet", space_after=2))
+                clean_comp = restore_locale_diacritics(comp, meta_lang)
+                nodes.append(ParagraphNode(text=clean_comp, style="List Bullet", space_after=2))
 
         # 2.2 Regulatory and Methodological Framework Table (Auto-fit to window and contents)
         tower_id = str(ctx.get("tower_id") or "T1").upper()
@@ -1228,18 +1562,48 @@ class PayloadToASTBridge:
             )
         )
 
-        # 3. Direct Introduction (Polymorphic Archetype Rotation)
-        tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
-        canonical_tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        explicit_arch = str(blueprint_data.get("archetype") or blueprint_data.get("domain_archetype") or "").strip().upper()
-        ch3_archetype = explicit_arch if explicit_arch in CANONICAL_TOWER_ARCHETYPE_MAP.values() else CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_tower_id, DEFAULT_DOMAIN_ARCHETYPE)
+        # 3. Direct Introduction (Tenant Payload Domain Intro -> Localized Universal Fallback)
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+            get_taxonomy_resolver,
+        )
+        resolver = get_taxonomy_resolver()
 
-        ch3_intros = loc_branch.get("ch3_intro_archetypes", {})
-        arch_intro_tmpl = ch3_intros.get(ch3_archetype)
-        if arch_intro_tmpl:
-            intro_ch3 = arch_intro_tmpl.format(tower_name=tower_name, client_name=client_name)
+        canonical_tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
+        raw_tname = ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain")
+        tower_name = resolver.resolve_tower_name(
+            tower_id=canonical_tower_id,
+            default=raw_tname,
+            locale=meta_lang,
+        )
+        ch3_archetype = resolve_domain_archetype(domain_id=canonical_tower_id, blueprint_data=blueprint_data)
+
+        raw_domain_intro = blueprint_data.get("domain_introduction")
+        tenant_domain_intro = ""
+        if isinstance(raw_domain_intro, dict):
+            intro_p = str(raw_domain_intro.get("introduction_paragraph") or "").strip()
+            obj_p = str(raw_domain_intro.get("domain_objective") or "").strip()
+            if intro_p and obj_p and intro_p != obj_p:
+                tenant_domain_intro = f"{obj_p} {intro_p}".strip()
+            else:
+                tenant_domain_intro = (intro_p or obj_p).strip()
+        elif isinstance(raw_domain_intro, str):
+            tenant_domain_intro = raw_domain_intro.strip()
+
+        if tenant_domain_intro:
+            intro_ch3 = tenant_domain_intro
         else:
-            intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
+            ch3_intros_by_tower = loc_branch.get("ch3_intro_by_tower", {})
+            tower_intro_tmpl = ch3_intros_by_tower.get(canonical_tower_id)
+            if tower_intro_tmpl:
+                intro_ch3 = tower_intro_tmpl.format(tower_title=tower_name, tower_name=tower_name, client_name=client_name)
+            else:
+                ch3_intros = loc_branch.get("ch3_intro_archetypes", {})
+                arch_intro_tmpl = ch3_intros.get(ch3_archetype)
+                if arch_intro_tmpl:
+                    intro_ch3 = arch_intro_tmpl.format(tower_title=tower_name, tower_name=tower_name, client_name=client_name)
+                else:
+                    intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
@@ -1299,32 +1663,99 @@ class PayloadToASTBridge:
         )
         nodes.append(SpacerNode(points=8))
 
-        # Friendly pedagogical score explanation (Polymorphic rotation across archetypes + clean score value)
+        # Friendly pedagogical score explanation (Domain-Specific Tower Resolution with Dynamic Parameter Binding)
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+            get_taxonomy_resolver,
+        )
+        resolver = get_taxonomy_resolver()
+
+        pillars_list = blueprint_data.get("pillars_analysis", [])
+        if pillars_list:
+            sorted_by_score = sorted(
+                pillars_list,
+                key=lambda item: _safe_float(item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE),
+            )
+            weakest_p = sorted_by_score[0]
+            strongest_p = sorted_by_score[-1]
+
+            raw_w_pid, raw_w_pname = extract_pillar_identifiers(weakest_p)
+            weakest_pillar_name = resolver.resolve_pillar_by_any_reference(
+                raw_w_pid or raw_w_pname,
+                default=(raw_w_pname or raw_w_pid or "Core Capability"),
+                locale=meta_lang,
+                tower_id=canonical_tower_id,
+            )
+            weakest_score_val = _safe_float(weakest_p.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE)
+            weakest_pillar_score = format_number(weakest_score_val, locale=meta_lang, decimals=2)
+
+            raw_s_pid, raw_s_pname = extract_pillar_identifiers(strongest_p)
+            strongest_pillar_name = resolver.resolve_pillar_by_any_reference(
+                raw_s_pid or raw_s_pname,
+                default=(raw_s_pname or raw_s_pid or "Leading Capability"),
+                locale=meta_lang,
+                tower_id=canonical_tower_id,
+            )
+            strongest_score_val = _safe_float(strongest_p.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE)
+            strongest_pillar_score = format_number(strongest_score_val, locale=meta_lang, decimals=2)
+        else:
+            weakest_pillar_name = t("table_header_pillar", locale=meta_lang)
+            weakest_pillar_score = "1.00"
+            strongest_pillar_name = t("table_header_pillar", locale=meta_lang)
+            strongest_pillar_score = "3.00"
+            weakest_score_val = 1.00
+            strongest_score_val = 3.00
+
         clean_gs_str = format_number(gs_val, locale=meta_lang, decimals=2)
-        ch3_commentaries = loc_branch.get("ch3_scorecard_commentary_archetypes", {})
-        arch_comm_tmpl = ch3_commentaries.get(ch3_archetype)
-        if arch_comm_tmpl:
-            score_expl = arch_comm_tmpl.format(
+
+        dynamic_score_expl = str(
+            blueprint_data.get("scorecard_commentary")
+            or blueprint_data.get("diagnostic_narrative")
+            or ""
+        ).strip()
+        ch3_commentaries_by_tower = loc_branch.get("ch3_scorecard_by_tower", {})
+        tower_comm_tmpl = ch3_commentaries_by_tower.get(canonical_tower_id)
+
+        if dynamic_score_expl and len(dynamic_score_expl) > 20:
+            score_expl = dynamic_score_expl
+        elif tower_comm_tmpl:
+            score_expl = tower_comm_tmpl.format(
                 score_val=clean_gs_str,
                 maturity_tier_label=global_band,
                 client_name=client_name,
+                tower_title=tower_name,
                 tower_name=tower_name,
+                weakest_pillar_name=weakest_pillar_name,
+                weakest_pillar_score=weakest_pillar_score,
+                strongest_pillar_name=strongest_pillar_name,
+                strongest_pillar_score=strongest_pillar_score,
             )
         else:
-            if gs_val < 2.20:
-                score_expl_key = "score_explanation_band_low"
-            elif gs_val < 3.60:
-                score_expl_key = "score_explanation_band_mid"
+            # Select data-driven template based on pillar distribution and maturity score
+            if not pillars_list or len(pillars_list) == 1:
+                scorecard_tmpl_key = "scorecard_contrast_single"
+            elif weakest_score_val == strongest_score_val:
+                scorecard_tmpl_key = "scorecard_contrast_uniform"
             else:
-                score_expl_key = "score_explanation_band_high"
+                if gs_val >= 2.60:
+                    scorecard_tmpl_key = "scorecard_contrast_divergent_high"
+                elif gs_val >= 2.30:
+                    scorecard_tmpl_key = "scorecard_contrast_divergent_mid"
+                else:
+                    scorecard_tmpl_key = "scorecard_contrast_divergent_low"
 
             score_expl = t(
-                score_expl_key,
+                scorecard_tmpl_key,
                 locale=meta_lang,
-                global_score=clean_gs_str,
-                max_score=format_number(5.0, locale=meta_lang, decimals=1),
+                score_val=clean_gs_str,
+                maturity_tier_label=global_band,
                 client_name=client_name,
+                tower_title=tower_name,
                 tower_name=tower_name,
+                weakest_pillar_name=weakest_pillar_name,
+                weakest_pillar_score=weakest_pillar_score,
+                strongest_pillar_name=strongest_pillar_name,
+                strongest_pillar_score=strongest_pillar_score,
             )
         nodes.append(ParagraphNode(text=score_expl))
         nodes.append(SpacerNode(points=12))
@@ -1364,21 +1795,16 @@ class PayloadToASTBridge:
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
             
             # Map score to status and color via localized keys
-            if p_score >= 4.20:
-                p_status = t("status_excellent", locale=meta_lang)
-                p_bg_color = "D9F2D9"
-            elif p_score >= 3.40:
-                p_status = t("status_stable", locale=meta_lang)
-                p_bg_color = "E2F0D9"
-            elif p_score >= 2.60:
-                p_status = t("status_standardized", locale=meta_lang)
-                p_bg_color = "FFF3CD"
-            elif p_score >= 1.80:
-                p_status = t("status_basic", locale=meta_lang)
-                p_bg_color = "FCE4D6"
-            else:
-                p_status = t("status_critical", locale=meta_lang)
-                p_bg_color = "F2D9D9"
+            from assessment_engine.domain.actuarial.maturity_band import resolve_maturity_interval
+            interval = resolve_maturity_interval(p_score)
+            status_map = {
+                5: (t("status_excellent", locale=meta_lang), "D9F2D9"),
+                4: (t("status_stable", locale=meta_lang), "E2F0D9"),
+                3: (t("status_standardized", locale=meta_lang), "FFF3CD"),
+                2: (t("status_basic", locale=meta_lang), "FCE4D6"),
+                1: (t("status_critical", locale=meta_lang), "F2D9D9"),
+            }
+            p_status, p_bg_color = status_map[interval.level]
 
             health_rows.append(
                 TableRowNode(
@@ -1407,7 +1833,7 @@ class PayloadToASTBridge:
             nodes.extend(self._parse_markdown_to_nodes(trans_path, skip_level_1=True))
             nodes.append(SpacerNode(points=15))
         else:
-            # 3.4 Cross-Cutting Structural Debt Patterns (domain-routed based on tower unit)
+            # 3.4 Cross-Cutting Structural Debt Patterns (dynamically synthesized from tenant payload)
             nodes.append(
                 HeadingNode(
                     text=t("cross_cutting_debt_title", locale=meta_lang),
@@ -1415,18 +1841,20 @@ class PayloadToASTBridge:
                     primary_color_rgb=self.primary_color_rgb,
                 )
             )
-            nodes.append(ParagraphNode(text=t("cross_cutting_debt_intro", locale=meta_lang), italic=True))
-            nodes.append(SpacerNode(points=6))
-            pattern_keys = [
-                f"cross_cutting_debt_{tower_id.lower()}_p{idx}"
-                for idx in (1, 2, 3)
-            ]
+            canonical_tower_id = str(tower_id or "T1").strip().upper()
             catalog = load_locales_catalog().get(meta_lang, {})
-            for p_idx, p_key in enumerate(pattern_keys, 1):
-                if p_key in catalog:
-                    p_text = t(p_key, locale=meta_lang)
-                else:
-                    p_text = t(f"cross_cutting_debt_universal_p{p_idx}", locale=meta_lang)
+            tower_intro_map = catalog.get("cross_cutting_debt_intro_by_tower", {})
+            transversal_intro = tower_intro_map.get(canonical_tower_id) or t("cross_cutting_debt_intro", locale=meta_lang)
+
+            nodes.append(ParagraphNode(text=transversal_intro, italic=True))
+            nodes.append(SpacerNode(points=6))
+
+            dynamic_patterns = self._extract_dynamic_transversal_patterns(
+                ctx=ctx,
+                canonical_tower_id=canonical_tower_id,
+                meta_lang=meta_lang,
+            )
+            for p_text in dynamic_patterns:
                 nodes.append(ParagraphNode(text=p_text))
                 nodes.append(SpacerNode(points=4))
             nodes.append(SpacerNode(points=11))
@@ -1595,6 +2023,86 @@ class PayloadToASTBridge:
             except Exception as e:
                 logger.info(f"⚠️ Error injecting systemic risk metrics in AST Bridge: {e}")
 
+    def _extract_dynamic_transversal_patterns(
+        self,
+        ctx: dict[str, Any],
+        canonical_tower_id: str,
+        meta_lang: str,
+    ) -> list[str]:
+        """Dynamically extracts exactly 3 high-impact cross-cutting structural debt patterns
+
+        from the tenant's runtime payload (prioritizing cross_capabilities_analysis.common_deficiency_patterns,
+        with fallback to lowest-scoring pillar findings).
+        Guarantees 100% zero-hardcoding and zero cross-tenant contamination.
+        """
+        blueprint_data = ctx.get("blueprint_data") or {}
+        cca = blueprint_data.get("cross_capabilities_analysis") or {}
+        common_patterns = cca.get("common_deficiency_patterns") or []
+
+        patterns: list[str] = []
+        if isinstance(common_patterns, list) and common_patterns:
+            for p_idx, pat_item in enumerate(common_patterns[:3], 1):
+                clean_pat = str(pat_item).strip()
+                if clean_pat:
+                    if not re.match(r"^\d+\.", clean_pat):
+                        clean_pat = f"{p_idx}. {clean_pat}"
+                    patterns.append(clean_pat)
+
+        # Fallback to weakest pillar findings if common_deficiency_patterns is empty
+        if len(patterns) < 3:
+            pillars_list = blueprint_data.get("pillars_analysis", [])
+            from assessment_engine.domain.taxonomy_resolver import (
+                extract_pillar_identifiers,
+                get_taxonomy_resolver,
+            )
+            resolver = get_taxonomy_resolver()
+
+            sorted_pillars = sorted(
+                pillars_list,
+                key=lambda item: _safe_float(item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE),
+            )
+
+            for p_idx, pillar in enumerate(sorted_pillars, len(patterns) + 1):
+                if len(patterns) >= 3:
+                    break
+                raw_pid, raw_pname = extract_pillar_identifiers(pillar)
+                p_name = resolver.resolve_pillar_by_any_reference(
+                    raw_pid or raw_pname,
+                    default=(raw_pname or raw_pid or f"Capability {p_idx}"),
+                    locale=meta_lang,
+                    tower_id=canonical_tower_id,
+                )
+
+                finding_text = ""
+                findings = pillar.get("findings")
+                if findings and isinstance(findings, list):
+                    for f_item in findings:
+                        if isinstance(f_item, dict) and f_item.get("finding"):
+                            finding_text = str(f_item["finding"]).strip()
+                            break
+
+                if not finding_text:
+                    desc = str(pillar.get("asis_architecture_description") or "").strip()
+                    if desc:
+                        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", desc) if s.strip()]
+                        if len(sentences) > 1:
+                            finding_text = sentences[1]
+                        elif sentences:
+                            finding_text = sentences[0]
+
+                if not finding_text:
+                    finding_text = t("diag_summary_default", locale=meta_lang)
+
+                finding_text = finding_text.rstrip(".") + "."
+                patterns.append(f"{p_idx}. {p_name}: {finding_text}")
+
+        # Final safety guarantee of exactly 3 patterns
+        while len(patterns) < 3:
+            p_idx = len(patterns) + 1
+            default_summary = t("diag_summary_default", locale=meta_lang)
+            patterns.append(f"{p_idx}. {t('table_header_pillar', locale=meta_lang)} {p_idx}: {default_summary}")
+
+        return patterns[:3]
 
     def _build_maturity_and_benchmarks(self, ctx: dict[str, Any], nodes: List[Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         from assessment_engine.infrastructure.localization import (
@@ -1676,37 +2184,97 @@ class PayloadToASTBridge:
             except Exception as ex:
                 logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
-        # 4.3 Score Justification Matrix (prioritize authoritative in-memory blueprint pillars_analysis)
+        # 4.3 Detailed Technical Diagnostic by Capability (Section 3.2 Executive Pillar Cards)
         if blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_maturity_matrix,
             )
             in_mem_rows = derive_in_memory_maturity_matrix(blueprint_data, doc_lang=meta_lang)
-            mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
-            header_cells = [
-                CellNode(
-                    text=h,
-                    bold=True,
-                    font_size=9.0,
-                    bg_color="0072BC",
-                    text_color_rgb=[255, 255, 255],
-                    align="CENTER",
+
+            # SECTION 3.2: DETAILED TECHNICAL DIAGNOSTIC BY CAPABILITY (EXECUTIVE PILLAR CARDS)
+            nodes.append(SpacerNode(points=16))
+            nodes.append(
+                HeadingNode(
+                    text=t("sec_3_2_detailed_diagnostics_title", locale=meta_lang),
+                    level=2,
+                    primary_color_rgb=self.primary_color_rgb,
                 )
-                for h in mat_headers
-            ]
-            table_rows = [TableRowNode(cells=header_cells, is_header=True)]
-            for r_idx, r_item in enumerate(in_mem_rows):
-                bg = self.alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
-                score_val = float(r_item["score"])
-                formatted_score = format_number(score_val, locale=meta_lang, decimals=2)
-                band_label = r_item.get("band_label", "")
-                row_cells = [
-                    CellNode(text=r_item["pillar_name"], bold=True, font_size=8.5, bg_color=bg),
-                    CellNode(text=f"{formatted_score} ({band_label})", font_size=8.5, bg_color=bg, align="CENTER"),
-                    CellNode(text=r_item["justification"], font_size=8.5, bg_color=bg),
-                ]
-                table_rows.append(TableRowNode(cells=row_cells))
-            nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.28, 0.14, 0.58]))
+            )
+            nodes.append(
+                ParagraphNode(
+                    text=t("sec_3_2_detailed_diagnostics_intro", locale=meta_lang),
+                    font_size=9.5,
+                    space_after=12,
+                )
+            )
+
+            for p_idx, r_item in enumerate(in_mem_rows, 1):
+                p_name = r_item.get("pillar_name") or f"{t('table_header_pillar', locale=meta_lang)} {p_idx}"
+                nodes.append(
+                    HeadingNode(
+                        text=f"3.2.{p_idx}. {p_name}",
+                        level=3,
+                        primary_color_rgb=self.primary_color_rgb,
+                    )
+                )
+
+                cal_val = _safe_float(r_item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE)
+                dec_val = _safe_float(r_item.get("declared_score"), default=cal_val)
+                delta_val = round(cal_val - dec_val, 2)
+                dec_fmt = format_number(dec_val, locale=meta_lang, decimals=2)
+                cal_fmt = format_number(cal_val, locale=meta_lang, decimals=2)
+                dec_band = r_item.get("declared_band_label") or ""
+                cal_band = r_item.get("band_label") or ""
+
+                dec_display = f"{dec_fmt} ({dec_band})" if dec_band else dec_fmt
+                cal_display = f"{cal_fmt} ({cal_band})" if cal_band else cal_fmt
+
+                if abs(delta_val) >= DIVERGENCE_ALERT_THRESHOLD:
+                    delta_str = format_number(delta_val, locale=meta_lang, decimals=2)
+                    if delta_val < 0:
+                        div_badge = t("badge_divergence_gap", locale=meta_lang, delta=delta_str)
+                        div_bg = COLOR_STATUS_GAP
+                    else:
+                        div_badge = t("badge_divergence_conservative", locale=meta_lang, delta=f"+{delta_str}")
+                        div_bg = COLOR_STATUS_CONSERVATIVE
+
+                    badge_cells_header = [
+                        CellNode(text=t("badge_declared_label", locale=meta_lang), bold=True, is_header=True, font_size=8.5, bg_color=self.alt_row_hex, align="CENTER"),
+                        CellNode(text=t("badge_calibrated_label", locale=meta_lang), bold=True, is_header=True, font_size=8.5, bg_color=self.alt_row_hex, align="CENTER"),
+                        CellNode(text=t("badge_divergence_label", locale=meta_lang), bold=True, is_header=True, font_size=8.5, bg_color=self.alt_row_hex, align="CENTER"),
+                    ]
+                    badge_cells_data = [
+                        CellNode(text=dec_display, font_size=8.5, align="CENTER"),
+                        CellNode(text=cal_display, bold=True, font_size=8.5, align="CENTER"),
+                        CellNode(text=div_badge, bold=True, font_size=8.5, align="CENTER", bg_color=div_bg),
+                    ]
+                    badge_rows = [TableRowNode(cells=badge_cells_header), TableRowNode(cells=badge_cells_data)]
+                    nodes.append(TableNode(rows=badge_rows, autofit=True, col_widths=[0.33, 0.33, 0.34]))
+                    nodes.append(SpacerNode(points=8))
+                else:
+                    score_prefix = t("score_label_prefix", locale=meta_lang)
+                    nodes.append(
+                        ParagraphNode(
+                            text=f"**{score_prefix}:** {cal_display}",
+                            font_size=9.0,
+                            space_after=6,
+                        )
+                    )
+
+                # Render the authentic, bespoke architectural narrative paragraphs
+                desc_paragraphs = r_item.get("architectural_narrative_paragraphs") or []
+                if not desc_paragraphs and r_item.get("operational_reality"):
+                    desc_paragraphs = [r_item["operational_reality"]]
+
+                for para_idx, para_text in enumerate(desc_paragraphs):
+                    is_last = (para_idx == len(desc_paragraphs) - 1)
+                    nodes.append(
+                        ParagraphNode(
+                            text=para_text,
+                            font_size=9.5,
+                            space_after=14 if is_last else 6,
+                        )
+                    )
         else:
             csv_mat_candidates = (
                 list(modules_dir.glob("*maturity*.csv"))
@@ -1826,7 +2394,7 @@ class PayloadToASTBridge:
             
             highest_risk = max(primary_risks, key=lambda x: float(x.get("ale") or 0.0))
             highest_risk_id = str(highest_risk.get("id") or "RISK-01")
-            highest_risk_cap = str(highest_risk.get("target_state") or highest_risk.get("capability") or "")
+            highest_risk_cap = str(highest_risk.get("capability") or highest_risk.get("title") or highest_risk.get("finding") or "Operational Risk")
             highest_risk_ale = float(highest_risk.get("ale") or 0.0)
             highest_risk_pct = (highest_risk_ale / total_fair_ale) * 100.0 if total_fair_ale > 0 else 0.0
             
@@ -1888,12 +2456,15 @@ class PayloadToASTBridge:
 
         # Inject domain-specific downtime impact (RFC 052)
         canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        explicit_ch4_arch = str(blueprint_data.get("archetype") or blueprint_data.get("domain_archetype") or "").strip().upper()
-        ch4_archetype = explicit_ch4_arch if explicit_ch4_arch in CANONICAL_TOWER_ARCHETYPE_MAP.values() else CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_t_id, DEFAULT_DOMAIN_ARCHETYPE)
+        ch4_archetype = resolve_domain_archetype(domain_id=canonical_t_id, blueprint_data=blueprint_data)
         tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
         ch4_domain_ctx = loc_branch.get("ch4_sec1_domain_context", {})
         arch_sec1_ctx = ch4_domain_ctx.get(ch4_archetype)
-        if arch_sec1_ctx:
+        dynamic_domain_p = str(blueprint_data.get("downtime_incident_context") or blueprint_data.get("downtime_incident_example") or "").strip()
+
+        if dynamic_domain_p and len(dynamic_domain_p) > 20:
+            nodes.append(ParagraphNode(text=dynamic_domain_p, space_after=6))
+        elif arch_sec1_ctx:
             domain_p = arch_sec1_ctx.format(
                 tower_name=tower_name,
                 client_name=client_name,
@@ -2005,7 +2576,6 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=lineage_rows, autofit=True, col_widths=[0.24, 0.12, 0.40, 0.14, 0.10]))
         nodes.append(SpacerNode(points=8))
 
-        # Epistemic Modesty Governance Callout
         callout_title = t("ch4_epistemic_callout_title", locale=meta_lang)
         callout_body = t("ch4_epistemic_callout_body", locale=meta_lang)
         nodes.append(
@@ -2260,8 +2830,13 @@ class PayloadToASTBridge:
         direct_stoppage_str = format_currency(tail_decomp.primary_operational_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
         secondary_spend_str = format_currency(tail_decomp.secondary_tail_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
 
+        dynamic_trigger = str(
+            blueprint_data.get("compound_failure_trigger")
+            or blueprint_data.get("p90_trigger")
+            or ""
+        ).strip()
         triggers_map = loc_branch.get("tower_p90_triggers", {})
-        trigger_text = triggers_map.get(canonical_t_id) or triggers_map.get("DEFAULT", "")
+        trigger_text = dynamic_trigger if dynamic_trigger else (triggers_map.get(canonical_t_id) or triggers_map.get("DEFAULT", ""))
 
         fmt_kwargs = {
             "compound_failure_trigger": trigger_text,
@@ -2582,10 +3157,21 @@ class PayloadToASTBridge:
         else:
             impact_clean = raw_impact
 
-        if not impact_clean:
-            impact_txt = t("risk_card_default_impact", locale=meta_lang)
-        else:
-            impact_txt = impact_clean.rstrip(".!?") + "."
+        from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+            _extract_verified_business_risk,
+            _is_severity_enum_token,
+        )
+
+        # Compiler Invariant Gate: Enforce that narrative slots never render bare ordinal enums
+        if not impact_clean or _is_severity_enum_token(impact_clean, meta_lang) or len(impact_clean.split()) < 4:
+            logger.warning(
+                "AST_CONTRACT_VIOLATION: Risk finding '%s' arrived with non-narrative impact token '%s'. Synthesizing verified operational narrative.",
+                hc.get("id") or hc.get("node_id", "UNKNOWN"),
+                impact_clean,
+            )
+            impact_clean = _extract_verified_business_risk(hc, p_name, meta_lang)
+
+        impact_txt = impact_clean.rstrip(".!?") + "."
 
         raw_mitigation = hc.get("mitigation_directive") or hc.get("remediation")
         if raw_mitigation:

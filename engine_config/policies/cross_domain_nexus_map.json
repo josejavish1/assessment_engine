@@ -1,0 +1,216 @@
+{
+  "$schema": "https://enterprise-architecture.internal/schemas/cross-domain-nexus-v1.json",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "Cross-Domain Blast Radius & Systemic Interdependence Catalog",
+    "description": "Quantified cross-tower architectural dependencies demonstrating system-wide impact for all 50 canonical assessment capabilities.",
+    "standards": [
+      "TOGAF",
+      "CMMI Services v2.0",
+      "ISO/IEC 27001",
+      "Open FAIR"
+    ]
+  },
+  "pillars": {
+    "T1.P1": {
+      "en": "Electrical instability across main switchgear immediately triggers unplanned hypervisor reboots in Compute (Tower 2) and halts mission-critical transactional clearing engines (Tower 10).",
+      "es": "La inestabilidad eléctrica en acometidas y cuadros generales impacta de forma inmediata en la disponibilidad de hipervisores de Cómputo (Torre 2) y provoca la detención de los sistemas de expedición y básculas en planta (Torre 10)."
+    },
+    "T1.P2": {
+      "en": "Thermal degradation and uncontained aisle recirculation accelerate hardware failure in NetApp storage controllers (Tower 4) and induce thermal throttling across Compute clusters (Tower 2).",
+      "es": "Las deficiencias térmicas y la falta de confinamiento de pasillos aceleran la degradación de las controladoras de almacenamiento NetApp (Torre 4) e inducen paradas por sobretemperatura en los clústeres de Cómputo (Torre 2)."
+    },
+    "T1.P3": {
+      "en": "Unmonitored physical access to edge server rooms circumvents logical cybersecurity controls (Tower 6) and exposes core switching backbones (Tower 3) to physical tampering.",
+      "es": "El acceso físico no monitorizado a salas técnicas elude los controles lógicos de Ciberseguridad (Torre 6) y expone las electrónicas troncales de Red (Torre 3) a desconexiones o manipulaciones indebidas."
+    },
+    "T1.P4": {
+      "en": "Inadequate fire suppression enclosure integrity risks total electronic asset destruction across primary SAN storage (Tower 4) and severs central telecommunications links (Tower 3).",
+      "es": "Las carencias de hermeticidad en salas técnicas comprometen la supervivencia de las cabinas de Almacenamiento (Torre 4) y amenazan los equipos de telecomunicaciones de cabecera (Torre 3)."
+    },
+    "T1.P5": {
+      "en": "Lack of centralized DCIM telemetry creates blind spots for IT capacity planners, directly delaying server hardware refresh programs in Compute (Tower 2) and FinOps budgets (Tower 8).",
+      "es": "La falta de telemetría DCIM centralizada genera puntos ciegos que retrasan los planes de renovación de Cómputo (Torre 2) e introducen sobrecostes imprevistos de inversión en FinOps (Torre 8)."
+    },
+    "T2.P1": {
+      "en": "Hypervisor host resource saturation restricts high-availability failover buffers in Resilience (Tower 5) and creates latency spikes in transactional Oracle databases (Tower 4).",
+      "es": "La saturación de recursos en los hipervisores agota la reserva de conmutación en Resiliencia (Torre 5) y provoca picos de latencia en las bases de datos transaccionales de Almacenamiento (Torre 4)."
+    },
+    "T2.P2": {
+      "en": "Memory exhaustion from un-decommissioned monolithic VMs directly prevents DRP failover absorption in Resilience (Tower 5) and drives unbudgeted per-core licensing escalation in FinOps (Tower 8).",
+      "es": "La saturación de memoria RAM por máquinas virtuales monolíticas sin ciclo de vida bloquea la viabilidad de failover en el Plan de Recuperación ante Desastres (Torre 5) y multiplica la carga de licencias por host en FinOps (Torre 8)."
+    },
+    "T2.P3": {
+      "en": "Unstandardized cloud interconnectivity without landing zones introduces security perimeter gaps in Identity (Tower 6) and inflates unmonitored egress network costs (Tower 3).",
+      "es": "El despliegue de nube pública sin una Landing Zone estandarizada crea brechas de perímetro en Ciberseguridad (Torre 6) y eleva los costes de transferencia de red no gobernados (Torre 3)."
+    },
+    "T2.P4": {
+      "en": "Manual virtual machine provisioning without automated lifecycle controls overloads Tier-2 support staff in ITSM (Tower 7) and creates massive VM sprawl inflating hardware CapEx (Tower 8).",
+      "es": "El aprovisionamiento manual de servidores sin políticas de caducidad sobrecarga al equipo de soporte en ITSM (Torre 7) y genera una proliferación de máquinas zombi que infla las compras de hardware (Torre 8)."
+    },
+    "T2.P5": {
+      "en": "Absence of automated self-healing scripts forces manual daily health checks, draining engineering focus away from strategic modernization roadmaps in Governance (Tower 8).",
+      "es": "La carencia de scripts de autorremediación obliga a revisiones manuales diarias en consola, restando dedicación técnica a los proyectos estratégicos de modernización en Gobernanza (Torre 8)."
+    },
+    "T3.P1": {
+      "en": "Broadcast domain saturation in campus switching introduces packet loss impacting industrial SCADA telemetry (Tower 10) and degrading centralized ERP transactions (Tower 8).",
+      "es": "La saturación de dominios de difusión en la red local introduce pérdida de paquetes que afecta a la telemetría industrial de planta (Torre 10) y degrada las transacciones del ERP (Torre 8)."
+    },
+    "T3.P2": {
+      "en": "Single-carrier WAN links to remote branches and operating facilities create systemic single points of failure, halting local operational clearing operations (Tower 10) during line cuts.",
+      "es": "La dependencia de enlaces WAN únicos en fábricas remotas crea puntos únicos de fallo que paralizan la expedición y básculas (Torre 10) ante cualquier corte de fibra del operador."
+    },
+    "T3.P3": {
+      "en": "Optical link latency spikes between split datacenters cause synchronous storage write locks in NetApp MetroCluster (Tower 4) and destabilize hypervisor stretched clusters (Tower 2).",
+      "es": "Las fluctuaciones de latencia en la fibra entre CPDs provocan bloqueos de escritura síncrona en las cabinas NetApp (Torre 4) e inestabilidad en los clústeres extendidos de Cómputo (Torre 2)."
+    },
+    "T3.P4": {
+      "en": "Public internet VPN dependencies for core cloud workloads introduce latency jitter affecting remote employee productivity in Digital Workplace (Tower 9) and SaaS ERP responsiveness (Tower 8).",
+      "es": "La dependencia de túneles VPN sobre internet público introduce fluctuaciones que degradan la experiencia del Puesto de Trabajo (Torre 9) y la agilidad de acceso a SAP en la nube (Torre 8)."
+    },
+    "T3.P5": {
+      "en": "Manual switch configuration drift without version control complicates firewall rule audits in Security (Tower 6) and slows incident resolution in ITSM (Tower 7).",
+      "es": "Las modificaciones manuales en switches sin control de versiones complican la auditoría de reglas en Ciberseguridad (Torre 6) y dilatan la resolución de incidencias en ITSM (Torre 7)."
+    },
+    "T4.P1": {
+      "en": "Controller throughput bottlenecks on primary storage directly throttle transaction commits in core business databases (Tower 8) and prolong nighttime batch processing (Tower 10).",
+      "es": "Los cuellos de botella de rendimiento en cabinas primarias ralentizan las transacciones de bases de datos de Negocio (Torre 8) y prolongan los procesos batch nocturnos de expedición (Torre 10)."
+    },
+    "T4.P2": {
+      "en": "Volume capacity exhaustion above 90% triggers automated hypervisor pause alarms across Compute (Tower 2), creating widespread unplanned application outages.",
+      "es": "El llenado imprevisto de volúmenes de almacenamiento por encima del 90% provoca la congelación automática de máquinas virtuales en Cómputo (Torre 2), generando caídas de servicio."
+    },
+    "T4.P3": {
+      "en": "Unverified storage snapshot consistency compromises recovery point integrity during disaster recovery activations in Resilience (Tower 5).",
+      "es": "La falta de verificación de coherencia en las instantáneas de cabina compromete el objetivo de punto de recuperación (RPO) ante activaciones de contingencia en Resiliencia (Torre 5)."
+    },
+    "T4.P4": {
+      "en": "Unencrypted storage volumes and unsegregated share permissions expose enterprise file assets to lateral ransomware extortion in Security (Tower 6).",
+      "es": "El almacenamiento sin cifrado en reposo y con permisos de red no segregados expone los repositorios corporativos a exfiltración masiva en Ciberseguridad (Torre 6)."
+    },
+    "T4.P5": {
+      "en": "Isolated, manual storage provisioning workflows prevent self-service automation in Compute (Tower 2) and obscure storage consumption metrics in FinOps (Tower 8).",
+      "es": "La provisión artesanal de almacenamiento frena los flujos de autoservicio en Cómputo (Torre 2) y oculta los costes de consumo de disco por departamento en FinOps (Torre 8)."
+    },
+    "T5.P1": {
+      "en": "Absence of executive-agreed RTO/RPO metrics leaves IT recovery priorities misaligned with factory supply chain obligations (Tower 10) and corporate governance (Tower 8).",
+      "es": "La ausencia de RTO/RPO pactados formalmente desalinea las prioridades de recuperación de TI frente a los compromisos de entrega de producto en fábrica (Torre 10) y gobernanza (Torre 8)."
+    },
+    "T5.P2": {
+      "en": "Solo-specialist dependency for database restoration creates critical single-person operational risk, threatening entire platform recoverability in ITSM (Tower 7).",
+      "es": "La dependencia de un único especialista DBA para la restauración de bases de datos críticas crea un riesgo operativo extremo de persona clave para la operación en ITSM (Torre 7)."
+    },
+    "T5.P3": {
+      "en": "Close physical proximity of primary and secondary datacenters (500m) leaves the enterprise vulnerable to localized site catastrophes that simultaneously destroy Facilities (Tower 1) and Compute (Tower 2).",
+      "es": "La escasa distancia física entre CPDs (500 metros) expone a la compañía a catástrofes de recinto que destruirían simultáneamente Instalaciones (Torre 1) y Cómputo (Torre 2)."
+    },
+    "T5.P4": {
+      "en": "Lack of an air-gapped immutable cyber vault allows synchronous replication to propagate ransomware corruption instantly, negating secondary disaster recovery copies in Storage (Tower 4).",
+      "es": "La carencia de una bóveda inmutable aislada (air-gap) permite que un ataque de ransomware infecte las copias síncronas en tiempo real, invalidando el almacenamiento secundario en Almacenamiento (Torre 4)."
+    },
+    "T5.P5": {
+      "en": "Unautomated manual failover processes following power cuts delay core transactional platform restart (Tower 10) and cause significant transactional log desynchronization in ERP databases (Tower 8).",
+      "es": "Los procesos de failover manual tras cortes eléctricos retrasan el arranque de las básculas de planta (Torre 10) y provocan desincronizaciones transaccionales en el ERP (Torre 8)."
+    },
+    "T6.P1": {
+      "en": "Delayed employee and contractor deprovisioning in IAM leaves orphan credentials active, creating unauthorized entry points into corporate email in Workplace (Tower 9) and internal databases (Tower 4).",
+      "es": "El retraso en el desprovisionamiento de cuentas de bajas en IAM deja credenciales huérfanas activas, facilitando intrusiones en el correo corporativo (Torre 9) y bases de datos internas (Torre 4)."
+    },
+    "T6.P2": {
+      "en": "Shared root and domain admin credentials without vaulted session recording destroy audit traceability in ITSM (Tower 7) and expose critical hypervisors in Compute (Tower 2) to unconstrained tampering.",
+      "es": "El uso de contraseñas root y admin compartidas sin bóveda PAM anula la trazabilidad de auditoría en ITSM (Torre 7) y expone los hipervisores de Cómputo (Torre 2) a modificaciones descontroladas."
+    },
+    "T6.P3": {
+      "en": "Unsegregated development and production environments on shared clusters allow compromised test workloads to pivot into mission-critical plant networks (Tower 10).",
+      "es": "La convivencia de entornos de desarrollo y producción en los mismos clústeres permite que una vulnerabilidad en pruebas sirva de puente para infectar redes industriales (Torre 10)."
+    },
+    "T6.P4": {
+      "en": "Unpatched hypervisor hosts operating past 600 days without reboots create critical zero-day vulnerabilities threatening systemic stability across all hosted virtual machines (Tower 2).",
+      "es": "Servidores productivos con más de 600 días sin reiniciar por miedo a caídas acumulan vulnerabilidades graves que amenazan la estabilidad de todas las máquinas virtuales alojadas (Torre 2)."
+    },
+    "T6.P5": {
+      "en": "Lack of visibility into industrial plant firewalls prevents SOC security analysts from detecting lateral breach traversal between corporate IT and manufacturing networks (Tower 10).",
+      "es": "La falta de autoridad y visibilidad sobre los cortafuegos de fábrica impide al equipo de seguridad detectar movimientos laterales entre la red corporativa y la red industrial (Torre 10)."
+    },
+    "T7.P1": {
+      "en": "Undefined internal service catalog SLAs leave business expectations unmanaged, leading to executive dissatisfaction and uncontrolled shadow IT adoption in Governance (Tower 8).",
+      "es": "La ausencia de SLAs formalizados en el catálogo de servicios genera expectativas desalineadas con el negocio, fomentando la contratación de soluciones tecnológicas no controladas en Gobernanza (Torre 8)."
+    },
+    "T7.P2": {
+      "en": "Fragmented incident intake across regional plant silos delays resolution of critical core transactional outages (Tower 10) and inflates support costs.",
+      "es": "La atención fragmentada de incidencias entre delegaciones retrasa la resolución de paradas en básculas de planta (Torre 10) e incrementa los costes de soporte."
+    },
+    "T7.P3": {
+      "en": "An incomplete CMDB without dynamic dependency mapping leads to unintended service collisions during scheduled network and server maintenance windows (Tower 3, Tower 2).",
+      "es": "Una CMDB desactualizada y sin mapa de dependencias provoca cortes imprevistos en aplicaciones críticas durante intervenciones rutinarias de red o servidores (Torre 3, Torre 2)."
+    },
+    "T7.P4": {
+      "en": "Failure to perform structured root-cause analysis on recurring database and storage alarms perpetuates chronic operational toil, degrading staff focus on modernization (Tower 8).",
+      "es": "No realizar análisis de causa raíz sobre alertas recurrentes de bases de datos perpetúa la inercia de apagar fuegos, restando dedicación a la modernización tecnológica (Torre 8)."
+    },
+    "T7.P5": {
+      "en": "Isolated monitoring tools between IT and OT delay correlation of physical plant network outages with central ERP dispatch failures (Tower 10, Tower 8).",
+      "es": "Herramientas de monitorización aisladas entre TI y planta retrasan la correlación entre caídas de red en fábrica y fallos en la facturación del ERP (Torre 10, Torre 8)."
+    },
+    "T8.P1": {
+      "en": "A disconnected multi-year technology roadmap creates misaligned IT capital investments, leaving core computing infrastructure underfunded and saturated (Tower 2).",
+      "es": "Una hoja de ruta tecnológica desconectada del negocio provoca inversiones desalineadas, dejando la infraestructura central de Cómputo (Torre 2) infradotada y saturada."
+    },
+    "T8.P2": {
+      "en": "Decentralized purchasing across business units leads to duplicate software licenses and complicates enterprise architecture harmonization across remote plants (Tower 10).",
+      "es": "Las compras descentralizadas por unidad de negocio duplican contratos de software y complican la homologación de infraestructuras en fábricas remotas (Torre 10)."
+    },
+    "T8.P3": {
+      "en": "Unmonitored technological debt increases organizational exposure to NIS2 and DORA regulatory penalties, directly increasing corporate risk liabilities.",
+      "es": "La deuda técnica no catalogada eleva la exposición de la compañía a sanciones regulatorias bajo directivas europeas (NIS2 y DORA), incrementando el riesgo corporativo."
+    },
+    "T8.P4": {
+      "en": "Lack of FinOps showback visibility allows orphaned virtual machines in Compute (Tower 2) to silently inflate annual cloud and hosting operational expenditures.",
+      "es": "La falta de visibilidad y reparto de costes FinOps permite que máquinas virtuales huérfanas en Cómputo (Torre 2) inflen silenciosamente el gasto operativo de TI."
+    },
+    "T8.P5": {
+      "en": "Failure to articulate IT metrics in business revenue terms hinders executive board sponsorship for mission-critical infrastructure renewal programs.",
+      "es": "No comunicar el valor de la infraestructura en indicadores de negocio dificulta la aprobación presupuestaria en el Consejo para renovar activos críticos."
+    },
+    "T9.P1": {
+      "en": "Aging workstation fleets past 4 years experience elevated battery and motherboard failure rates, increasing Tier-1 service desk ticket volumes in ITSM (Tower 7).",
+      "es": "Un parque de portátiles envejecido más allá de 4 años dispara las incidencias de hardware, sobrecargando el volumen de tickets de primer nivel en ITSM (Torre 7)."
+    },
+    "T9.P2": {
+      "en": "Fragmented workstation identity without centralized Conditional Access increases organizational vulnerability to credential phishing and endpoint compromise (Tower 6).",
+      "es": "La autenticación en puestos sin políticas de acceso condicional expone a la organización a compromiso de identidades y propagación de malware en Ciberseguridad (Torre 6)."
+    },
+    "T9.P3": {
+      "en": "Continued reliance on legacy local file servers alongside cloud collaboration creates fragmented data silos, complicating corporate backup and e-discovery in Storage (Tower 4).",
+      "es": "El uso simultáneo de servidores de ficheros locales y OneDrive crea silos dispersos de información, dificultando la copia de seguridad centralizada en Almacenamiento (Torre 4)."
+    },
+    "T9.P4": {
+      "en": "Manual workplace software deployment without self-service catalogs consumes valuable technician hours that should be allocated to core infrastructure projects (Tower 2).",
+      "es": "La instalación manual de aplicaciones en puestos sin catálogo de autoservicio absorbe horas de técnicos que deberían dedicarse a la infraestructura core (Torre 2)."
+    },
+    "T9.P5": {
+      "en": "Unmonitored endpoint application crashes create hidden employee friction, leading to delayed logistics reporting and dispatch friction in factory offices (Tower 10).",
+      "es": "La falta de telemetría de rendimiento en puestos genera lentitud oculta en oficinas de fábrica, retrasando el procesamiento de albaranes de expedición (Torre 10)."
+    },
+    "T10.P1": {
+      "en": "Unplanned downtime on legacy IBM iSeries dispatch engines directly stops core transactional clearing, halting operational settlement workflows and factory revenue.",
+      "es": "Cualquier parada imprevista en el servidor IBM iSeries de expedición detiene inmediatamente las básculas de fábrica, paralizando la salida de camiones y la facturación."
+    },
+    "T10.P2": {
+      "en": "Manual change deployment on legacy RPG/Cobol code risks transactional corruption in core accounting databases, impacting financial reporting in Governance (Tower 8).",
+      "es": "La aplicación de cambios manuales en código legacy sin pruebas automatizadas arriesga corrupciones transaccionales que impactan en la contabilidad corporativa (Torre 8)."
+    },
+    "T10.P3": {
+      "en": "Extended nighttime batch processing runs consume daytime database compute windows, introducing system lag during morning logistics peak hours in Storage (Tower 4).",
+      "es": "La prolongación de procesos batch nocturnos invade la ventana operativa diurna, provocando lentitud en las bases de datos durante las horas punta de expedición (Torre 4)."
+    },
+    "T10.P4": {
+      "en": "Point-to-point database integration scripts without API mediation create brittle dependencies, complicating downstream cloud analytics projects in Compute (Tower 2).",
+      "es": "Las integraciones directas entre bases de datos mediante scripts punto a punto crean dependencias frágiles que frenan los proyectos de analítica en la nube (Torre 2)."
+    },
+    "T10.P5": {
+      "en": "High legacy maintenance costs consume operating capital, starving modern application development and locking infrastructure into technical debt (Tower 8).",
+      "es": "El elevado coste de mantener plataformas legacy absorbe el presupuesto operativo, limitando la inversión en nuevas aplicaciones y perpetuando la deuda técnica (Torre 8)."
+    }
+  }
+}

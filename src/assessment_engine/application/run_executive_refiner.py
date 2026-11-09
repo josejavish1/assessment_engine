@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 """Module: `run_executive_refiner.py` (TIER 1 EDITION 2026 - SELF HEALING).
 
 Implements the Sovereign Style Manual application, featuring an automated retry mechanism to enforce tone and style compliance.
@@ -12,6 +15,9 @@ from typing import Any, cast
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
+from assessment_engine.domain.linguistic_guardrail import (
+    LinguisticQualityGuardrail,
+)
 from assessment_engine.domain.prompts.intelligence_prompts import (
     get_global_refiner_prompt,
     get_tower_refiner_prompt,
@@ -32,7 +38,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 async def refine_findings(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Refines a findings dictionary using an AI agent to meet content and structure protocols.\n\n    This asynchronous function orchestrates a multi-attempt process to rewrite a raw\n    findings dictionary into a standardized format. The function first infers the\n    report type ('global' or 'tower') based on the key structure of the input\n    `findings`. It then loads optional client-specific grounding data to provide\n    context to the AI agent. A retry mechanism with a maximum of three attempts\n    is implemented to handle recoverable errors, such as protocol violations\n    (`SecurityIntegrityViolation`) or malformed JSON responses from the agent.\n    On each subsequent attempt, the previous error is included in the prompt to\n    guide the agent toward a valid output.\n\n    Args:\n        client_name: The client's identifier, used to locate and load a\n            corresponding JSON file with contextual grounding data.\n        findings: The raw dictionary of findings. Its key structure is used to\n            determine the refinement strategy (e.g., 'global' if keys like\n            'executive_summary' are present).\n\n    Returns:\n        A dictionary containing the refined findings, parsed from the AI agent's\n        JSON output.\n\n    Raises:\n        RuntimeError: If the agent fails to produce a valid, protocol-compliant\n            dictionary within three attempts."}."""
-    print("    -> [Executive Refiner] Applying Tier 1 standards...")
+    logger.info("    -> [Executive Refiner] Applying Tier 1 standards...")
 
     intel_path = resolve_client_intelligence_path(client_name)
     grounding_data = {}
@@ -96,7 +102,7 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
 
         except (SecurityIntegrityViolation, json.JSONDecodeError) as e:
             last_error = str(e)
-            print(
+            logger.info(
                 f"    ⚠️ Diplomatic protocol failure (Attempt {attempt + 1}). Re-refining..."
             )
 
@@ -379,14 +385,14 @@ async def main(argv: list[str] | None = None) -> None:
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)
 
-    print(f"🚀 Starting Executive Refinement for {args.client}...")
+    logger.info(f"🚀 Starting Executive Refinement for {args.client}...")
     refined = await refine_findings(args.client, findings)
     final_refined = postprocess_refined_findings(refined, findings)
 
     findings_path.write_text(
         json.dumps(final_refined, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Findings refined successfully: {findings_path}")
+    logger.info(f"✅ Findings refined successfully: {findings_path}")
 
 
 if __name__ == "__main__":

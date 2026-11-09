@@ -39,7 +39,7 @@ This document establishes the definitive State-of-the-Art (SOTA) remediation blu
 
 The rendering engine must be re-architected into a pure, multi-pass compiler utilizing a strictly typed **Intermediate Representation (IR)** and the **Visitor Pattern**. Imperative mutations, template cloning, and monolithic scripts are permanently deprecated.
 
-```
+```text
 [Pydantic Domain Model] 
        │
        ▼ (Pass 1: Frontend Lowering)
@@ -79,7 +79,7 @@ The rendering engine must be re-architected into a pure, multi-pass compiler uti
 
 Enforce **Strict Separation of Concerns (SoC)** and **Command-Query Responsibility Segregation (CQRS)**. The Document Compiler must be demoted to a **Dumb View Layer** with zero mathematical capabilities.
 
-```
+```text
 [Raw Telemetry & Priors] 
        │
        ▼ (Bayesian / Monte Carlo Engine)
@@ -116,7 +116,7 @@ Enforce **Strict Separation of Concerns (SoC)** and **Command-Query Responsibili
 
 Eradicate all literal visual primitives from the logic and code-generation layers. Implement a three-tiered **Design Token Resolution Engine** resolved during the Middle-End IR compilation pass.
 
-```
+```text
 [Tier 1: Primitive Tokens]      (e.g., palette.blue.900 = "#0A192F")
            │
            ▼
@@ -156,7 +156,7 @@ Eradicate all literal visual primitives from the logic and code-generation layer
 
 Eliminate all default language arguments across the entire call graph. Enforce explicit **Inversion of Control (IoC)** where linguistic state is an ambient, immutable property of the execution context.
 
-```
+```text
 [API Request / CLI Invocation (Locale: "pt-BR")]
        │
        ▼ (Instantiates)
@@ -194,7 +194,7 @@ Eliminate all default language arguments across the entire call graph. Enforce e
 
 Enforce a **Zero-I/O Core Architecture**. The file system is treated as an untrusted external boundary accessible *only* during the initial Hydration Ingress phase and the final Egress Serialization phase.
 
-```
+```text
 [Ingress Boundary: Disk / DB / API] 
        │
        ▼ (Hydration & Parsing Layer - ONLY place allowed to read disk)

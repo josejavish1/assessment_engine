@@ -259,3 +259,7 @@ class VendorRegistry:
             "(e.g. WORM, SnapLock, Active IQ, FortKnox, SpanFS, Cloud Tiering, MetroCluster, etc.) to substantiate maximum return on investment."
         )
         return "\n".join(lines)
+
+
+# Backward compatibility alias
+VendorIntelligenceRegistry = VendorRegistry

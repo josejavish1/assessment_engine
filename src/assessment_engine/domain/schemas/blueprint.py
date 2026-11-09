@@ -451,10 +451,12 @@ class PillarBlueprintDraft(BaseModel):
 
     @property
     def pilar_id(self) -> str:
+        """Compatibility alias returning canonical pillar_id."""
         return self.pillar_id
 
     @property
     def pilar_name(self) -> str:
+        """Compatibility alias returning canonical pillar_name."""
         return self.pillar_name
 
 

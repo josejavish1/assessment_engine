@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Inject authoritative financial telemetry into Molins global_report_payload.json."""
+"""Inject authoritative corporate operational and financial telemetry into Molins global_report_payload.json.
+
+Zero hardcoded ALE, zero magic multipliers, pure business facts.
+"""
 
 from __future__ import annotations
 
@@ -15,10 +18,7 @@ MOLINS_FINANCIAL_TELEMETRY = {
     "consolidated_hourly_downtime_rate": 13061.29,
     "local_facility_hourly_rate": 5000.0,
     "primary_facility_revenue_share": 0.3828,
-    "total_fair_ale": 916416.0,
-    "total_fair_p90": 2291040.0,
-    "tail_risk_multiplier": 2.50,
-    "baseline_risk_factor": 0.000801,
+    "currency_code": "EUR",
     "major_incident": {
         "duration_hours": 17.3,
         "total_loss": 450000.0,
@@ -28,21 +28,9 @@ MOLINS_FINANCIAL_TELEMETRY = {
         "recovery_bucket_weights": {
             "oem_emergency_intervention": 0.42,
             "spot_hardware_procurement": 0.33,
-            "database_recovery_forensics": 0.25
-        }
+            "database_recovery_forensics": 0.25,
+        },
     },
-    "domain_weights": {
-        "T1": 141132.0,
-        "T2": 100806.0,
-        "T3": 82477.0,
-        "T4": 30242.0,
-        "T5": 206194.0,
-        "T6": 64149.0,
-        "T7": 43988.0,
-        "T8": 132880.0,
-        "T9": 27493.0,
-        "T10": 87055.0
-    }
 }
 
 
@@ -55,7 +43,7 @@ def main() -> None:
     with open(GLOBAL_PAYLOAD_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-    print("Successfully added financial_telemetry to working/molins/global_report_payload.json!")
+    print("Successfully injected pure business telemetry (ZERO hardcoded ALE, ZERO magic multipliers)!")
 
 
 if __name__ == "__main__":

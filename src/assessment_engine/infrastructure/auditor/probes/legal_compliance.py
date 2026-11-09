@@ -41,7 +41,8 @@ def _check_package_license(package_name: str) -> str | None:
             if "License ::" in c:
                 return c.split("::")[-1].strip()
     except (importlib.metadata.PackageNotFoundError, KeyError, ValueError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
     return None
 
 

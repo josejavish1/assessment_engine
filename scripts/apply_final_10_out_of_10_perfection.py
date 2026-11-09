@@ -1,170 +1,53 @@
 #!/usr/bin/env python3
-"""Apply final 10/10 perfection patch: unified financial scale (916k), clean names, and 3Y VaR."""
-
-from __future__ import annotations
+"""Apply the 3 micro-refinements to reach the 10.0/10.0 absolute benchmark."""
 
 import json
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LOCALES_PATH = REPO_ROOT / "engine_config" / "locales.json"
 
-CLEAN_NAMES = {
-    "es": {
-        "tomo_tower_t1_clean": "Centros de Datos e Instalaciones Técnicas",
-        "tomo_tower_t2_clean": "Cómputo Híbrido y Virtualización",
-        "tomo_tower_t3_clean": "Redes y Conectividad WAN/LAN",
-        "tomo_tower_t4_clean": "Almacenamiento y Backup Corporativo",
-        "tomo_tower_t5_clean": "Continuidad Operativa y Resiliencia Fabril",
-        "tomo_tower_t6_clean": "Ciberseguridad e Identidad Digital",
-        "tomo_tower_t7_clean": "Bases de Datos y Plataformas ITSM",
-        "tomo_tower_t8_clean": "Aplicaciones de Negocio y FinOps",
-        "tomo_tower_t9_clean": "Puesto de Trabajo y Movilidad",
-        "tomo_tower_t10_clean": "Sistemas Críticos de Expedición y Pesaje",
-        "tomo_ch3_p90_4": "A un horizonte acumulado de 3 años sin ejecutar las actuaciones de remediación arquitectónica, la pérdida esperada se eleva a **2,75 M€**, alcanzando un valor en riesgo acumulado a 3 años (VaR 3Y P90) de **6,10 M€** en un escenario continuado de estrés operativo e incidentes graves.",
-    },
-    "en": {
-        "tomo_tower_t1_clean": "Physical Data Centers & Technical Rooms",
-        "tomo_tower_t2_clean": "Hybrid Compute & Platforms",
-        "tomo_tower_t3_clean": "Enterprise Networks & Connectivity",
-        "tomo_tower_t4_clean": "Storage & Corporate Backup Services",
-        "tomo_tower_t5_clean": "Operational Continuity & Industrial Resilience",
-        "tomo_tower_t6_clean": "Cybersecurity & Digital Identity",
-        "tomo_tower_t7_clean": "Databases & ITSM Platforms",
-        "tomo_tower_t8_clean": "Enterprise Applications & FinOps",
-        "tomo_tower_t9_clean": "Digital Workplace & Mobility",
-        "tomo_tower_t10_clean": "Mission-Critical Weighbridge & Dispatch Systems",
-        "tomo_ch3_p90_4": "Over a cumulative 3-year horizon without architectural remediation, expected baseline losses accumulate to **2.75 M€**, climbing to a 3-year value-at-risk (VaR 3Y P90) of **6.10 M€** under persistent operational stress and severe concurrent incidents.",
-    }
-}
+# 1. Update locales.json for T1 and T3 scorecard alignment
+loc_path = REPO_ROOT / "engine_config/locales.json"
+with open(loc_path, "r", encoding="utf-8") as f:
+    locales = json.load(f)
 
-FINAL_TOP_RISKS = {
-    "es": [
-        {
-            "id": "T10.R01",
-            "title": "Interrupción del Pesaje y Expedición en Planta Fabril",
-            "ale": "82.000 €/año",
-            "sle": "205.000 €",
-            "lef": "0,40 eventos/año",
-            "vuln": "PC de báscula en arquitectura monofásica sin redundancia física.",
-            "impact": "Parada de expediciones en planta a razón de 5.000 €/hora.",
-            "mitig": "Despliegue de IPC industrial redundante en anillo con bypass de báscula."
-        },
-        {
-            "id": "T05.R01",
-            "title": "Tiempo de Recuperación Excesivo por Restauración en Cinta",
-            "ale": "85.000 €/año",
-            "sle": "283.333 €",
-            "lef": "0,30 eventos/año",
-            "vuln": "Procedimiento de restore dependiente de transporte físico de cintas LTO.",
-            "impact": "RTO efectivo superior a 18 horas ante corrupción de datos corporativos.",
-            "mitig": "Implantación de copia inmutable en almacenamiento WORM y repositorio cloud."
-        },
-        {
-            "id": "T02.R01",
-            "title": "Saturación de Cómputo y Shock Contractual Mayo 2027",
-            "ale": "79.000 €/año",
-            "sle": "316.000 €",
-            "lef": "0,25 eventos/año",
-            "vuln": "Ocupación de RAM superior al 90% y fin de soporte VMware/SimpliVity.",
-            "impact": "Bloqueo de ampliaciones y escalada presupuestaria en renovación de licencias.",
-            "mitig": "Migración hacia plataforma hiperconvergente de nueva generación."
-        },
-        {
-            "id": "T01.R01",
-            "title": "Recirculación Térmica en Racks de Cómputo Principal",
-            "ale": "68.000 €/año",
-            "sle": "340.000 €",
-            "lef": "0,20 eventos/año",
-            "vuln": "Carencia de cerramiento de pasillos frío/calor en sala técnica central.",
-            "impact": "Degradación acelerada de CPUs y riesgo de parada por disparo de temperatura.",
-            "mitig": "Instalación de cerramiento físico de pasillo frío y telemetría BMS IoT."
-        },
-        {
-            "id": "T06.R01",
-            "title": "Brecha de Identidad y Retraso en Adecuación NIS2",
-            "ale": "58.000 €/año",
-            "sle": "290.000 €",
-            "lef": "0,20 eventos/año",
-            "vuln": "Cuentas privilegiadas compartidas y coexistencia de dominios Secil.",
-            "impact": "Riesgo de compromiso de credenciales corporativas y sanción regulatoria.",
-            "mitig": "Unificación de bosques de identidad, despliegue de PAM y MFA forzoso."
-        }
-    ],
-    "en": [
-        {
-            "id": "T10.R01",
-            "title": "Disruption of Plant Weighbridge and Dispatch Systems",
-            "ale": "82,000 €/yr",
-            "sle": "205,000 €",
-            "lef": "0.40 events/yr",
-            "vuln": "Dispatch PC operating in single-phase non-redundant architecture.",
-            "impact": "Halted physical plant dispatch at a burn rate of 5,000 €/hr.",
-            "mitig": "Deployment of redundant industrial IPC ring with scale hardware bypass."
-        },
-        {
-            "id": "T05.R01",
-            "title": "Excessive Recovery Time from Physical Tape Restores",
-            "ale": "85,000 €/yr",
-            "sle": "283,333 €",
-            "lef": "0.30 events/yr",
-            "vuln": "Restore procedures depend on physical transport of LTO magnetic tapes.",
-            "impact": "Effective RTO exceeding 18 hours during major data corruption events.",
-            "mitig": "Implementation of immutable WORM storage tier and cloud replication."
-        },
-        {
-            "id": "T02.R01",
-            "title": "Compute Saturation & May 2027 Contract Renewal Shock",
-            "ale": "79,000 €/yr",
-            "sle": "316,000 €",
-            "lef": "0.25 events/yr",
-            "vuln": "RAM utilization continuously exceeding 90% and VMware EoL milestones.",
-            "impact": "Expansion deadlock and steep price escalation during license renewals.",
-            "mitig": "Migration to next-generation sovereign hyperconverged platform."
-        },
-        {
-            "id": "T01.R01",
-            "title": "Thermal Recirculation Across Primary Compute Racks",
-            "ale": "68,000 €/yr",
-            "sle": "340,000 €",
-            "lef": "0.20 events/yr",
-            "vuln": "Lack of hot/cold aisle containment in primary technical datacenter.",
-            "impact": "Accelerated CPU component aging and risk of thermal shutdown.",
-            "mitig": "Installation of physical cold-aisle containment and BMS IoT sensors."
-        },
-        {
-            "id": "T06.R01",
-            "title": "Identity Perimeter Disjointedness & NIS2 Compliance Lag",
-            "ale": "58,000 €/yr",
-            "sle": "290,000 €",
-            "lef": "0.20 events/yr",
-            "vuln": "Shared privileged administrative accounts and disjointed Secil forests.",
-            "impact": "Credential compromise risk and regulatory compliance exposure.",
-            "mitig": "Identity forest consolidation, PAM deployment, and mandatory MFA."
-        }
-    ]
-}
+# T1: Fix cause alignment to Thermal/HVAC
+locales["es"]["ch3_scorecard_by_tower"]["T1"] = (
+    "Con una puntuación técnica de {score_val} sobre 5,0 ({maturity_tier_label}), las instalaciones de {client_name} se sitúan en el límite de tramo del Nivel 3. La solvencia de los sistemas de extinción y redundancia eléctrica ({strongest_pillar_name}, {strongest_pillar_score}/5,0) contrasta con la fragilidad térmica en salas de proceso ({weakest_pillar_name}, {weakest_pillar_score}/5,0), donde la ausencia de confinamiento de pasillos y el déficit de climatización de precisión en cuartos de planta amenazan la continuidad de los servidores expuestos a partículas fabriles."
+)
+locales["en"]["ch3_scorecard_by_tower"]["T1"] = (
+    "Scoring a technical maturity of {score_val} out of 5.0 ({maturity_tier_label}), datacenter facilities across {client_name} sit at the threshold of Level 3. Solid electromechanical power and fire suppression defenses ({strongest_pillar_name}, {strongest_pillar_score}/5.0) contrast with thermal fragility in processing rooms ({weakest_pillar_name}, {weakest_pillar_score}/5.0), where absent aisle containment and lack of precision cooling in plant rooms threaten edge servers exposed to industrial dust."
+)
 
+# T3: Fix cause alignment to NetOps & Observability
+locales["es"]["ch3_scorecard_by_tower"]["T3"] = (
+    "La infraestructura de red alcanza una calificación de {score_val} sobre 5,0 ({maturity_tier_label}). La robustez del switching en sedes centrales ({strongest_pillar_name}, {strongest_pillar_score}/5,0) contrasta con el déficit de automatización y supervisión ({weakest_pillar_name}, {weakest_pillar_score}/5,0), donde la dependencia de configuraciones manuales por consola CLI y la ceguera de telemetría en la frontera IT/OT dificultan el diagnóstico ágil de anomalías en sedes remotas."
+)
+locales["en"]["ch3_scorecard_by_tower"]["T3"] = (
+    "Network infrastructure achieves a technical score of {score_val} out of 5.0 ({maturity_tier_label}). Campus switching resilience across headquarters ({strongest_pillar_name}, {strongest_pillar_score}/5.0) contrasts with the gap in automation and observability ({weakest_pillar_name}, {weakest_pillar_score}/5.0), where manual CLI configuration workflows and telemetry blindness across the IT/OT boundary impede agile fault isolation across remote sites."
+)
 
-def main() -> None:
-    with open(LOCALES_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
+# Symmetrize pt, fr, de, ja
+base_keys = set(locales["en"].keys())
+for lang in ["pt", "fr", "de", "ja"]:
+    if lang in locales:
+        locales[lang]["ch3_scorecard_by_tower"] = locales["en"]["ch3_scorecard_by_tower"]
 
-    for loc in ["es", "en"]:
-        for k, v in CLEAN_NAMES[loc].items():
-            data[loc][k] = v
-        data[loc]["tomo_top_risks_catalog"] = FINAL_TOP_RISKS[loc]
+with open(loc_path, "w", encoding="utf-8") as f:
+    json.dump(locales, f, indent=2, ensure_ascii=False)
 
-    for loc in ["pt", "fr", "de", "ja"]:
-        for k, v in CLEAN_NAMES["en"].items():
-            data[loc][k] = v
-        data[loc]["tomo_top_risks_catalog"] = FINAL_TOP_RISKS["en"]
+print("Updated T1 and T3 scorecard alignment in locales.json!")
 
-    with open(LOCALES_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+# 2. Fix T9 Bullet 1 (remove solution naming (Intune/Autopilot))
+t9_path = REPO_ROOT / "working/molins/T9/blueprint_t9_payload.json"
+with open(t9_path, "r", encoding="utf-8") as f:
+    t9 = json.load(f)
 
-    print("Successfully injected clean tower names and reconciled top risks into locales.json!")
+t9["cross_capabilities_analysis"]["common_deficiency_patterns"][0] = (
+    "Elevada carga de soporte manual en el ciclo de vida del puesto de trabajo corporativo: La preparación artesanal de portátiles mediante imágenes estáticas y sin flujos automatizados de aprovisionamiento directo al usuario final consume cientos de horas de técnicos y eleva los costes de gestión de incidencias de configuración."
+)
 
+with open(t9_path, "w", encoding="utf-8") as f:
+    json.dump(t9, f, indent=2, ensure_ascii=False)
 
-if __name__ == "__main__":
-    main()
+print("Updated T9 payload: purged solution telegraphing from pattern #1!")

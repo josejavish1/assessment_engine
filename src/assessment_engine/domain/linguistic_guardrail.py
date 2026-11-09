@@ -210,7 +210,6 @@ def verify_language_consistency_strict(
 
     stripped = text.strip()
 
-    # Step 1: Unicode Script Block Ratio Analysis
     script_ratio, total_letters = _compute_script_block_ratio(stripped, base_loc)
     if total_letters == 0:
         return True, "No alphabetic or ideographic characters present."
@@ -335,8 +334,6 @@ class LinguisticQualityGuardrail:
         Returns:
             Tuple of (has_drift: bool, reason: str).
 
-        Raises:
-            UnsupportedLanguageVerificationError: If target_locale is unsupported.
         """
         base_loc = _normalize_locale(target_locale)
 
@@ -362,8 +359,6 @@ class LinguisticQualityGuardrail:
         Returns:
             List of diagnostic violation messages. Empty list indicates 100% compliance.
 
-        Raises:
-            UnsupportedLanguageVerificationError: If target_locale is unsupported.
         """
         violations: list[str] = []
         base_loc = _normalize_locale(target_locale)
@@ -371,7 +366,6 @@ class LinguisticQualityGuardrail:
         for p_idx, pillar in enumerate(payload.get("pillars_analysis", [])):
             p_name = pillar.get("pillar_name", f"Pillar_{p_idx}")
 
-            # Check AS-IS description
             asis_desc = pillar.get("asis_architecture_description", "")
             has_drift, reason = cls.detect_language_drift(asis_desc, base_loc)
             if has_drift:

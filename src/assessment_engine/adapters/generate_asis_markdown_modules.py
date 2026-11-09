@@ -227,9 +227,12 @@ def resolve_client_currency_context(
     paths_to_check: list[Path] = []
     if tower_dir:
         paths_to_check.append(tower_dir / "custom_risk_profile.json")
-    paths_to_check.append(Path(f"working/{client_id}/custom_risk_profile.json"))
-    for t_code in ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
-        paths_to_check.append(Path(f"working/{client_id}/{t_code}/custom_risk_profile.json"))
+    client_dir = Path(f"working/{client_id}")
+    paths_to_check.append(client_dir / "custom_risk_profile.json")
+    if client_dir.exists():
+        for sub in sorted(client_dir.iterdir()):
+            if sub.is_dir():
+                paths_to_check.append(sub / "custom_risk_profile.json")
 
     for p in paths_to_check:
         if p.exists():
@@ -318,31 +321,32 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
         unified_sentences.append(s_unified)
     text = " ".join(unified_sentences)
     
-    # Also look for phrases like "35,56 millones de euros" or "32,12 millones" and replace them
-    millones_pattern = r"\b\d+[,.]\d+\s*(?:millones|millones de euros|million)\b"
-    if "millon" in text.lower() or "million" in text.lower():
-        text = re.sub(millones_pattern, f"{formatted_ale} {currency}", text)
-        
+    # Also look for phrases like "35,56 millones de euros" or "32,12 millions" and normalize them
+    magnitude_pattern = re.compile(
+        r"\b\d+[,.]\d+\s*(?:millones(?:\s+de\s+euros)?|millions?|milh(?:[õo]es))\b",
+        re.IGNORECASE,
+    )
+    text = magnitude_pattern.sub(f"{formatted_ale} {currency}", text)
+
     # 3. Clean up any mention of global score/band
-    score_pattern = r"\b\d+[,.]\d+\s*(?:sobre|out of|von|sur)\s*5(?:[.,]0+)?\b"
-    out_of_map = {"es": "sobre 5,00", "fr": "sur 5,00", "de": "von 5,00", "en": "out of 5.00"}
-    out_of_str = out_of_map.get(doc_lang, "out of 5.00")
+    score_pattern = r"\b\d+[,.]\d+\s*(?:sobre|out of|von|sur|/)\s*5(?:[.,]0+)?\b"
+    out_of_str = t("scale_out_of_five", locale=doc_lang) or "out of 5.00"
     text = re.sub(score_pattern, f"{formatted_score} {out_of_str}", text)
-    
+
     # Match band patterns inside quotes or parentheses and align with the true band
-    band_pattern = r"(?:Nivel|Level|Niveau|Stufe)\s*\d+[,.]?\d*\s*\([^)]+\)"
-    band_prefix_map = {"es": "Nivel", "fr": "Niveau", "de": "Stufe", "en": "Level"}
-    band_prefix = band_prefix_map.get(doc_lang, "Level")
+    band_pattern = r"(?:Nivel|Level|Niveau|Stufe|N\u00edvel|\u30ec\u30d9\u30eb)\s*\d+[,.]?\d*\s*\([^)]+\)"
+    band_prefix = t("level_prefix", locale=doc_lang) or "Level"
     true_band_str = f"{band_prefix} {format_number(exact_score, locale=doc_lang, decimals=1)} ({exact_band})"
     text = re.sub(band_pattern, true_band_str, text)
-    
+
     # 6. Inject Cost of Delay (Gap A)
     legacy_keywords = _ASIS_ANNEX_DATA.get("legacy_cleaning_keywords", [])
     has_ale_keyword = "ALE" in text or "Loss Exposure" in text or any(k in text.lower() for k in legacy_keywords[:3])
     has_inaction_keyword = "inaction" in text.lower() or any(k in text.lower() for k in legacy_keywords[1:3])
     if has_ale_keyword and has_inaction_keyword:
-        if "demora" not in text.lower() and "delay" not in text.lower():
-            text += t("cost_of_delay_text", locale=doc_lang, formatted_ale=formatted_ale, currency=currency)
+        delay_msg = t("cost_of_delay_text", locale=doc_lang, formatted_ale=formatted_ale, currency=currency)
+        if delay_msg not in text:
+            text += delay_msg
 
     # 7. Pedagogical & diplomatic rewrite of executive summary maturity and ALE paragraph (first-time reader alignment)
     has_maturity = any(k in text.lower() for k in ["maturity", "rating"]) or any(k in text.lower() for k in legacy_keywords[5:])

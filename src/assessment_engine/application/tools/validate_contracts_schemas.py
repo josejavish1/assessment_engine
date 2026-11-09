@@ -1,5 +1,8 @@
-# golden-path: ignore
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
+# golden-path: ignore
 
 import argparse
 import importlib
@@ -328,7 +331,7 @@ def validate_contracts_schemas(
                         )
 
             if model_has_drift and autofix:
-                print(f"Auto-fixing schema table for '{class_name}' in '{path}'...")
+                logger.info(f"Auto-fixing schema table for '{class_name}' in '{path}'...")
                 new_table = generate_markdown_table_lines(model_class, fields)
                 file_content = replace_table_in_markdown(
                     file_content, class_name, new_table
@@ -360,12 +363,12 @@ def main() -> int:
     )
     if errors:
         for error in errors:
-            print(f"ERROR: {error}")
+            logger.info(f"ERROR: {error}")
         return 1
     if args.autofix:
-        print("Contract schemas auto-fixed and reconciled successfully.")
+        logger.info("Contract schemas auto-fixed and reconciled successfully.")
     else:
-        print("Contract schemas and models validation passed.")
+        logger.info("Contract schemas and models validation passed.")
     return 0
 
 

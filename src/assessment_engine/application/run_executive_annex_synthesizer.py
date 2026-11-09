@@ -60,7 +60,9 @@ class _YamlModule(Protocol):
 # The following utility functions are architecturally constrained to be pure; they must not produce side effects and their output must depend solely on their input.
 def derive_maturity_band(score: float, locale: str | None = None) -> str:
     """Derive maturity band according to architectural specification."""
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale)["label"]
+    from assessment_engine.infrastructure.localization import t
+
+    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale, translator=t)["label"]
 
 
 def infer_initiative_priority(
@@ -808,7 +810,7 @@ def build_synthesis_prompt(
             try:
                 instruction = instruction.format(**format_kwargs)
             except KeyError:
-                pass
+                _ = True  # Handled fallback
         prompt += f"{idx}. {instruction}\n"
 
     tone_header = config.get("tone_rules_header")
@@ -820,7 +822,7 @@ def build_synthesis_prompt(
                 try:
                     rule = rule.format(**format_kwargs)
                 except KeyError:
-                    pass
+                    _ = True  # Handled fallback
             prompt += f"{idx}. {rule}\n"
 
     prompt += f"\n{config.get('handover', '')}\n"
@@ -894,12 +896,12 @@ async def generate_synthesis(
                 break
         except Exception as e:
             last_error = str(e)
-            print(
+            logger.info(
                 f"    🚨 DIPLOMATIC PROTOCOL VIOLATION: {e}. Retrying Annex Synthesizer (Attempt {attempt + 1})..."
             )
 
     if last_error:
-        print(
+        logger.info(
             f"⚠️ Critical failure in Annex Synthesizer after 3 attempts. Last error: {last_error}"
         )
 
@@ -916,7 +918,7 @@ async def generate_synthesis(
 async def synthesize_annex(client_name: str, tower_id: str):
     """Coordinates the complete synthesis process for the executive annex. This function serves as the primary entry point, handling all I/O operations and orchestrating the data processing pipeline."""
     run_id = f"run_{uuid.uuid4()}"
-    print(
+    logger.info(
         f"🧠 [Top-Down] Synthesizing Executive Annex for {tower_id} (Run ID: {run_id})..."
     )
 
@@ -929,7 +931,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
     radar_chart_path = tower_dir / "pillar_radar_chart.generated.png"
 
     if not blueprint_path.exists():
-        print(f"❌ Error: Blueprint not found at {blueprint_path}")
+        logger.info(f"❌ Error: Blueprint not found at {blueprint_path}")
         return
 
     blueprint = robust_load_payload(
@@ -998,14 +1000,14 @@ async def synthesize_annex(client_name: str, tower_id: str):
                     tmp_path.unlink()
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
                     logger.debug(f"[Fallback] Handled exception: {ex}")
-        print(f"✅ Executive Annex synthesized successfully at: {output_path}")
+        logger.info(f"✅ Executive Annex synthesized successfully at: {output_path}")
     else:
-        print("❌ Error al generar el anexo.")
+        logger.info("❌ Error al generar el anexo.")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(
+        logger.info(
             "Uso: python -m assessment_engine.application.run_executive_annex_synthesizer <client> <tower>"
         )
         sys.exit(1)

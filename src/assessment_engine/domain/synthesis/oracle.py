@@ -90,7 +90,6 @@ class DeterministicVerificationOracle:
                 )
             )
 
-        # 1. Option ID Uniqueness
         opt_ids = [opt.option_id for opt in candidate.pareto_frontier]
         if len(opt_ids) != len(set(opt_ids)):
             violations.append(

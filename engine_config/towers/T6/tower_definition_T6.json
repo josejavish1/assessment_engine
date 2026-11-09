@@ -99,7 +99,7 @@
       "kpis": [
         {
           "kpi_id": "T6.P1.K1",
-          "kpi_name": "Cobertura de MFA en accesos críticos (incluye administración)",
+          "kpi_name": "Cobertura de MFA en accesos críticos y cuentas privilegiadas",
           "questions": [
             {
               "question_id": "T6.P1.K1.PR1",
@@ -270,7 +270,7 @@
         },
         {
           "kpi_id": "T6.P4.K3",
-          "kpi_name": "Backlog de vulnerabilidades críticas (tendencia y control)",
+          "kpi_name": "Backlog de vulnerabilidades críticas y control de remediación",
           "questions": [
             {
               "question_id": "T6.P4.K3.PR1",
@@ -297,7 +297,7 @@
       "kpis": [
         {
           "kpi_id": "T6.P5.K1",
-          "kpi_name": "Segmentación por zonas/entornos y criticidad (incluye east-west)",
+          "kpi_name": "Segmentación por zonas de criticidad e inspección de tráfico este-oeste",
           "questions": [
             {
               "question_id": "T6.P5.K1.PR1",

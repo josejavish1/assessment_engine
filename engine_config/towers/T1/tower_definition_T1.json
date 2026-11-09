@@ -169,7 +169,7 @@
         },
         {
           "kpi_id": "T1.P2.K3",
-          "kpi_name": "Gestión de hotspots y densidad (capacidad por rack / zona)",
+          "kpi_name": "Gestión de hotspots y densidad por rack y zona",
           "questions": [
             {
               "question_id": "T1.P2.K3.PR1",
@@ -223,7 +223,7 @@
       "kpis": [
         {
           "kpi_id": "T1.P4.K1",
-          "kpi_name": "Detección temprana y cobertura (humo/temperatura) por zonas críticas",
+          "kpi_name": "Detección temprana de humo y temperatura en zonas críticas",
           "questions": [
             {
               "question_id": "T1.P4.K1.PR1",
@@ -233,7 +233,7 @@
         },
         {
           "kpi_id": "T1.P4.K2",
-          "kpi_name": "Sistema de supresión/extinción adecuado y mantenido (incluye seguridad de personas)",
+          "kpi_name": "Sistema de supresión y extinción adecuado para seguridad de personas",
           "questions": [
             {
               "question_id": "T1.P4.K2.PR1",
@@ -270,7 +270,7 @@
         },
         {
           "kpi_id": "T1.P5.K2",
-          "kpi_name": "Cumplimiento del plan de mantenimiento preventivo (incluye evidencias)",
+          "kpi_name": "Cumplimiento del plan de mantenimiento preventivo con evidencias trazables",
           "questions": [
             {
               "question_id": "T1.P5.K2.PR1",
@@ -280,7 +280,7 @@
         },
         {
           "kpi_id": "T1.P5.K3",
-          "kpi_name": "Pruebas operativas periódicas (incluye “game days” de facilities)",
+          "kpi_name": "Pruebas operativas periódicas y simulación de contingencia de facilities",
           "questions": [
             {
               "question_id": "T1.P5.K3.PR1",

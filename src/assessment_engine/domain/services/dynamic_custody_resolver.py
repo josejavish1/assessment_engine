@@ -131,7 +131,6 @@ class DynamicCustodyResolver:
         risk_id = risk.get("id") or risk.get("risk_id", "UNKNOWN_RISK")
         original_ref = str(risk.get("primary_risk_ref") or "UNSPECIFIED").strip()
 
-        # 1. Elevate Custody Role
         risk["ownership_type"] = CustodyRole.PRIMARY_CUSTODIAN.value
         risk["custody_role"] = CustodyRole.PRIMARY_CUSTODIAN.value
 

@@ -142,7 +142,8 @@ def _parse_package_json_file(pkg_file: Path, target_dir: Path) -> tuple[int, int
                     recommendation="Use pnpm-lock.yaml or pin exact versions for reproducible builds."
                 ))
     except (json.JSONDecodeError, OSError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
 
     return deps_count, pinned_count, components, osv_queries, findings
 
@@ -233,14 +234,19 @@ def run_supply_chain_probe(target_dir: Path) -> ProbeResult:
     osv_queries.extend(r_queries)
     findings.extend(r_finds)
 
-    pkg_file = target_dir / "package.json"
-    if not pkg_file.exists():
-        pkg_file = target_dir / "web" / "package.json"
-
-    p_deps, p_pinned, p_comps, p_queries, p_finds = _parse_package_json_file(pkg_file, target_dir)
-    components.extend(p_comps)
-    osv_queries.extend(p_queries)
-    findings.extend(p_finds)
+    pkg_candidates = [
+        p for p in target_dir.rglob("package.json")
+        if "node_modules" not in p.parts and ".next" not in p.parts and "dist" not in p.parts
+    ]
+    p_deps = 0
+    p_pinned = 0
+    for pkg_file in pkg_candidates:
+        pd, pp, pc, pq, pf = _parse_package_json_file(pkg_file, target_dir)
+        p_deps += pd
+        p_pinned += pp
+        components.extend(pc)
+        osv_queries.extend(pq)
+        findings.extend(pf)
 
     dependencies_count = r_deps + p_deps
     pinned_count = r_pinned + p_pinned

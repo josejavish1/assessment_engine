@@ -120,6 +120,7 @@ class ConditionalLossEvent(BaseModel):
 
     @model_validator(mode="after")
     def validate_cross_tower_topology(self) -> "ConditionalLossEvent":
+        """Validate cross-tower relationship references against canonical topology."""
         clean_ref = (self.primary_risk_ref or "").strip()
         if not clean_ref:
             self.primary_risk_ref = None

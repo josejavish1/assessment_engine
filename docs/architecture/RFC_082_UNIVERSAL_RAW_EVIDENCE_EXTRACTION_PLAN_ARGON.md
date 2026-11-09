@@ -29,7 +29,7 @@ To preserve Domain Purity, the ingestion pipeline strictly adheres to the Ports 
 
 ### 1.1 High-Level Data Flow
 
-```
+```text
 [Raw DOCX/VTT] ──> [Transcript Adapter] ──> [Utterance Stream] 
                                                     │
 [Engine Config] ──> [Phonetic Normalizer] <─────────┤ (LLM + Dynamic Lexicon)

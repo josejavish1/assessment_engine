@@ -321,7 +321,7 @@ def _load_canonical_tower_names() -> dict[str, tuple[str, str]]:
         "T7": ("07", "Operations_ITSM"),
         "T8": ("08", "FinOps_Governance"),
         "T9": ("09", "Digital_Workplace"),
-        "T10": ("10", "Mainframe_Core"),
+        "T10": ("10", "Local_Operations"),
     }
     import json
 

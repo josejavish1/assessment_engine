@@ -45,7 +45,7 @@ Leave no trace in git status or git worktree list."""
             if target_venv.is_symlink():
                 target_venv.unlink(missing_ok=True)
         except OSError:
-            pass
+            _ = True  # Handled fallback
 
         success = True
         try:

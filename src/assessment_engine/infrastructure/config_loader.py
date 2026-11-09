@@ -426,43 +426,76 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
     import unicodedata
 
     normalized = unicodedata.normalize("NFKD", str(raw_industry_name))
-    industry_clean = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    industry_clean = normalized.encode("ascii", "ignore").decode("ascii").lower().strip()
+
+    canonical_profiles = {
+        "banking",
+        "critical_infrastructure",
+        "healthcare",
+        "heavy_manufacturing",
+        "retail",
+        "default",
+    }
+    if industry_clean in canonical_profiles:
+        return industry_clean
 
     mapping = {
-        # Spanish
-        "energia": "critical_infrastructure",
-        "electrico": "critical_infrastructure",
+        "critical infrastructure": "critical_infrastructure",
         "infraestructura critica": "critical_infrastructure",
+        "infraestrutura critica": "critical_infrastructure",
+        "infrastructure critique": "critical_infrastructure",
+        "logistics": "critical_infrastructure",
+        "logistica": "critical_infrastructure",
+        "logistique": "critical_infrastructure",
+        "transport": "critical_infrastructure",
         "transporte": "critical_infrastructure",
-        "retail": "retail",
-        "comercio": "retail",
-        "banca": "banking",
-        "finanzas": "banking",
-        "seguros": "banking",
-        "salud": "healthcare",
-        "hospital": "healthcare",
-        "manufactura": "default",
-        "fabricacion": "default",
-        "industrial": "default",
-        "construccion": "default",
-        "cemento": "default",
-        # English
+        "energia": "critical_infrastructure",
         "energy": "critical_infrastructure",
+        "electrico": "critical_infrastructure",
         "electricity": "critical_infrastructure",
         "power": "critical_infrastructure",
         "utility": "critical_infrastructure",
         "utilities": "critical_infrastructure",
-        "critical infrastructure": "critical_infrastructure",
-        "transport": "critical_infrastructure",
-        "commerce": "retail",
+
+        # Banking & Financial Services (ES / EN / FR / PT)
         "banking": "banking",
+        "banca": "banking",
+        "banco": "banking",
+        "banque": "banking",
         "finance": "banking",
+        "finanzas": "banking",
+        "financ": "banking",
         "insurance": "banking",
+        "seguros": "banking",
+        "assurance": "banking",
+
+        # Healthcare & Life Sciences (ES / EN / FR / PT)
         "healthcare": "healthcare",
         "health": "healthcare",
-        "manufacturing": "default",
-        "construction": "default",
-        "building materials": "default",
+        "salud": "healthcare",
+        "saude": "healthcare",
+        "sante": "healthcare",
+        "hospital": "healthcare",
+        "clinica": "healthcare",
+        "clinique": "healthcare",
+
+        "retail": "retail",
+        "commerce": "retail",
+        "comercio": "retail",
+        "supermercado": "retail",
+
+        "heavy_manufacturing": "heavy_manufacturing",
+        "heavy manufacturing": "heavy_manufacturing",
+        "manufacturing": "heavy_manufacturing",
+        "manufactura": "heavy_manufacturing",
+        "fabricacion": "heavy_manufacturing",
+        "fabrication": "heavy_manufacturing",
+        "industrial": "heavy_manufacturing",
+        "construccion": "heavy_manufacturing",
+        "construction": "heavy_manufacturing",
+        "cemento": "heavy_manufacturing",
+        "cement": "heavy_manufacturing",
+        "building materials": "heavy_manufacturing",
     }
 
     for key, val in mapping.items():

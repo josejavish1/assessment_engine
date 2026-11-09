@@ -175,7 +175,7 @@
         },
         {
           "kpi_id": "T7.P2.K4",
-          "kpi_name": "Backlog y aging de tickets (control y tendencia)",
+          "kpi_name": "Control de backlog y tasa de envejecimiento de tickets",
           "questions": [
             {
               "question_id": "T7.P2.K4.PR1",
@@ -269,7 +269,7 @@
         },
         {
           "kpi_id": "T7.P4.K4",
-          "kpi_name": "Madurez SRE: SLOs/SLIs y reducción de toil (cuando aplica)",
+          "kpi_name": "Madurez operativa: definición de SLOs, SLIs y reducción de toil",
           "questions": [
             {
               "question_id": "T7.P4.K4.PR1",

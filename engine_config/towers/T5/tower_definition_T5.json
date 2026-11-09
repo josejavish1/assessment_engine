@@ -104,7 +104,7 @@
         },
         {
           "kpi_id": "T5.P1.K2",
-          "kpi_name": "Alcance de continuidad y mapa de dependencias (incluyendo terceros)",
+          "kpi_name": "Alcance de continuidad y mapa de dependencias con terceros y proveedores",
           "questions": [
             {
               "question_id": "T5.P1.K2.PR1",

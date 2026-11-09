@@ -79,3 +79,7 @@ REGLA ESTRICTA DE FORMATO:
 DATOS DE ENTRADA:
 {payload_str}
 """
+
+
+# Backward compatibility alias
+get_commercial_meta_prompt = get_commercial_orchestrator_instruction

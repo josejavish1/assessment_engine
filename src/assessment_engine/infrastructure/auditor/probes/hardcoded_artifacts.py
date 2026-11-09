@@ -67,12 +67,34 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
                             rule_id="ARCH_DOMAIN_LEAK", message=f"Domain leak detected in agnostic core package: '{val}'",
                             recommendation="Decouple domain-specific entity into schema configuration catalog."
                         ))
-            if AI_MODEL_REGEX.match(val) and not any(p in self.rel_path for p in ("genai_client.py", "ai_client.py", "test_", "hardcoded_artifacts.py")):
+            if (
+                AI_MODEL_REGEX.match(val)
+                and " " not in val
+                and ":" not in val
+                and "\n" not in val
+                and not any(p in self.rel_path for p in ("genai_client.py", "ai_client.py", "test_", "hardcoded_artifacts.py"))
+            ):
                 self.findings.append(AuditFinding(
                     category="MODEL_LEAK", severity="HIGH", file_path=self.rel_path, line_number=node.lineno,
                     rule_id="ARCH_HARDCODED_AI_MODEL", message=f"AI model hardcoded in string literal: '{val}'.",
                     recommendation="Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
                 ))
+
+            # Detect hardcoded tenant references in production engine code
+            is_prod_engine = self.rel_path.startswith("src/assessment_engine") or self.rel_path.startswith("src/")
+            if is_prod_engine and not any(part in self.rel_path for part in ("test_", "fixtures", "synthetic", "hardcoded_artifacts.py")):
+                if not val.endswith((".py", ".docx", ".pdf", ".json", ".md", ".yaml", ".yml")):
+                    for token in ("molins", "secil"):
+                        if token in val.lower() and not any(k in val.lower() for k in ("http", "github", "example")):
+                            self.findings.append(AuditFinding(
+                                category="HARDCODING",
+                                severity="HIGH",
+                                file_path=self.rel_path,
+                                line_number=node.lineno,
+                                rule_id="TENANT-HARDCODED-LEAK",
+                                message=f"Hardcoded tenant literal '{token}' detected in production engine: '{val[:50]}...'",
+                                recommendation="Parameterize tenant identifiers via client_intelligence.json or CLI arguments."
+                            ))
         self.generic_visit(node)
 
     def _check_assign_target(self, target: Any, node: ast.Assign) -> None:

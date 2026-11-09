@@ -77,12 +77,12 @@ async def run_step_async(
     if SKIP_MODE:
         if START_FROM and step_name == START_FROM:
             SKIP_MODE = False
-            print(f"\n▶️  Resuming at: {step_name}")
+            logger.info(f"\n▶️  Resuming at: {step_name}")
         else:
-            print(f"⏭️  Skipping: {step_name}")
+            logger.info(f"⏭️  Skipping: {step_name}")
             return
 
-    print(f"\n=== {step_name} (Started) ===")
+    logger.info(f"\n=== {step_name} (Started) ===")
 
     process_env = os.environ.copy()
     process_env.update(env)
@@ -121,7 +121,7 @@ async def run_step_async(
                     raise asyncio.TimeoutError()
 
                 # Print progress heartbeat and keep waiting
-                print(
+                logger.info(
                     "⏳ [Heartbeat] Engine working in background...",
                     flush=True,
                 )
@@ -148,9 +148,9 @@ async def run_step_async(
                 out_msg = stdout.decode("utf-8").strip() if stdout else ""
                 err_msg = stderr.decode("utf-8").strip() if stderr else ""
                 if out_msg:
-                    print(f"\n📢 [STDOUT before Timeout in {step_name}]:\n{out_msg}")
+                    logger.info(f"\n📢 [STDOUT before Timeout in {step_name}]:\n{out_msg}")
                 if err_msg:
-                    print(f"\n📢 [STDERR before Timeout in {step_name}]:\n{err_msg}")
+                    logger.info(f"\n📢 [STDERR before Timeout in {step_name}]:\n{err_msg}")
                 raise RuntimeError(
                     f"Timeout in {step_name} after {timeout_seconds:.0f}s."
                 ) from exc
@@ -158,18 +158,18 @@ async def run_step_async(
             stdout, stderr = await _communicate_with_heartbeat(process)
 
         if stdout:
-            print(stdout.decode("utf-8").strip())
+            logger.info(stdout.decode("utf-8").strip())
 
         if process.returncode != 0:
             out_msg = stdout.decode("utf-8").strip() if stdout else ""
             err_msg = stderr.decode("utf-8").strip() if stderr else ""
             if out_msg and not stdout:
-                print(f"\n📢 [STDOUT before Error in {step_name}]:\n{out_msg}")
+                logger.info(f"\n📢 [STDOUT before Error in {step_name}]:\n{out_msg}")
             raise RuntimeError(
                 f"Native failure in {step_name} (Exit {process.returncode}):\n{err_msg}"
             )
 
-        print(f"✅ {step_name} (Completed)")
+        logger.info(f"✅ {step_name} (Completed)")
 
     except Exception as e:
         raise RuntimeError(f"Critical error executing {step_name}: {e}")
@@ -225,7 +225,7 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
     case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
 
     if args.force:
-        print(f"🔄 [Cognitive Reset] Purging prior reasoning for {tower_id}...")
+        logger.info(f"🔄 [Cognitive Reset] Purging prior reasoning for {tower_id}...")
         if case_dir.exists():
             for f in [
                 "findings.json",
@@ -243,7 +243,7 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
                 if path_to_del.exists():
                     path_to_del.unlink()
     else:
-        print(
+        logger.info(
             f"📈 [Incremental Mode] Preserving existing local cache in {case_dir}. Use --force to rebuild from scratch."
         )
 
@@ -335,7 +335,7 @@ async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
                 "Build case_input",
             )
     else:
-        print("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
+        logger.info("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
 
     if case_input_file.exists():
         try:
@@ -345,14 +345,14 @@ async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
                 case_input_data = json.load(f)
             answers_count = len(case_input_data.get("answers", []))
             if answers_count == 0:
-                print(
+                logger.info(
                     f"\n⏭️  [Short-Circuit] No answers or scores detected for tower '{cfg.tower_id}' in {cfg.responses_path}.\n"
                     f"   This tower is out of assessment scope and will be skipped cleanly.\n"
                     f"   Exiting pipeline execution cleanly (Exit 0)..."
                 )
                 return True
         except Exception as e:
-            print(f"⚠️ Warning analyzing case_input for scope validation: {e}")
+            logger.info(f"⚠️ Warning analyzing case_input for scope validation: {e}")
 
     return False
 
@@ -381,7 +381,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
             "Build evidence_ledger",
         )
     else:
-        print("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
+        logger.info("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
 
     client_dir = Path("working") / cfg.client_slug
     client_intel_path = client_dir / "client_intelligence.json"
@@ -440,7 +440,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
             "Run RAGE Evaluation",
         )
     else:
-        print(
+        logger.info(
             f"⏭️  [Cache Bypass] RAGE Benchmark for tower {cfg.tower_id} verified in snapshot. Skipping."
         )
 
@@ -450,7 +450,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
         or not custom_profile_path.exists()
         or custom_profile_path.stat().st_size == 0
     ):
-        print(
+        logger.info(
             "\n🌐 [System] Initializing Dynamic Financial Scale Calibrator (FAIR-MAM)..."
         )
         try:
@@ -463,9 +463,9 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
                 cfg.args.client, cfg.tower_id, industry_key
             )
         except Exception as e:
-            print(f"⚠️ [Financial Calibrator] Financial scale calibration failed: {e}")
+            logger.info(f"⚠️ [Financial Calibrator] Financial scale calibration failed: {e}")
     else:
-        print(
+        logger.info(
             "⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping."
         )
 
@@ -507,7 +507,7 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
                 "Run scoring",
             )
     else:
-        print("⏭️  [Cache Bypass] Run scoring already generated. Skipping.")
+        logger.info("⏭️  [Cache Bypass] Run scoring already generated. Skipping.")
 
     findings_file = cfg.case_dir / "findings.json"
     if cfg.force or not findings_file.exists() or findings_file.stat().st_size == 0:
@@ -623,23 +623,23 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
                     )
             await asyncio.sleep(0.5)
     else:
-        print(
+        logger.info(
             "[System] [Cache Bypass] Findings and technical research already generated. Skipping Analyst Chain."
         )
 
 
 async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
     """Synthesize the Tower Strategic Blueprint payload and Executive Annex payload."""
-    print("\n[System] Initializing Top-Down Flow: Strategic Blueprint...")
+    logger.info("\n[System] Initializing Top-Down Flow: Strategic Blueprint...")
     if (
         cfg.force
         or not cfg.blueprint_payload_path.exists()
         or cfg.blueprint_payload_path.stat().st_size == 0
     ):
         if cfg.env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
-            print("🔎 Running Vertex AI preflight...")
+            logger.info("🔎 Running Vertex AI preflight...")
             preflight = run_vertex_ai_preflight(env=cfg.env)
-            print(
+            logger.info(
                 f"✅ Vertex AI ready (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
             )
 
@@ -665,11 +665,11 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 "Engine: Tower Strategic Blueprint",
             )
     else:
-        print(
+        logger.info(
             "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
         )
 
-    print("\n🚀 Starting Executive Synthesis...")
+    logger.info("\n🚀 Starting Executive Synthesis...")
     if (
         cfg.force
         or not cfg.payload_path.exists()
@@ -697,12 +697,12 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 "Engine: Executive Annex Synthesizer",
             )
     else:
-        print(
+        logger.info(
             "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
         )
 
 
-    print("\n🚀 Starting Universal Payload Enrichment...")
+    logger.info("\n🚀 Starting Universal Payload Enrichment...")
     enriched_payload_path = cfg.case_dir / f"approved_annex_{cfg.tower_id.lower()}.enriched_payload.json"
     if (
         cfg.force
@@ -729,7 +729,7 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             "Universal Payload Enricher (Pre-flight T1..T10)",
         )
     else:
-        print(
+        logger.info(
             "⏭️  [Cache Bypass] Engine: Universal Payload Enricher already generated. Skipping."
         )
 
@@ -820,7 +820,7 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
                 "V4 AST Shadow Compilation (Canary)",
             )
         else:
-            print(
+            logger.info(
                 f"⏭️  [Production Mode] AS-IS deliverable certified. Skipping internal shadow AST canary for {cfg.tower_id}."
             )
 
@@ -870,15 +870,15 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
                 / f"Blueprint_Transformacion_{cfg.tower_id}_{cfg.client_slug}.docx",
             )
 
-    print("\n🚀 Finalizing: Standard Rendering + Blueprint in parallel...")
+    logger.info("\n🚀 Finalizing: Standard Rendering + Blueprint in parallel...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
-    print(
+    logger.info(
         f"\n✅ Pipeline {cfg.tower_id} completed successfully (Canonical Dual Model):"
     )
-    print(f"  📄 Deliverable 1 (AS-IS Diagnostic): {cfg.output_asis_docx}")
-    print(f"  🚀 Deliverable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
-    print(
+    logger.info(f"  📄 Deliverable 1 (AS-IS Diagnostic): {cfg.output_asis_docx}")
+    logger.info(f"  🚀 Deliverable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
+    logger.info(
         f"  📊 Actuarial Ledger (SR 11-7):   {cfg.case_dir / f'Expediente_Auditoria_Riesgos_{cfg.tower_id}.md'}"
     )
 

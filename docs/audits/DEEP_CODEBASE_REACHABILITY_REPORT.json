@@ -1,0 +1,2059 @@
+{
+  "summary": {
+    "total_modules_indexed": 657,
+    "production_active_count": 125,
+    "orphan_test_only_count": 15,
+    "dead_islands_count": 104,
+    "package_inits_count": 21,
+    "dev_tooling_count": 172,
+    "test_suite_count": 220,
+    "production_roots_configured": 7
+  },
+  "dead_islands": [
+    {
+      "path": "src/assessment_engine/ports/graph_analyzer.py",
+      "sloc": 37,
+      "total_lines": 48,
+      "functions_count": 4,
+      "classes_count": 1,
+      "typed_functions_count": 4,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/networkx_analyzer.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
+      "sloc": 910,
+      "total_lines": 1045,
+      "functions_count": 13,
+      "classes_count": 0,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/emitters/docx_style_resolver.py",
+        "src/assessment_engine/application/generate_tower_radar_chart.py",
+        "src/assessment_engine/domain/schemas/annex_synthesis.py",
+        "src/assessment_engine/domain/theme_registry.py",
+        "src/assessment_engine/infrastructure/contract_utils.py",
+        "src/assessment_engine/infrastructure/docx_render_utils.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "scripts/simulate_multinational_archetypes.py",
+        "tests/unit/test_render_tower_annex_from_template.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/render_commercial_report.py",
+      "sloc": 774,
+      "total_lines": 872,
+      "functions_count": 14,
+      "classes_count": 0,
+      "typed_functions_count": 4,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/emitters/docx_style_resolver.py",
+        "src/assessment_engine/adapters/render_global_report_from_template.py",
+        "src/assessment_engine/domain/schemas/commercial.py",
+        "src/assessment_engine/domain/theme_registry.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/contract_utils.py",
+        "src/assessment_engine/infrastructure/docx_render_utils.py",
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "scripts/simulate_multinational_archetypes.py",
+        "tests/unit/test_render_commercial_report.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
+      "sloc": 2281,
+      "total_lines": 2605,
+      "functions_count": 25,
+      "classes_count": 3,
+      "typed_functions_count": 25,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+        "src/assessment_engine/adapters/compilers/docx_compiler.py",
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+        "src/assessment_engine/adapters/compilers/toc_page_resolver.py",
+        "src/assessment_engine/application/generate_global_radar_chart.py",
+        "src/assessment_engine/domain/actuarial_reconciler.py",
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "src/assessment_engine/domain/actuarial_taxonomy_clusterer.py",
+        "src/assessment_engine/domain/maturity_band.py",
+        "src/assessment_engine/domain/schemas/ast.py",
+        "src/assessment_engine/domain/taxonomy_resolver.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "scripts/build_full_client_delivery_suite.py",
+        "scripts/simulate_multinational_archetypes.py",
+        "tests/unit/test_rfc074_actuarial_governance.py",
+        "tests/unit/test_rfc075_score_convergence.py",
+        "tests/unit/test_rfc076_executive_continuity_narrative.py",
+        "tests/unit/test_rfc077_executive_snapshot_governance.py",
+        "tests/unit/test_rfc079_cmmi_scale_table.py",
+        "tests/unit/test_rfc080_section31_governance.py",
+        "tests/unit/test_rfc081_dynamic_risk_taxonomy_clustering.py",
+        "tests/unit/test_tomo_asis_ast_compiler.py",
+        "tests/unit/test_tomo_asis_ast_compiler_multi_tenant.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/compilers/toc_page_resolver.py",
+      "sloc": 227,
+      "total_lines": 285,
+      "functions_count": 6,
+      "classes_count": 2,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/compilers/ast_appendices_builder.py",
+      "sloc": 393,
+      "total_lines": 438,
+      "functions_count": 6,
+      "classes_count": 0,
+      "typed_functions_count": 6,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+        "src/assessment_engine/domain/schemas/ast.py",
+        "src/assessment_engine/domain/taxonomy_resolver.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "tests/integration/test_payload_to_ast.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+      "sloc": 3248,
+      "total_lines": 3754,
+      "functions_count": 28,
+      "classes_count": 2,
+      "typed_functions_count": 27,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/compilers/ast_appendices_builder.py",
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+        "src/assessment_engine/adapters/compilers/docx_compiler.py",
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+        "src/assessment_engine/adapters/compilers/toc_page_resolver.py",
+        "src/assessment_engine/domain/actuarial/downtime_calibrator.py",
+        "src/assessment_engine/domain/actuarial/risk_aggregator.py",
+        "src/assessment_engine/domain/actuarial_calculator.py",
+        "src/assessment_engine/domain/actuarial_reconciler.py",
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "src/assessment_engine/domain/maturity_band.py",
+        "src/assessment_engine/domain/schemas/ast.py",
+        "src/assessment_engine/domain/schemas/risk_ontology.py",
+        "src/assessment_engine/domain/taxonomy_resolver.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "scripts/build_full_client_delivery_suite.py",
+        "scripts/regenerate_molins_asis_t1_t2.py",
+        "scripts/resynthesize_all_10_towers_from_raw_transcription.py",
+        "scripts/resynthesize_tower2_from_raw_transcription.py",
+        "src/assessment_engine/application/tools/run_shadow_compilation.py",
+        "tests/integration/test_ast_compilation_unified.py",
+        "tests/integration/test_payload_to_ast.py",
+        "tests/unit/test_asis_deliverable_purity.py",
+        "tests/unit/test_intelligence_harvesting.py",
+        "tests/unit/test_localized_branding.py",
+        "tests/unit/test_payload_to_ast_multi_tenant.py",
+        "tests/unit/test_rfc075_score_convergence.py",
+        "tests/unit/test_universal_chapter2_bridge.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/export_graph_state.py",
+      "sloc": 267,
+      "total_lines": 343,
+      "functions_count": 4,
+      "classes_count": 1,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/application/run_strategic_orchestrator.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/epistemic_graph.py",
+        "src/assessment_engine/infrastructure/networkx_analyzer.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/validate_tower_definition.py",
+      "sloc": 203,
+      "total_lines": 245,
+      "functions_count": 7,
+      "classes_count": 0,
+      "typed_functions_count": 7,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/bootstrap/bootstrap_all_towers.py",
+        "tests/unit/test_validate_tower_definition.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/sync_payload_scores.py",
+      "sloc": 190,
+      "total_lines": 233,
+      "functions_count": 6,
+      "classes_count": 0,
+      "typed_functions_count": 6,
+      "imports_outgoing": [
+        "src/assessment_engine/application/run_scoring.py",
+        "src/assessment_engine/domain/services/score_reconciler.py",
+        "src/assessment_engine/domain/validation/mathematical_integrity.py"
+      ],
+      "imported_by": [
+        "scripts/resynthesize_all_10_towers_from_raw_transcription.py",
+        "scripts/resynthesize_domains_from_raw_transcription.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/run_strategic_orchestrator.py",
+      "sloc": 64,
+      "total_lines": 85,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/epistemic_graph.py",
+        "src/assessment_engine/infrastructure/networkx_analyzer.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/build_global_report_payload.py",
+        "src/assessment_engine/application/export_graph_state.py",
+        "tests/diagnostics/diag_verify_sovereign_convergence.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/universal_payload_enricher.py",
+      "sloc": 294,
+      "total_lines": 350,
+      "functions_count": 9,
+      "classes_count": 1,
+      "typed_functions_count": 9,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/actuarial/downtime_calibrator.py",
+        "src/assessment_engine/domain/cfo_actuarial_gate.py",
+        "src/assessment_engine/domain/contracts/enriched_payload_schema.py",
+        "src/assessment_engine/domain/services/localization_resolver.py",
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/cli/enrich_tower_payload_cli.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/generate_global_radar_chart.py",
+      "sloc": 234,
+      "total_lines": 285,
+      "functions_count": 5,
+      "classes_count": 0,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
+        "tests/unit/test_visual_chart_generators.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/bootstrap/bootstrap_tower_from_matrix.py",
+      "sloc": 893,
+      "total_lines": 1042,
+      "functions_count": 25,
+      "classes_count": 0,
+      "typed_functions_count": 25,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/bootstrap/bootstrap_all_towers.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/bootstrap/bootstrap_all_towers.py",
+      "sloc": 125,
+      "total_lines": 151,
+      "functions_count": 2,
+      "classes_count": 0,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/application/bootstrap/bootstrap_tower_from_matrix.py",
+        "src/assessment_engine/application/validate_tower_definition.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+      "sloc": 1204,
+      "total_lines": 1364,
+      "functions_count": 8,
+      "classes_count": 1,
+      "typed_functions_count": 8,
+      "imports_outgoing": [
+        "src/assessment_engine/application/services/actuarial_inference_engine.py",
+        "src/assessment_engine/domain/actuarial_reconciler.py",
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
+        "src/assessment_engine/domain/taxonomy_resolver.py",
+        "src/assessment_engine/domain/validation/semantic_gatekeeper.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/ontology/taxonomy_loader.py"
+      ],
+      "imported_by": [
+        "scripts/build_full_client_delivery_suite.py",
+        "scripts/resynthesize_all_10_towers_from_raw_transcription.py",
+        "scripts/resynthesize_tower2_from_raw_transcription.py",
+        "tests/unit/test_rfc075_score_convergence.py",
+        "tests/unit/test_tower_payload_hydrator_epistemic.py",
+        "tests/unit/test_tower_payload_hydrator_semantic_quarantine.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/services/cross_tower_nexus.py",
+      "sloc": 532,
+      "total_lines": 594,
+      "functions_count": 26,
+      "classes_count": 2,
+      "typed_functions_count": 26,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/build_global_report_payload.py",
+        "tests/integration/test_rfc084_cascade_assertion_gate.py",
+        "tests/unit/test_cross_tower_nexus.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/services/epistemic_synthesizer.py",
+      "sloc": 236,
+      "total_lines": 274,
+      "functions_count": 5,
+      "classes_count": 1,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/run_shadow_compilation.py",
+      "sloc": 136,
+      "total_lines": 172,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/adapters/compilers/docx_compiler.py",
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/domain/schemas/ast.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/run_incremental_typecheck.py",
+      "sloc": 87,
+      "total_lines": 109,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/run_incremental_quality_gate.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/lint_documentation_style.py",
+      "sloc": 63,
+      "total_lines": 79,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/build_docs_site.py",
+      "sloc": 182,
+      "total_lines": 211,
+      "functions_count": 6,
+      "classes_count": 0,
+      "typed_functions_count": 6,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/generate_smoke_data.py",
+      "sloc": 345,
+      "total_lines": 399,
+      "functions_count": 5,
+      "classes_count": 0,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/client_intelligence.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/regenerate_smoke_artifacts.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/run_incremental_quality_gate.py",
+      "sloc": 167,
+      "total_lines": 207,
+      "functions_count": 5,
+      "classes_count": 0,
+      "typed_functions_count": 5,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_incremental_typecheck.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/check_vertex_ai_access.py",
+      "sloc": 35,
+      "total_lines": 48,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/runtime_env.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/validate_documentation_governance.py",
+      "sloc": 693,
+      "total_lines": 808,
+      "functions_count": 26,
+      "classes_count": 0,
+      "typed_functions_count": 26,
+      "imports_outgoing": [],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/sync_sentinel.py",
+      "sloc": 35,
+      "total_lines": 49,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/streaming_sentinel.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
+      "sloc": 203,
+      "total_lines": 264,
+      "functions_count": 6,
+      "classes_count": 0,
+      "typed_functions_count": 6,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py",
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/check_docx_unresolved_placeholders.py",
+      "sloc": 67,
+      "total_lines": 87,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/sign_dossier.py",
+      "sloc": 50,
+      "total_lines": 69,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 0,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/client_intelligence.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/validate_documentation_snippets.py",
+      "sloc": 151,
+      "total_lines": 186,
+      "functions_count": 5,
+      "classes_count": 0,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/run_golden_path_check.py",
+      "sloc": 148,
+      "total_lines": 192,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/enforce_english_comments.py",
+      "sloc": 375,
+      "total_lines": 456,
+      "functions_count": 8,
+      "classes_count": 1,
+      "typed_functions_count": 7,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/ai_client.py",
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/regenerate_smoke_artifacts.py",
+      "sloc": 284,
+      "total_lines": 318,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/generate_smoke_data.py",
+        "src/assessment_engine/infrastructure/pipeline_runtime.py",
+        "src/assessment_engine/infrastructure/runtime_env.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/apex_dispatcher.py",
+      "sloc": 503,
+      "total_lines": 595,
+      "functions_count": 9,
+      "classes_count": 2,
+      "typed_functions_count": 9,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/ai_client.py",
+        "src/assessment_engine/infrastructure/apex_models.py",
+        "src/assessment_engine/infrastructure/apex_sentinel.py",
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/corporate_project_aggregator.py",
+      "sloc": 174,
+      "total_lines": 216,
+      "functions_count": 8,
+      "classes_count": 3,
+      "typed_functions_count": 8,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/config_loader.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/build_global_report_payload.py",
+        "tests/integration/test_e2e_federated_pipeline_flow.py",
+        "tests/unit/test_corporate_project_aggregator.py",
+        "tests/unit/test_program_temporal_synchronization.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/ingest_documents.py",
+      "sloc": 77,
+      "total_lines": 91,
+      "functions_count": 2,
+      "classes_count": 0,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/evidence_engine.py",
+        "src/assessment_engine/infrastructure/raptor_engine.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/validate_contracts_schemas.py",
+      "sloc": 301,
+      "total_lines": 373,
+      "functions_count": 9,
+      "classes_count": 0,
+      "typed_functions_count": 7,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/build_documentation_health_report.py",
+      "sloc": 153,
+      "total_lines": 173,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/__init__.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/context_tools.py",
+      "sloc": 201,
+      "total_lines": 258,
+      "functions_count": 7,
+      "classes_count": 0,
+      "typed_functions_count": 7,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/http_client.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/cli/enrich_tower_payload_cli.py",
+      "sloc": 60,
+      "total_lines": 79,
+      "functions_count": 3,
+      "classes_count": 0,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/universal_payload_enricher.py"
+      ],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/actuarial_calculator.py",
+      "sloc": 104,
+      "total_lines": 121,
+      "functions_count": 2,
+      "classes_count": 2,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/schemas/risk_ontology.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
+      "sloc": 530,
+      "total_lines": 635,
+      "functions_count": 9,
+      "classes_count": 9,
+      "typed_functions_count": 8,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/services/tower_payload_hydrator.py",
+        "tests/unit/test_actuarial_physical_sle_and_dissonance.py",
+        "tests/unit/test_bayesian_fair_copula_engine.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/cfo_actuarial_gate.py",
+      "sloc": 135,
+      "total_lines": 159,
+      "functions_count": 4,
+      "classes_count": 3,
+      "typed_functions_count": 4,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/universal_payload_enricher.py",
+        "tests/unit/test_cfo_actuarial_gate.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/actuarial_reconciler.py",
+      "sloc": 116,
+      "total_lines": 148,
+      "functions_count": 3,
+      "classes_count": 2,
+      "typed_functions_count": 3,
+      "imports_outgoing": [],
+      "imported_by": [
+        "scripts/test_dynamic_actuarial_elasticity.py",
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
+        "src/assessment_engine/application/services/tower_payload_hydrator.py",
+        "tests/unit/test_actuarial_reconciler.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/actuarial_taxonomy_clusterer.py",
+      "sloc": 330,
+      "total_lines": 382,
+      "functions_count": 6,
+      "classes_count": 2,
+      "typed_functions_count": 3,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
+        "tests/unit/test_rfc081_dynamic_risk_taxonomy_clustering.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/prompts/commercial_prompts.py",
+      "sloc": 68,
+      "total_lines": 81,
+      "functions_count": 2,
+      "classes_count": 0,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/run_commercial_refiner.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/prompts/product_owner_prompts.py",
+      "sloc": 160,
+      "total_lines": 190,
+      "functions_count": 10,
+      "classes_count": 1,
+      "typed_functions_count": 9,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/services/localization_resolver.py",
+      "sloc": 80,
+      "total_lines": 98,
+      "functions_count": 8,
+      "classes_count": 1,
+      "typed_functions_count": 8,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/universal_payload_enricher.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/contracts/ingestion_ports.py",
+      "sloc": 80,
+      "total_lines": 105,
+      "functions_count": 5,
+      "classes_count": 4,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+        "src/assessment_engine/application/services/epistemic_synthesizer.py",
+        "src/assessment_engine/infrastructure/normalization/phonetic_entity_resolver.py",
+        "src/assessment_engine/infrastructure/parsers/empirical_response_parser.py",
+        "src/assessment_engine/infrastructure/parsers/raw_transcript_parser.py",
+        "tests/unit/test_rfc082_epistemic_ledger_models.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/contracts/enriched_payload_schema.py",
+      "sloc": 63,
+      "total_lines": 85,
+      "functions_count": 0,
+      "classes_count": 4,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/universal_payload_enricher.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/actuarial/downtime_calibrator.py",
+      "sloc": 475,
+      "total_lines": 556,
+      "functions_count": 11,
+      "classes_count": 8,
+      "typed_functions_count": 9,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/application/universal_payload_enricher.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/actuarial/risk_aggregator.py",
+      "sloc": 25,
+      "total_lines": 34,
+      "functions_count": 1,
+      "classes_count": 1,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/commercial.py",
+      "sloc": 213,
+      "total_lines": 296,
+      "functions_count": 2,
+      "classes_count": 22,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "scripts/simulate_multinational_archetypes.py",
+        "src/assessment_engine/adapters/render_commercial_report.py",
+        "src/assessment_engine/application/run_commercial_refiner.py",
+        "tests/unit/test_render_commercial_report.py",
+        "tests/unit/test_run_commercial_refiner.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/tobe.py",
+      "sloc": 121,
+      "total_lines": 151,
+      "functions_count": 2,
+      "classes_count": 5,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/gap.py",
+      "sloc": 47,
+      "total_lines": 58,
+      "functions_count": 1,
+      "classes_count": 2,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/epistemic_ledger.py",
+      "sloc": 136,
+      "total_lines": 178,
+      "functions_count": 2,
+      "classes_count": 10,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+        "src/assessment_engine/application/services/epistemic_synthesizer.py",
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/infrastructure/normalization/phonetic_entity_resolver.py",
+        "src/assessment_engine/infrastructure/parsers/empirical_response_parser.py",
+        "src/assessment_engine/infrastructure/parsers/raw_transcript_parser.py",
+        "tests/integration/test_rfc082_raw_pipeline.py",
+        "tests/unit/test_rfc082_epistemic_ledger_models.py",
+        "tests/unit/test_rfc082_raw_parsers_and_phonetic_normalization.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/conclusion.py",
+      "sloc": 41,
+      "total_lines": 51,
+      "functions_count": 2,
+      "classes_count": 1,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py",
+        "tests/unit/test_domain_schemas_and_sovereign_policies.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/asis.py",
+      "sloc": 47,
+      "total_lines": 58,
+      "functions_count": 1,
+      "classes_count": 2,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/evidence.py",
+      "sloc": 112,
+      "total_lines": 142,
+      "functions_count": 1,
+      "classes_count": 5,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evidence_engine.py",
+        "src/assessment_engine/infrastructure/raptor_engine.py",
+        "tests/integration/test_evidence_provenance.py",
+        "tests/unit/test_raptor_density.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/risks.py",
+      "sloc": 38,
+      "total_lines": 49,
+      "functions_count": 1,
+      "classes_count": 2,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/context.py",
+      "sloc": 124,
+      "total_lines": 148,
+      "functions_count": 4,
+      "classes_count": 1,
+      "typed_functions_count": 3,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py",
+        "tests/unit/test_assessment_context.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/risk_ontology.py",
+      "sloc": 126,
+      "total_lines": 144,
+      "functions_count": 1,
+      "classes_count": 5,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/domain/actuarial_calculator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/todo.py",
+      "sloc": 38,
+      "total_lines": 48,
+      "functions_count": 2,
+      "classes_count": 2,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/domain/schemas/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/domain/schemas/finops_rosi.py",
+      "sloc": 104,
+      "total_lines": 142,
+      "functions_count": 2,
+      "classes_count": 7,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/rosi_calculator.py",
+        "tests/unit/test_rosi_actuarial_engine.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/http_client.py",
+      "sloc": 111,
+      "total_lines": 137,
+      "functions_count": 9,
+      "classes_count": 2,
+      "typed_functions_count": 9,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/chassis/context.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/context_tools.py",
+        "tests/unit/test_http_client.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/logger_config.py",
+      "sloc": 101,
+      "total_lines": 139,
+      "functions_count": 2,
+      "classes_count": 1,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/product_owner_models.py",
+      "sloc": 47,
+      "total_lines": 60,
+      "functions_count": 0,
+      "classes_count": 4,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/apex_sentinel.py",
+      "sloc": 111,
+      "total_lines": 137,
+      "functions_count": 4,
+      "classes_count": 2,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/apex_dispatcher.py",
+        "tests/integration/test_apex_infrastructure.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/epistemic_graph_service.py",
+      "sloc": 387,
+      "total_lines": 499,
+      "functions_count": 7,
+      "classes_count": 1,
+      "typed_functions_count": 7,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/build_global_report_payload.py",
+        "src/assessment_engine/application/run_intelligence_harvesting.py",
+        "tests/unit/test_epistemic_graph_service.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/mcda_sensitivity_engine.py",
+      "sloc": 149,
+      "total_lines": 202,
+      "functions_count": 3,
+      "classes_count": 1,
+      "typed_functions_count": 3,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/run_intelligence_harvesting.py",
+        "tests/unit/test_mcda_sensitivity_engine.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/streaming_sentinel.py",
+      "sloc": 701,
+      "total_lines": 834,
+      "functions_count": 24,
+      "classes_count": 3,
+      "typed_functions_count": 21,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/evidence_engine.py",
+        "src/assessment_engine/infrastructure/raptor_engine.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/sync_sentinel.py",
+        "tests/unit/test_streaming_sentinel.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/networkx_analyzer.py",
+      "sloc": 151,
+      "total_lines": 194,
+      "functions_count": 18,
+      "classes_count": 1,
+      "typed_functions_count": 18,
+      "imports_outgoing": [
+        "src/assessment_engine/ports/graph_analyzer.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/export_graph_state.py",
+        "src/assessment_engine/application/run_strategic_orchestrator.py",
+        "tests/integration/test_e2e_federated_pipeline_flow.py",
+        "tests/unit/test_program_temporal_synchronization.py",
+        "tests/unit/test_topological_sort.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/parser_strategy.py",
+      "sloc": 35,
+      "total_lines": 47,
+      "functions_count": 4,
+      "classes_count": 3,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/document_ai_client.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evidence_engine.py",
+        "tests/integration/test_cloud_parser_strategy.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/apex_models.py",
+      "sloc": 59,
+      "total_lines": 70,
+      "functions_count": 0,
+      "classes_count": 2,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/apex_dispatcher.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/liability_signer.py",
+      "sloc": 40,
+      "total_lines": 48,
+      "functions_count": 1,
+      "classes_count": 1,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/secrets_client.py",
+      "sloc": 51,
+      "total_lines": 67,
+      "functions_count": 1,
+      "classes_count": 2,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/doctor_agent.py",
+      "sloc": 23,
+      "total_lines": 31,
+      "functions_count": 1,
+      "classes_count": 1,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/document_ai_client.py",
+      "sloc": 38,
+      "total_lines": 49,
+      "functions_count": 2,
+      "classes_count": 1,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evidence_engine.py",
+        "src/assessment_engine/infrastructure/parser_strategy.py",
+        "tests/unit/test_document_ai_client.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/json_taxonomy_catalog_loader.py",
+      "sloc": 67,
+      "total_lines": 82,
+      "functions_count": 3,
+      "classes_count": 1,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/taxonomy_resolver.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/__init__.py",
+        "tests/conftest.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/raptor_engine.py",
+      "sloc": 380,
+      "total_lines": 461,
+      "functions_count": 19,
+      "classes_count": 2,
+      "typed_functions_count": 18,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/schemas/evidence.py",
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/ingest_documents.py",
+        "src/assessment_engine/infrastructure/streaming_sentinel.py",
+        "tests/diagnostics/diag_raptor.py",
+        "tests/unit/test_raptor_density.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evidence_engine.py",
+      "sloc": 424,
+      "total_lines": 499,
+      "functions_count": 17,
+      "classes_count": 2,
+      "typed_functions_count": 16,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/schemas/evidence.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/document_ai_client.py",
+        "src/assessment_engine/infrastructure/parser_strategy.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/tools/ingest_documents.py",
+        "src/assessment_engine/infrastructure/streaming_sentinel.py",
+        "tests/diagnostics/diag_evidence_engine.py",
+        "tests/diagnostics/diag_raptor.py",
+        "tests/integration/test_cloud_parser_strategy.py",
+        "tests/unit/test_evidence_engine_multi_format.py",
+        "tests/unit/test_evidence_engine_xlsx.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/verification_agent.py",
+      "sloc": 27,
+      "total_lines": 36,
+      "functions_count": 1,
+      "classes_count": 1,
+      "typed_functions_count": 0,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/ontology/exceptions.py",
+      "sloc": 33,
+      "total_lines": 41,
+      "functions_count": 2,
+      "classes_count": 2,
+      "typed_functions_count": 2,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/ontology/__init__.py",
+        "src/assessment_engine/infrastructure/ontology/registry.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/ontology/models.py",
+      "sloc": 150,
+      "total_lines": 189,
+      "functions_count": 5,
+      "classes_count": 10,
+      "typed_functions_count": 5,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/ontology/__init__.py",
+        "src/assessment_engine/infrastructure/ontology/registry.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/ontology/registry.py",
+      "sloc": 184,
+      "total_lines": 222,
+      "functions_count": 3,
+      "classes_count": 1,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/ontology/exceptions.py",
+        "src/assessment_engine/infrastructure/ontology/models.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/ontology/__init__.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/closure_tribunal.py",
+      "sloc": 474,
+      "total_lines": 563,
+      "functions_count": 22,
+      "classes_count": 5,
+      "typed_functions_count": 22,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/auditor/probes/code_hygiene.py",
+        "src/assessment_engine/infrastructure/evolution/epistemic_distiller.py"
+      ],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "tests/unit/test_evolution.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/trace_conditioner.py",
+      "sloc": 114,
+      "total_lines": 136,
+      "functions_count": 4,
+      "classes_count": 3,
+      "typed_functions_count": 4,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/epistemic_distiller.py",
+      "sloc": 901,
+      "total_lines": 1034,
+      "functions_count": 34,
+      "classes_count": 2,
+      "typed_functions_count": 34,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/evolution/reflexion_ledger.py",
+        "src/assessment_engine/infrastructure/genai_client.py",
+        "src/assessment_engine/infrastructure/json_from_model.py"
+      ],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "src/assessment_engine/infrastructure/evolution/closure_tribunal.py",
+        "tests/unit/test_actuarial_rigor_no_heuristics.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/ast_signature_models.py",
+      "sloc": 131,
+      "total_lines": 151,
+      "functions_count": 7,
+      "classes_count": 5,
+      "typed_functions_count": 5,
+      "imports_outgoing": [],
+      "imported_by": [],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/reflexion_ledger.py",
+      "sloc": 329,
+      "total_lines": 365,
+      "functions_count": 13,
+      "classes_count": 3,
+      "typed_functions_count": 13,
+      "imports_outgoing": [],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+        "src/assessment_engine/infrastructure/evolution/epistemic_distiller.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/mutation_ctf_probe.py",
+      "sloc": 296,
+      "total_lines": 348,
+      "functions_count": 13,
+      "classes_count": 4,
+      "typed_functions_count": 13,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/complexity_guard.py",
+      "sloc": 248,
+      "total_lines": 292,
+      "functions_count": 12,
+      "classes_count": 3,
+      "typed_functions_count": 12,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/auditor/probes/ast_complexity.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+        "tests/unit/test_evolution.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+      "sloc": 1184,
+      "total_lines": 1360,
+      "functions_count": 42,
+      "classes_count": 7,
+      "typed_functions_count": 42,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/auditor/probes/sre_observability.py",
+        "src/assessment_engine/infrastructure/chassis/context.py",
+        "src/assessment_engine/infrastructure/evolution/ast_signature_guard.py",
+        "src/assessment_engine/infrastructure/evolution/complexity_guard.py",
+        "src/assessment_engine/infrastructure/evolution/fault_localizer.py",
+        "src/assessment_engine/infrastructure/evolution/mcts_refactor_engine.py",
+        "src/assessment_engine/infrastructure/evolution/mutation_ctf_probe.py",
+        "src/assessment_engine/infrastructure/evolution/reflexion_ledger.py",
+        "src/assessment_engine/infrastructure/evolution/trace_conditioner.py",
+        "src/assessment_engine/infrastructure/evolution/worktree_runner.py",
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "tests/unit/test_evolution.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/fault_localizer.py",
+      "sloc": 241,
+      "total_lines": 293,
+      "functions_count": 8,
+      "classes_count": 3,
+      "typed_functions_count": 8,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/worktree_runner.py",
+      "sloc": 136,
+      "total_lines": 169,
+      "functions_count": 9,
+      "classes_count": 2,
+      "typed_functions_count": 8,
+      "imports_outgoing": [],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+        "tests/unit/test_evolution.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/ast_signature_guard.py",
+      "sloc": 509,
+      "total_lines": 594,
+      "functions_count": 23,
+      "classes_count": 1,
+      "typed_functions_count": 23,
+      "imports_outgoing": [],
+      "imported_by": [
+        "scripts/run_cognitive_orchestrator.py",
+        "src/assessment_engine/infrastructure/evolution/__init__.py",
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+        "tests/unit/test_evolution.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/evolution/mcts_refactor_engine.py",
+      "sloc": 132,
+      "total_lines": 156,
+      "functions_count": 15,
+      "classes_count": 2,
+      "typed_functions_count": 15,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/chassis/context.py",
+      "sloc": 68,
+      "total_lines": 90,
+      "functions_count": 8,
+      "classes_count": 1,
+      "typed_functions_count": 7,
+      "imports_outgoing": [],
+      "imported_by": [
+        "src/assessment_engine/infrastructure/chassis/__init__.py",
+        "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
+        "src/assessment_engine/infrastructure/http_client.py",
+        "tests/unit/test_http_client.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/quality/argon_gate.py",
+      "sloc": 426,
+      "total_lines": 490,
+      "functions_count": 14,
+      "classes_count": 9,
+      "typed_functions_count": 11,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/genai_client.py"
+      ],
+      "imported_by": [
+        "scripts/autonomous_executor.py",
+        "scripts/run_autonomous_remediation.py",
+        "tests/unit/test_argon_ironclad_quality_gate.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/parsers/empirical_response_parser.py",
+      "sloc": 223,
+      "total_lines": 257,
+      "functions_count": 8,
+      "classes_count": 1,
+      "typed_functions_count": 8,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+        "tests/unit/test_rfc082_raw_parsers_and_phonetic_normalization.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/parsers/raw_transcript_parser.py",
+      "sloc": 188,
+      "total_lines": 221,
+      "functions_count": 9,
+      "classes_count": 1,
+      "typed_functions_count": 9,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+        "tests/unit/test_rfc082_raw_parsers_and_phonetic_normalization.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/normalization/phonetic_entity_resolver.py",
+      "sloc": 173,
+      "total_lines": 206,
+      "functions_count": 10,
+      "classes_count": 1,
+      "typed_functions_count": 10,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+        "tests/unit/test_rfc082_raw_parsers_and_phonetic_normalization.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    },
+    {
+      "path": "src/assessment_engine/i18n/resolver.py",
+      "sloc": 76,
+      "total_lines": 98,
+      "functions_count": 4,
+      "classes_count": 2,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "src/assessment_engine/i18n/__init__.py",
+        "tests/unit/test_declarative_i18n_resolver.py"
+      ],
+      "is_reachable": false,
+      "classification": "DEAD_ISLAND"
+    }
+  ],
+  "orphan_test_only": [
+    {
+      "path": "src/assessment_engine/adapters/render_web_presentation.py",
+      "sloc": 394,
+      "total_lines": 480,
+      "functions_count": 19,
+      "classes_count": 0,
+      "typed_functions_count": 19,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/maturity_band.py",
+        "src/assessment_engine/domain/schemas/blueprint.py",
+        "src/assessment_engine/domain/schemas/global_report.py",
+        "src/assessment_engine/infrastructure/global_maturity_policy.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "tests/integration/test_render_web_presentation.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/adapters/render_lineage_portal.py",
+      "sloc": 130,
+      "total_lines": 175,
+      "functions_count": 4,
+      "classes_count": 0,
+      "typed_functions_count": 4,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_render_lineage_portal.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/run_global_synthesizer_tobe.py",
+      "sloc": 571,
+      "total_lines": 648,
+      "functions_count": 1,
+      "classes_count": 7,
+      "typed_functions_count": 0,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/ai_client.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/genai_client.py",
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "tests/integration/test_global_synthesizer_tobe.py",
+        "tests/unit/test_ai_client.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/run_commercial_refiner.py",
+      "sloc": 339,
+      "total_lines": 395,
+      "functions_count": 5,
+      "classes_count": 0,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/prompts/commercial_prompts.py",
+        "src/assessment_engine/domain/schemas/commercial.py",
+        "src/assessment_engine/infrastructure/ai_client.py",
+        "src/assessment_engine/infrastructure/client_intelligence.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/genai_client.py",
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_run_commercial_refiner.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/run_intelligence_harvesting.py",
+      "sloc": 829,
+      "total_lines": 976,
+      "functions_count": 16,
+      "classes_count": 2,
+      "typed_functions_count": 13,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/client_intelligence.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/epistemic_graph_service.py",
+        "src/assessment_engine/infrastructure/evidence_governance.py",
+        "src/assessment_engine/infrastructure/genai_client.py",
+        "src/assessment_engine/infrastructure/mcda_sensitivity_engine.py",
+        "src/assessment_engine/infrastructure/runtime_env.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_intelligence_harvesting.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/generate_executive_roadmap_image.py",
+      "sloc": 171,
+      "total_lines": 212,
+      "functions_count": 2,
+      "classes_count": 0,
+      "typed_functions_count": 2,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/localization.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_executive_roadmap_image.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/build_evidence_ledger.py",
+      "sloc": 204,
+      "total_lines": 253,
+      "functions_count": 7,
+      "classes_count": 0,
+      "typed_functions_count": 7,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_evidence_ledger_ranking.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/build_global_report_payload.py",
+      "sloc": 1290,
+      "total_lines": 1448,
+      "functions_count": 16,
+      "classes_count": 0,
+      "typed_functions_count": 16,
+      "imports_outgoing": [
+        "src/assessment_engine/application/run_strategic_orchestrator.py",
+        "src/assessment_engine/application/services/cross_tower_nexus.py",
+        "src/assessment_engine/application/tools/corporate_project_aggregator.py",
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "src/assessment_engine/infrastructure/client_intelligence.py",
+        "src/assessment_engine/infrastructure/epistemic_graph_service.py",
+        "src/assessment_engine/infrastructure/global_maturity_policy.py",
+        "src/assessment_engine/infrastructure/localization.py",
+        "src/assessment_engine/infrastructure/text_utils.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_build_global_report_payload.py",
+        "tests/unit/test_global_report_enhancements.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/pipelines/raw_evidence_ingestion_pipeline.py",
+      "sloc": 139,
+      "total_lines": 165,
+      "functions_count": 3,
+      "classes_count": 1,
+      "typed_functions_count": 3,
+      "imports_outgoing": [
+        "src/assessment_engine/application/services/epistemic_synthesizer.py",
+        "src/assessment_engine/domain/contracts/ingestion_ports.py",
+        "src/assessment_engine/domain/schemas/epistemic_ledger.py",
+        "src/assessment_engine/infrastructure/normalization/phonetic_entity_resolver.py",
+        "src/assessment_engine/infrastructure/parsers/empirical_response_parser.py",
+        "src/assessment_engine/infrastructure/parsers/raw_transcript_parser.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py"
+      ],
+      "imported_by": [
+        "tests/integration/test_rfc082_raw_pipeline.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/run_product_owner_orchestrator.py",
+      "sloc": 2202,
+      "total_lines": 2593,
+      "functions_count": 64,
+      "classes_count": 1,
+      "typed_functions_count": 64,
+      "imports_outgoing": [
+        "src/assessment_engine/application/tools/context_tools.py",
+        "src/assessment_engine/domain/prompts/product_owner_prompts.py",
+        "src/assessment_engine/infrastructure/ai_client.py",
+        "src/assessment_engine/infrastructure/config_loader.py",
+        "src/assessment_engine/infrastructure/doctor_agent.py",
+        "src/assessment_engine/infrastructure/liability_signer.py",
+        "src/assessment_engine/infrastructure/logger_config.py",
+        "src/assessment_engine/infrastructure/pipeline_runtime.py",
+        "src/assessment_engine/infrastructure/product_owner_models.py",
+        "src/assessment_engine/infrastructure/runtime_paths.py",
+        "src/assessment_engine/infrastructure/secrets_client.py",
+        "src/assessment_engine/infrastructure/text_utils.py",
+        "src/assessment_engine/infrastructure/verification_agent.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_po_orchestrator_security.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/visualize_doc_map.py",
+      "sloc": 258,
+      "total_lines": 303,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "tests/functional/test_visualize_doc_map.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/application/tools/compile_llms_full.py",
+      "sloc": 97,
+      "total_lines": 125,
+      "functions_count": 1,
+      "classes_count": 0,
+      "typed_functions_count": 1,
+      "imports_outgoing": [],
+      "imported_by": [
+        "tests/functional/test_compile_llms_full.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/domain/prompts/ontological_prompt_scoper.py",
+      "sloc": 346,
+      "total_lines": 409,
+      "functions_count": 9,
+      "classes_count": 1,
+      "typed_functions_count": 9,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/ontology/models.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_closed_world_grounding_scoper.py",
+        "tests/unit/test_ontological_prompt_scoper.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/vendor_intelligence.py",
+      "sloc": 220,
+      "total_lines": 261,
+      "functions_count": 7,
+      "classes_count": 3,
+      "typed_functions_count": 1,
+      "imports_outgoing": [
+        "src/assessment_engine/infrastructure/ai_client.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_vendor_intelligence.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    },
+    {
+      "path": "src/assessment_engine/infrastructure/rosi_calculator.py",
+      "sloc": 134,
+      "total_lines": 173,
+      "functions_count": 5,
+      "classes_count": 1,
+      "typed_functions_count": 5,
+      "imports_outgoing": [
+        "src/assessment_engine/domain/schemas/finops_rosi.py"
+      ],
+      "imported_by": [
+        "tests/unit/test_rosi_actuarial_engine.py"
+      ],
+      "is_reachable": false,
+      "classification": "ORPHAN_TEST_ONLY"
+    }
+  ],
+  "entropy_audit": {
+    "loose_logs_count": 0,
+    "loose_logs": [],
+    "large_python_files_over_150kb": [
+      "src/assessment_engine/adapters/compilers/payload_to_ast.py"
+    ]
+  }
+}

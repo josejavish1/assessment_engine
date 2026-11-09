@@ -1,3 +1,7 @@
+from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Context compilation tool for massive context window LLMs.
@@ -7,7 +11,6 @@ extracts all referenced Markdown documentation files recursively, and
 concatenates them into a single, unified 'llms-full.txt' file. This facilitates
 one-shot, zero-turn context ingestion for massive-context models (e.g. Gemini Pro).
 """
-from __future__ import annotations
 
 # golden-path: ignore
 
@@ -38,13 +41,13 @@ def compile_llms_full(
     )
 
     if not sitemap_path.exists():
-        print(f"[-] Sitemap not found: {sitemap_path}", file=sys.stderr)
+        logger.info(f"[-] Sitemap not found: {sitemap_path}", file=sys.stderr)
         return False
 
     try:
         sitemap_content = sitemap_path.read_text(encoding="utf-8")
     except Exception as e:
-        print(f"[-] Failed to read sitemap: {e}", file=sys.stderr)
+        logger.info(f"[-] Failed to read sitemap: {e}", file=sys.stderr)
         return False
 
     # Extract relative links to Markdown files (e.g. [AGENTS.md](AGENTS.md) or [docs/A.md](docs/A.md))
@@ -52,7 +55,7 @@ def compile_llms_full(
     relative_paths = link_pattern.findall(sitemap_content)
 
     if not relative_paths:
-        print("[-] No Markdown files found in sitemap.", file=sys.stderr)
+        logger.info("[-] No Markdown files found in sitemap.", file=sys.stderr)
         return False
 
     # Unique paths in order of appearance
@@ -77,13 +80,13 @@ def compile_llms_full(
     for rel_path_str in ordered_paths:
         file_path = repo_root / rel_path_str
         if not file_path.exists():
-            print(f"[-] Reference document not found: {rel_path_str}", file=sys.stderr)
+            logger.info(f"[-] Reference document not found: {rel_path_str}", file=sys.stderr)
             continue
 
         try:
             file_content = file_path.read_text(encoding="utf-8")
         except Exception as e:
-            print(
+            logger.info(
                 f"[-] Failed to read reference document {rel_path_str}: {e}",
                 file=sys.stderr,
             )
@@ -105,12 +108,12 @@ def compile_llms_full(
     try:
         final_content = "".join(compiled_blocks).rstrip() + "\n"
         output_path.write_text(final_content, encoding="utf-8")
-        print(
+        logger.info(
             f"[+] Successfully compiled {len(ordered_paths)} documents into: {output_path}"
         )
         return True
     except Exception as e:
-        print(f"[-] Failed to write compiled output: {e}", file=sys.stderr)
+        logger.info(f"[-] Failed to write compiled output: {e}", file=sys.stderr)
         return False
 
 

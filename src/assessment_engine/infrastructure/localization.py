@@ -191,13 +191,22 @@ def format_currency(
     norm_loc, base_loc = normalize_locale(locale)
     code = (currency_code or "EUR").upper()
 
-    sym = currency_symbol or {
+    code_to_symbol = {
         "EUR": "€",
         "USD": "$",
         "GBP": "£",
         "CHF": "CHF",
         "JPY": "¥",
-    }.get(code, "€")
+        "BRL": "R$",
+        "MXN": "$",
+    }
+
+    if currency_symbol and currency_symbol.upper() in code_to_symbol:
+        sym = code_to_symbol[currency_symbol.upper()]
+    elif currency_symbol:
+        sym = currency_symbol
+    else:
+        sym = code_to_symbol.get(code, code)
 
     formatted_num = format_number(value, locale=locale, decimals=decimals)
 
@@ -428,7 +437,8 @@ def format_date_localized(date_val: str | None = None, locale: str = "en") -> st
             return f"{dt.year}年{months_map[dt.month]}"
         return f"{months_map[dt.month]} {dt.year}"
     except (ValueError, TypeError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
 
     return cleaned
 

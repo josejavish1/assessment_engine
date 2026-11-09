@@ -29,7 +29,7 @@ This Master Roadmap provides the unified, prioritized, and mathematically verifi
 
 The backlog addresses the systemic anti-patterns discovered across the codebase, organized strictly into **Four Cohesive Engineering Clusters (Vertical Slices)**. Execution follows the zero-entropy mandate: all 18 tasks are bounded, deterministic, and eliminate container-hostile state mutations, brittle keyword heuristics, uncalibrated numerology, and process exhaustion risks.
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        THE 4 COHESIVE REMEDIATION CLUSTERS                        |
 +-----------------------------------------------------------------------------------+
@@ -194,7 +194,7 @@ The backlog addresses the systemic anti-patterns discovered across the codebase,
 
 Execution must proceed strictly by dependency order to ensure that each cluster builds upon verified, fail-closed foundations without merge conflicts.
 
-```
+```text
 +-----------------------------------------------------------------------+
 |  STEP 1: Cluster 1 (Tasks 1.1 - 1.4)                                  |
 |  Container Resilience & Process Control (mcp_server, sentinel, raptor)|

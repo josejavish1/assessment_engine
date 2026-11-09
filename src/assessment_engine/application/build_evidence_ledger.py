@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
+from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
 logger = logging.getLogger(__name__)

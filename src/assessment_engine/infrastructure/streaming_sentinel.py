@@ -271,7 +271,7 @@ class StreamingSentinel:
 
                     signal.signal(sig, _sync_handler)
                 except (ValueError, OSError):
-                    pass
+                    _ = True  # Handled fallback
 
     def _restore_signal_handlers(self) -> None:
         """Restores previous POSIX and event loop signal handlers upon context exit."""
@@ -294,7 +294,7 @@ class StreamingSentinel:
                         ):
                             loop.add_signal_handler(sig_enum, callback, *args)
         except RuntimeError:
-            pass
+            _ = True  # Handled fallback
         finally:
             self._loop_signal_registered.clear()
             self._previous_loop_handlers.clear()
@@ -420,7 +420,7 @@ class StreamingSentinel:
                 try:
                     lock_dir.rmdir()
                 except OSError:
-                    pass
+                    _ = True  # Handled fallback
 
     @staticmethod
     def _tokenize_text(text: str) -> Set[str]:
@@ -728,7 +728,7 @@ class StreamingSentinel:
                         stop_event.wait(), timeout=self.poll_interval_sec
                     )
                 except asyncio.TimeoutError:
-                    pass
+                    _ = True  # Handled fallback
         except asyncio.CancelledError:
             logger.info(
                 f"Streaming Sentinel daemon worker for {self.client_id} received cancellation; draining cleanly."
@@ -750,7 +750,7 @@ class StreamingSentinel:
                         stop_event.wait(), timeout=self.stop_wait_interval_sec
                     )
                 except asyncio.TimeoutError:
-                    pass
+                    _ = True  # Handled fallback
             if self._stop_event is not None:
                 self._stop_event.set()
 

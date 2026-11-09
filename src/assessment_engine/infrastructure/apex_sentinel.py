@@ -5,6 +5,10 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
+from assessment_engine.infrastructure.streaming_sentinel import (
+    StreamingSentinel,
+)
+
 logger = logging.getLogger("Apex-Sentinel")
 
 

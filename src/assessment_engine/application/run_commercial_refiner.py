@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 """Defines the primary logic and utilities for the Assessment Engine pipeline."""
 
 import asyncio
@@ -63,7 +66,7 @@ async def call_commercial_agent(
         )
         return result
     except Exception as e:
-        print(f"Error parsing section for {agent_role}: {e}")
+        logger.info(f"Error parsing section for {agent_role}: {e}")
         return {}
 
 
@@ -72,7 +75,7 @@ async def build_proactive_proposal(
 ):
     """Asynchronously orchestrates multiple AI agents to generate a commercial proposal in parallel."""
     opp_name = opp.get("initiative", "Strategic Initiative")
-    print(
+    logger.info(
         f"    -> 🚀 Orchestrating agents (A1, A2, A3, A4) in parallel for '{opp_name}'..."
     )
 
@@ -219,7 +222,7 @@ def aggregate_blueprint_catalogs(blueprint_paths: list[Path]) -> dict:
 
             catalog[tower_id] = tower_entry
         except Exception as e:
-            print(f"⚠️ Error cargando blueprint {bp_path}: {e}")
+            logger.info(f"⚠️ Error cargando blueprint {bp_path}: {e}")
 
     return catalog
 
@@ -273,7 +276,7 @@ async def refine_commercial_payload(
     )
     target_language = resolve_target_language_name(doc_lang)
 
-    print(
+    logger.info(
         "\nPhase 1: Account Strategy (Agent 1: Global Account Director) ----------"
     )
     strategy = await call_commercial_agent(
@@ -287,7 +290,7 @@ async def refine_commercial_payload(
     )
     final_payload.update(strategy)
 
-    print(
+    logger.info(
         "\nPhase 2: Pipeline Qualification (Agent 2: Presales Architect) ----------"
     )
     pipeline = await call_commercial_agent(
@@ -301,7 +304,7 @@ async def refine_commercial_payload(
     )
     final_payload["opportunities_pipeline"] = pipeline.get("opportunities_pipeline", [])
 
-    print(
+    logger.info(
         "\nPhase 3: Proactive Proposals (Multi-Agent Parallel Orchestration) ----------------"
     )
     opps = final_payload.get("opportunities_pipeline", [])
@@ -354,7 +357,7 @@ def main(argv: list[str] | None = None) -> None:
             context files (blueprints, client intelligence) contain malformed JSON.
     """
     if len(argv if argv is not None else sys.argv) < 2:
-        print("Usage: python run_commercial_refiner.py <global_payload_json>")
+        logger.info("Usage: python run_commercial_refiner.py <global_payload_json>")
         sys.exit(1)
 
     payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
@@ -365,7 +368,7 @@ def main(argv: list[str] | None = None) -> None:
 
     #
     blueprint_paths = list(client_dir.glob("T*/blueprint_*_payload.json"))
-    print(
+    logger.info(
         f"🔍 Discovered {len(blueprint_paths)} technical blueprints for hybrid context."
     )
     catalog = aggregate_blueprint_catalogs(blueprint_paths)
@@ -388,7 +391,7 @@ def main(argv: list[str] | None = None) -> None:
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(final_payload, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ Refined commercial payload saved to: {output_path}")
+    logger.info(f"\n✅ Refined commercial payload saved to: {output_path}")
 
 
 if __name__ == "__main__":

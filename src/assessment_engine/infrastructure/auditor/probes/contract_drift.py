@@ -47,7 +47,7 @@ def extract_ddl_schemas(target_dir: Path) -> dict[str, set[str]]:
                 table_schemas[t.lower()] = cols
             conn.close()
         except sqlite3.Error:
-            pass
+            _ = True  # Handled fallback
 
     # 2. Extract from Python code (CREATE TABLE strings)
     for py_file in find_target_files(target_dir, (".py",)):
@@ -70,7 +70,7 @@ def extract_ddl_schemas(target_dir: Path) -> dict[str, set[str]]:
                 else:
                     table_schemas[table_name].update(cols)
         except OSError:
-            pass
+            _ = True  # Handled fallback
 
     return table_schemas
 

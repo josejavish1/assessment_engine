@@ -258,11 +258,20 @@ def extract_weights(
     section_start = None
     section_end = None
 
+    importance_pattern = re.compile(
+        r"\b(Factores\s+de\s+Importancia|Importance\s+Factors|Fatores\s+de\s+Import[aâ]ncia|Facteurs\s+d'Importance|Bedeutungsfaktoren)\b",
+        re.IGNORECASE,
+    )
+    matrix_pattern = re.compile(
+        r"\b(matriz|matrix|matrice)\b",
+        re.IGNORECASE,
+    )
+
     for index, text in enumerate(paragraphs):
-        if "Factores de Importancia" in text or "Importance Factors" in text:
+        if importance_pattern.search(text):
             section_start = index
             continue
-        if section_start is not None and any(k in text.lower() for k in ["matriz", "matrix"]):
+        if section_start is not None and matrix_pattern.search(text):
             section_end = index
             break
 
@@ -271,11 +280,8 @@ def extract_weights(
 
     scan = paragraphs[section_start : section_end or len(paragraphs)]
 
-    # Certain tower matrices declare the final weighting factor directly within explicit pillar definition lines, obviating the need for separate calculation.
-    # Matching by an explicit pillar number (e.g., 'Pillar 2') provides greater robustness compared to fuzzy string matching against the pillar name.
-    # This numerical matching strategy mitigates parsing errors that arise from minor variations in pillar naming conventions across different sections of the source document.
     explicit_pattern = re.compile(
-        r"Pilar\s+(\d+).*\((\d+)%\)",
+        r"(?:Pilar|Pillar|Pilier|S[aä]ule)\s+(\d+).*\((\d+)%\)",
         flags=re.IGNORECASE,
     )
     for text in paragraphs:
@@ -524,7 +530,7 @@ def extract_related_towers(paragraphs: list[str], tower_id: str) -> list[str]:
                 candidate = f"T{match}"
                 if candidate != tower_id:
                     related.add(candidate)
-        for match in re.findall(r"\bTorre\s+(\d+)\b", text, flags=re.IGNORECASE):
+        for match in re.findall(r"\b(?:Torre|Tower|Tour|Turm)\s+(\d+)\b", text, flags=re.IGNORECASE):
             candidate = f"T{match}"
             if candidate != tower_id:
                 related.add(candidate)
@@ -534,8 +540,12 @@ def extract_related_towers(paragraphs: list[str], tower_id: str) -> list[str]:
 def extract_boundary_notes(paragraphs: list[str]) -> list[str]:
     """Extracts and formats boundary exclusion notes from a list of paragraphs."""
     notes = []
+    exclusion_pattern = re.compile(
+        r"\b(no\s+incluye|not\s+included|n[aã]o\s+inclui|n'inclut\s+pas|schlie[sß]t\s+nicht\s+ein)\b",
+        re.IGNORECASE,
+    )
     for index, text in enumerate(paragraphs):
-        if "no incluye" in text.lower() or "not included" in text.lower():
+        if exclusion_pattern.search(text):
             for candidate in paragraphs[index + 1 : index + 4]:
                 normalized = normalize_text(candidate)
                 if normalized.endswith(":"):

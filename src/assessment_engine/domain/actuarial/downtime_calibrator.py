@@ -53,6 +53,7 @@ class OperationalTailRiskEngine:
         composite_hourly_rate: float,
         operational_recovery_ceiling_hours: float | None = None,
     ) -> OperationalTailRiskDecomposition:
+        """Decompose loss exposure into primary operational and secondary crisis components."""
         if expected_annual_loss < 0.0 or var_90_total < 0.0:
             raise ValueError("Loss magnitudes cannot be negative.")
 
@@ -135,10 +136,12 @@ class CalibratedDowntimeMetrics:
     
     @property
     def annual_revenue(self) -> Decimal:
+        """Return validated annual revenue figure."""
         return self.global_annual_revenue
         
     @property
     def hourly_revenue_exposure_factor(self) -> Decimal:
+        """Return calibrated hourly downtime exposure multiplier."""
         return self.sector_impact_factor
 
 
@@ -447,8 +450,8 @@ class ActuarialDowntimeCalibrator:
                 derived_rev = Decimal(str(headcount)) * Decimal(str(rev_per_employee))
                 if derived_rev > Decimal("0"):
                     return derived_rev, RevenueSourceType.PARAMETRIC_DERIVATION
-            except (InvalidOperation, ValueError, TypeError):
-                pass
+            except (InvalidOperation, ValueError, TypeError) as exc:
+                logger.debug("Parametric revenue derivation failed, falling through: %s", exc)
 
         raise TelemetryResolutionError(
             "Unable to resolve corporate revenue via direct filing telemetry or parametric headcount derivation."
@@ -493,8 +496,8 @@ class ActuarialDowntimeCalibrator:
                         Decimal("0.01"), rounding=ROUND_HALF_UP
                     )
                     return proportional_weight
-            except (ValueError, TypeError):
-                pass
+            except (ValueError, TypeError) as exc:
+                logger.debug("Facilities count parse failure, falling through: %s", exc)
 
         raw_vertical = str(organization_profile.get("industry_vertical_code") or organization_profile.get("vertical_industry", "DEFAULT_ENTERPRISE")).upper()
         sector_spec = sector_benchmarks.get(raw_vertical, sector_benchmarks.get("DEFAULT_ENTERPRISE", {}))

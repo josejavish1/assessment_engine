@@ -66,7 +66,7 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
             if ".venv" not in rel_path.parts:
                 is_local = True
         except ValueError:
-            pass
+            _ = True  # Handled fallback
 
         if is_local:
             # Find all flags used (words starting with - or --)
@@ -176,9 +176,9 @@ def main() -> int:
     )
     if errors:
         for error in errors:
-            print(f"ERROR: {error}")
+            logger.info(f"ERROR: {error}")
         return 1
-    print("Documentation snippet validation passed.")
+    logger.info("Documentation snippet validation passed.")
     return 0
 
 

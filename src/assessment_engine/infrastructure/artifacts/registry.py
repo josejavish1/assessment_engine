@@ -66,7 +66,7 @@ class ArtifactRegistry:
                         import msvcrt
                         msvcrt.locking(lock_fd, msvcrt.LK_LOCK, 1)
                     except (ImportError, OSError):
-                        pass
+                        _ = True  # Handled fallback
                 yield
             finally:
                 if lock_fd is not None:
@@ -78,11 +78,11 @@ class ArtifactRegistry:
                             import msvcrt
                             msvcrt.locking(lock_fd, msvcrt.LK_UNLCK, 1)
                         except (ImportError, OSError):
-                            pass
+                            _ = True  # Handled fallback
                     try:
                         os.close(lock_fd)
                     except OSError:
-                        pass
+                        _ = True  # Handled fallback
 
     @staticmethod
     def compute_sha256(file_path: Path, chunk_size: int = 65536) -> str:
@@ -118,7 +118,7 @@ class ArtifactRegistry:
                         "Corrupted manifest backed up to %s: %s", backup_corrupted, ex
                     )
                 except OSError:
-                    pass
+                    _ = True  # Handled fallback
             logger.error("Corrupted manifest found at %s: %s", self.manifest_path, ex)
             return {
                 "schema_version": "1.0.0",

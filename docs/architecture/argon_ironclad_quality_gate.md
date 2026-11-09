@@ -37,7 +37,7 @@ In interactive multi-agent sessions, manual review loops suffer from four struct
 
 To guarantee that the orchestrator **mechanically cannot** advance to the next block without a 100% compliant, formally verified approval, we implement a **Fail-Closed Deterministic State Machine**:
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        ZERO-BYPASS IRONCLAD QUALITY GATE                          |
 +-----------------------------------------------------------------------------------+

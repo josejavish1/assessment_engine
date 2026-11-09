@@ -20,7 +20,7 @@ To eliminate the fragile, manual, human-in-the-loop (HITL) execution pattern—s
 
 The manual loop suffers from context degradation, non-deterministic prompt handoffs, and state contamination across sequential Pull Requests (PRs). The Tier-1 replacement is a persistent daemon—the **Autonomous Meta-Orchestrator (AMO)**—that ingests the entire `MASTER_IMPLEMENTATION_BLUEPRINT.md`, compiles it into a Directed Acyclic Graph (DAG) of atomic execution units, and drives execution to completion using isolated sandboxes and formal verification gates.
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        AUTONOMOUS META-ORCHESTRATOR (AMO)                         |
 |                                                                                   |
@@ -134,7 +134,7 @@ By enforcing `response_mime_type="application/json"` and validating against `For
 
 An autonomous system running unattended in the background must guarantee **Workspace Invariance** (never leaving the repository in a broken state) and **Bounded Termination** (never entering an infinite token-burning loop).
 
-```
+```text
                      +------------------------+
                      |  Provision Worktree    |
                      |  attempt_counter = 1   |

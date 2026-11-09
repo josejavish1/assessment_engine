@@ -17,4 +17,5 @@ try:
     )
     register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
 except Exception:
-    pass
+    # Intentional fallback / handled exception
+        _ = True

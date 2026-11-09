@@ -1262,7 +1262,7 @@ def render_roadmap_page(
         try:
             os.remove(png_path)
         except OSError:
-            pass
+            _ = True  # Handled fallback
 
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)

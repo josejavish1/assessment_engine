@@ -753,7 +753,8 @@ def run_audit_command(target: str | None = None, output_dir: str = "docs/audits"
             elif p_key == "mutation_gate":
                 metric_str = f"{pr.score_pct}% aniquilados"
             elif p_key == "neurosymbolic_topology":
-                metric_str = f"{pr.metrics.get('orphans_count', 0)} orphans / {pr.metrics.get('total_modules', 0)} mods"
+                dead_islands = pr.metrics.get("dead_islands_count", pr.metrics.get("orphans_count", 0))
+                metric_str = f"{dead_islands} dead islands / {pr.metrics.get('total_modules', 0)} mods"
             elif p_key == "ast_complexity":
                 metric_str = f"{pr.score_pct}% conformes"
             elif p_key == "supply_chain":

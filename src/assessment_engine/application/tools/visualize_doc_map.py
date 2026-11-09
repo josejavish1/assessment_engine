@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Interactive documentation map generator.
@@ -32,14 +35,14 @@ def generate_interactive_map(
     output_html = Path(output_html_str)
 
     if not yaml_path.exists():
-        print(f"[-] Input file not found: {yaml_path}", file=sys.stderr)
+        logger.info(f"[-] Input file not found: {yaml_path}", file=sys.stderr)
         return False
 
     try:
         with open(yaml_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
     except Exception as e:
-        print(f"[-] Failed to parse YAML file: {e}", file=sys.stderr)
+        logger.info(f"[-] Failed to parse YAML file: {e}", file=sys.stderr)
         return False
 
     nodes = []
@@ -48,7 +51,7 @@ def generate_interactive_map(
 
     entries = data.get("entries", [])
     if not isinstance(entries, list):
-        print("[-] Invalid format: 'entries' must be a list.", file=sys.stderr)
+        logger.info("[-] Invalid format: 'entries' must be a list.", file=sys.stderr)
         return False
 
     for entry in entries:
@@ -289,10 +292,10 @@ def generate_interactive_map(
         output_html.parent.mkdir(parents=True, exist_ok=True)
         with open(output_html, "w", encoding="utf-8") as f:
             f.write(html_content)
-        print(f"[+] Dynamic map successfully generated at: {output_html}")
+        logger.info(f"[+] Dynamic map successfully generated at: {output_html}")
         return True
     except Exception as e:
-        print(f"[-] Failed to write HTML output: {e}", file=sys.stderr)
+        logger.info(f"[-] Failed to write HTML output: {e}", file=sys.stderr)
         return False
 
 

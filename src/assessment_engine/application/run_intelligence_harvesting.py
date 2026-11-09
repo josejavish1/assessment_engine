@@ -12,6 +12,10 @@ from typing import Any, Literal, Optional, Type, cast
 
 from pydantic import BaseModel, Field
 
+from assessment_engine.infrastructure.document_ai_client import DocumentAiClient
+from assessment_engine.infrastructure.raptor_engine import AdaptiveTokenBucketRaptor
+from assessment_engine.infrastructure.vendor_intelligence import VendorIntelligenceRegistry
+
 
 class MetaExtract(BaseModel):
     """A data model encapsulating strategic metadata about a client's transformation journey.
@@ -374,7 +378,7 @@ async def _discover_brands_from_document(
         source_type="Internal Document",
     )
 
-    print(
+    logger.info(
         "  -> [PHASE 0] Dynamically discovering technology brands from context document..."
     )
     try:
@@ -397,11 +401,11 @@ async def _discover_brands_from_document(
                     brands_list = json.loads(txt[start:end])
                     if isinstance(brands_list, list):
                         discovered_brands = [str(b).strip() for b in brands_list if b]
-                        print(f"     ✓ AI-discovered brands: {discovered_brands}")
+                        logger.info(f"     ✓ AI-discovered brands: {discovered_brands}")
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
                     logger.debug(f"[Fallback] Handled exception: {ex}")
     except Exception as e:
-        print(f"  ⚠️ Error in dynamic brand discovery: {e}")
+        logger.info(f"  ⚠️ Error in dynamic brand discovery: {e}")
 
     vault.custom_discovered_brands = discovered_brands
     return discovered_brands
@@ -409,7 +413,7 @@ async def _discover_brands_from_document(
 
 async def _probe_web_intelligence(vault: SourceVault, client_name: str) -> None:
     """Execute targeted web probes for business strategy and technical stack footprint."""
-    print("  -> [PHASE 1] Harvesting Real Technical Footprints...")
+    logger.info("  -> [PHASE 1] Harvesting Real Technical Footprints...")
     tasks = [
         probe_ai(
             f"Digital transformation strategy, business agenda, and operational priorities for {client_name}.",
@@ -461,14 +465,14 @@ async def _mine_pdf_reports(
             pdf_bytes = Path(local_p).read_bytes()
             pdf_hash = hashlib.sha256(pdf_bytes).hexdigest()
         except Exception as e:
-            print(f"       ⚠️ Error al calcular hash de PDF {local_p}: {e}")
+            logger.info(f"       ⚠️ Error al calcular hash de PDF {local_p}: {e}")
             pdf_hash = None
 
         if pdf_hash and pdf_hash in pdf_cache:
-            print(f"       📖 PDF Mining (Cache): {snap['url']}")
+            logger.info(f"       📖 PDF Mining (Cache): {snap['url']}")
             extracted_text = pdf_cache[pdf_hash]
         else:
-            print(f"       📖 PDF Mining (API): {snap['url']}")
+            logger.info(f"       📖 PDF Mining (API): {snap['url']}")
             try:
                 client = _get_genai_client()
                 res = client.models.generate_content(
@@ -485,10 +489,10 @@ async def _mine_pdf_reports(
                     pdf_cache[pdf_hash] = extracted_text
                     cache_updated = True
             except Exception as e:
-                print(
+                logger.info(
                     f"       ❌ Fatal error in Vertex AI API for PDF {snap['url']}: {e}"
                 )
-                print(
+                logger.info(
                     "       ⚠️ Skipping document to unblock intelligence harvesting pipeline."
                 )
                 extracted_text = ""
@@ -509,7 +513,7 @@ async def _synthesize_vault_intelligence(
     vault: SourceVault, client_name: str
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Synthesize labeled ontology metrics and qualitative leadership narrative from vault atoms."""
-    print("  -> [PHASE 3] Vault Tagging and Citation...")
+    logger.info("  -> [PHASE 3] Vault Tagging and Citation...")
     label_q = (
         f"Organize these findings into structured JSON. ATOMS: {json.dumps(vault.atoms[:40])}. "
         f"JSON: {{metrics: [{{name:, value:, unit:, source:{{uri:}}}}], "
@@ -517,7 +521,7 @@ async def _synthesize_vault_intelligence(
     )
     organized = await probe_ai(label_q, model_name=MODEL_PRO, client_name=client_name)
 
-    print("  -> [PHASE 4] Drafting Narrative (Anti-Contamination)...")
+    logger.info("  -> [PHASE 4] Drafting Narrative (Anti-Contamination)...")
     narrative = await probe_ai(
         f"Synthesize Strategy and Executive Leadership Agenda for {client_name}. Do not hallucinate executive names if not present in the empirical corpus.",
         model_name=MODEL_PRO,
@@ -563,7 +567,7 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
         MCDASensitivityEngine,
     )
 
-    print(
+    logger.info(
         "  -> [PHASE 4.5] Evaluating Target Maturity Criteria per Tower (Conjoint Multi-Criteria Matrix)..."
     )
 
@@ -616,11 +620,11 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
         overrides_prompt, model_name=MODEL_PRO, client_name=client_name
     )
 
-    print(
+    logger.info(
         "  -> [PHASE 4.6] Executing Multi-Criteria Decision Algorithm (Sovereign Target Engine)..."
     )
     if not isinstance(raw_overrides, dict):
-        print(
+        logger.info(
             "  ⚠️ Target matrix response failed. Applying stochastic baseline fallbacks..."
         )
         return _build_default_tower_overrides()
@@ -662,7 +666,7 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
                 "sensitivity_analysis": gsa_report,
             }
             just_str = metrics.get("justification", "")[:60]
-            print(
+            logger.info(
                 f"       * {tower_id}: Calculated Target = {target_score} (Rationale: {just_str}...)"
             )
         except Exception as e:
@@ -699,7 +703,7 @@ async def _enrich_epistemic_graph_and_meta(
         EpistemicGraphService,
     )
 
-    print(
+    logger.info(
         "  -> [PHASE 4.7] Extracting Target Meta-Architecture and Dominant Hyperscaler dynamically..."
     )
     meta_prompt = (
@@ -730,7 +734,7 @@ async def _enrich_epistemic_graph_and_meta(
             "rationale": meta_data.get("rationale", "Dynamically calculated."),
         }
     except Exception as e:
-        print(f"  ⚠️ Error in metadata extraction: {e}. Using fallbacks.")
+        logger.info(f"  ⚠️ Error in metadata extraction: {e}. Using fallbacks.")
         dominant_hyperscaler = "AWS"
         inferred_industry = None
         horizon_obj = {
@@ -743,7 +747,8 @@ async def _enrich_epistemic_graph_and_meta(
     try:
         brand_data_narratives = load_brand_profile()
     except (OSError, ValueError, KeyError, AttributeError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
 
     industry_str = (
         inferred_industry
@@ -883,14 +888,14 @@ def _assemble_and_persist_dossier(
             tmp_path.unlink()
         raise
 
-    print(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
+    logger.info(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
 
 
 async def run_market_intelligence(
     client_name: str, output_path: Path, context_file: Path = None
 ) -> None:
     """Orchestrates an asynchronous, multi-stage market intelligence pipeline."""
-    print(f"\n🚀 Starting Pipeline V35.0 (The Purist) for: {client_name}")
+    logger.info(f"\n🚀 Starting Pipeline V35.0 (The Purist) for: {client_name}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     vault = SourceVault(client_name)
 

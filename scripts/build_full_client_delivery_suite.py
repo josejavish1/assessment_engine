@@ -49,25 +49,8 @@ MOLINS_CANONICAL_FILENAMES: dict[str, str] = {
 
 
 def convert_docx_to_pdf(docx_path: Path, output_pdf_path: Path) -> bool:
-    """Converts a DOCX file to PDF using headless LibreOffice."""
-    try:
-        cmd = [
-            "soffice",
-            "--headless",
-            "--convert-to",
-            "pdf",
-            str(docx_path),
-            "--outdir",
-            str(output_pdf_path.parent),
-        ]
-        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        generated_pdf = output_pdf_path.parent / (docx_path.stem + ".pdf")
-        if generated_pdf.exists() and generated_pdf != output_pdf_path:
-            shutil.move(generated_pdf, output_pdf_path)
-        return output_pdf_path.exists() and output_pdf_path.stat().st_size > 0
-    except Exception as e:
-        print(f"   ⚠️ PDF conversion failed for {docx_path.name}: {e}")
-        return False
+    """PDF generation is permanently disabled by operational mandate (DOCX-only outputs)."""
+    return False
 
 
 def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
@@ -102,17 +85,10 @@ def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
         compile_asis_docx_via_ast(payload_path, primary_docx, doc_lang="es")
         print(f"   ✓ Generated AST DOCX: {primary_docx.name} ({primary_docx.stat().st_size:,} bytes)")
 
-        # Convert to PDF
-        pdf_path = primary_docx.with_suffix(".pdf")
-        convert_docx_to_pdf(primary_docx, pdf_path)
-        print(f"   ✓ Generated AST PDF: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
-
-        # Replicate to package mirrors
+        # Replicate DOCX to package mirrors
         for m_dir in mirrors:
             if m_dir.exists():
                 shutil.copy2(primary_docx, m_dir / filename)
-                if pdf_path.exists():
-                    shutil.copy2(pdf_path, m_dir / pdf_path.name)
 
 
 def parse_args() -> argparse.Namespace:
@@ -185,12 +161,7 @@ def main() -> None:
         )
         print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
 
-        # Convert to PDF
-        pdf_out = tomo1_out.with_suffix(".pdf")
-        convert_docx_to_pdf(tomo1_out, pdf_out)
-        print(f"   ✓ Generated Tomo 1 AS-IS PDF: {pdf_out.name} ({pdf_out.stat().st_size:,} bytes)")
-
-        # Mirror to root and packages
+        # Mirror DOCX to root and packages
         for mirror_dest in [
             REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
             REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
@@ -200,16 +171,8 @@ def main() -> None:
             if mirror_dest.parent.exists():
                 shutil.copy2(tomo1_out, mirror_dest)
 
-        for mirror_pdf in [
-            REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-            REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-        ]:
-            if mirror_pdf.parent.exists():
-                shutil.copy2(pdf_out, mirror_pdf)
-
         print("\n" + "=" * 80)
-        print("TOMO 1 ISOLATED COMPILATION & CONVERSION COMPLETE (< 4s)")
+        print("TOMO 1 ISOLATED COMPILATION COMPLETE (DOCX-ONLY)")
         print("=" * 80)
         return
 
@@ -241,12 +204,7 @@ def main() -> None:
     )
     print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
 
-    # Convert Tomo 1 to PDF
-    pdf_out = tomo1_out.with_suffix(".pdf")
-    convert_docx_to_pdf(tomo1_out, pdf_out)
-    print(f"   ✓ Generated Tomo 1 AS-IS PDF: {pdf_out.name} ({pdf_out.stat().st_size:,} bytes)")
-
-    # Mirror Tomo 1
+    # Mirror Tomo 1 DOCX
     for mirror_dest in [
         REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
@@ -256,16 +214,8 @@ def main() -> None:
         if mirror_dest.parent.exists():
             shutil.copy2(tomo1_out, mirror_dest)
 
-    for mirror_pdf in [
-        REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
-    ]:
-        if mirror_pdf.parent.exists():
-            shutil.copy2(pdf_out, mirror_pdf)
-
     print("\n" + "=" * 80)
-    print("ALL 10 ANNEXES + TOMO 1 CONSOLIDATED DELIVERABLE GENERATION COMPLETE")
+    print("ALL 10 ANNEXES + TOMO 1 CONSOLIDATED DELIVERABLE GENERATION COMPLETE (DOCX-ONLY)")
     print("=" * 80)
 
 

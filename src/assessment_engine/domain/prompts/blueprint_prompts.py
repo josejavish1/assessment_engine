@@ -3,6 +3,10 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import Any, cast
 
+from assessment_engine.domain.prompts.ontological_prompt_scoper import (
+    OntologicalPromptScoper,
+)
+
 
 def load_prompt_config(filename: str) -> dict[str, Any]:
     """Load and deserialize a prompt blueprint from a YAML configuration file.

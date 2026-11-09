@@ -33,7 +33,7 @@ Introducing target scores (`4,1 sobre 5,0`) or execution timelines (`plazo de 12
 
 When a CEO, CFO, or Board Member reads **only** the Executive Summary page of a capability tower, they must walk away with 100% of the diagnostic truth. The page is structured as an integrated visual and narrative unit across three components:
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 | COMPONENT A: VISUAL SCORECARD RIBBON (At-a-Glance Telemetry)                      |
 | [ Current Maturity: 2.3 / 5.0 ]  [ Posture: Reactive ]  [ Expected Loss: 412k€ ]  |

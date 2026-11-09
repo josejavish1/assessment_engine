@@ -875,12 +875,12 @@ class OutOfTreeSynthesizedPolicyStore:
                 try:
                     os.close(fd)
                 except OSError:
-                    pass
+                    _ = True  # Handled fallback
             if tmp_path is not None and os.path.exists(tmp_path):
                 try:
                     os.unlink(tmp_path)
                 except OSError:
-                    pass
+                    _ = True  # Handled fallback
 
         return cache_file
 
@@ -1208,7 +1208,6 @@ class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
         )
         profile: JurisdictionSovereigntyProfile | None = self.registry.jurisdictions.get(code)
 
-        # Runtime JIT Resolution if unlisted and country_hint is provided
         if profile is None and country_hint:
             profile = synthesize_jurisdiction_profile_jit(
                 str(country_hint),

@@ -68,7 +68,7 @@ To guarantee that Chapter 1 fits cleanly on **Page 1** and gives the CIO immedia
 5. **Hard Page Break:**  
    Immediately closes Page 1 so Chapter 2 (`2. Alcance y Evidencia Analizada`) begins cleanly at the top of Page 2.
 
-```
+```text
 +-----------------------------------------------------------------------+
 | 1. Resumen Ejecutivo                                      [Heading 1] |
 |                                                                       |

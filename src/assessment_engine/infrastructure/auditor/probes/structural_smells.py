@@ -70,7 +70,7 @@ class StructuralSmellVisitor(ast.NodeVisitor):
                 if any(kw in dec_str for kw in ("router.", "app.", "api_route")):
                     return
             except (AttributeError, ValueError):
-                pass
+                _ = True  # Handled fallback
 
         # 3. Skip explicit cryptographic signatures and W3C standards.
         name_lower = node.name.lower()

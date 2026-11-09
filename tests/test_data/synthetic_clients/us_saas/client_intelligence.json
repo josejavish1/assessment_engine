@@ -1,0 +1,174 @@
+{
+  "version": "3.0",
+  "client_name": "Datadog",
+  "metadata": {
+    "dossier_id": "datadog_us_saas",
+    "schema_version": "3.0",
+    "created_at": "2026-11-08T20:33:43.809732+00:00",
+    "lang": "en",
+    "country": "United States",
+    "currency": "USD",
+    "currency_symbol": "$"
+  },
+  "profile": {
+    "industry": "technology",
+    "sub_industry": "Enterprise Cloud Observability & Security SaaS",
+    "hierarchy": "Global Public Technology Enterprise",
+    "headquarters": "New York, NY, USA",
+    "operating_locations": [
+      "New York",
+      "San Francisco",
+      "Boston",
+      "Paris",
+      "London",
+      "Tokyo"
+    ],
+    "headcount": 5200,
+    "financial_profile": {
+      "currency": "USD",
+      "currency_symbol": "$",
+      "annual_revenue": 2130000000.0,
+      "hourly_downtime_cost": 520000.0
+    }
+  },
+  "regulatory_context": [
+    {
+      "regulation": "SOC 2 Type II",
+      "authority": "AICPA",
+      "status": "Certified Clean"
+    },
+    {
+      "regulation": "FedRAMP Moderate",
+      "authority": "FedRAMP PMO",
+      "status": "In-Process Audit"
+    },
+    {
+      "regulation": "SEC Cybersecurity Disclosure Rule",
+      "authority": "SEC",
+      "status": "Compliant"
+    }
+  ],
+  "business_context": {
+    "ceo_agenda": {
+      "summary": "Achieve FedRAMP authorization, expand multi-cloud observability AI models, and sustain 99.99% availability."
+    },
+    "transformation_horizon": {
+      "stage": "H3",
+      "label": "Autonomous AI-Driven Cloud Operations",
+      "rationale": "Hyper-mature cloud platform implementing autonomous incident remediation and telemetry intelligence."
+    },
+    "strategic_priorities": [
+      {
+        "name": "FedRAMP Moderate Final Authorization"
+      },
+      {
+        "name": "Multi-Cloud Zero-RPO Ingestion Mesh"
+      }
+    ]
+  },
+  "technology_context": {
+    "dominant_hyperscaler": "Multi-Cloud (AWS primary, GCP secondary)",
+    "footprint_summary": {
+      "summary": "Hyperscale multi-cloud platform orchestrating hundreds of thousands of pods across AWS and GCP."
+    },
+    "group_level_stack": [
+      {
+        "category": "Cloud Hyperscaler",
+        "name": "AWS & Google Cloud Multi-Cloud"
+      },
+      {
+        "category": "Container Orchestration",
+        "name": "Kubernetes on EKS & GKE"
+      },
+      {
+        "category": "Database Layer",
+        "name": "Google Cloud Spanner, AWS DynamoDB"
+      },
+      {
+        "category": "Security & PAM",
+        "name": "Okta, Teleport Enterprise, HashiCorp Vault"
+      }
+    ],
+    "field_metrics": [
+      {
+        "metric": "ARR",
+        "value": "$2,130,000,000"
+      },
+      {
+        "metric": "Daily Telemetry",
+        "value": "50+ Trillion events/day"
+      },
+      {
+        "metric": "Failover RTO",
+        "value": "74 seconds (Measured)"
+      }
+    ]
+  },
+  "tower_overrides": {
+    "T1": {
+      "target_maturity": 4.9,
+      "status": "In Scope"
+    },
+    "T5": {
+      "target_maturity": 4.9,
+      "status": "In Scope"
+    },
+    "T6": {
+      "target_maturity": 4.9,
+      "status": "In Scope"
+    },
+    "T9": {
+      "target_maturity": 4.9,
+      "status": "In Scope"
+    },
+    "T2": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T3": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T4": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T7": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T8": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T10": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    }
+  },
+  "epistemic_graph": {
+    "topology": {
+      "nodes": [
+        "T1",
+        "T5",
+        "T6",
+        "T9"
+      ],
+      "edges": [
+        {
+          "source": "T1",
+          "target": "T5",
+          "weight": 0.9
+        }
+      ]
+    },
+    "audits": {
+      "cascading_impact_index": 0.11
+    }
+  },
+  "review": {
+    "summary": "Datadog Inc. Benchmark Fixture",
+    "status": "Certified"
+  },
+  "claims": []
+}

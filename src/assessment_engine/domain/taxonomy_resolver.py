@@ -18,6 +18,11 @@ import threading
 from types import MappingProxyType
 from typing import Any, Protocol, runtime_checkable
 
+from assessment_engine.domain.framework_urn import (
+    FrameworkURN,
+    normalize_framework_urn,
+)
+
 logger = logging.getLogger(__name__)
 
 _RESOLVER_LOCK = threading.Lock()
@@ -512,6 +517,18 @@ def get_taxonomy_resolver(
     with _RESOLVER_LOCK:
         if _RESOLVER_INSTANCE is not None:
             return _RESOLVER_INSTANCE
+        if _CATALOG_LOADER_PROVIDER is None:
+            try:
+                import importlib
+                loader_mod = importlib.import_module(
+                    "assessment_engine.infrastructure.json_taxonomy_catalog_loader"
+                )
+                loader_cls = getattr(loader_mod, "JsonTaxonomyCatalogLoader", None)
+                if loader_cls is not None:
+                    _CATALOG_LOADER_PROVIDER = loader_cls()
+            except (ImportError, OSError, AttributeError) as err:
+                logger.debug("Default JsonTaxonomyCatalogLoader deferred: %s", err)
+
         if _CATALOG_LOADER_PROVIDER is not None:
             loaded_catalog = _CATALOG_LOADER_PROVIDER.load_taxonomy_catalog()
             loaded_kpis = (

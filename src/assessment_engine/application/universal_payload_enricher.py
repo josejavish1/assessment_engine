@@ -12,6 +12,9 @@ import logging
 import unicodedata
 from typing import Any
 
+from assessment_engine.domain.cfo_actuarial_gate import (
+    CfoActuarialGate,
+)
 from assessment_engine.domain.contracts.enriched_payload_schema import (
     EnrichedTowerPayload,
 )
@@ -210,7 +213,6 @@ class UniversalPayloadEnricher:
 
             raw_score = float(pillar.get("raw_score", pillar.get("score", 0.0)))
 
-            # Resolve localized labels dynamically
             localized_label = resolver.resolve_pillar_label(tower_id, pillar_id)
             pillar["pillar_id"] = pillar_id
             pillar["pillar_label"] = localized_label
@@ -222,7 +224,6 @@ class UniversalPayloadEnricher:
             pillar["maturity_tier_label"] = resolver.resolve_maturity_tier(raw_score)
             localized_map[pillar_id] = localized_label
 
-            # Resolve deficient KPIs
             deficient_kpis = pillar.get("deficient_kpis", [])
             resolved_kpis = [resolver.resolve_kpi_label(k) for k in deficient_kpis]
             pillar["deficient_kpi_labels"] = resolved_kpis

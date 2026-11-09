@@ -123,7 +123,7 @@
         },
         {
           "kpi_id": "T8.P1.K4",
-          "kpi_name": "Gobierno de arquitectura y estándares (guardrails aplicados)",
+          "kpi_name": "Gobierno de arquitectura y aplicación sistemática de guardrails",
           "questions": [
             {
               "question_id": "T8.P1.K4.PR1",

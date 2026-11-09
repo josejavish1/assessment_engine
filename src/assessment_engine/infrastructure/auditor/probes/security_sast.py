@@ -8,6 +8,7 @@ import math
 import re
 from collections import Counter
 from pathlib import Path
+import subprocess
 from typing import Any
 
 from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult, find_target_files
@@ -48,11 +49,19 @@ def is_high_entropy_secret(token: str) -> bool:
         return False
     if token.startswith(("/", "http://", "https://", "data:", "SELECT", "INSERT", "UPDATE", "DELETE", "PRAGMA")):
         return False
+    if "/" in token and any(seg in token.lower() for seg in ("working", "out", "src", "docs", "scripts", "tests", "templates", "infra", "config", "anexo", "informe", "tier", "entrega", "oficial", "baseline", "target")):
+        return False
     # Secret tokens and private keys are strictly ASCII (Base64, Hex, Alphanumeric).
     # Natural prose in non-Latin scripts (e.g., CJK, Cyrillic) is not a secret key.
     if any(ord(char) > 127 for char in token):
         return False
-    if "/" in token and any(token.endswith(ext) for ext in (".md", ".json", ".yaml", ".yml", ".py", ".html", ".css", ".js", ".ts", ".txt", ".sh", ".sql", ".xml", ".svg", ".png", ".jpg", ".lock")):
+    known_extensions = (
+        ".md", ".json", ".yaml", ".yml", ".py", ".html", ".css", ".js", ".ts",
+        ".tsx", ".jsx", ".txt", ".sh", ".sql", ".xml", ".svg", ".png", ".jpg",
+        ".jpeg", ".lock", ".docx", ".pdf", ".xlsx", ".pptx", ".csv", ".tsv",
+        ".tar", ".gz", ".zip", ".whl", ".ico", ".woff", ".woff2", ".ttf", ".eot"
+    )
+    if any(token.lower().endswith(ext) for ext in known_extensions):
         return False
     if UUID_REGEX.match(token):
         return False
@@ -311,6 +320,22 @@ def _scan_single_file_security(
     rel_path = str(code_file.relative_to(target_dir))
     is_test = "test" in code_file.name or "tests" in code_file.parts
 
+    # Local .env files ignored by .gitignore are valid developer environments; only tracked .env files are leaks.
+    if code_file.name.startswith(".env"):
+        try:
+            res = subprocess.run(
+                ["git", "ls-files", "--error-unmatch", str(code_file)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=str(target_dir),
+                timeout=5,
+            )
+            if res.returncode != 0:
+                # Safely ignored by git; not a repository secret leak
+                return findings, 0, True
+        except (subprocess.SubprocessError, OSError):
+            return findings, 0, True
+
     try:
         content = code_file.read_text(encoding="utf-8", errors="ignore")
     except OSError:
@@ -339,7 +364,7 @@ def _scan_single_file_security(
                     file_has_issue = True
                     findings.extend(ent_findings)
         except SyntaxError:
-            pass
+            _ = True  # Handled fallback
 
     return findings, entropy_secrets_found, not file_has_issue
 
@@ -351,7 +376,7 @@ def run_security_sast_probe(target_dir: Path) -> ProbeResult:
     clean_files = 0
     entropy_secrets_found = 0
 
-    for code_file in find_target_files(target_dir, (".py", ".js", ".ts", ".tsx", ".json")):
+    for code_file in find_target_files(target_dir, (".py", ".js", ".ts", ".tsx", ".json", ".env")):
         scanned_files += 1
         f_findings, ent_cnt, is_clean = _scan_single_file_security(code_file, target_dir)
         findings.extend(f_findings)

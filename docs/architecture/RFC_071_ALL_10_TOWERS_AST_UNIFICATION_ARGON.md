@@ -27,7 +27,7 @@ Because the orchestrator only loaded `t1_payload` and `t2_payload`, it passed an
 
 To permanently eliminate this split-brain across all current and future tenants, we introduce a **Universal Multi-Tenant Payload Hydrator** in the application layer and enforce **100% Declarative AST Compilation** across all 10 specialist annexes and Tomo 1.
 
-```
+```text
 +-----------------------------------------------------------------------------+
 |                        GLOBAL TENANT CONTEXT (JSON)                         |
 |   (client_name, annual_revenue, downtime_hourly_rate, currency, locale)     |

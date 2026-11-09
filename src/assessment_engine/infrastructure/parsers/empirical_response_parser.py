@@ -54,6 +54,7 @@ class EmpiricalResponseParser(IEmpiricalDataParserPort):
         self.default_scale_max = default_scale_max
 
     def parse_empirical_file(self, file_path: Path) -> List[EpistemicFragment]:
+        """Parse empirical questionnaire responses from file path."""
         if not file_path.exists():
             raise FileNotFoundError(f"Empirical response file not found: {file_path}")
 

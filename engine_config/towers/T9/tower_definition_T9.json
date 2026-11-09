@@ -143,7 +143,7 @@
       "kpis": [
         {
           "kpi_id": "T9.P2.K1",
-          "kpi_name": "Cobertura real de SSO (aplicaciones críticas bajo SSO)",
+          "kpi_name": "Cobertura de SSO en aplicaciones y plataformas críticas",
           "questions": [
             {
               "question_id": "T9.P2.K1.PR1",
@@ -173,7 +173,7 @@
         },
         {
           "kpi_id": "T9.P2.K4",
-          "kpi_name": "Ticket rate por problemas de acceso (por 100 usuarios/mes)",
+          "kpi_name": "Tasa de incidencias de acceso y soporte por usuario",
           "questions": [
             {
               "question_id": "T9.P2.K4.PR1",

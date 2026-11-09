@@ -20,6 +20,7 @@ from rich.text import Text
 from assessment_engine.infrastructure.ai_client import call_agent
 from assessment_engine.infrastructure.apex_models import ApexDebateResponse
 from assessment_engine.infrastructure.apex_sentinel import ApexSentinel
+from assessment_engine.infrastructure.quality.argon_gate import AuditVerdict
 
 #
 console = Console()
@@ -476,11 +477,11 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
                 UI_STATE["last_event"] = (
                     f"🛑 CRITICAL: Failure in prerequisite EMG ({task['id']}). Halting orchestrator."
                 )
-                print(
+                logger.info(
                     f"\n[!] CRITICAL ERROR: Emergency task {task['id']} blocked by HARD_BLOCK."
                 )
-                print(f"Reason: {debate.reasoning}")
-                print(
+                logger.info(f"Reason: {debate.reasoning}")
+                logger.info(
                     "Mission-critical task blocked; unsafe to proceed. Aborting."
                 )
                 sys.exit(1)

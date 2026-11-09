@@ -1,4 +1,7 @@
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 
 import argparse
 import asyncio
@@ -19,31 +22,31 @@ async def run_ingestion(
     resolved_storage = storage_dir or (Path("working") / client_id)
     resolved_storage.mkdir(parents=True, exist_ok=True)
 
-    print(f"📦 [Ingest] Initializing Evidence Engine for client '{client_id}'...")
+    logger.info(f"📦 [Ingest] Initializing Evidence Engine for client '{client_id}'...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=resolved_storage)
 
     if context_file and context_file.is_file():
-        print(f"📄 [Ingest] Ingestando contexto: {context_file}...")
+        logger.info(f"📄 [Ingest] Ingestando contexto: {context_file}...")
         evidence_engine.ingest_file(context_file)
     elif context_file:
-        print(f"⚠️ [Ingest] Archivo de contexto no encontrado: {context_file}")
+        logger.info(f"⚠️ [Ingest] Archivo de contexto no encontrado: {context_file}")
 
     if responses_file and responses_file.is_file():
-        print(f"📝 [Ingest] Ingestando respuestas: {responses_file}...")
+        logger.info(f"📝 [Ingest] Ingestando respuestas: {responses_file}...")
         evidence_engine.ingest_file(responses_file)
     elif responses_file:
-        print(f"⚠️ [Ingest] Archivo de respuestas no encontrado: {responses_file}")
+        logger.info(f"⚠️ [Ingest] Archivo de respuestas no encontrado: {responses_file}")
 
     fragments_count = len(evidence_engine.ledger.fragments)
-    print(f"✅ [Ingest] Total chunks extracted: {fragments_count}")
+    logger.info(f"✅ [Ingest] Total chunks extracted: {fragments_count}")
 
     if fragments_count > 0:
-        print("🌲 [Ingest] Initializing Raptor Engine for hierarchical indexing...")
+        logger.info("🌲 [Ingest] Initializing Raptor Engine for hierarchical indexing...")
         raptor = RaptorEngine(client_id=client_id, storage_dir=resolved_storage)
         await raptor.build_tree(evidence_engine.ledger.fragments)
-        print(f"🚀 [Ingest] Ingestion completed successfully at {resolved_storage}")
+        logger.info(f"🚀 [Ingest] Ingestion completed successfully at {resolved_storage}")
     else:
-        print("⚠️ [Ingest] Zero chunks extracted. Skipping Raptor tree construction.")
+        logger.info("⚠️ [Ingest] Zero chunks extracted. Skipping Raptor tree construction.")
 
 
 def main() -> None:

@@ -13,6 +13,9 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, Mapping
 
+from assessment_engine.application.services.cross_tower_nexus import (
+    CrossTowerNexusEngine,
+)
 from assessment_engine.domain.actuarial_scale_calibrator import (
     resolve_iso_currency_code,
     safe_float,
@@ -1027,7 +1030,7 @@ def build_global_payload(
         empirical_spof = (
             max(audited_centrality.items(), key=lambda kv: (kv[1], kv[0]))[0]
             if audited_centrality
-            else (towers_data[0]["id"] if towers_data else "T1")
+            else (towers_data[0]["id"] if towers_data else "")
         )
 
         # Update towers_data with propagated (effective) maturity scores
@@ -1431,12 +1434,12 @@ def main(argv: list[str] | None = None) -> None:
                 try:
                     os.close(temp_fd)
                 except OSError:
-                    pass
+                    _ = True  # Handled fallback
             try:
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
             except OSError:
-                pass
+                _ = True  # Handled fallback
             raise
         logger.info("Dynamic payload generated successfully.")
 

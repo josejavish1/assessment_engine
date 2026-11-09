@@ -104,7 +104,7 @@
         },
         {
           "kpi_id": "T3.P1.K2",
-          "kpi_name": "Madurez de segmentación interna (VLAN/VRF/zonas) y control de propagación",
+          "kpi_name": "Madurez de segmentación interna por VLAN, VRF y zonas de seguridad",
           "questions": [
             {
               "question_id": "T3.P1.K2.PR1",
@@ -151,7 +151,7 @@
         },
         {
           "kpi_id": "T3.P2.K2",
-          "kpi_name": "Gestión de rendimiento WAN (latencia/pérdida/jitter) con visibilidad por aplicación",
+          "kpi_name": "Gestión de rendimiento WAN para latencia, pérdida y jitter por aplicación",
           "questions": [
             {
               "question_id": "T3.P2.K2.PR1",

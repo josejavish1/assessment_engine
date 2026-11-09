@@ -2,7 +2,7 @@
 
 The `TomoAsisASTCompiler` must operate as a pure, stateless functional transformer within the Assessment Engine pipeline. It ingests normalized domain payloads and externalized linguistic catalogs, emitting a strictly typed Abstract Syntax Tree (`DocumentAST`) ready for rendering into `.docx` and `.pdf` formats.
 
-```
+```text
                          +-----------------------------------+
                          |    SSOT Assessment Payloads       |
                          | (Global, Towers, Financial, I18n) |

@@ -93,7 +93,6 @@ class DeterministicTocPageResolver:
             except OSError as exc:
                 raise TocSynchronizationError(f"Failed to serialize document.xml: {exc}") from exc
 
-            # 5. Repack DOCX archive cleanly
             cls._repack_docx(extract_dir, docx_file)
             return resolved_pages
 

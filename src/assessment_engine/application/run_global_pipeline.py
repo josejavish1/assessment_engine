@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> None:
             as authentication or API configuration.
     """
     if len(argv if argv is not None else sys.argv) < 2:
-        print("Uso: python -m scripts.run_global_pipeline <client_name>")
+        logger.info("Uso: python -m scripts.run_global_pipeline <client_name>")
         sys.exit(1)
 
     client_name = (argv if argv is not None else sys.argv)[1]
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> None:
     env = build_runtime_env()
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         preflight = run_vertex_ai_preflight(env=env)
-        print(
+        logger.info(
             "✅ Vertex AI listo "
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
@@ -220,7 +220,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    print(f"\nStrategic Global Report completed: {output_path}")
+    logger.info(f"\nStrategic Global Report completed: {output_path}")
 
 
 if __name__ == "__main__":

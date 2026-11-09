@@ -1,0 +1,180 @@
+{
+  "version": "3.0",
+  "client_name": "Geodis",
+  "metadata": {
+    "dossier_id": "geodis_fr_logistics",
+    "schema_version": "3.0",
+    "created_at": "2026-11-08T20:33:43.591259+00:00",
+    "lang": "fr",
+    "country": "France",
+    "currency": "EUR",
+    "currency_symbol": "€"
+  },
+  "profile": {
+    "industry": "critical_infrastructure",
+    "sub_industry": "Multimodal Logistics, Freight & Supply Chain Operator",
+    "hierarchy": "Essential Entity (NIS2)",
+    "headquarters": "Levallois-Perret (Paris), France",
+    "operating_locations": [
+      "Paris",
+      "Lyon",
+      "Marseille",
+      "Lille",
+      "Francfort",
+      "Anvers"
+    ],
+    "headcount": 49400,
+    "financial_profile": {
+      "currency": "EUR",
+      "currency_symbol": "€",
+      "annual_revenue": 13700000000.0,
+      "hourly_downtime_cost": 310000.0
+    }
+  },
+  "regulatory_context": [
+    {
+      "regulation": "Directive NIS2 (Entité Essentielle)",
+      "authority": "ANSSI",
+      "status": "Essential Entity Designation"
+    },
+    {
+      "regulation": "RGPD (Règlement Général sur la Protection des Données)",
+      "authority": "CNIL",
+      "status": "Compliant"
+    },
+    {
+      "regulation": "ISO/IEC 27001:2022",
+      "authority": "AFNOR",
+      "status": "Certified"
+    }
+  ],
+  "business_context": {
+    "ceo_agenda": {
+      "summary": "Sécuriser les hubs de tri automatisés sous NIS2, optimiser la résilience logistique et décarboner les opérations."
+    },
+    "transformation_horizon": {
+      "stage": "H2",
+      "label": "Résilience Industrielle et Conformité NIS2",
+      "rationale": "Convergence IT/OT sécurisée et élimination des vulnérabilités dans les plateformes de tri."
+    },
+    "strategic_priorities": [
+      {
+        "name": "Mise en Conformité Obligatoire NIS2 et Notification des Incidents ANSSI"
+      },
+      {
+        "name": "Résilience Critique des Systèmes de Tri Automatisé et WMS"
+      }
+    ]
+  },
+  "technology_context": {
+    "dominant_hyperscaler": "Hybrid (On-Premises Roissy/Lyon + OVHcloud / Azure)",
+    "footprint_summary": {
+      "summary": "Infrastructure logistique paneuropéenne hybride reliant 165 hubs automatisés et datacenters Tier III."
+    },
+    "group_level_stack": [
+      {
+        "category": "WMS / TMS",
+        "name": "Manhattan Associates, SAP TM"
+      },
+      {
+        "category": "Virtualisation",
+        "name": "VMware Cloud Foundation (3.500 VMs)"
+      },
+      {
+        "category": "Stockage",
+        "name": "NetApp AFF A800, Dell EMC"
+      },
+      {
+        "category": "Réseaux & SD-WAN",
+        "name": "Aruba SD-WAN, Fortinet"
+      }
+    ],
+    "field_metrics": [
+      {
+        "metric": "Colis / Jour",
+        "value": "2.200.000 colis/j"
+      },
+      {
+        "metric": "Hubs Logistiques",
+        "value": "165 hubs"
+      },
+      {
+        "metric": "Coût Horaire Arrêt Hub",
+        "value": "310.000 €/h"
+      }
+    ]
+  },
+  "tower_overrides": {
+    "T1": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T2": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T3": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T4": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T5": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T6": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T7": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T8": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T9": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    },
+    "T10": {
+      "target_maturity": 3.8,
+      "status": "In Scope"
+    }
+  },
+  "epistemic_graph": {
+    "topology": {
+      "nodes": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10"
+      ],
+      "edges": [
+        {
+          "source": "T4",
+          "target": "T2",
+          "weight": 0.85
+        }
+      ]
+    },
+    "audits": {
+      "cascading_impact_index": 0.32
+    }
+  },
+  "review": {
+    "summary": "Geodis Benchmark Fixture",
+    "status": "Certified"
+  },
+  "claims": []
+}

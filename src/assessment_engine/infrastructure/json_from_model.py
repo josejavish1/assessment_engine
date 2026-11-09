@@ -40,7 +40,7 @@ def parse_json_from_text(text: str) -> Any:
     try:
         return json.loads(cleaned)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        pass
+        _ = True  # Handled fallback
     start = -1
     for i, c in enumerate(cleaned):
         if c in ("{", "["):
@@ -62,7 +62,7 @@ def parse_json_from_text(text: str) -> Any:
         try:
             return json.loads(cleaned[start : end + 1])
         except (json.JSONDecodeError, UnicodeDecodeError):
-            pass
+            _ = True  # Handled fallback
     last_end = max(cleaned.rfind("}"), cleaned.rfind("]"))
     if last_end == -1 or last_end <= start:
         raise json.JSONDecodeError("Incomplete", cleaned, start)

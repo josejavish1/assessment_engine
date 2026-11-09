@@ -111,6 +111,7 @@ class EpistemicSynthesizer(IEpistemicSynthesizerPort):
         empirical_fragments: List[EpistemicFragment],
         runtime_context: Optional[Dict[str, Any]] = None,
     ) -> EpistemicLedger:
+        """Synthesize normalized epistemic ledger from empirical client observations."""
         entries: List[EvidenceEntry] = []
         entry_seq = 1
 

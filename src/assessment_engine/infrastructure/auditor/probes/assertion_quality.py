@@ -16,7 +16,7 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
     test_dir = target_dir / "tests"
     if not test_dir.is_dir():
         return ProbeResult(
-            probe_name="assertion_quality",
+            probe_name="Assertion Quality & Rigor (Anti-Vanity / GEMA 54)",
             score_pct=100.0,
             passed=True,
             metrics={"total_tests": 0, "strong_ratio_pct": 100.0},
@@ -67,10 +67,10 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
             )
         )
 
-    score = 100.0 if passed else round((ratio / 80.0) * 100.0, 1)
+    score = round(ratio, 1)
 
     return ProbeResult(
-        probe_name="assertion_quality",
+        probe_name="Assertion Quality & Rigor (Anti-Vanity / GEMA 54)",
         score_pct=score,
         passed=passed,
         metrics={

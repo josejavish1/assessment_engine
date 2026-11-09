@@ -196,7 +196,7 @@ async def translate_text(text: str) -> str:
             return result.get("translated_text", text).strip()
         return result.translated_text.strip()
     except Exception as e:
-        print(
+        logger.info(
             f"⚠️ Warning: LLM translation failed, keeping original. Error: {e}",
             file=sys.stderr,
         )
@@ -272,13 +272,13 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
     try:
         content = filepath.read_text(encoding="utf-8")
     except Exception as e:
-        print(f"Error reading {filepath}: {e}", file=sys.stderr)
+        logger.info(f"Error reading {filepath}: {e}", file=sys.stderr)
         return False
 
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(content).readline))
     except tokenize.TokenError as e:
-        print(f"Tokenization error in {filepath}: {e}", file=sys.stderr)
+        logger.info(f"Tokenization error in {filepath}: {e}", file=sys.stderr)
         return False
 
     docstring_spans = get_docstring_spans(content)
@@ -304,7 +304,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
                 raw_comment = match.group(2).strip()
                 if raw_comment and is_spanish_text(raw_comment):
                     issues_found += 1
-                    print(
+                    logger.info(
                         f"🚨 Found Spanish Comment in {filepath}:{token.start[0]}: {token.string}"
                     )
 
@@ -334,7 +334,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
                     if raw_doc and is_spanish_text(raw_doc):
                         issues_found += 1
                         first_line = raw_doc.splitlines()[0] if raw_doc else ""
-                        print(
+                        logger.info(
                             f"🚨 Found Spanish Docstring in {filepath}:{token.start[0]}: {quote_style}{first_line}..."
                         )
 
@@ -353,7 +353,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
 
     if issues_found > 0:
         if autofix and replacements:
-            print(f"✨ Auto-healing {filepath} ({len(replacements)} translations)...")
+            logger.info(f"✨ Auto-healing {filepath} ({len(replacements)} translations)...")
 
             # Apply replacements descending to avoid offset drift
             replacements.sort(
@@ -383,9 +383,9 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
 
             try:
                 filepath.write_text("".join(lines), encoding="utf-8")
-                print(f"✅ Successfully auto-healed {filepath}.")
+                logger.info(f"✅ Successfully auto-healed {filepath}.")
             except Exception as e:
-                print(f"❌ Failed to write updates to {filepath}: {e}", file=sys.stderr)
+                logger.info(f"❌ Failed to write updates to {filepath}: {e}", file=sys.stderr)
                 return False
         return False
 
@@ -424,10 +424,10 @@ async def main() -> int:
     ]
 
     if not target_files:
-        print("No files to scan.")
+        logger.info("No files to scan.")
         return 0
 
-    print(
+    logger.info(
         f"🔍 Scanning {len(target_files)} files for Spanish comments and docstrings..."
     )
 
@@ -438,15 +438,15 @@ async def main() -> int:
     success = all(results)
     if not success:
         if args.autofix:
-            print(
+            logger.info(
                 "\n✨ Auto-healing cycle complete. Please review the translated files and run again to verify."
             )
             return 0
         else:
-            print("\n❌ Language Guard failed: Non-English comments/docstrings found.")
+            logger.info("\n❌ Language Guard failed: Non-English comments/docstrings found.")
             return 1
 
-    print(
+    logger.info(
         "\n✅ Language Guard passed: All comments and docstrings are in compliant Technical English."
     )
     return 0

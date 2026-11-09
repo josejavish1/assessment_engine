@@ -403,8 +403,8 @@ class AutonomousBlueprintExecutor:
                 context_blocks.append(
                     f"#### EXISTING PRODUCTION FILE: {rel}\n```python\n{code}\n```"
                 )
-            except Exception:
-                pass
+            except (OSError, UnicodeDecodeError) as err:
+                logger.debug("Failed to read context file %s: %s", rel, err)
 
         existing_context_str = "\n\n".join(context_blocks)
 

@@ -197,7 +197,7 @@ async def build_findings(
         p_name = pillar["pillar_name"]
         p_score = pillar["score_exact"]
 
-        print(
+        logger.info(
             f"    -> Analyzing pillar {p_id} with AI (Hierarchical Context + Assessment Answers)..."
         )
 
@@ -384,7 +384,7 @@ async def main(argv: list[str] | None = None) -> None:
     )
     tower_definition = load_json(tower_def_path)
 
-    print(f"🚀 Starting Senior AI Evidence Analysis for {tower_id}...")
+    logger.info(f"🚀 Starting Senior AI Evidence Analysis for {tower_id}...")
     findings = await build_findings(
         case_input, evidence_ledger, scoring_output, tower_definition
     )
@@ -393,7 +393,7 @@ async def main(argv: list[str] | None = None) -> None:
     output_path.write_text(
         json.dumps(findings, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Hallazgos generados con IA Senior: {output_path}")
+    logger.info(f"✅ Hallazgos generados con IA Senior: {output_path}")
 
 
 if __name__ == "__main__":

@@ -141,19 +141,6 @@ class Volume1AsisASTCompiler:
     strict actuarial integrity, CMMI maturity scales, and OpenXML standards.
     """
 
-    CANONICAL_DOMAIN_SCENARIO_BASELINE: Final[Mapping[str, int]] = MappingProxyType({
-        "T1": 3,
-        "T2": 4,
-        "T3": 3,
-        "T4": 2,
-        "T5": 4,
-        "T6": 3,
-        "T7": 2,
-        "T8": 3,
-        "T9": 2,
-        "T10": 3,
-    })
-
     @staticmethod
     def _normalize_hex_color(raw_hex: str, fallback: str) -> str:
         clean_hex = str(raw_hex or "").strip().lstrip("#")
@@ -211,7 +198,6 @@ class Volume1AsisASTCompiler:
 
         nodes: List[DocNode] = []
 
-        # 0. Frontmatter: Cover Page & TOC
         self._build_cover_page(
             nodes=nodes,
             client_name=client_name,
@@ -223,7 +209,6 @@ class Volume1AsisASTCompiler:
         )
         self._build_table_of_contents(nodes, doc_lang)
 
-        # 1. Chapter 1: Transversal Executive Summary & Board Memo
         self._build_chapter_1_executive_summary(
             nodes, global_payload, tower_payloads, client_name, currency, doc_lang
         )
@@ -243,7 +228,6 @@ class Volume1AsisASTCompiler:
             nodes, global_payload, tower_payloads, currency, doc_lang
         )
 
-        # 5. Chapter 5: Cross-Tower Nexus & Systemic Interdependencies
         self._build_chapter_5_cross_tower_nexus(
             nodes, global_payload, doc_lang
         )
@@ -273,9 +257,7 @@ class Volume1AsisASTCompiler:
         logger.info("Compiled Consolidated Volume 1 AS-IS: %s", output_docx_path)
         return output_docx_path
 
-    # =========================================================================
     # FRONTMATTER: COVER & TABLE OF CONTENTS
-    # =========================================================================
     def _build_cover_page(
         self,
         nodes: List[DocNode],
@@ -379,9 +361,7 @@ class Volume1AsisASTCompiler:
         nodes.append(TOCNode(title=toc_title, entries=toc_entries, depth=2))
         nodes.append(PageBreakNode())
 
-    # =========================================================================
     # DYNAMIC FINANCIAL TELEMETRY & N-DOMAIN RECONCILIATION HELPERS
-    # =========================================================================
     @staticmethod
     def _first_not_none(*values: Any, default: Any = None) -> Any:
         """Returns the first argument that is strictly not None."""
@@ -419,7 +399,7 @@ class Volume1AsisASTCompiler:
             try:
                 return Decimal(str(parsed)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
             except (InvalidOperation, ValueError, OverflowError):
-                pass
+                _ = True  # Handled fallback
         return Decimal(default_str)
 
     @staticmethod
@@ -476,8 +456,10 @@ class Volume1AsisASTCompiler:
         )
 
         # 3. Corporate ALE & P90 tail risk (reconciled with live tower FAIR scenarios)
+        port_summary = global_payload.get("portfolio_summary") or {}
         corporate_ale = (
             safe_float(fin.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
+            or safe_float(port_summary.get("total_portfolio_ale"), locale=doc_lang, allow_zero=True)
             or safe_float(fin.get("corporate_ale"), locale=doc_lang, allow_zero=True)
             or safe_float(global_payload.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
         )
@@ -519,6 +501,7 @@ class Volume1AsisASTCompiler:
         )
         corporate_p90 = (
             safe_float(fin.get("total_fair_p90"), locale=doc_lang)
+            or safe_float(port_summary.get("portfolio_var_90"), locale=doc_lang)
             or safe_float(fin.get("corporate_p90_tail_risk"), locale=doc_lang)
             or safe_float(global_payload.get("total_fair_p90"), locale=doc_lang)
             or (derived_p90_sum if derived_p90_sum > 0.0 else None)
@@ -529,11 +512,16 @@ class Volume1AsisASTCompiler:
         var_3y_expected = corporate_ale * STRATEGIC_HORIZON_YEARS
         var_3y_tail = (corporate_ale * STRATEGIC_HORIZON_YEARS) + (corporate_p90 * TAIL_STRESS_HORIZON_FACTOR)
 
-        domain_scenario_counts = (
-            fin.get("domain_scenario_counts")
-            or fin.get("domain_scenarios")
-            or self.CANONICAL_DOMAIN_SCENARIO_BASELINE
-        )
+        domain_scenario_counts = fin.get("domain_scenario_counts") or fin.get("domain_scenarios") or {
+            t_code: max(1, len([
+                hc
+                for p in t_payload.get("pillars_analysis", [])
+                if isinstance(p, dict)
+                for hc in p.get("health_check_asis", [])
+                if isinstance(hc, dict)
+            ]))
+            for t_code, t_payload in tower_payloads.items()
+        }
 
         return {
             "annual_revenue": annual_revenue,
@@ -647,7 +635,6 @@ class Volume1AsisASTCompiler:
             parsed_score = safe_float(score_val, locale=doc_lang, allow_zero=True)
             score = parsed_score if parsed_score is not None else DEFAULT_MATURITY_SCORE
 
-            # Name resolution
             clean_name = t(f"tomo_tower_{code.lower()}_clean", locale=doc_lang)
             def_tuple = canonical_topology_map.get(code_u)
             fallback_def_name = def_tuple[0] if def_tuple else f"Domain {code_u}"
@@ -829,17 +816,18 @@ class Volume1AsisASTCompiler:
         for entry in domain_meta:
             code = entry[0] if isinstance(entry, (list, tuple)) else str(entry)
             code_u = code.upper()
-            # 1. Check explicit domain_weights in telemetry
-            if code in domain_weights or code_u in domain_weights:
+            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
+
+            # 1. Check tower_payloads computed actuarial ALE (copula / FAIR engine)
+            tp_ale = (
+                safe_float(tp.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
+                or safe_float(tp.get("fair_ale"), locale=doc_lang, allow_zero=True)
+                or safe_float(tp.get("annualized_loss_expectancy"), locale=doc_lang, allow_zero=True)
+            )
+            if tp_ale is not None:
+                val = tp_ale
+            elif code in domain_weights or code_u in domain_weights:
                 val = safe_float(domain_weights.get(code, domain_weights.get(code_u)), locale=doc_lang) or 0.0
-            # 2. Check tower_payloads
-            elif (code in tower_payloads or code_u in tower_payloads) and (
-                tower_payloads.get(code, tower_payloads.get(code_u, {})).get("annualized_loss_expectancy") is not None
-            ):
-                val = safe_float(
-                    tower_payloads.get(code, tower_payloads.get(code_u))["annualized_loss_expectancy"],
-                    locale=doc_lang,
-                ) or 0.0
             # 3. Check heatmap item
             elif code_u in heatmap_map and (heatmap_map[code_u].get("ale") or heatmap_map[code_u].get("fair_ale_score")):
                 val = safe_float(
@@ -874,9 +862,6 @@ class Volume1AsisASTCompiler:
             domain_raw_exposures=raw_pairs,
         )
 
-    # =========================================================================
-    # CHAPTER 1: TRANSVERSAL EXECUTIVE SUMMARY & BOARD MEMO
-    # =========================================================================
     def _build_chapter_1_executive_summary(
         self,
         nodes: List[DocNode],
@@ -989,9 +974,7 @@ class Volume1AsisASTCompiler:
         nodes.append(TableNode(rows=cockpit_rows, autofit=True, col_widths=[0.33, 0.33, 0.34]))
         nodes.append(SpacerNode(points=8))
 
-        # ---------------------------------------------------------------------
         # RESOLVE TOPOLOGY, ALLOCATIONS & POLARITY EXTREMES
-        # ---------------------------------------------------------------------
         domain_topology = self._resolve_domain_topology(
             global_payload, doc_lang, tower_payloads=tower_payloads
         )
@@ -1020,9 +1003,7 @@ class Volume1AsisASTCompiler:
             domain_topology, reconciled_allocations, currency, doc_lang
         )
 
-        # ---------------------------------------------------------------------
         # EXECUTIVE LEAD SYNTHESIS PARAGRAPH (RFC 077 Parameterized)
-        # ---------------------------------------------------------------------
         p1 = t(
             "tomo_ch1_p1",
             locale=doc_lang,
@@ -1033,9 +1014,7 @@ class Volume1AsisASTCompiler:
         )
         nodes.append(ParagraphNode(text=p1, font_size=9.5, space_after=6))
 
-        # ---------------------------------------------------------------------
         # BLOCK 2: PORTFOLIO POLARITY & EXTREMES RADIOGRAPHY (3x3 Table)
-        # ---------------------------------------------------------------------
         fmt_kwargs = {
             "leader_code": polarity.leader.code,
             "leader_name": polarity.leader.name,
@@ -1094,9 +1073,7 @@ class Volume1AsisASTCompiler:
         nodes.append(TableNode(rows=polarity_rows, autofit=True, col_widths=[0.26, 0.26, 0.48]))
         nodes.append(SpacerNode(points=6))
 
-        # ---------------------------------------------------------------------
         # BLOCK 3: PRIORITY STRATEGIC BUSINESS CHALLENGES
-        # ---------------------------------------------------------------------
         nodes.append(
             HeadingNode(
                 text=t("tomo_ch1_challenges_title", locale=doc_lang),
@@ -1146,9 +1123,7 @@ class Volume1AsisASTCompiler:
                 f_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}" if len(parts) > 1 else b
             nodes.append(ParagraphNode(text=f_bullet, style="List Bullet", font_size=8.5, space_after=5 if is_last else 2))
 
-        # ---------------------------------------------------------------------
         # BLOCK 4: ACTUARIAL FINANCIAL QUANTIFICATION (OPEN FAIR™)
-        # ---------------------------------------------------------------------
         nodes.append(
             HeadingNode(
                 text=t("tomo_ch1_econ_title", locale=doc_lang),
@@ -1170,9 +1145,7 @@ class Volume1AsisASTCompiler:
         nodes.append(ParagraphNode(text=p3, font_size=8.5, space_after=8))
         nodes.append(PageBreakNode())
 
-    # =========================================================================
     # CHAPTER 2: CONSOLIDATED CAPABILITY MATURITY RADIOGRAPHY (CMMI) + RADAR
-    # =========================================================================
     def _build_chapter_2_maturity_radiography(
         self,
         nodes: List[DocNode],
@@ -1324,9 +1297,7 @@ class Volume1AsisASTCompiler:
             )
         )
 
-        # ---------------------------------------------------------------------
         # SECTION 2.2: CMMI ANALYTICAL MATURITY SCALE REFERENCE TABLE (RFC 079)
-        # ---------------------------------------------------------------------
         nodes.append(
             HeadingNode(
                 text=t("tomo_ch2_sec2_title", locale=doc_lang),
@@ -1344,12 +1315,11 @@ class Volume1AsisASTCompiler:
             )
         )
 
+        from assessment_engine.domain.actuarial.maturity_band import get_canonical_scale_intervals
+        canonical_intervals = get_canonical_scale_intervals()
         scale_definitions: List[Tuple[str, float, float, str]] = [
-            ("tomo_ch2_scale_lvl1_name", 1.00, 1.80, "tomo_ch2_scale_lvl1_desc"),
-            ("tomo_ch2_scale_lvl2_name", 1.80, 2.60, "tomo_ch2_scale_lvl2_desc"),
-            ("tomo_ch2_scale_lvl3_name", 2.60, 3.40, "tomo_ch2_scale_lvl3_desc"),
-            ("tomo_ch2_scale_lvl4_name", 3.40, 4.20, "tomo_ch2_scale_lvl4_desc"),
-            ("tomo_ch2_scale_lvl5_name", 4.20, 5.00, "tomo_ch2_scale_lvl5_desc"),
+            (f"tomo_ch2_scale_lvl{i.level}_name", i.min_score, i.max_score, f"tomo_ch2_scale_lvl{i.level}_desc")
+            for i in canonical_intervals
         ]
 
         scale_rows: List[TableRowNode] = [
@@ -1380,9 +1350,7 @@ class Volume1AsisASTCompiler:
         nodes.append(SpacerNode(points=6))
         nodes.append(PageBreakNode())
 
-    # =========================================================================
     # CHAPTER 3: AGGREGATED OPEN FAIR ACTUARIAL RISK REGISTER + HEATMAP & CARDS
-    # =========================================================================
     def _build_chapter_3_actuarial_risk_register(
         self,
         nodes: List[DocNode],
@@ -1431,7 +1399,16 @@ class Volume1AsisASTCompiler:
         explicit_gs = safe_float(global_payload.get("global_cmmi_score"), locale=doc_lang, allow_zero=True)
         global_score = explicit_gs if explicit_gs is not None else (sum(scores) / max(1, len(scores)))
 
-        raw_domain_scenarios = fin_metrics.get("domain_scenario_counts") or self.CANONICAL_DOMAIN_SCENARIO_BASELINE
+        raw_domain_scenarios = fin_metrics.get("domain_scenario_counts") or {
+            t_code: max(1, len([
+                hc
+                for p in t_payload.get("pillars_analysis", [])
+                if isinstance(p, dict)
+                for hc in p.get("health_check_asis", [])
+                if isinstance(hc, dict)
+            ]))
+            for t_code, t_payload in tower_payloads.items()
+        }
         domain_scenarios = {
             str(k).upper(): int(v)
             for k, v in raw_domain_scenarios.items()
@@ -1484,10 +1461,17 @@ class Volume1AsisASTCompiler:
         ]
 
         target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
-        raw_p90_pairs: List[Tuple[str, Decimal]] = [
-            (code, Decimal(str(reconciled_allocations.get(code, 0))))
-            for code, *_ in domain_meta
-        ]
+        raw_p90_pairs: List[Tuple[str, Decimal]] = []
+        for code, *_ in domain_meta:
+            code_u = code.upper()
+            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
+            tp_p90 = safe_float(tp.get("total_fair_p90"), locale=doc_lang)
+            if tp_p90 is not None:
+                p90_val = Decimal(str(tp_p90))
+            else:
+                p90_val = Decimal(str(reconciled_allocations.get(code, 0)))
+            raw_p90_pairs.append((code, p90_val))
+
         reconciled_p90_allocations = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=target_p90_int,
             domain_raw_exposures=raw_p90_pairs,
@@ -1512,8 +1496,10 @@ class Volume1AsisASTCompiler:
         )
 
         for code, clean_tower_name, score, _, _ in domain_topology:
+            code_u = code.upper()
+            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
             d_ale = reconciled_allocations.get(code, 0)
-            d_p90 = reconciled_p90_allocations.get(code, 0)
+            d_p90 = round(safe_float(tp.get("worst_crisis_event") or tp.get("total_fair_p90"), locale=doc_lang) or (float(d_ale) * 1.5))
             d_pct_val = reconciled_pct_tenths.get(code, 100) / 10.0
             d_pct_str = f"{format_number(d_pct_val, locale=doc_lang, decimals=1)}%"
             score_str = format_number(score, locale=doc_lang, decimals=2)
@@ -1533,8 +1519,20 @@ class Volume1AsisASTCompiler:
         tot_label = t("tomo_ch3_table4_total_row_label", locale=doc_lang, total_domains=len(domain_meta))
         pct_100_str = f"{format_number(100.0, locale=doc_lang, decimals=1)}%"
 
+        actual_crisis_map = {
+            code: round(
+                safe_float(
+                    (tower_payloads.get(code) or tower_payloads.get(code.upper()) or {}).get("worst_crisis_event")
+                    or (tower_payloads.get(code) or tower_payloads.get(code.upper()) or {}).get("total_fair_p90"),
+                    locale=doc_lang,
+                )
+                or (float(reconciled_allocations.get(code, 0)) * 1.5)
+            )
+            for code, *_ in domain_topology
+        }
+
         peak_code, peak_domain, peak_cost, peak_cost_fmt = self._compute_peak_single_incident(
-            domain_topology, reconciled_p90_allocations, currency, doc_lang
+            domain_topology, actual_crisis_map, currency, doc_lang
         )
         max_qualifier = t("tomo_ch3_table4_max_tag", locale=doc_lang)
         peak_summary_text = f"{peak_cost_fmt} {max_qualifier}"
@@ -1960,9 +1958,7 @@ class Volume1AsisASTCompiler:
 
         nodes.append(PageBreakNode())
 
-    # =========================================================================
     # CHAPTER 4: FORENSIC DOMAIN DIAGNOSTICS (10 TOWERS) & CRITICAL SPOF MATRIX
-    # =========================================================================
     def _build_chapter_4_forensic_diagnostics(
         self,
         nodes: List[DocNode],
@@ -2157,6 +2153,10 @@ class Volume1AsisASTCompiler:
                 else None
             )
             inventory = payload_inv or t_data.get("inventory") or ""
+            if inventory and "{client_name}" in inventory:
+                c_name = str(global_payload.get("meta", {}).get("client") or t("default_client_name", locale=doc_lang)).strip()
+                inventory = inventory.replace("{client_name}", c_name)
+
             if not inventory:
                 f_templates = catalog.get("forensic_domain_templates", {})
                 inv_tmpl = f_templates.get("inventory_fallback") or t(
@@ -2306,32 +2306,47 @@ class Volume1AsisASTCompiler:
                     sp_score = sp[1]
                     sp_pillar_dict = sp[2] if len(sp) > 2 and isinstance(sp[2], dict) else {}
 
-                    # Resolve Strength: prioritize catalog pillar strength, then target_state, then fallback
+                    # Resolve Strength: prioritize live health checks/payload strengths, then catalog, then fallback
                     sp_strength = ""
-                    if idx < len(cat_strengths) and cat_strengths[idx]:
-                        sp_strength = str(cat_strengths[idx]).strip()
-                    elif idx < len(strengths) and strengths[idx]:
-                        sp_strength = str(strengths[idx]).strip()
-                    elif sp_pillar_dict:
+                    if sp_pillar_dict:
                         hcs = sp_pillar_dict.get("health_check_asis") or []
-                        target_st = next((h.get("target_state") for h in hcs if isinstance(h, dict) and h.get("target_state")), None)
+                        target_st = next(
+                            (
+                                h.get("target_state") or h.get("description") or h.get("title")
+                                for h in hcs
+                                if isinstance(h, dict) and (h.get("target_state") or h.get("description") or h.get("title"))
+                            ),
+                            None,
+                        )
                         if target_st:
-                            sp_strength = str(target_st).strip()
+                            clean_st = str(target_st).split(".")[0].strip()
+                            sp_strength = f"{clean_st}." if clean_st else str(target_st).strip()
+                    if not sp_strength and idx < len(strengths) and strengths[idx]:
+                        sp_strength = str(strengths[idx]).strip()
+                    elif not sp_strength and idx < len(cat_strengths) and cat_strengths[idx]:
+                        sp_strength = str(cat_strengths[idx]).strip()
                     if not sp_strength:
                         sp_strength = t("tomo_pillar_default_strength", locale=doc_lang, pillar_name=sp_name)
 
-                    # Resolve Finding / Risk: prioritize catalog pillar finding, then concise health check, then fallback
+                    # Resolve Finding / Risk: prioritize live health checks/payload findings, then catalog, then fallback
                     sp_finding = ""
-                    if idx < len(cat_findings) and cat_findings[idx]:
-                        sp_finding = str(cat_findings[idx]).strip()
-                    elif idx < len(findings) and findings[idx]:
-                        sp_finding = str(findings[idx]).strip()
-                    elif sp_pillar_dict:
+                    if sp_pillar_dict:
                         hcs = sp_pillar_dict.get("health_check_asis") or []
-                        f_txt = next((h.get("finding") or h.get("business_risk") for h in hcs if isinstance(h, dict) and (h.get("finding") or h.get("business_risk"))), None)
+                        f_txt = next(
+                            (
+                                h.get("finding") or h.get("business_risk") or h.get("description")
+                                for h in hcs
+                                if isinstance(h, dict) and (h.get("finding") or h.get("business_risk") or h.get("description"))
+                            ),
+                            None,
+                        )
                         if f_txt:
                             clean_sent = str(f_txt).split(".")[0].strip()
                             sp_finding = f"{clean_sent}." if clean_sent else str(f_txt).strip()
+                    if not sp_finding and idx < len(findings) and findings[idx]:
+                        sp_finding = str(findings[idx]).strip()
+                    elif not sp_finding and idx < len(cat_findings) and cat_findings[idx]:
+                        sp_finding = str(cat_findings[idx]).strip()
                     if not sp_finding:
                         sp_finding = t("tomo_pillar_default_finding", locale=doc_lang, pillar_name=sp_name)
 
@@ -2426,9 +2441,6 @@ class Volume1AsisASTCompiler:
         nodes.append(SpacerNode(points=14))
         nodes.append(PageBreakNode())
 
-    # =========================================================================
-    # CHAPTER 5: CROSS-TOWER NEXUS & SYSTEMIC INTERDEPENDENCIES
-    # =========================================================================
     def _build_chapter_5_cross_tower_nexus(
         self,
         nodes: List[DocNode],
@@ -2487,9 +2499,7 @@ class Volume1AsisASTCompiler:
         nodes.append(SpacerNode(points=14))
         nodes.append(PageBreakNode())
 
-    # =========================================================================
     # UNIFIED APPENDIX: GLOSSARY & LEGAL LIABILITY DISCLAIMER
-    # =========================================================================
     def _build_unified_appendix(
         self,
         nodes: List[DocNode],

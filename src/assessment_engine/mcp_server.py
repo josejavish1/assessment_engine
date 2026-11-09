@@ -138,6 +138,7 @@ class PersistentJobStore:
 
     @property
     def db_path(self) -> Path:
+        """Return the resolved filesystem path to the persistent SQLite database."""
         return self._db_path
 
     def _connect(self) -> sqlite3.Connection:

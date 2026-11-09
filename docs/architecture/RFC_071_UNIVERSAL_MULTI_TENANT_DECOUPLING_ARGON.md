@@ -11,7 +11,7 @@
 
 To guarantee that the assessment platform scales across any industry vertical (e.g., Commercial Banking, Healthcare, Heavy Manufacturing, Retail), revenue scale ($10M to $100B+), currency (`USD`, `EUR`, `JPY`, `GBP`), and target locale (`en`, `es`, `pt`, `fr`, `de`, `ja`), the engine enforces a strict **Three-Plane Isolation Model**.
 
-```
+```text
 +-----------------------------------------------------------------------------------+
 |                        PLANE 1: TENANT DATA SSOT (Runtime)                        |
 |  Source: case_input.json -> Actuarial Engine -> tower_payloads + global_payload   |

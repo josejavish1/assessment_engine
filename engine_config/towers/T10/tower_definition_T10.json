@@ -71,7 +71,7 @@
     "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
   },
   "tower_id": "T10",
-  "tower_name": "Legacy & Mainframe",
+  "tower_name": "Core Transactional & Mission-Critical Systems",
   "purpose": "La torre Legacy & Mainframe cubre la madurez de la plataforma legacy (incluyendo mainframe cuando exista) desde la perspectiva de infraestructura y operación tecnológica, abarcando:",
   "scope_summary": [],
   "related_towers": [
@@ -81,7 +81,7 @@
   "pillars": [
     {
       "pillar_id": "T10.P1",
-      "pillar_name": "Plataforma Legacy/Mainframe & Operación Core",
+      "pillar_name": "Plataformas Transaccionales Core y Procesamiento Crítico",
       "weight_pct": 20,
       "kpis": [
         {
@@ -257,7 +257,7 @@
         },
         {
           "kpi_id": "T10.P4.K4",
-          "kpi_name": "Calidad de integración con IAM/seguridad corporativa (aplicada a legacy)",
+          "kpi_name": "Calidad de integración con IAM corporativo en plataformas legacy",
           "questions": [
             {
               "question_id": "T10.P4.K4.PR1",

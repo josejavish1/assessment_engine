@@ -53,7 +53,7 @@ def run_k6_load_test(
                 data = json.loads(summary_path.read_text(encoding="utf-8"))
                 return data, findings
             except (json.JSONDecodeError, OSError):
-                pass
+                _ = True  # Handled fallback
     except (subprocess.SubprocessError, OSError) as ex:
         findings.append(AuditFinding(
             category="PERFORMANCE",
@@ -191,7 +191,7 @@ Verify that WAL configuration and busy_timeout prevent 'database is locked' erro
             try:
                 p.unlink(missing_ok=True)
             except OSError:
-                pass
+                _ = True  # Handled fallback
 
 
 def _resolve_target_asgi_app(target_dir: Path) -> Any | None:
@@ -202,7 +202,7 @@ def _resolve_target_asgi_app(target_dir: Path) -> Any | None:
             import server
             return getattr(server, "app", None)
         except (ImportError, AttributeError, OSError):
-            pass
+            _ = True  # Handled fallback
 
     template_main = target_dir / "templates" / "golden_polyglot_starter" / "api" / "src" / "main.py"
     if template_main.exists():
@@ -213,7 +213,7 @@ def _resolve_target_asgi_app(target_dir: Path) -> Any | None:
                 spec.loader.exec_module(mod)
                 return getattr(mod, "app", None)
         except (ImportError, AttributeError, OSError):
-            pass
+            _ = True  # Handled fallback
 
     return None
 

@@ -12,7 +12,7 @@ from playwright.async_api import async_playwright
 
 from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
-ROOT = Path("/home/jsanchhi/assessment_engine")
+ROOT = Path(__file__).resolve().parents[1]
 MOLINS_DIR = ROOT / "working/molins"
 PKG_DIR = ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1"
 

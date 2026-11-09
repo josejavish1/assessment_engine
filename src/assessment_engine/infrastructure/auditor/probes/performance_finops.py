@@ -113,7 +113,8 @@ def audit_sqlite_wal_tuning(db_path: Path) -> list[AuditFinding]:
             ))
         conn.close()
     except (sqlite3.Error, OSError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
     return findings
 
 

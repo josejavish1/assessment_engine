@@ -1,4 +1,7 @@
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 
 import argparse
 import subprocess
@@ -48,9 +51,9 @@ def run_typecheck(repo_root: Path, target_files: list[str]) -> int:
         check=False,
     )
     if result.stdout:
-        print(result.stdout, end="")
+        logger.info(result.stdout, end="")
     if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
+        logger.info(result.stderr, end="", file=sys.stderr)
     return result.returncode
 
 
@@ -95,12 +98,12 @@ def main(argv: list[str] | None = None) -> int:
     target_files = normalize_live_python_paths(repo_root, changed_files)
 
     if not target_files:
-        print("Incremental type check skipped: no live Python files changed.")
+        logger.info("Incremental type check skipped: no live Python files changed.")
         return 0
 
-    print("Incremental type check targets:")
+    logger.info("Incremental type check targets:")
     for path in target_files:
-        print(f"- {path}")
+        logger.info(f"- {path}")
 
     return run_typecheck(repo_root, target_files)
 

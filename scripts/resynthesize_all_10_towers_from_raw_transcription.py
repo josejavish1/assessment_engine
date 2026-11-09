@@ -31,6 +31,14 @@ from assessment_engine.adapters.compilers.payload_to_ast import (
 from assessment_engine.application.services.tower_payload_hydrator import (
     TowerPayloadHydrator,
 )
+from assessment_engine.application.services.semantic_epistemic_router import (
+    EpistemicContextPacket,
+    SemanticEpistemicRouter,
+)
+from assessment_engine.application.services.universal_tower_synthesizer import (
+    ClientAssessmentContext,
+    UniversalTowerSynthesizer,
+)
 from assessment_engine.infrastructure.genai_client import (
     ModelTier,
     create_genai_client,
@@ -57,19 +65,6 @@ MOLINS_CANONICAL_FILENAMES: Dict[str, str] = {
     "T10": "Molins_202610_Anexo_10_Sistemas_Expedicion_Operaciones_ASIS.docx",
 }
 
-TOWER_KEYWORDS: Dict[str, List[str]] = {
-    "T1": ["cpd", "datacenter", "centro de datos", "sant vicenç", "sai", "ups", "climatiz", "crac", "falso suelo", "potencia", "eléctric", "cuadro", "extinción", "incendio", "bms", "ats", "pdu"],
-    "T2": ["simplivity", "vmware", "vsphere", "vcenter", "nodo", "clúster", "cluster", "esxi", "virtualiz", "cómputo", "ot", "memoria", "ram", "cpu", "host", "kubernetes", "contenedor"],
-    "T3": ["red", "switch", "huawei", "firewall", "forti", "fortinet", "enlace", "fibra", "10 gb", "dci", "wan", "sd-wan", "equinix", "fabric", "hivision", "lan", "vlan", "enrutamiento"],
-    "T4": ["netapp", "metrocluster", "vnx", "almacenamiento", "storage", "san", "cohesity", "backup", "s3", "objeto", "wasabi", "snapshot", "bloque", "cinta", "qos", "i/o"],
-    "T5": ["continuidad", "resiliencia", "rto", "rpo", "parada", "caída", "recuperación", "desastre", "dr", "500 metros", "planta", "fabril", "contingencia", "ransomware", "air-gap"],
-    "T6": ["seguridad", "ciber", "active directory", "ad", "pam", "mfa", "edr", "soc", "vulnerab", "parche", "credencial", "privilegi", "fortigate", "acceso", "nis2", "microsegment"],
-    "T7": ["zabbix", "prometheus", "grafana", "loki", "itsm", "ticket", "soporte", "isau", "dba", "croata", "sla", "slo", "cmdb", "monitoriz", "incidencia", "operaciones", "gestión"],
-    "T8": ["estrategia", "gobernanza", "finops", "gcp", "azure", "oci", "sap", "databricks", "prenet", "coste", "facturación", "nube", "cloud", "presupuesto", "inversión", "licencia"],
-    "T9": ["puesto", "workplace", "portátil", "equipo", "windows", "m365", "office", "teams", "impresora", "cau", "helpdesk", "dex", "usuario", "dispositivo", "planta"],
-    "T10": ["báscula", "bascula", "pesaje", "camión", "expedición", "albarán", "oracle", "forms", "reports", "batch", "centos", "legacy", "malla", "secil", "nos", "fábrica"],
-}
-
 
 def load_transcript_paragraphs() -> List[str]:
     doc = Document(str(TRANSCRIPT_DOCX))
@@ -89,7 +84,7 @@ def load_taxonomy() -> Dict[str, Any]:
 def gather_evidence_for_tower(
     tower_code: str,
     ledger_data: Dict[str, Any],
-    transcript_paras: List[str],
+    packet: EpistemicContextPacket,
 ) -> str:
     lines = []
 
@@ -103,99 +98,30 @@ def gather_evidence_for_tower(
                 if txt:
                     lines.append(f"[{tax} LEDGER {pol}] {txt}")
 
-    # 2. Matching raw transcript paragraphs
-    keywords = TOWER_KEYWORDS.get(tower_code, [])
-    for idx, para in enumerate(transcript_paras):
-        para_lower = para.lower()
-        if any(kw in para_lower for kw in keywords):
-            lines.append(f"[{tower_code} TRANSCRIPT Turn {idx}] {para}")
+    # 2. Lossless semantic propositions routed via SemanticEpistemicRouter (RFC 084)
+    for prop in packet.propositions:
+        lines.append(f"[{tower_code} TRANSCRIPT Turn {prop.turn_index}] {prop.text}")
 
-    return "\n".join(lines[:35])  # Cap to top 35 high-signal fragments
+    return "\n".join(lines)
 
 
 def synthesize_tower(
     tower_code: str,
-    evidence_text: str,
+    packet: EpistemicContextPacket,
     taxonomy_data: Dict[str, Any],
+    client_context: ClientAssessmentContext,
     client: Any,
     model_name: str,
 ) -> Dict[str, Any]:
+    """Universal, decoupled synthesis delegating to UniversalTowerSynthesizer."""
+    synthesizer = UniversalTowerSynthesizer()
     tower_tax = taxonomy_data.get(tower_code, {})
-    tower_name = tower_tax.get("canonical_name", f"Domain {tower_code}")
-    pillars_meta = tower_tax.get("pillars", {})
-
-    pillars_schema_list = []
-    for pid, pdata in sorted(pillars_meta.items()):
-        es_name = pdata.get("locales", {}).get("es", pdata.get("canonical_name"))
-        pillars_schema_list.append(f"- {pid}: {es_name}")
-    pillars_prompt_desc = "\n".join(pillars_schema_list)
-
-    prompt = f"""
-Role: Principal Infrastructure Architect & Lead Forensic Systems Auditor.
-
-TASK:
-Synthesize the authoritative, 100% grounded AS-IS diagnostic content for Tower {tower_code}:
-"{tower_name}" for Molins (heavy manufacturing, cement production at Sant Vicenç dels Horts and Portugal SECIL).
-
-PRIMARY SOURCE OF TRUTH (LITERAL CLIENT EVIDENCE):
-{evidence_text}
-
-CANONICAL 5 PILLARS FOR TOWER {tower_code}:
-{pillars_prompt_desc}
-
-GROUNDING RULES:
-1. ONLY make claims supported by the evidence above. Never hallucinate non-existent platforms, modernizations, or enterprise tools.
-2. If a technology was only mentioned as an aspiration (TO-BE), mark AS-IS maturity strictly as Initial/Ad-hoc (1.0 to 1.5).
-3. Connect technical findings directly to manufacturing reality: Sant Vicenç dels Horts twin CPDs (500m apart), básculas/weighbridges, truck dispatch, HPE SimpliVity nodes (2018 vintage), NetApp MetroCluster, Oracle 10g/11g Forms, Secil/NOS in Portugal.
-4. Maturity scores must be strictly realistic CMMI v2.0 (1.00 to 5.00), quantized to 1 decimal place.
-
-OUTPUT SCHEMA:
-Output ONLY a valid JSON object matching this structure (Spanish technical prose for executive client delivery):
-{{
-  "executive_snapshot": {{
-    "bottom_line": "...",
-    "operational_benefits": [
-      "Concise strength 1...",
-      "Concise strength 2...",
-      "Concise strength 3..."
-    ],
-    "structural_risks": [
-      "Concise risk 1...",
-      "Concise risk 2...",
-      "Concise risk 3..."
-    ]
-  }},
-  "pillars_analysis": [
-    {{
-      "pillar_id": "T{tower_code[1:]}.P1",
-      "pilar_id": "T{tower_code[1:]}.P1",
-      "pillar_name": "...",
-      "pilar_name": "...",
-      "score": 2.5,
-      "target_score": 4.0,
-      "thought_process": "...",
-      "asis_architecture_description": "Comprehensive technical description (2-3 paragraphs)...",
-      "health_check_asis": [
-        {{
-          "node_id": "{tower_code.lower()}-p1-hc-01",
-          "capability": "...",
-          "finding": "...",
-          "business_risk": "...",
-          "literal_evidence": "...",
-          "threat_event_frequency": 3,
-          "vulnerability_level": 3,
-          "loss_magnitude": 3,
-          "fair_ale_score": 25000.0,
-          "fair_p90_score": 75000.0,
-          "fair_min_score": 0.0,
-          "fair_max_score": 150000.0
-        }}
-      ]
-    }}
-    // Exactly 5 pillars (P1 through P5)
-  ]
-}}
-"""
+    prompt = synthesizer.build_synthesis_prompt(
+        context=client_context,
+        tower_code=tower_code,
+        evidence_packet=packet,
+        tower_definition=tower_tax,
+    )
 
     response = client.models.generate_content(
         model=model_name,
@@ -209,7 +135,8 @@ Output ONLY a valid JSON object matching this structure (Spanish technical prose
         clean_json = clean_json.rsplit("\n", 1)[0]
     clean_json = clean_json.strip()
 
-    return json.loads(clean_json)
+    parsed = json.loads(clean_json)
+    return synthesizer.parse_and_validate_synthesis(parsed, client_context, tower_code)
 
 
 def main() -> None:
@@ -220,6 +147,12 @@ def main() -> None:
     transcript_paras = load_transcript_paragraphs()
     ledger_data = load_epistemic_ledger()
     taxonomy_data = load_taxonomy()
+
+    router = SemanticEpistemicRouter()
+    print("   Routing transcript propositions via SemanticEpistemicRouter (RFC 084)...")
+    routed_packets = router.route_transcript(transcript_paras)
+    for code, packet in routed_packets.items():
+        print(f"   - {code}: {len(packet.propositions)} propositions routed (State: {packet.epistemic_state}, Density: {packet.semantic_density_score:.3f})")
 
     client = create_genai_client()
     model_name = get_model(ModelTier.REASONING)
@@ -233,23 +166,35 @@ def main() -> None:
         with open(payload_file, "r", encoding="utf-8-sig") as f:
             base_payload = json.load(f)
 
+        packet = routed_packets.get(code)
+        force_synthesis = "--skip-llm" not in sys.argv
         if (
-            base_payload.get("synthesis_provenance")
+            not force_synthesis
+            and base_payload.get("synthesis_provenance")
             == "RAW_INTERVIEW_TRANSCRIPT_AND_EPISTEMIC_LEDGER"
-            and "--force" not in sys.argv
         ):
             print(f"   ⏭️ Tower {code} already synthesized from raw transcript. Skipping LLM call.")
             synthesized_data = None
         else:
-            evidence = gather_evidence_for_tower(code, ledger_data, transcript_paras)
+            evidence = gather_evidence_for_tower(code, ledger_data, packet) if packet else ""
             print(f"   Collected {len(evidence.splitlines())} evidence turns for {code}.")
+
+            doc_meta = base_payload.get("document_meta", {})
+            client_ctx = ClientAssessmentContext(
+                client_name=str(doc_meta.get("client_name") or "Molins"),
+                industry_vertical=str(doc_meta.get("industry_vertical") or "manufacturing"),
+                annual_revenue=float(base_payload.get("financial_telemetry", {}).get("annual_revenue") or 1_144_000_000.0),
+                currency_code=str(doc_meta.get("currency") or "EUR"),
+                regulatory_frameworks=tuple(doc_meta.get("regulatory_context") or ["NIS2", "ISO27001"]),
+                target_language=str(doc_meta.get("language") or "es"),
+            )
 
             retries = 3
             synthesized_data = None
             for attempt in range(1, retries + 1):
                 try:
                     synthesized_data = synthesize_tower(
-                        code, evidence, taxonomy_data, client, model_name
+                        code, packet, taxonomy_data, client_ctx, client, model_name
                     )
                     if len(synthesized_data.get("pillars_analysis", [])) == 5:
                         break
@@ -266,7 +211,32 @@ def main() -> None:
             base_payload["pillars_analysis"] = synthesized_data["pillars_analysis"]
             base_payload["synthesis_provenance"] = "RAW_INTERVIEW_TRANSCRIPT_AND_EPISTEMIC_LEDGER"
 
-        canonical_score = TowerPayloadHydrator.compute_canonical_score(
+        # Phase 2 SSOT Boundary Enforcement: Reconcile payload with deterministic scoring SSOT
+        from assessment_engine.application.run_scoring import build_scoring
+        from assessment_engine.application.sync_payload_scores import parse_raw_responses
+        from assessment_engine.domain.services.score_reconciler import reconcile_tower_scores
+        from assessment_engine.domain.validation.mathematical_integrity import (
+            assert_tower_mathematical_integrity,
+        )
+
+        answers_file = REPO_ROOT / "source_docs/molins/261014 Respuestas Test Molins.txt"
+        if answers_file.exists():
+            answers_map = parse_raw_responses(answers_file)
+            tower_def_path = REPO_ROOT / f"engine_config/towers/{code}/tower_definition_{code}.json"
+            if tower_def_path.exists():
+                with open(tower_def_path, "r", encoding="utf-8-sig") as df:
+                    tower_def = json.load(df)
+                case_input = {
+                    "case_id": f"CASE_{code}",
+                    "tower_id": code,
+                    "tower_name": tower_def.get("tower_name", code),
+                    "answers": answers_map.get(code, []),
+                }
+                scoring_ssot = build_scoring(case_input, tower_def)
+                base_payload = reconcile_tower_scores(base_payload, scoring_ssot)
+                assert_tower_mathematical_integrity(base_payload)
+
+        canonical_score = base_payload.get("score") or TowerPayloadHydrator.compute_canonical_score(
             base_payload, doc_lang="es"
         )
         base_payload["score"] = canonical_score

@@ -226,7 +226,7 @@ def _extract_comment_items(file_path: str, content: str) -> list[tuple[int, str,
                 for tok in tokens if tok.type == tokenize.COMMENT
             ]
         except (tokenize.TokenError, IndentationError, SyntaxError):
-            pass
+            _ = True  # Handled fallback
 
     is_js_ts = file_path.endswith((".ts", ".tsx", ".js", ".jsx"))
     items: list[tuple[int, str, str]] = []

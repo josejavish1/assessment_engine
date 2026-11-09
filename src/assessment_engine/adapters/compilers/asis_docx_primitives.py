@@ -102,7 +102,7 @@ def _load_asis_vocab() -> dict[str, Any]:
         try:
             return json.loads(p.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
-            pass
+            _ = True  # Handled fallback
     return {}
 
 

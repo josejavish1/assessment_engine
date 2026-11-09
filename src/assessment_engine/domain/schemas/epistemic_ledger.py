@@ -69,6 +69,7 @@ class RawUtterance(BaseModel):
     @field_validator("raw_text")
     @classmethod
     def validate_non_empty_text(cls, v: str) -> str:
+        """Validate that raw utterance text is non-empty after stripping whitespace."""
         cleaned = v.strip()
         if not cleaned:
             raise ValueError("raw_text must not be empty or whitespace only")

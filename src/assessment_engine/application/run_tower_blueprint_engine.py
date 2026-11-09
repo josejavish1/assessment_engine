@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
+from assessment_engine.application.services.tower_payload_hydrator import (
+    TowerPayloadHydrator,
+)
+from assessment_engine.application.services.universal_tower_synthesizer import (
+    UniversalTowerSynthesizer,
+)
 from assessment_engine.domain.ontology_registry import OntologyRegistry
 from assessment_engine.domain.prompts.blueprint_prompts import (
     get_blueprint_architect_instruction,
@@ -24,6 +30,9 @@ from assessment_engine.domain.schemas.blueprint import (
     BlueprintPayload,
     OrchestratorBlueprintDraft,
     PillarBlueprintDraft,
+)
+from assessment_engine.domain.services.closed_world_grounding_firewall import (
+    ClosedWorldGroundingFirewall,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
 from assessment_engine.infrastructure.client_intelligence import (
@@ -402,11 +411,11 @@ async def _resolve_gravity_profile(
                 "You MUST adhere to this gravity directive strictly. Cloud-Native architectures are forbidden "
                 "if on-premise weighting or regulatory strictness advises against them."
             )
-            print(
+            logger.info(
                 f"✅ Calculated Gravity Profile: {strat_dir} (Target: {dynamic_target_maturity})"
             )
     except Exception as e:
-        print(
+        logger.info(
             f"⚠️ Error calculating Gravity Profile: {e}. Standard context fallback will be used."
         )
     return dynamic_target_maturity, gravity_constraint
@@ -723,12 +732,12 @@ async def _orchestrate_closing_agent(
                 break
         except Exception as e:
             last_error = str(e)
-            print(
+            logger.info(
                 f"    🚨 DIPLOMATIC PROTOCOL VIOLATION: {e}. Retrying Orchestrator (Attempt {attempt + 1})..."
             )
 
     if last_error and closing_data:
-        print(
+        logger.info(
             "⚠️ Critical failure in Orchestrator after 3 attempts. Applying Graceful Degradation..."
         )
         valid_deps = [
@@ -985,16 +994,16 @@ def _calculate_total_fair_ale(
         if blueprint_payload.total_fair_ale is not None:
             return float(blueprint_payload.total_fair_ale)
         total = 0.0
-        for pilar in blueprint_payload.pillars_analysis:
-            for finding in pilar.health_check_asis:
+        for pillar in blueprint_payload.pillars_analysis:
+            for finding in pillar.health_check_asis:
                 if finding.fair_ale_score is not None:
                     total += float(finding.fair_ale_score)
         return total
 
     total_ale = float(blueprint_payload.get("total_fair_ale") or 0.0)
     if total_ale == 0.0:
-        for pilar in blueprint_payload.get("pillars_analysis", []):
-            for finding in pilar.get("health_check_asis", []):
+        for pillar in blueprint_payload.get("pillars_analysis", []):
+            for finding in pillar.get("health_check_asis", []):
                 val = finding.get("fair_ale_score")
                 total_ale += float(val) if val is not None else 0.0
     return total_ale
@@ -1270,6 +1279,27 @@ async def run_tower_blueprint(
     # Phase 8: Scrubbing & Serialization
     blueprint_payload = _scrub_client_placeholders(blueprint_payload, client_name)
     blueprint_payload["total_fair_ale"] = _calculate_total_fair_ale(blueprint_payload)
+
+    # Phase 8.1: Quantitative SSOT Reconciler Gatekeeper
+    try:
+        from assessment_engine.domain.services.score_reconciler import reconcile_tower_scores
+        from assessment_engine.domain.validation.mathematical_integrity import (
+            assert_tower_mathematical_integrity,
+        )
+        from assessment_engine.infrastructure.runtime_paths import prepare_case_runtime
+
+        case_dir = prepare_case_runtime(os.environ, client_id=client_name, tower_id=tower_id)
+        scoring_file = case_dir / "scoring_output.json"
+        if scoring_file.exists():
+            with open(scoring_file, "r", encoding="utf-8-sig") as scf:
+                scoring_ssot = json.load(scf)
+            blueprint_payload = reconcile_tower_scores(blueprint_payload, scoring_ssot)
+            assert_tower_mathematical_integrity(blueprint_payload)
+    except Exception as recon_err:
+        logger.warning(
+            "[Pipeline Gatekeeper] SSOT score reconciliation skipped or raised warning: %s",
+            recon_err,
+        )
 
     try:
         blueprint_payload["_generation_metadata"] = {

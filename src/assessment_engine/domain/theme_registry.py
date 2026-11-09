@@ -92,6 +92,7 @@ class HexColorToken(BaseModel):
     @field_validator("value")
     @classmethod
     def validate_hex(cls, v: str) -> str:
+        """Validate and normalize a 6-character hex color code."""
         if not HEX_COLOR_REGEX.match(v):
             raise ValueError(f"Invalid hex color token: '{v}'. Expected #RRGGBB format.")
         return v.upper()

@@ -61,10 +61,12 @@ class AdaptiveTokenBucketRateLimiter:
 
     @property
     def effective_rpm(self) -> float:
+        """Compute effective requests per minute limit under throttling."""
         return max(1.0, self.base_rpm_quota * self.throttle_scale)
 
     @property
     def effective_tpm(self) -> float:
+        """Compute effective tokens per minute limit under throttling."""
         return max(1000.0, self.base_tpm_quota * self.throttle_scale)
 
     def _refill_unlocked(self, now: float) -> None:
@@ -135,6 +137,10 @@ class AdaptiveTokenBucketRateLimiter:
                     MAX_THROTTLE_SCALE,
                     self.throttle_scale * ADAPTIVE_RECOVERY_RATE,
                 )
+
+
+# Backward compatibility alias
+AdaptiveTokenBucketRaptor = AdaptiveTokenBucketRateLimiter
 
 
 class RaptorEngine:

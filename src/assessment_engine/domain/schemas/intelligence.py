@@ -74,10 +74,11 @@ def _ensure_transformation(value: Any) -> Dict[str, Any]:
         return value
 
     text = _flatten_to_string(value)
+    text_upper = text.upper()
     stage = "H2"
-    if "short" in text.lower():
+    if any(k in text_upper for k in ("H1", "SHORT", "CORTO", "COURT", "KURZF")):
         stage = "H1"
-    elif "strat" in text.lower():
+    elif any(k in text_upper for k in ("H3", "STRAT", "LONG", "LARGO", "LANGF")):
         stage = "H3"
 
     return {

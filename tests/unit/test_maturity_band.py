@@ -54,10 +54,12 @@ def test_resolve_maturity_band_supports_shared_annex_and_global_policies() -> No
     assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS)["label"] == "Optimized"
 
     # Localized Spanish
-    assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS, locale="es")["label"] == "Inicial"
-    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS, locale="es")["label"] == "Gestionado"
-    assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS, locale="es")["label"] in ("Inicial", "Básica", "Basica")
-    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS, locale="es")["label"] in ("Optimizado", "Optimizada")
+    from assessment_engine.infrastructure.localization import t
+
+    assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Inicial"
+    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Gestionado"
+    assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS, locale="es", translator=t)["label"] in ("Inicial", "Básica", "Basica")
+    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS, locale="es", translator=t)["label"] in ("Optimizado", "Optimizada")
 
 
 def test_resolve_maturity_band_requires_at_least_one_band() -> None:

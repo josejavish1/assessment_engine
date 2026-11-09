@@ -117,7 +117,7 @@ Currently, the Model Context Protocol entrypoint (`mcp_server.py`) routes automa
                                                |
                                                v
                [Zero-Entropy OpenXML (.docx) Executive Deliverable (Any Language)]
-```
+```text
 
 ### 1.2 Theoretical Justification: LLVM Multi-Pass Compilation & GoF Visitor Pattern
 Mutating binary document templates via string replacement violates core compiler design principles by conflating **lexical localization**, **semantic narrative structuring**, **visual invariant verification**, and **physical code generation** into a single, untestable side effect.
@@ -255,7 +255,7 @@ The AST intermediate representation (`nodes.py`), frontend (`payload_to_ast.py`)
     "narrative_fair_explainability_template": "Atribución de Riesgo Financiero [{scenario_id}]: En el dominio {domain}, la telemetría empírica sobre {asset_name} evidencia {failure_mode}. Bajo el modelo cuantitativo FAIR, una Frecuencia de Eventos de Amenaza (TEF) de {tef} eventos/año combinada con una probabilidad de vulnerabilidad del {vuln_pct}% genera una Frecuencia de Eventos de Pérdida (LEF) de {lef} eventos/año. Al integrar la Magnitud de Pérdida Primaria ({plm}) y Secundaria ({slm}) bajo el marco {regulations}, se determina una Expectativa de Pérdida Anualizada (ALE) de {ale}. La asignación de {capex} para {remediation_action} reduce el ALE residual a {residual_ale} (Reducción Neta de Riesgo: {net_roi})."
   }
 }
-```
+```text
 
 ### 4.2 `src/assessment_engine/i18n/resolver.py`
 ```python
@@ -371,7 +371,7 @@ class DeclarativeI18nResolver:
         if spec.symbol_prefix:
             return f"{spec.symbol}{formatted_num}"
         return f"{formatted_num} {spec.symbol}"
-```
+```text
 
 ### 4.3 `src/assessment_engine/ast/nodes.py`
 ```python
@@ -460,7 +460,7 @@ class DocumentNode(ASTNode):
     font_primary: str
     font_east_asian: str
     chapters: Tuple[ChapterNode, ...]
-```
+```text
 
 ### 4.4 `src/assessment_engine/compiler/style_invariants.py`
 ```python
@@ -550,7 +550,7 @@ class StyleInvariantGuard:
             return remediated_fg
 
         return norm_fg
-```
+```text
 
 ### 4.5 `src/assessment_engine/ast/payload_to_ast.py`
 ```python
@@ -767,7 +767,7 @@ def build_tower_annex_ast(
         font_east_asian=font_east_asian,
         chapters=chapters,
     )
-```
+```text
 
 ### 4.6 `src/assessment_engine/compiler/docx_compiler.py`
 ```python
@@ -978,7 +978,7 @@ class DocxCompiler(ASTNodeVisitor):
 
         if self._direction == TextDirection.RTL and r_pr.find(qn("w:rtl")) is None:
             r_pr.append(OxmlElement("w:rtl"))
-```
+```text
 
 ### 4.7 `src/mcp_server.py` (Converged Entrypoint)
 ```python
@@ -1019,7 +1019,7 @@ def mcp_compile_tower_annex(
         "artifact_path": str(compiled_path.resolve()),
         "chapters_synthesized": len(ast_root.chapters),
     }
-```
+```text
 
 ### 4.8 `tests/architecture/test_no_binary_template_split_brain.py`
 ```python
@@ -1207,7 +1207,7 @@ def test_universal_multi_tenant_golden_master_ast_synthesis(
             f"Invariant II Violation in OpenXML: Foreground #{fg_val} over Background #{effective_bg} "
             f"yields contrast ratio {cr:.2f}:1 (< 4.5:1)!"
         )
-```
+```text
 
 ---
 

@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 import argparse
 import asyncio
 import glob
@@ -9,6 +12,7 @@ from google.adk.agents import Agent
 from pydantic import BaseModel, Field
 from vertexai.agent_engines import AdkApp
 
+from assessment_engine.domain.schemas import GapDraft, RisksDraft, ToBeDraft, TodoDraft
 from assessment_engine.infrastructure.ai_client import run_agent
 from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
@@ -312,10 +316,10 @@ class SynthesisAudit(BaseModel):
 
 async def synthesize_global_tobe(working_dir: str, industry: str):
     r"""{'docstring': "Synthesizes a global TO-BE executive summary from individual tower blueprints.\n\nThis asynchronous function orchestrates a multi-agent, iterative process to\ngenerate a cohesive, C-level strategic document. It begins by loading an\nindustry-specific profile to provide domain-aware context, such as sector-\nspecific regulations and strategic priorities. The function then aggregates\narchitectural data from multiple 'tower' payload files located within the\nspecified working directory.\n\nThe core logic is a multi-round reflection loop. In each round, a series\nof specialized AI agents generate distinct sections of the summary:\n1. Strategy and Vision\n2. Resilience and Modernization\n3. Benefits and Impact\n4. Risks and Assumptions\n5. High-Level Roadmap\n\nAfter each full synthesis round, a verifier agent audits the consolidated\ndocument for quality, coherence, and adherence to requirements. If the audit\nfails, the verifier's critique is used as feedback to guide the subsequent\nsynthesis round, promoting self-correction. The process concludes when the\ndocument passes the quality audit or the maximum number of rounds is reached.\nThe final, approved document is then saved to disk.\n\nArgs:\n    working_dir (str): The path to the main working directory containing\n        tower-specific subdirectories (e.g., 'T*'), each with its\n        respective 'blueprint_*_payload.json' file.\n    industry (str): The client's industry sector (e.g., 'finance', 'telco'),\n        used to load a corresponding configuration profile which guides the\n        synthesis with domain-specific constraints and priorities.\n\nReturns:\n    None. The function writes its final output to a file named\n    'global_tobe_executive_summary.json' within the `working_dir` and\n    does not return any value.\n\nRaises:\n    FileNotFoundError: If the specified industry profile does not exist and\n        the fallback 'default.json' profile is also not found in the\n        'engine_config/industry_profiles' directory.\n    json.JSONDecodeError: If any of the industry profile or tower payload\n        JSON files are malformed and cannot be parsed."}."""
-    print(
+    logger.info(
         "[System] Initializing Global Target-State Executive Synthesis (Standard 2026)..."
     )
-    print(f"   ├─ Perfil de Industria: {industry}")
+    logger.info(f"   ├─ Perfil de Industria: {industry}")
 
     # Load the industry-specific profile to provide dynamic, domain-aware context, ensuring the generated architecture is relevant and compliant with sector-specific constraints.
     from assessment_engine.infrastructure.config_loader import load_industry_profile
@@ -329,9 +333,9 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
     risk_modeling = frameworks.get("risk_modeling", "Qualitative")
     priorities = frameworks.get("strategic_priorities", "Resilience & Security")
 
-    print(f"   ├─ Marco Sectorial: {industry_name}")
-    print(f"   ├─ Primary Regulation: {primary_reg}")
-    print(f"   └─ Sovereignty Level: {sovereignty}")
+    logger.info(f"   ├─ Marco Sectorial: {industry_name}")
+    logger.info(f"   ├─ Primary Regulation: {primary_reg}")
+    logger.info(f"   └─ Sovereignty Level: {sovereignty}")
 
     # Aggregate the outputs from specialized agent models to form a comprehensive, multi-faceted draft of the target architecture.
     payloads = []
@@ -356,7 +360,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             )
 
     if not payloads:
-        print("❌ Error: No tower payloads found to synthesize.")
+        logger.info("❌ Error: No tower payloads found to synthesize.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Client")
@@ -396,11 +400,11 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
     final_summary = None
 
     while round_idx <= max_reflection_rounds:
-        print(
+        logger.info(
             f"\n🔄 --- STARTING SYNTHESIS ROUND {round_idx} / {max_reflection_rounds} ---"
         )
         if remediation_critique:
-            print(
+            logger.info(
                 "   ⚠️ Verifier critique injected into prompt for self-correction."
             )
 
@@ -410,7 +414,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             else ""
         )
 
-        print("   ➔ Executing Phase 1: Strategy and Architectural Approach...")
+        logger.info("   ➔ Executing Phase 1: Strategy and Architectural Approach...")
         from assessment_engine.infrastructure.config_loader import get_consultant_company_name
         company = get_consultant_company_name()
         prompt_1 = (
@@ -439,7 +443,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase1Strategy,
         )
 
-        print(
+        logger.info(
             "   ➔ Executing Phase 2: Geographic Resilience and Application Modernization..."
         )
         prompt_2 = (
@@ -467,7 +471,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase2ResilienceStrategy,
         )
 
-        print("   ➔ Executing Phase 3: Global Benefits and Mission Impact...")
+        logger.info("   ➔ Executing Phase 3: Global Benefits and Mission Impact...")
         prompt_3 = (
             f"Based on the geographic resilience strategy for {client_name}:\n"
             f"- Active-Active Transition: {res_2.get('active_active_transition', '')}\n\n"
@@ -491,7 +495,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase3Benefits,
         )
 
-        print(
+        logger.info(
             "   ➔ Executing Phase 4: Structural Assumptions, Delivery Risks, and Immediate Next Steps..."
         )
         prompt_4 = (
@@ -518,7 +522,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase4RisksAndAssumptions,
         )
 
-        print("   ➔ Executing Phase 5: High-Level Roadmap Planning...")
+        logger.info("   ➔ Executing Phase 5: High-Level Roadmap Planning...")
         prompt_5 = (
             f"Synthesizing across all technical tower inputs for {client_name}:\n{tower_text}\n\n"
             "Generate a consolidated High-Level Roadmap with verifiable milestone gates for Short-Term (0-12 months), Medium-Term (Years 2-3), and Long-Term (Years 4-5)."
@@ -582,7 +586,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         # Execute a final validation and automated correction pass using a Verifier agent, ensuring the output strictly adheres to all specified technical and business constraints.
-        print("\n🔍 --- STARTING AI QUALITY GATE VERIFICATION ---")
+        logger.info("\n🔍 --- STARTING AI QUALITY GATE VERIFICATION ---")
         audit_prompt = (
             f"As Lead Enterprise Auditor at {company}, perform an adversarial audit on the proposed TO-BE transformation summary.\n\n"
             f"CLIENT INDUSTRY REQUIREMENTS ({industry_name}):\n"
@@ -608,26 +612,26 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         if audit_res and audit_res.get("is_approved"):
-            print(
+            logger.info(
                 "   ✅ Quality Gate Verifier has permanently APPROVED the synthesis!"
             )
             break
         else:
-            print("   ❌ Quality Gate Verifier has REJECTED the current draft.")
+            logger.info("   ❌ Quality Gate Verifier has REJECTED the current draft.")
             remediation_critique = audit_res.get(
                 "remediation_critique",
                 "Review strategic alignment, analytical depth, and corporate terminology.",
             )
-            print(
+            logger.info(
                 f"   ├─ Hallucinations/Errors: {audit_res.get('hallucinations_detected', [])}"
             )
-            print(f"   └─ Remediation Instructions: {remediation_critique}")
+            logger.info(f"   └─ Remediation Instructions: {remediation_critique}")
             round_idx += 1
 
     #
     out_path = Path(working_dir) / "global_tobe_executive_summary.json"
     out_path.write_text(final_summary.model_dump_json(indent=4), encoding="utf-8-sig")
-    print(
+    logger.info(
         f"\n🎉 Consolidated and verified Global TO-BE synthesis saved to: {out_path}"
     )
 

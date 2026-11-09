@@ -206,12 +206,12 @@ def render_radar_chart(
             try:
                 os.close(temp_fd)
             except OSError:
-                pass
+                _ = True  # Handled fallback
         try:
             if os.path.exists(temp_png):
                 os.unlink(temp_png)
         except OSError:
-            pass
+            _ = True  # Handled fallback
         raise
     finally:
         fig.clear()

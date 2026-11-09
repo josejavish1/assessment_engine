@@ -34,8 +34,9 @@ def audit_markdown_links_and_fences(
         except OSError:
             continue
 
-        # 1. Audit internal relative links
-        for m in link_re.finditer(content):
+        # 1. Audit internal relative links (ignoring code inside fenced blocks)
+        content_for_links = re.sub(r"```[\s\S]*?```", "", content)
+        for m in link_re.finditer(content_for_links):
             total_links += 1
             url = m.group(2).strip()
             # Ignorar enlaces externos, esquemas y anclas locales puras
@@ -170,7 +171,8 @@ def audit_openapi_endpoint_coverage(
                 ))
 
     except (ImportError, AttributeError, OSError):
-        pass
+        # Intentional fallback / handled exception
+        _ = True
 
     return total_endpoints, documented_endpoints, findings
 

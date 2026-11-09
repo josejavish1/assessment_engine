@@ -17,7 +17,7 @@ A zero-trust forensic inspection of `tomo_asis_ast_compiler.py` reveals severe a
 
 To guarantee multi-tenant scalability across any currency (`USD`, `JPY`, `GBP`, `EUR`) and enterprise size, all metrics must be resolved deterministically from `financial_telemetry`, `global_payload`, and `tower_payloads`, or derived via parameterized actuarial formulas.
 
-```
+```text
 [financial_telemetry / global_payload] 
        │
        ├─► Corporate ALE & P90 Tail Risk (Strict Schema Extraction + Parametric Multiplier)

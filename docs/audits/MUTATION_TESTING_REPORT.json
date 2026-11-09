@@ -1,0 +1,150 @@
+{
+  "timestamp": 1794169632,
+  "standard": "ISO/IEC/IEEE 29119",
+  "total_mutants": 40,
+  "killed": 25,
+  "survived": 15,
+  "global_mutation_score_pct": 62.5,
+  "elapsed_seconds": 102.05,
+  "modules_audited": [
+    {
+      "target": "src/assessment_engine/mcp_server.py",
+      "test": "tests/unit/test_mcp_server.py",
+      "total_mutants": 5,
+      "killed": 2,
+      "survived": 3,
+      "mutation_score_pct": 40.0,
+      "survived_details": [
+        {
+          "lineno": 144,
+          "description": "Invert boolean 'True' to 'False' at line 144"
+        },
+        {
+          "lineno": 149,
+          "description": "Invert boolean 'False' to 'True' at line 149"
+        },
+        {
+          "lineno": 186,
+          "description": "Invert '>' to '<=' at line 186"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/domain/cfo_actuarial_gate.py",
+      "test": "tests/unit/test_cfo_actuarial_gate.py",
+      "total_mutants": 5,
+      "killed": 4,
+      "survived": 1,
+      "mutation_score_pct": 80.0,
+      "survived_details": [
+        {
+          "lineno": 14,
+          "description": "Invert boolean 'True' to 'False' at line 14"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/domain/framework_urn.py",
+      "test": "tests/unit/test_framework_urn.py",
+      "total_mutants": 5,
+      "killed": 3,
+      "survived": 2,
+      "mutation_score_pct": 60.0,
+      "survived_details": [
+        {
+          "lineno": 406,
+          "description": "Invert boolean 'False' to 'True' at line 406"
+        },
+        {
+          "lineno": 407,
+          "description": "Invert boolean 'False' to 'True' at line 407"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+      "test": "tests/unit/test_actuarial_scale_calibrator.py",
+      "total_mutants": 5,
+      "killed": 3,
+      "survived": 2,
+      "mutation_score_pct": 60.0,
+      "survived_details": [
+        {
+          "lineno": 172,
+          "description": "Invert '==' to '!=' at line 172"
+        },
+        {
+          "lineno": 233,
+          "description": "Invert boolean 'False' to 'True' at line 233"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/domain/actuarial_reconciler.py",
+      "test": "tests/unit/test_actuarial_reconciler.py",
+      "total_mutants": 5,
+      "killed": 5,
+      "survived": 0,
+      "mutation_score_pct": 100.0,
+      "survived_details": []
+    },
+    {
+      "target": "src/assessment_engine/domain/services/score_reconciler.py",
+      "test": "tests/unit/test_score_reconciler.py",
+      "total_mutants": 5,
+      "killed": 4,
+      "survived": 1,
+      "mutation_score_pct": 80.0,
+      "survived_details": [
+        {
+          "lineno": 197,
+          "description": "Invert 'in' to 'not in' at line 197"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
+      "test": "tests/unit/test_bayesian_fair_copula_engine.py",
+      "total_mutants": 5,
+      "killed": 1,
+      "survived": 4,
+      "mutation_score_pct": 20.0,
+      "survived_details": [
+        {
+          "lineno": 29,
+          "description": "Invert boolean 'True' to 'False' at line 29"
+        },
+        {
+          "lineno": 41,
+          "description": "Invert boolean 'True' to 'False' at line 41"
+        },
+        {
+          "lineno": 54,
+          "description": "Invert boolean 'True' to 'False' at line 54"
+        },
+        {
+          "lineno": 100,
+          "description": "Invert boolean 'False' to 'True' at line 100"
+        }
+      ]
+    },
+    {
+      "target": "src/assessment_engine/infrastructure/rosi_calculator.py",
+      "test": "tests/unit/test_rosi_actuarial_engine.py",
+      "total_mutants": 5,
+      "killed": 3,
+      "survived": 2,
+      "mutation_score_pct": 60.0,
+      "survived_details": [
+        {
+          "lineno": 73,
+          "description": "Invert '>' to '<=' at line 73"
+        },
+        {
+          "lineno": 75,
+          "description": "Invert '<' to '>=' at line 75"
+        }
+      ]
+    }
+  ]
+}

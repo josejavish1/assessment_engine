@@ -1,0 +1,2386 @@
+{
+  "$schema": "https://enterprise-architecture.internal/schemas/cmmi-matrix-v2.json",
+  "version": "2.0.0",
+  "catalog_metadata": {
+    "title": "Universal 50-Pillar Granular CMMI v2.0 Progression Matrix",
+    "description": "Deterministic, scale-invariant capability progression milestones mapped 1:1 to canonical enterprise assessment capabilities.",
+    "standards": [
+      "CMMI Services v2.0",
+      "COBIT 2019",
+      "ISO/IEC 20000-1",
+      "NIST CSF v2.0"
+    ]
+  },
+  "pillars": {
+    "T1.P1": {
+      "domain": "Power & Electrical Distribution",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate single points of failure (SPOF) in critical electrical distribution and panelboards",
+          "Formalize periodic preventive maintenance schedules with certified battery and generator load tests",
+          "Deploy baseline telemetric power metering on input switchgear and emergency transfers"
+        ],
+        "es": [
+          "Eliminar puntos únicos de fallo (SPOF) en la distribución eléctrica crítica y cuadros generales de baja tensión",
+          "Formalizar calendarios periódicos de mantenimiento preventivo con ensayos certificados de baterías y grupo electrógeno",
+          "Desplegar medición telemétrica básica en interruptores de cabecera y sistemas de transferencia automática"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Integrate real-time digital power analytics (iPDUs, branch circuit monitors) into central DCIM/BMS",
+          "Establish dual-bus (2N) active-active power distribution feeds to all production server racks",
+          "Formalize N+1 redundancy validation procedures under simulated utility outage load"
+        ],
+        "es": [
+          "Integrar analítica digital de potencia en tiempo real (iPDUs y monitorización de circuitos) en el sistema central BMS/DCIM",
+          "Implantar distribución eléctrica de doble rama (2N) activo-activo hasta las fuentes de alimentación de cada rack",
+          "Formalizar procedimientos periódicos de validación de redundancia N+1 bajo corte simulado de acometida"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate dynamic load-shedding and intelligent failover between independent electrical feeds",
+          "Deploy AI-driven continuous Power Usage Effectiveness (PUE) optimization and phase balancing",
+          "Implement predictive thermal and harmonic distortion analytics for switchgear lifecycle management"
+        ],
+        "es": [
+          "Automatizar el deslastre dinámico de cargas y la conmutación inteligente entre acometidas eléctricas independientes",
+          "Desplegar optimización continua del PUE y balanceo de fases en tiempo real mediante analítica avanzada",
+          "Implantar monitorización predictiva de distorsión armónica y degradación de condensadores en cuadros y SAIs"
+        ]
+      }
+    },
+    "T1.P2": {
+      "domain": "Precision Cooling & HVAC",
+      "L1_to_L2": {
+        "en": [
+          "Transition from comfort air conditioners to dedicated precision cooling (CRAC/CRAH) units",
+          "Implement cold or hot aisle containment curtains to prevent thermal recirculation",
+          "Establish continuous ambient temperature and relative humidity threshold alarms"
+        ],
+        "es": [
+          "Sustituir equipos de climatización de confort por unidades de climatización de precisión (CRAC/CRAH) con control de humedad",
+          "Implantar cerramientos de pasillo frío o caliente para erradicar la recirculación térmica en los racks",
+          "Configurar sondas ambientales continuas con umbrales de alerta temprana de temperatura y humedad relativa"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Enforce rigid structural aisle containment with automated differential pressure regulation",
+          "Establish dual-circuit redundant chiller and piping distribution without single points of failure",
+          "Integrate environmental telemetry into centralized BMS with automated fan speed modulation"
+        ],
+        "es": [
+          "Instalar confinamiento térmico rígido de pasillos con regulación automática de presión diferencial",
+          "Establecer doble circuito hidráulico redundante de agua glicolada sin puntos únicos de fallo en bombeo",
+          "Integrar la telemetría térmica en el BMS centralizado con modulación automática de velocidad de ventiladores EC"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy computational fluid dynamics (CFD) continuous thermal modeling linked to server workload telemetry",
+          "Integrate automated free-cooling economizers maximizing seasonal thermodynamic efficiency",
+          "Implement autonomous variable-refrigerant modulation adjusting dynamically to compute cluster load"
+        ],
+        "es": [
+          "Desplegar modelado térmico continuo por dinámica de fluidos (CFD) correlacionado con la telemetría de las cargas IT",
+          "Integrar economizadores de enfriamiento gratuito (free-cooling) maximizando la eficiencia termodinámica estacional",
+          "Implantar modulación autónoma de refrigerante variable ajustada dinámicamente a la disipación de los servidores"
+        ]
+      }
+    },
+    "T1.P3": {
+      "domain": "Physical Security & Access Control",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared physical keys and deploy electronic badge readers on all technical room perimeters",
+          "Implement comprehensive CCTV coverage of all data hall ingress points with 30-day retention",
+          "Establish a formal visitor logging protocol with mandatory escort requirements for external technicians"
+        ],
+        "es": [
+          "Eliminar llaves físicas compartidas e implantar control de acceso electrónico por tarjeta en todas las salas técnicas",
+          "Desplegar circuito cerrado de televisión (CCTV) con cobertura total de accesos y retención mínima de 30 días",
+          "Formalizar un libro de registro de visitas con acompañamiento obligatorio para técnicos y proveedores externos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy multi-factor physical authentication (badge plus biometric verification) for core server rooms",
+          "Implement individualized rack-level electronic locking with automated badge audit logging",
+          "Integrate physical access telemetry with corporate SIEM for automated off-hours intrusion alerting"
+        ],
+        "es": [
+          "Implantar doble factor de autenticación física (tarjeta más biometría) en las salas técnicas principales",
+          "Desplegar cerraduras electrónicas a nivel de rack individual con registro de auditoría de apertura por usuario",
+          "Integrar los eventos de acceso físico en el SIEM corporativo con alertas automatizadas ante aperturas fuera de horario"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy automated video analytics detecting tailgating and unauthorized cabinet access in real time",
+          "Implement dynamic zero-trust physical access policies tied to active change management work orders",
+          "Achieve continuous audit compliance automation with cryptographically verifiable physical access trails"
+        ],
+        "es": [
+          "Desplegar analítica de vídeo con detección automatizada de accesos no autorizados en proximidad (tailgating)",
+          "Vincular el acceso físico a órdenes de trabajo activas en la herramienta de cambios mediante políticas Zero Trust",
+          "Automatizar auditorías continuas de acceso físico con pistas de auditoría criptográficamente verificables"
+        ]
+      }
+    },
+    "T1.P4": {
+      "domain": "Fire Detection & Suppression",
+      "L1_to_L2": {
+        "en": [
+          "Inspect, certify, and maintain clean-agent chemical fire suppression tanks and discharge nozzles",
+          "Deploy aspirating early warning smoke detection (VESDA) across all technical ceiling and underfloor voids",
+          "Establish documented emergency shutdown and localized power interlock testing procedures"
+        ],
+        "es": [
+          "Inspeccionar, retimbrar y certificar botellas y boquillas de extinción por agente limpio en todas las salas",
+          "Desplegar sistemas de detección precoz de humo por aspiración (VESDA) en ambiente y falsos suelos/techos",
+          "Documentar y ensayar procedimientos de corte de emergencia (EPO) y consignas de desenergización selectiva"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement cross-zoned smoke detection interlocks preventing accidental chemical suppression discharges",
+          "Establish automated HVAC damper shutdown and pressure relief venting calibrated for gaseous discharge",
+          "Integrate fire panel events into central BMS and external emergency response monitoring stations"
+        ],
+        "es": [
+          "Implantar doble enclavamiento cruzado de detección para prevenir disparos accidentales de gas",
+          "Instalar compuertas de corte de climatización y compuertas de sobrepresión calibradas para descarga de gas",
+          "Integrar la central de incendios con el BMS central y con la central receptora de alarmas de emergencia"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy localized cabinet-level micro-environment suppression for high-density specialized compute racks",
+          "Automate non-destructive acoustic and integrity testing of suppression enclosures without room discharge",
+          "Implement unified emergency command automation orchestrating power, cooling, and evacuation workflows"
+        ],
+        "es": [
+          "Desplegar microextinción localizada por rack para armarios de muy alta densidad de cómputo",
+          "Automatizar ensayos acústicos y de hermeticidad (Door Fan Test) de la sala sin disrupción de la operativa",
+          "Implantar orquestación unificada de emergencias que coordine corte de potencia, clima y evacuación"
+        ]
+      }
+    },
+    "T1.P5": {
+      "domain": "DCIM, Facilities Operations & Maintenance",
+      "L1_to_L2": {
+        "en": [
+          "Consolidate physical asset inventories into an authoritative digital rack-layout database",
+          "Establish SLA-backed maintenance contracts covering generators, UPS modules, and HVAC systems",
+          "Implement structured shift handover logs and formalized physical change-window checklists"
+        ],
+        "es": [
+          "Consolidar el inventario de equipamiento físico en una base de datos digital de alzado de racks",
+          "Formalizar contratos de mantenimiento con SLAs garantizados para grupos electrógenos, SAIs y climatizadoras",
+          "Implantar partes de guardia estructurados y listas de verificación para ventanas de mantenimiento físico"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy enterprise DCIM software integrating real-time telemetry from power, thermal, and space sensors",
+          "Implement automated capacity management forecasting rack space, power availability, and cooling margins",
+          "Formalize Mean Time to Repair (MTTR) tracking and vendor escalation management for all facility components"
+        ],
+        "es": [
+          "Desplegar una plataforma DCIM profesional que integre telemetría de potencia, clima y espacio en tiempo real",
+          "Implantar gestión automatizada de capacidad proyectando espacio en rack, potencia disponible y margen de frío",
+          "Formalizar métricas de tiempo medio de reparación (MTTR) y cuadros de escalado para incidencias de facilities"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement digital twin facility modeling simulating capacity impacts before hardware installations",
+          "Automate work order execution and predictive maintenance dispatch based on real-time runtime hours",
+          "Achieve autonomous facility optimization integrating telemetry with environmental ESG metrics"
+        ],
+        "es": [
+          "Implantar gemelo digital (Digital Twin) de la sala para simular impactos térmicos y eléctricos antes de instalar servidores",
+          "Automatizar órdenes de trabajo y mantenimiento predictivo basadas en horas reales de funcionamiento de componentes",
+          "Alcanzar optimización autónoma de facilities integrando telemetría energética con métricas corporativas de sostenibilidad (ESG)"
+        ]
+      }
+    },
+    "T2.P1": {
+      "domain": "Compute Foundation & Virtualization",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hypervisor configurations and eliminate standalone unmanaged virtualization hosts",
+          "Establish automated hypervisor high availability (HA) with configured memory and CPU admission controls",
+          "Implement baseline host hardware monitoring correlating CPU, RAM, and storage controller alerts"
+        ],
+        "es": [
+          "Estandarizar las configuraciones de hipervisores y eliminar servidores de virtualización aislados sin gestión central",
+          "Configurar alta disponibilidad (HA) con control formal de admisión de memoria RAM y reservas de capacidad",
+          "Implantar monitorización continua del hardware de los servidores correlacionando alertas de CPU, memoria y controladoras"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy dynamic distributed resource scheduling (DRS) balancing workloads across cluster nodes automatically",
+          "Implement automated host patch baselines supporting rolling non-disruptive hypervisor updates",
+          "Formalize compute capacity planning linking historical workload growth to physical refresh cycles"
+        ],
+        "es": [
+          "Desplegar balanceo dinámico de recursos (DRS) equilibrando las máquinas virtuales entre nodos de forma automática",
+          "Implantar líneas base de parches en hipervisores con actualizaciones continuas sin disrupción del servicio",
+          "Formalizar la planificación de capacidad de cómputo vinculando el histórico de consumo a los ciclos de renovación"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate compute infrastructure deployment using Infrastructure as Code (IaC) with declarative host profiles",
+          "Integrate predictive host failure detection triggering automated live migrations prior to hardware crashes",
+          "Deploy cross-cloud workload placement dynamically optimizing compute cost, latency, and compliance"
+        ],
+        "es": [
+          "Automatizar el despliegue de hipervisores mediante Infraestructura como Código (IaC) y perfiles declarativos",
+          "Integrar detección predictiva de degradación de hardware con migración en caliente desatendida antes de fallos",
+          "Implantar orquestación híbrida de cargas optimizando dinámicamente coste, latencia y soberanía del dato"
+        ]
+      }
+    },
+    "T2.P2": {
+      "domain": "Container Platforms & Kubernetes Operations",
+      "L1_to_L2": {
+        "en": [
+          "Establish baseline container runtime standards and eliminate ad-hoc untracked Docker instances",
+          "Deploy a centralized enterprise container registry with automated vulnerability scanning on push",
+          "Standardize container base images and define base resource requests/limits for all deployed pods"
+        ],
+        "es": [
+          "Estandarizar entornos de ejecución de contenedores y eliminar instancias Docker aisladas sin soporte corporativo",
+          "Desplegar un registro corporativo de imágenes (Container Registry) con escaneo automatizado de vulnerabilidades",
+          "Estandarizar imágenes base mínimas y definir límites obligatorios de CPU y memoria (requests/limits) por contenedor"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy managed Kubernetes clusters with automated control-plane lifecycle and version upgrades",
+          "Implement declarative GitOps deployment workflows (ArgoCD/Flux) enforcing version-controlled configurations",
+          "Enforce role-based access control (RBAC), namespace isolation, and network policies across all clusters"
+        ],
+        "es": [
+          "Desplegar clústeres gestionados de Kubernetes con ciclo de vida y actualizaciones automáticas del plano de control",
+          "Implantar flujos declarativos de GitOps asegurando que todas las configuraciones estén versionadas en repositorios de código",
+          "Aplicar control de acceso granular (RBAC), aislamiento estricto por namespaces y políticas de red entre microservicios"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement dynamic horizontal pod autoscaling (HPA) and cluster autoscaling tied to business queue metrics",
+          "Deploy service mesh telemetry (Istio/Linkerd) providing mutual TLS (mTLS) and distributed tracing",
+          "Achieve multi-cluster fleet management with policy-as-code admission controllers and automated self-healing"
+        ],
+        "es": [
+          "Implantar autoescalado horizontal elástico de pods y nodos ajustado en tiempo real a la demanda del negocio",
+          "Desplegar malla de servicios (Service Mesh) proporcionando cifrado mTLS automático y trazabilidad distribuida",
+          "Consolidar gestión federada de múltiples clústeres con controladores de admisión basados en políticas y autorremediación"
+        ]
+      }
+    },
+    "T2.P3": {
+      "domain": "Hybrid Cloud Enablement & Landing Zones",
+      "L1_to_L2": {
+        "en": [
+          "Establish unified cloud management accounts with foundational identity integration and MFA enforcement",
+          "Deploy standard cloud network virtual networks (VPCs/VNets) with centralized ingress/egress filtering",
+          "Define basic cloud resource tagging policies associating workloads with owners and cost centers"
+        ],
+        "es": [
+          "Centralizar la administración de suscripciones cloud con integración de identidad federada y MFA obligatorio",
+          "Desplegar redes virtuales estandarizadas (VPCs/VNets) con control centralizado de entrada y salida de tráfico",
+          "Implantar políticas básicas de etiquetado obligatorio vinculando cada recurso en la nube a un responsable y centro de coste"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement an enterprise Cloud Landing Zone utilizing Infrastructure as Code (Terraform/Bicep)",
+          "Establish dedicated private connectivity (Direct Connect / ExpressRoute / Cloud Interconnect) to on-premise hubs",
+          "Enforce policy-as-code guardrails (Azure Policy / AWS Organizations) blocking unapproved services"
+        ],
+        "es": [
+          "Implementar una Landing Zone corporativa modular desplegada 100% mediante Infraestructura como Código (Terraform)",
+          "Establecer conectividad privada dedicada de alta velocidad (ExpressRoute/Interconnect) hacia los centros de datos locales",
+          "Implantar barreras de seguridad automatizadas (Policy-as-Code) que impidan el despliegue de configuraciones no conformes"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Achieve multi-region active-active cloud capability with automated cross-region latency routing",
+          "Deploy autonomous cloud governance pipelines auto-remediating security and configuration drifts",
+          "Implement workload portability pipelines enabling frictionless workload mobility between cloud and on-prem"
+        ],
+        "es": [
+          "Consolidar arquitectura multirregión en alta disponibilidad con enrutamiento dinámico optimizado por latencia",
+          "Desplegar gobernanza cloud autónoma con autorremediación de desvíos de seguridad y cumplimiento normativo",
+          "Implantar pipelines de portabilidad que permitan mover cargas de trabajo entre cloud y on-premise sin fricción"
+        ]
+      }
+    },
+    "T2.P4": {
+      "domain": "Automation, Provisioning & Self-Service",
+      "L1_to_L2": {
+        "en": [
+          "Standardize OS gold images and catalog baseline virtual machine specifications",
+          "Establish formal resource quotas per business unit to prevent hypervisor memory starvation",
+          "Enforce mandatory ownership tagging and expiration schedules for all non-production workloads"
+        ],
+        "es": [
+          "Estandarizar plantillas maestras (Gold Images) y catalogar especificaciones base para máquinas virtuales",
+          "Establecer cuotas formales de asignación de CPU y memoria por unidad de negocio para evitar inanición de recursos",
+          "Implantar etiquetado obligatorio de propietario y fecha de caducidad en todas las cargas de trabajo no productivas"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy an automated self-service provisioning catalog with role-based access control (RBAC)",
+          "Implement automated lifecycle governance deprovisioning idle test environments on scheduled dates",
+          "Integrate approval workflows connecting ticketing systems directly to automated provisioning APIs"
+        ],
+        "es": [
+          "Desplegar un catálogo de aprovisionamiento en autoservicio con control de acceso basado en roles (RBAC)",
+          "Implantar políticas de ciclo de vida con desmantelamiento automático de entornos de prueba en fechas programadas",
+          "Integrar flujos de aprobación conectando la herramienta de ticketing directamente a las APIs de aprovisionamiento"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate full-stack Infrastructure as Code pipelines embedding testing, security, and provisioning gates",
+          "Deploy self-healing automation scripts auto-remediating infrastructure capacity constraints and service halts",
+          "Implement ephemeral developer environments created dynamically on pull-request and destroyed on merge"
+        ],
+        "es": [
+          "Automatizar pipelines de Infraestructura como Código que incluyan validación de seguridad y pruebas antes de desplegar",
+          "Desplegar scripts autorreparables que resuelvan cuellos de botella de capacidad y caídas de servicio sin intervención humana",
+          "Implantar entornos efímeros para desarrollo creados automáticamente por evento de código y destruidos al finalizar"
+        ]
+      }
+    },
+    "T2.P5": {
+      "domain": "Platform Operations, Observability & SRE",
+      "L1_to_L2": {
+        "en": [
+          "Consolidate host and hypervisor monitoring into a centralized dashboard with threshold alerts",
+          "Formalize baseline operational runbooks for hypervisor host reboots, maintenance, and storage alerts",
+          "Implement automated daily backup and snapshot verification reporting for virtualization hosts"
+        ],
+        "es": [
+          "Centralizar la monitorización de servidores e hipervisores en un panel unificado con alertas de umbral",
+          "Formalizar manuales operativos para reinicio de nodos, ventanas de mantenimiento y alertas de almacenamiento",
+          "Implantar informes diarios automatizados de verificación de copias de seguridad de las configuraciones de host"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified metrics, logs, and traces correlation across physical, virtual, and cloud infrastructure",
+          "Establish formal Service Level Indicators (SLIs) and Objectives (SLOs) for platform compute availability",
+          "Implement automated root-cause analysis workflows linking hypervisor events to guest VM degradations"
+        ],
+        "es": [
+          "Desplegar correlación unificada de métricas, trazas y registros entre infraestructura física, virtual y cloud",
+          "Establecer indicadores (SLIs) y objetivos (SLOs) de nivel de servicio para la disponibilidad de la plataforma de cómputo",
+          "Implantar análisis de causa raíz automatizado vinculando eventos del hipervisor con la degradación de máquinas virtuales"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy AIOps anomaly detection anticipating memory leaks, storage queue bottlenecks, and host saturation",
+          "Implement continuous chaos engineering experiments validating cluster resilience during unannounced node cuts",
+          "Achieve closed-loop automated self-remediation resolving 80%+ of repetitive infrastructure incidents"
+        ],
+        "es": [
+          "Desplegar analítica predictiva (AIOps) anticipando fugas de memoria, colas de disco y saturación de hosts",
+          "Implantar ingeniería del caos (Chaos Engineering) validando la resiliencia del clúster ante apagados imprevistos de nodos",
+          "Alcanzar autorremediación en bucle cerrado resolviendo de forma autónoma más del 80% de las alertas repetitivas"
+        ]
+      }
+    },
+    "T3.P1": {
+      "domain": "Datacenter & Campus Switching",
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "T3.P2": {
+      "domain": "WAN & SD-WAN Connectivity",
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "T3.P3": {
+      "domain": "Datacenter Interconnect & DCI",
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "T3.P4": {
+      "domain": "Hybrid Cloud Connectivity & Edge",
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "T3.P5": {
+      "domain": "NetDevOps & Network Automation",
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "T4.P1": {
+      "domain": "Primary Storage Architecture (SAN/NAS)",
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "T4.P2": {
+      "domain": "Storage Performance, Capacity & Lifecycle",
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "T4.P3": {
+      "domain": "Data Services: Snapshots & Replication",
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "T4.P4": {
+      "domain": "Storage Security & Access Governance",
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "T4.P5": {
+      "domain": "Storage Operations & Platform Integration",
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "T5.P1": {
+      "domain": "BC/DR Strategy & Governance",
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "T5.P2": {
+      "domain": "Backup & Operational Recovery",
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "T5.P3": {
+      "domain": "Disaster Recovery & Failover",
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "T5.P4": {
+      "domain": "Cyber Recovery & Immutability",
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "T5.P5": {
+      "domain": "High Availability & Architectural Resilience",
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "T6.P1": {
+      "domain": "Identity & Access Management (IAM)",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "T6.P2": {
+      "domain": "Privileged Access Management (PAM)",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "T6.P3": {
+      "domain": "Hardening & Secure Configuration",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "T6.P4": {
+      "domain": "Vulnerability & Patch Management",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "T6.P5": {
+      "domain": "Network Segmentation & Security Logging",
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "T7.P1": {
+      "domain": "Service Governance, Catalog & SLAs",
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "T7.P2": {
+      "domain": "Service Desk & Incident Management",
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "T7.P3": {
+      "domain": "Change, Release & CMDB",
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "T7.P4": {
+      "domain": "Problem Management & SRE",
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "T7.P5": {
+      "domain": "Observability, Event Management & AIOps",
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "T8.P1": {
+      "domain": "Technology Strategy & Roadmap",
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "T8.P2": {
+      "domain": "IT Governance, Portfolio & Decision Framework",
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "T8.P3": {
+      "domain": "Technological Risk & Compliance",
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "T8.P4": {
+      "domain": "FinOps & Infrastructure Economics",
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "T8.P5": {
+      "domain": "Value Measurement & Executive KPIs",
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "T9.P1": {
+      "domain": "Workplace Lifecycle & Device Management",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "T9.P2": {
+      "domain": "Digital Identity & Workplace Access",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "T9.P3": {
+      "domain": "Collaboration & Knowledge Platforms",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "T9.P4": {
+      "domain": "Workplace Support & Self-Service",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "T9.P5": {
+      "domain": "Digital Employee Experience (DEX)",
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "T10.P1": {
+      "domain": "Core Transactional Engines & Mainframe",
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    },
+    "T10.P2": {
+      "domain": "Legacy Configuration & Change Control",
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    },
+    "T10.P3": {
+      "domain": "Batch Workloads, Capacity & Performance",
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    },
+    "T10.P4": {
+      "domain": "Legacy Integration, Middleware & APIs",
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    },
+    "T10.P5": {
+      "domain": "Technical Debt & Modernization Strategy",
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    }
+  },
+  "tower_fallbacks": {
+    "FACILITIES": {
+      "L1_to_L2": {
+        "en": [
+          "Eliminate single points of failure (SPOF) in critical electrical distribution",
+          "Establish periodic preventive maintenance routines with formal execution logs",
+          "Implement baseline environmental sensor alerts (temperature/humidity)"
+        ],
+        "es": [
+          "Eliminar puntos únicos de fallo (SPOF) en la distribución eléctrica crítica de las salas técnicas",
+          "Formalizar protocolos de mantenimiento preventivo periódico con registro inmutable de ensayos",
+          "Desplegar alertas telemétricas ambientales de temperatura y humedad en cuadros y pasillos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Integrate real-time digital telemetric monitoring (iPDUs, branch circuits) into central BMS",
+          "Enforce hot/cold aisle thermal containment across all production racks",
+          "Formalize N+1 redundancy validation procedures under simulated load"
+        ],
+        "es": [
+          "Integrar telemetría digital en tiempo real (regletas inteligentes iPDU y analizadores de red) en el sistema central de gestión (BMS)",
+          "Implantar confinamiento térmico de pasillos fríos o calientes en todas las filas de racks productivos",
+          "Formalizar procedimientos de validación periódica de redundancia N+1 bajo ensayo con banco de carga"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate failover orchestration between redundant power and cooling feeds",
+          "Establish continuous power usage effectiveness (PUE) tracking with automated capacity alarms",
+          "Deploy predictive sensor analytics for early mechanical degradation detection"
+        ],
+        "es": [
+          "Automatizar la orquestación de conmutación ante fallos entre acometidas eléctricas y sistemas de refrigeración redundantes",
+          "Monitorizar continuamente la eficiencia de uso de energía (PUE) con umbrales de alerta temprana de capacidad",
+          "Desplegar analítica predictiva de sensores para detectar degradación mecánica prematura en climatizadoras y SAIs"
+        ]
+      }
+    },
+    "COMPUTE": {
+      "L1_to_L2": {
+        "en": [
+          "Standardize OS gold images and catalog baseline virtual machine specifications",
+          "Establish formal resource quotas per business unit to prevent hypervisor memory starvation",
+          "Enforce mandatory ownership tagging and expiration schedules for all non-production workloads"
+        ],
+        "es": [
+          "Estandarizar plantillas maestras (Gold Images) y catalogar especificaciones base para máquinas virtuales",
+          "Establecer cuotas formales de asignación de CPU y memoria por unidad de negocio para evitar inanición de recursos",
+          "Implantar etiquetado obligatorio de propietario y fecha de caducidad en todas las cargas de trabajo no productivas"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy automated self-service provisioning catalog with role-based access control (RBAC)",
+          "Implement continuous hypervisor cluster rebalancing and automated capacity forecasting",
+          "Establish documented retirement and decommissioning lifecycles for idle instances"
+        ],
+        "es": [
+          "Desplegar un catálogo de aprovisionamiento en autoservicio con control de acceso basado en roles (RBAC)",
+          "Implementar rebalanceo continuo de cargas en clústeres y previsión automatizada de capacidad de cómputo",
+          "Establecer procedimientos formalizados de desmantelamiento y reciclaje de recursos para instancias inactivas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate Infrastructure as Code (IaC) pipelines with integrated policy-as-code guardrails",
+          "Implement dynamic workload packaging and containerization to eliminate OS licensing and RAM bloat",
+          "Integrate automated drift detection and self-remediating host configuration baselines"
+        ],
+        "es": [
+          "Automatizar flujos de Infraestructura como Código (IaC) con políticas declarativas de seguridad y cumplimiento",
+          "Adoptar empaquetado ligero en contenedores para desacoplar cargas y erradicar la sobrecarga de licencias y memoria RAM",
+          "Integrar detección automatizada de desviaciones de configuración con autorremediación del estado deseado de los hosts"
+        ]
+      }
+    },
+    "STORAGE": {
+      "L1_to_L2": {
+        "en": [
+          "Formalize storage tiering baselines (Hot NVMe/SSD vs Cold Object Storage) to optimize performance",
+          "Establish documented volume allocation procedures and proactive storage capacity alerting",
+          "Eliminate orphaned LUNs and undocumented shared datastores across production clusters"
+        ],
+        "es": [
+          "Formalizar niveles de almacenamiento (Hot NVMe/SSD frente a Cold/Object) para optimizar rendimiento y costes",
+          "Establecer procedimientos documentados de asignación de volúmenes y monitorización preventiva de umbrales de llenado",
+          "Identificar y desmantelar LUNs huérfanas y almacenes de datos no inventariados en los clústeres de producción"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement automated snapshot management and consistency verification for transactional databases",
+          "Deploy unified storage telemetry correlating IOPS, latency, and throughput per application",
+          "Formalize multi-protocol access controls and encrypted volume lifecycles"
+        ],
+        "es": [
+          "Automatizar la gestión y verificación de coherencia de instantáneas (snapshots) para bases de datos transaccionales",
+          "Desplegar telemetría unificada que correlacione IOPS, latencia y rendimiento por aplicación de negocio",
+          "Formalizar controles de acceso multiprotocolo y cifrado en reposo para todos los volúmenes corporativos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce automated immutable object locking (WORM) across secondary and archive tiers",
+          "Integrate automated storage provisioning into CI/CD pipelines via CSI/API connectors",
+          "Implement predictive capacity analytics and policy-driven tier migration without service disruption"
+        ],
+        "es": [
+          "Implantar bloqueo inmutable de objetos (WORM) en repositorios secundarios y almacenamiento de archivo contra ransomware",
+          "Integrar el aprovisionamiento automatizado de almacenamiento en pipelines de integración continua mediante APIs y controladores CSI",
+          "Desplegar analítica predictiva de capacidad con migración dinámica entre niveles sin disrupción del servicio"
+        ]
+      }
+    },
+    "NETWORK": {
+      "L1_to_L2": {
+        "en": [
+          "Establish an authoritative digital IP address management (IPAM) and VLAN inventory",
+          "Document standardized switch port configurations and eliminate unmanaged access switches",
+          "Implement basic WAN link health monitoring and automated failover alerting"
+        ],
+        "es": [
+          "Establecer un inventario digital fidedigno de direccionamiento IP (IPAM), subredes y segmentación de VLANs",
+          "Estandarizar y documentar las configuraciones de puertos de conmutadores, eliminando equipos no gestionados",
+          "Implantar monitorización continua del estado de enlaces WAN con alertas automatizadas ante caída de conectividad"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy centralized network configuration management with automated configuration backup and versioning",
+          "Formalize network segmentation between corporate IT and operational plant environments",
+          "Implement redundant active-active WAN routing (SD-WAN) across all mission-critical sites"
+        ],
+        "es": [
+          "Desplegar gestión centralizada de configuraciones de red con copias de respaldo y versionado automatizado",
+          "Formalizar la segregación estricta de tráfico entre la red corporativa de TI y las redes industriales de planta (OT)",
+          "Implantar enlaces WAN redundantes en modo activo-activo (SD-WAN) en todas las sedes y fábricas críticas"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate network provisioning through NetDevOps pipelines with declarative intent verification",
+          "Deploy micro-segmentation and continuous telemetry with NetFlow/sFlow stream correlation",
+          "Implement automated route convergence testing and self-healing link failover mechanisms"
+        ],
+        "es": [
+          "Automatizar el aprovisionamiento de red mediante pipelines de NetDevOps con validación declarativa de conectividad",
+          "Desplegar microsegmentación y telemetría continua mediante correlación de flujos NetFlow/sFlow en tiempo real",
+          "Implantar pruebas automatizadas de convergencia de rutas y conmutación autorreparable de enlaces troncales"
+        ]
+      }
+    },
+    "RESILIENCE": {
+      "L1_to_L2": {
+        "en": [
+          "Formally catalog single points of failure (SPOF) across physical facilities and core platforms",
+          "Establish bi-annual simulated failover testing under scheduled production maintenance windows",
+          "Document step-by-step crisis runbooks for manual site recovery and communication escalation"
+        ],
+        "es": [
+          "Catalogar formalmente los puntos únicos de fallo (SPOF) en las instalaciones físicas y plataformas core",
+          "Establecer simulacros semestrales de conmutación planificada durante ventanas programadas de mantenimiento",
+          "Documentar procedimientos operativos paso a paso (runbooks de crisis) para recuperación manual y escalado de emergencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Negotiate and formalize validated RTO and RPO metrics with business application owners",
+          "Implement automated cross-site recovery orchestration with continuous data replication verification",
+          "Deploy an isolated cyber recovery vault (air-gap) protected against synchronous ransomware spread"
+        ],
+        "es": [
+          "Negociar y validar formalmente los objetivos de tiempo y punto de recuperación (RTO/RPO) con las unidades de negocio",
+          "Implementar orquestación automatizada de recuperación entre centros de datos con verificación continua de réplicas",
+          "Desplegar una bóveda de recuperación aislada (Cyber Recovery Vault / air-gap) protegida contra cifrado síncrono"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Implement automated non-disruptive disaster recovery testing using isolated sandbox environments",
+          "Deploy active-active multi-site operational clustering with zero-data-loss failover",
+          "Integrate continuous Chaos Engineering simulations to validate systemic resilience dynamically"
+        ],
+        "es": [
+          "Ejecutar pruebas no disruptivas de recuperación ante desastres de forma automatizada en entornos de sandbox aislados",
+          "Desplegar clústeres operativos en modo activo-activo entre múltiples ubicaciones con conmutación transparente y RPO cero",
+          "Integrar simulaciones continuas de Ingeniería del Caos (Chaos Engineering) para validar la resiliencia sistémica en caliente"
+        ]
+      }
+    },
+    "SECURITY": {
+      "L1_to_L2": {
+        "en": [
+          "Eliminate shared root/admin credentials and mandate individual accounts with MFA",
+          "Deploy centralized endpoint detection and response (EDR) with real-time alert triage",
+          "Establish a formalized vulnerability scanning schedule for external perimeter and core servers"
+        ],
+        "es": [
+          "Eliminar credenciales genéricas y cuentas root compartidas, exigiendo cuentas nominativas con autenticación multifactor (MFA)",
+          "Desplegar protección centralizada en el endpoint (EDR) con triaje y respuesta coordinada ante alertas de seguridad",
+          "Establecer un calendario formalizado de escaneo y remediación de vulnerabilidades en el perímetro externo y servidores clave"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a dedicated Privileged Access Management (PAM) vault with automated credential rotation",
+          "Implement network micro-segmentation and least-privilege role-based access control (RBAC)",
+          "Centralize security audit logs in a SIEM/XDR platform with automated anomaly correlation"
+        ],
+        "es": [
+          "Desplegar una solución corporativa de Gestión de Accesos Privilegiados (PAM) con rotación automatizada de contraseñas y monitorización de sesiones",
+          "Implantar microsegmentación de red y control de acceso basado en el principio de mínimo privilegio (RBAC)",
+          "Centralizar los registros de auditoría de seguridad en una plataforma SIEM/XDR con correlación automatizada de anomalías"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Enforce Zero Trust Network Access (ZTNA) policies with continuous identity and posture evaluation",
+          "Automate security patch validation and deployment pipelines with policy-driven exceptions",
+          "Implement continuous attack surface management and automated threat hunting workflows"
+        ],
+        "es": [
+          "Consolidar una arquitectura de Acceso de Confianza Cero (Zero Trust Network Access - ZTNA) con evaluación continua del contexto del usuario",
+          "Automatizar los pipelines de validación y despliegue de parches de seguridad con gestión estructurada de excepciones compensatorias",
+          "Implantar gestión continua de la superficie de ataque y flujos automatizados de caza de amenazas (Threat Hunting)"
+        ]
+      }
+    },
+    "ITSM": {
+      "L1_to_L2": {
+        "en": [
+          "Implement a single enterprise ticketing system with standardized incident classification",
+          "Formalize basic service desk runbooks and escalation matrices for Tier-1/Tier-2 support",
+          "Establish monthly SLA reporting on incident resolution times and recurring ticket volume"
+        ],
+        "es": [
+          "Consolidar la gestión de soporte en una plataforma única de tickets con clasificación estandarizada de incidencias",
+          "Formalizar manuales operativos básicos de atención y matrices de escalado jerárquico y funcional para niveles N1/N2",
+          "Establecer cuadros de mando mensuales de cumplimiento de acuerdos de nivel de servicio (SLA) y volumen recurrente de incidencias"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy a formal Configuration Management Database (CMDB) coupled to change management",
+          "Establish formal Problem Management workflows to conduct root-cause analysis on recurrent outages",
+          "Implement proactive monitoring integration that automatically creates incidents from system alerts"
+        ],
+        "es": [
+          "Desplegar una Base de Datos de Configuración (CMDB) federada y conectada directamente al flujo de gestión de cambios",
+          "Implantar procesos estructurados de Gestión de Problemas para realizar análisis de causa raíz sobre caídas e incidencias reiteradas",
+          "Integrar la monitorización operativa con la mesa de servicio para la creación automatizada de incidencias a partir de eventos críticos"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Industrialize Site Reliability Engineering (SRE) practices with defined SLOs, SLIs, and error budgets",
+          "Automate runbook execution (self-healing scripts) to resolve top recurrent alerts without human toil",
+          "Deploy predictive operational analytics to prevent service degradation before user impact"
+        ],
+        "es": [
+          "Industrializar prácticas de Ingeniería de Fiabilidad de Sitios (SRE) con definición de SLOs, SLIs y presupuestos de error (Error Budgets)",
+          "Automatizar la ejecución de procedimientos operativos mediante scripts autorreparables para resolver alertas recurrentes sin intervención humana",
+          "Desplegar analítica predictiva de operaciones (AIOps) para prevenir la degradación de servicios antes de que impacte en los usuarios"
+        ]
+      }
+    },
+    "GOVERNANCE": {
+      "L1_to_L2": {
+        "en": [
+          "Establish a centralized IT Steering Committee to review project requests and prioritize IT capital spend",
+          "Document foundational IT policies covering acceptable use, access control, and data retention",
+          "Create a consolidated catalog of major software licenses and maintenance vendor renewal dates"
+        ],
+        "es": [
+          "Constituir un Comité de Dirección de TI formalizado para evaluar la demanda de proyectos y priorizar las inversiones de capital",
+          "Documentar políticas fundacionales de gobierno tecnológico que regulen el uso aceptable, el control de accesos y la retención de datos",
+          "Crear un catálogo unificado de contratos de licenciamiento de software y calendarios de renovación con proveedores estratégicos"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Implement a formalized Project Management Office (PMO) with standardized project intake and delivery gates",
+          "Establish FinOps tagging policies and showback/chargeback reporting across cost centers",
+          "Deploy an enterprise risk register actively tracking technological debt and compliance obligations"
+        ],
+        "es": [
+          "Formalizar una Oficina de Gestión de Proyectos (PMO) con fases estructuradas de admisión, diseño, ejecución y cierre de iniciativas",
+          "Implantar políticas de etiquetado y asignación de costes FinOps con informes periódicos de imputación a centros de coste de negocio",
+          "Mantener un registro corporativo de riesgos tecnológicos que monitorice activamente la deuda técnica y las exigencias de cumplimiento normativo"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Automate continuous compliance audits against regulatory standards (NIS2, ISO 27001) via policy-as-code",
+          "Deploy real-time FinOps optimization pipelines with automated anomaly alerting and rightsizing",
+          "Align IT strategy dynamically with business value streams using quantified portfolio return metrics"
+        ],
+        "es": [
+          "Automatizar auditorías continuas de conformidad frente a marcos regulatorios (NIS2, ISO 27001) mediante políticas como código (Policy-as-Code)",
+          "Desplegar optimización continua de costes cloud en tiempo real con alertas automatizadas de anomalías de gasto y redimensionamiento de recursos",
+          "Alinear la estrategia tecnológica con las cadenas de valor de negocio mediante indicadores cuantitativos de retorno de cartera"
+        ]
+      }
+    },
+    "WORKPLACE": {
+      "L1_to_L2": {
+        "en": [
+          "Standardize hardware procurement on certified device models with standardized corporate OS images",
+          "Implement mobile device management (MDM) with remote wipe and baseline encryption enforcement",
+          "Establish a formal inventory of enterprise workstations, peripherals, and assigned peripherals"
+        ],
+        "es": [
+          "Homogeneizar la adquisición de puestos de trabajo en modelos certificados con imágenes maestras corporativas estandarizadas",
+          "Implantar gestión centralizada de dispositivos móviles (MDM) con borrado remoto y políticas obligatorias de cifrado de disco",
+          "Establecer un inventario digitalizado de estaciones de trabajo, equipos portátiles y periféricos asignados a usuarios"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Deploy unified endpoint management (UEM) with automated OS patch and software deployment",
+          "Implement enterprise single sign-on (SSO) and self-service password reset (SSPR) for all employees",
+          "Formalize device lifecycle policies with automated refresh cycles every 3-4 years"
+        ],
+        "es": [
+          "Desplegar gestión unificada de terminales (UEM) con distribución automatizada de parches del sistema operativo y software corporativo",
+          "Implantar inicio de sesión único (SSO) y autoservicio de restablecimiento de contraseñas (SSPR) para toda la plantilla",
+          "Formalizar políticas de ciclo de vida del equipamiento con planes de renovación tecnológica programados cada 3 o 4 años"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Deploy Digital Employee Experience (DEX) monitoring to proactively remediate endpoint friction",
+          "Automate zero-touch device provisioning (Autopilot/Zero-Touch) directly shipped to end users",
+          "Implement adaptive conditional access policies dynamically adjusting security based on user risk and context"
+        ],
+        "es": [
+          "Monitorizar la Experiencia Digital del Empleado (DEX) para detectar y resolver proactivamente degradaciones de rendimiento en el endpoint",
+          "Automatizar el aprovisionamiento de dispositivos con entrega directa al usuario final y configuración desatendida desde la nube (Zero-Touch)",
+          "Implantar políticas adaptativas de acceso condicional que ajusten dinámicamente los requisitos de seguridad según el contexto del usuario y del dispositivo"
+        ]
+      }
+    },
+    "LEGACY": {
+      "L1_to_L2": {
+        "en": [
+          "Document core data flows and batch processing dependencies between legacy and modern systems",
+          "Establish dedicated support agreements with specialized third-party maintenance providers",
+          "Implement immutable backup and isolated testing procedures for legacy operating environments"
+        ],
+        "es": [
+          "Documentar los flujos de intercambio de datos críticos y las dependencias de procesos por lotes (batch) entre el entorno legacy y los sistemas modernos",
+          "Establecer contratos de soporte y mantenimiento con proveedores externos especializados para mitigar el riesgo de obsolescencia",
+          "Implantar copias de seguridad inmutables y procedimientos de prueba aislada para los entornos operativos heredados"
+        ]
+      },
+      "L2_to_L3": {
+        "en": [
+          "Encapsulate legacy interfaces using standardized REST/API middleware to decouple downstream consumers",
+          "Establish specialized talent succession plans and cross-training to mitigate single-person operational risk",
+          "Implement granular audit logging and read-only replication for legacy reporting workloads"
+        ],
+        "es": [
+          "Encapsular las interfaces y servicios del entorno legacy mediante capas de integración basadas en APIs y microservicios para desacoplar consumidores",
+          "Diseñar planes de relevo generacional y formación cruzada para mitigar el riesgo operativo de dependencia de perfiles técnicos únicos",
+          "Implantar registros de auditoría detallados y replicación de solo lectura para descargar las tareas analíticas y de reporting del núcleo transaccional"
+        ]
+      },
+      "L3_to_L4": {
+        "en": [
+          "Execute selective component refactoring to migrate business logic to cloud-native microservices",
+          "Deploy automated legacy regression testing suites to validate transactional integrity during migrations",
+          "Establish dynamic legacy containment guardrails minimizing ongoing maintenance spend and technical debt"
+        ],
+        "es": [
+          "Ejecutar la modernización selectiva de componentes migrando la lógica de negocio a arquitecturas nativas de nube escalables",
+          "Desplegar baterías automatizadas de pruebas de regresión para garantizar la integridad transaccional durante las fases de transición tecnológica",
+          "Establecer barreras de contención de costes para minimizar el gasto de mantenimiento residual del entorno legacy y acelerar su amortización"
+        ]
+      }
+    }
+  },
+  "universal_default": {
+    "L1_to_L2": {
+      "en": [
+        "Eliminate unmanaged operational silos",
+        "Establish formal baseline procedures",
+        "Deploy basic health monitoring"
+      ],
+      "es": [
+        "Eliminar silos operativos no gestionados",
+        "Establecer procedimientos base formales",
+        "Desplegar monitorización básica de salud"
+      ]
+    },
+    "L2_to_L3": {
+      "en": [
+        "Deploy centralized management platform",
+        "Formalize service SLAs with business stakeholders",
+        "Automate routine maintenance workflows"
+      ],
+      "es": [
+        "Desplegar plataforma de gestión centralizada",
+        "Formalizar SLAs de servicio con las áreas de negocio",
+        "Automatizar flujos de mantenimiento rutinario"
+      ]
+    },
+    "L3_to_L4": {
+      "en": [
+        "Implement policy-as-code automation",
+        "Deploy predictive telemetry and analytics",
+        "Achieve closed-loop automated self-remediation"
+      ],
+      "es": [
+        "Implantar automatización de políticas como código",
+        "Desplegar telemetría y analítica predictiva",
+        "Alcanzar autorremediación en bucle cerrado"
+      ]
+    }
+  }
+}

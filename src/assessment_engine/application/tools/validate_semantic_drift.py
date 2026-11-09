@@ -198,7 +198,7 @@ Otherwise, provide a clear, professional architectural review listing:
 {md_content}
 """
 
-            print(f"Auditing semantic drift for: {path} against {py_file}...")
+            logger.info(f"Auditing semantic drift for: {path} against {py_file}...")
             ai_response = query_gemini_api(api_key, prompt).strip()
 
             if "NO_DRIFT" not in ai_response:
@@ -232,7 +232,7 @@ def main() -> int:
     api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-        print(
+        logger.info(
             "WARNING: GEMINI_API_KEY is not defined. Skipping semantic drift validation."
         )
         return 0
@@ -246,17 +246,17 @@ def main() -> int:
         out_path = Path(args.output_report).resolve()
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(report, encoding="utf-8")
-        print(f"Semantic drift report written to: {out_path}")
+        logger.info(f"Semantic drift report written to: {out_path}")
 
     if warnings:
-        print("\n=== SEMANTIC DRIFT WARNINGS ===")
+        logger.info("\n=== SEMANTIC DRIFT WARNINGS ===")
         for warn in warnings:
-            print(f"WARN: {warn}")
+            logger.info(f"WARN: {warn}")
         # Return 0 (non-blocking) or 1 (blocking). In standard workflows, we can treat this as non-blocking warnings
         # but output report is uploaded to review. Let's print warnings and pass.
         return 0
 
-    print("AI Semantic drift validation passed successfully.")
+    logger.info("AI Semantic drift validation passed successfully.")
     return 0
 
 

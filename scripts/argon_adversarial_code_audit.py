@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Adversarial Implementation Auditor via gemini-4-argon.
-
-Conducts an exhaustive, adversarial static analysis and architectural review of
-recently implemented code across the Assessment Engine ecosystem.
-
-Evaluates against:
-1. Universal Enterprise Multi-Tenancy (50M€ to 50B€, any vertical, any currency).
-2. Zero Hardcoding (client names, site locations, hardware vendors, or fixed assumptions).
-3. 100% Technical English Codebase (zero Spanish words, accented characters, or comments).
-4. Bug and Edge-Case Vulnerabilities (concurrency, numeric precision, exception handling).
-5. Clean Architecture & Clean Code Anti-Patterns.
-"""
-
-from __future__ import annotations
+"""Adversarial Code, Hygiene, and Architecture Audit by gemini-4-argon."""
 
 import json
 import subprocess
@@ -29,129 +16,103 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
+# Read locales.json ch3_intro_by_tower
+loc_path = REPO_ROOT / "engine_config/locales.json"
+with open(loc_path, "r", encoding="utf-8") as f:
+    loc_data = json.load(f)
 
-def read_file_safe(path: Path) -> str:
-    if path.exists():
-        return path.read_text(encoding="utf-8", errors="replace")
-    return f"[File {path.name} not found]"
+es_intros = loc_data.get("es", {}).get("ch3_intro_by_tower", {})
+en_intros = loc_data.get("en", {}).get("ch3_intro_by_tower", {})
+es_scorecards = loc_data.get("es", {}).get("ch3_scorecard_by_tower", {})
+es_cross_intros = loc_data.get("es", {}).get("cross_cutting_debt_intro_by_tower", {})
 
+# Read Python code touched
+payload_to_ast_path = REPO_ROOT / "src/assessment_engine/adapters/compilers/payload_to_ast.py"
+ast_code = payload_to_ast_path.read_text(encoding="utf-8")
 
-def get_git_diff_summary() -> str:
-    res = subprocess.run(
-        ["git", "diff", "--stat"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-    )
-    return res.stdout
+compiler_path = REPO_ROOT / "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py"
+compiler_code = compiler_path.read_text(encoding="utf-8")
+
+client = create_genai_client()
+model_name = get_model(ModelTier.REASONING)
+
+AUDIT_PROMPT = f"""You are 'gemini-4-argon', the Principal Staff Security & Software Engineering Auditor.
+
+THE USER HAS RE-ISSUED THIS STRICT DIRECTIVE:
+"Before continuing, I want gemini-4-argon to do a complete, uncompromising review of what was recently coded, searching for bugs, problems, or antipatterns. I DO NOT want anything hardcoded. Remember the goal: it must serve ANY enterprise in the world, from an SMB ($20M) to a top Tier-1 global corporation ($500B), across ANY vertical (banking, retail, manufacturing, healthcare, public sector, tech), in ANY target language (en, es, pt, fr, de, ja), and Python code must be 100% Technical English without a single word of Spanish."
+
+SCRUTINIZE THE FOLLOWING EVIDENCE:
+
+1. `ch3_intro_by_tower` (ES) recently injected into `engine_config/locales.json`:
+{json.dumps(es_intros, indent=2, ensure_ascii=False)[:2500]}
+
+2. `ch3_scorecard_by_tower` (ES) in `engine_config/locales.json`:
+{json.dumps(es_scorecards, indent=2, ensure_ascii=False)[:2500]}
+
+3. Compiler Python Code in `payload_to_ast.py` (lines 1640-2050):
+```python
+{ast_code[1640:2050]}
+```
+
+4. Compiler Python Code in `in_memory_asis_compiler.py` (lines 880-1200):
+```python
+{compiler_code[880:1200]}
+```
+
+YOUR AUDIT MANDATE:
+1. TENANT / CLIENT HARDCODING IN GLOBAL CONFIGS:
+   - Examine `ch3_intro_by_tower` and `ch3_scorecard_by_tower` in `locales.json`!
+   - Did the engineer inject specific tenant names or specific geographic locations (e.g., "Sant Vicenç dels Horts"), specific industrial sectors ("plantas cementeras y canteras"), or specific vendor assumptions into `engine_config/locales.json`?
+   - What happens when a Tier-1 Bank (e.g. JPMorgan), a Healthcare System, or a Retail Chain runs this engine? Will they see "Sant Vicenç dels Horts" or "cement plants and quarries"?
+   - Flag every single hardcoded violation in `locales.json`.
+2. LANGUAGE DECOUPLING LAW (100% TECHNICAL ENGLISH IN PYTHON):
+   - Check all Python code in `payload_to_ast.py` and `in_memory_asis_compiler.py`.
+   - Are there any Spanish comments, docstrings, variable names, regexes, or string literals in Python?
+3. ARCHITECTURAL CLEANLINESS & UNIVERSAL TENANT SCALING:
+   - How should Section 3.1 introductions and scorecard commentary be designed so that:
+     a) `engine_config/locales.json` remains 100% universal, tenant-agnostic, and vertical-agnostic (pure parameterized templates with NO client or geographic literals).
+     b) Any specific client context (like Molins's "Sant Vicenç dels Horts" or a bank's "London/New York trading floors") comes dynamically from the tenant's payload (`blueprint_data["domain_introduction"]` or `blueprint_data["document_meta"]`), NEVER from `locales.json`.
+4. BUGS, RUNTIME RISKS & ANTIPATTERNS:
+   - Check for potential `IndexError`, `KeyError`, `AttributeError`, or `TypeError`.
+   - Check fallback behavior when a tenant has 0 findings or fewer than 3 pillars.
+
+Deliver an unsparing, exhaustive forensic audit report in English Markdown.
+"""
 
 
 def main() -> None:
-    client = create_genai_client()
-    model_name = get_model(ModelTier.REASONING)
-
-    # Collect source files
-    actuarial_reconciler_code = read_file_safe(
-        REPO_ROOT / "src/assessment_engine/domain/actuarial_reconciler.py"
-    )
-    test_actuarial_reconciler_code = read_file_safe(
-        REPO_ROOT / "tests/unit/test_actuarial_reconciler.py"
-    )
-    tomo_compiler_code = read_file_safe(
-        REPO_ROOT / "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py"
-    )
-    toc_resolver_code = read_file_safe(
-        REPO_ROOT / "src/assessment_engine/adapters/compilers/toc_page_resolver.py"
-    )
-    taxonomy_resolver_diff = subprocess.run(
-        ["git", "diff", "src/assessment_engine/domain/taxonomy_resolver.py"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-    ).stdout
-    payload_to_ast_diff = subprocess.run(
-        ["git", "diff", "src/assessment_engine/adapters/compilers/payload_to_ast.py"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-    ).stdout
-
-    diff_stat = get_git_diff_summary()
-
-    prompt = f"""
-Role: Principal Enterprise Systems Architect, Adversarial Code Auditor, and Staff Security/Reliability Engineer.
-
-OBJECTIVE:
-Execute an uncompromising, adversarial code review of the newly implemented modules and modifications in the Assessment Engine codebase.
-
-Your mission is to rigorously hunt for:
-1. BUGS & RELIABILITY DEFECTS:
-   - Logic flaws, rounding discrepancies, potential division by zero, out-of-bounds indexing.
-   - Resource leaks, unhandled exceptions, subprocess failures, or concurrency race conditions.
-2. ZERO HARDCODING VIOLATIONS:
-   - Does any Python source file contain hardcoded assumptions about specific clients (e.g. "Molins", "Secil"), specific locations (e.g. "Sant Vicenç dels Horts"), specific vendors (e.g. "SimpliVity", "VMware", "SAP"), specific numbers of towers (e.g. fixed 10 without generic bounds), or specific currencies (e.g. "€" hardcoded instead of dynamic)?
-   - Can this code execute cleanly for a 50M$ retail chain in North America, a 5B£ utility provider in the UK, or a 50B¥ electronics multinational in Japan?
-3. 100% TECHNICAL ENGLISH CODEBASE & LANGUAGE DECOUPLING:
-   - Check every line of Python code, comments, docstrings, variable names, and string literals.
-   - Is there ANY Spanish word, Spanish accented character (á, é, í, ó, ú, ñ), or non-English docstring inside the Python production code?
-   - Are language parameters mandatory (e.g. `doc_lang: str`), with zero default parameters like `doc_lang="es"`?
-   - Are all natural language strings resolved exclusively through externalized configuration (`locales.json`) via `t(key, locale=doc_lang)`?
-4. ARCHITECTURAL INTEGRITY & ANTI-PATTERNS:
-   - Clean Architecture / Hexagonal Boundaries: Does the domain layer (`actuarial_reconciler.py`, `taxonomy_resolver.py`) have zero dependencies on infrastructure or adapters?
-   - Are there any hidden side effects, mutable global states, or forbidden inline language conditionals (`if doc_lang == "es"`)?
-5. MATHEMATICAL SOUNDNESS (OPEN FAIR & CMMI):
-   - In `ActuarialReconciler`, does the Hamilton largest remainder allocation method handle all edge cases: target=0, all-zero inputs, negative numbers, extreme scale disparities, tie-breaking determinism?
-   - Does `reconcile_scenario_card` guarantee that quantized SLE * LEF == ALE?
-
-GIT STATUS & DIFF SUMMARY:
-{diff_stat}
-
---- CODE UNDER REVIEW: src/assessment_engine/domain/actuarial_reconciler.py ---
-{actuarial_reconciler_code}
-
---- CODE UNDER REVIEW: tests/unit/test_actuarial_reconciler.py ---
-{test_actuarial_reconciler_code}
-
---- CODE UNDER REVIEW: src/assessment_engine/adapters/compilers/toc_page_resolver.py (Excerpts around soffice subprocess) ---
-{toc_resolver_code[:4000]}
-
---- DIFF UNDER REVIEW: src/assessment_engine/domain/taxonomy_resolver.py ---
-{taxonomy_resolver_diff}
-
---- DIFF UNDER REVIEW: src/assessment_engine/adapters/compilers/payload_to_ast.py ---
-{payload_to_ast_diff}
-
---- CODE UNDER REVIEW: src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py (Structure and Key Logic) ---
-{tomo_compiler_code[:12000]}
-... [truncated for token efficiency, core AST builders and table composers] ...
-{tomo_compiler_code[-12000:]}
-
-INSTRUCTIONS FOR YOUR RESPONSE:
-Provide a structured, forensic report:
-1. Executive Verdict: PASS, PASS WITH RESERVATIONS, or FAIL.
-2. Forensic Findings by Category:
-   - Hardcoding & Multi-Tenant Scalability Audit.
-   - Language Decoupling & 100% Technical English Audit.
-   - Bugs, Mathematical Integrity & Reliability Audit.
-   - Clean Architecture & Anti-Pattern Audit.
-3. Concrete Recommendations & Remediations (if any are identified).
-4. Final Certification Statement.
-"""
-
-    print(f"Requesting adversarial implementation audit from {model_name}...")
+    print("Initiating adversarial code audit with gemini-4-argon...")
     response = client.models.generate_content(
         model=model_name,
-        contents=prompt,
+        contents=AUDIT_PROMPT,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/ARGON_ADVERSARIAL_IMPLEMENTATION_AUDIT.md"
+    out_file = REPO_ROOT / "docs/audits/ARGON_ADVERSARIAL_HARDCODING_AUDIT.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(response.text, encoding="utf-8")
-    print(f"Adversarial audit completed successfully: {out_file}")
-    print("\n" + "=" * 80)
-    print("AUDIT REPORT PREVIEW:")
+
+    front_matter = """---
+status: Verified
+owner: docs-governance
+source_of_truth:
+- docs/README.md
+last_verified_against: 2026-11-08
+applies_to:
+- gemini
+- audits
+doc_type: operational
+diataxis: reference
+verification_mode: editorial
+---
+
+"""
+    out_file.write_text(front_matter + response.text, encoding="utf-8")
+
     print("=" * 80)
-    print(response.text[:2500])
+    print("ARGON ADVERSARIAL AUDIT REPORT:")
+    print("=" * 80)
+    print(response.text)
+    print("=" * 80)
+    print(f"Full audit report written to {out_file}")
 
 
 if __name__ == "__main__":

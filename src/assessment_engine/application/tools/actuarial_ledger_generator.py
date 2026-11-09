@@ -98,10 +98,10 @@ def simulate_risk_{risk_id.replace('-', '_')}():
     cvar_tail = annual_losses[annual_losses >= tail_threshold]
     cvar_score = np.mean(cvar_tail) if len(cvar_tail) > 0 else np.mean(annual_losses)
     
-    print("--- Modeling Validation ---")
-    print(f"Projected ALE (Mean): {{np.mean(annual_losses):,.2f}} €")
-    print(f"Theoretical CVaR (Expected Shortfall 97.5%): {{cvar_score:,.2f}} €")
-    print(f"Maximum Bound (P99): {{np.percentile(annual_losses, 99.0):,.2f}} €")
+    logger.info("--- Modeling Validation ---")
+    logger.info(f"Projected ALE (Mean): {{np.mean(annual_losses):,.2f}} €")
+    logger.info(f"Theoretical CVaR (Expected Shortfall 97.5%): {{cvar_score:,.2f}} €")
+    logger.info(f"Maximum Bound (P99): {{np.percentile(annual_losses, 99.0):,.2f}} €")
 
 if __name__ == "__main__":
     simulate_risk_{risk_id.replace('-', '_')}()

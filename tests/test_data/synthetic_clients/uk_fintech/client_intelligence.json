@@ -1,0 +1,184 @@
+{
+  "version": "3.0",
+  "client_name": "Starling Bank",
+  "metadata": {
+    "dossier_id": "starling_bank_uk",
+    "schema_version": "3.0",
+    "created_at": "2026-11-08T20:33:43.346648+00:00",
+    "lang": "en",
+    "country": "United Kingdom",
+    "currency": "GBP",
+    "currency_symbol": "£"
+  },
+  "profile": {
+    "industry": "banking",
+    "sub_industry": "Digital Challenger Clearing Bank",
+    "hierarchy": "UK Authorised Credit Institution",
+    "headquarters": "London, United Kingdom",
+    "operating_locations": [
+      "London",
+      "Southampton",
+      "Cardiff",
+      "Dublin"
+    ],
+    "headcount": 3200,
+    "financial_profile": {
+      "currency": "GBP",
+      "currency_symbol": "£",
+      "annual_revenue": 665000000.0,
+      "customer_deposits": 10600000000.0,
+      "hourly_downtime_cost": 140000.0
+    }
+  },
+  "regulatory_context": [
+    {
+      "regulation": "DORA (Digital Operational Resilience Act)",
+      "authority": "EBA",
+      "status": "In Compliance Implementation"
+    },
+    {
+      "regulation": "PRA SS1/21 (Operational Resilience)",
+      "authority": "Bank of England",
+      "status": "Audited & Supervised"
+    },
+    {
+      "regulation": "FCA SYSC",
+      "authority": "Financial Conduct Authority",
+      "status": "Compliant"
+    },
+    {
+      "regulation": "PCI-DSS v4.0 Level 1",
+      "authority": "PCI SSC",
+      "status": "Certified"
+    }
+  ],
+  "business_context": {
+    "ceo_agenda": {
+      "summary": "Scale European clearing operations, expand SME banking franchise, and certify DORA compliance."
+    },
+    "transformation_horizon": {
+      "stage": "H2",
+      "label": "Operational Resilience & Scaled Clearing",
+      "rationale": "High-maturity cloud native core expanding international payment rails."
+    },
+    "strategic_priorities": [
+      {
+        "name": "DORA & PRA SS1/21 Operational Resilience Certification"
+      },
+      {
+        "name": "Multi-Region Cloud Failover and Exit Strategy Assurance"
+      }
+    ]
+  },
+  "technology_context": {
+    "dominant_hyperscaler": "AWS",
+    "footprint_summary": {
+      "summary": "Cloud-native multi-region AWS topology with Equinix LD4/LD5 clearing colocation."
+    },
+    "group_level_stack": [
+      {
+        "category": "Cloud Hyperscaler",
+        "name": "AWS (eu-west-2, eu-west-1)"
+      },
+      {
+        "category": "Colocation",
+        "name": "Equinix LD4 / LD5 (Slough)"
+      },
+      {
+        "category": "Container Orchestration",
+        "name": "Amazon EKS with Cilium eBPF"
+      },
+      {
+        "category": "Database",
+        "name": "Amazon Aurora Global PostgreSQL, DynamoDB"
+      },
+      {
+        "category": "Identity & PAM",
+        "name": "Okta, Teleport Enterprise, HashiCorp Vault"
+      }
+    ],
+    "field_metrics": [
+      {
+        "metric": "Monthly Tx Volume",
+        "value": "95,000,000 tx"
+      },
+      {
+        "metric": "Unit Cost per Tx",
+        "value": "£0.0019"
+      },
+      {
+        "metric": "Tested RTO",
+        "value": "3 min 25 sec"
+      }
+    ]
+  },
+  "tower_overrides": {
+    "T1": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T3": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T5": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T6": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T8": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T10": {
+      "target_maturity": 4.6,
+      "status": "In Scope"
+    },
+    "T2": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T4": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T7": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    },
+    "T9": {
+      "target_maturity": 0.0,
+      "status": "Out of Scope"
+    }
+  },
+  "epistemic_graph": {
+    "topology": {
+      "nodes": [
+        "T1",
+        "T3",
+        "T5",
+        "T6",
+        "T8",
+        "T10"
+      ],
+      "edges": [
+        {
+          "source": "T1",
+          "target": "T3",
+          "weight": 0.85
+        }
+      ]
+    },
+    "audits": {
+      "cascading_impact_index": 0.16
+    }
+  },
+  "review": {
+    "summary": "Starling Bank Benchmark Fixture",
+    "status": "Certified"
+  },
+  "claims": []
+}
