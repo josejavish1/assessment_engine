@@ -3629,6 +3629,15 @@ class PayloadToASTBridge:
         vuln_txt = _dedup_clauses(vuln_txt)
         impact_txt = _dedup_clauses(impact_txt)
 
+        if not str(meta_lang).lower().startswith("en"):
+            fallback_card_pillar = fallback_pillar_ref or t(
+                "domain_control_standard_fallback",
+                locale=meta_lang,
+                default="la gobernanza operativa del dominio",
+            )
+            vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, vuln_txt)
+            impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, impact_txt)
+
         # Normalize corrupted camelCase prefixes (e.g. 'pAM Enclosure' -> 'PAM Enclosure', 'iT &' -> 'IT &')
         vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
         impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), impact_txt)
@@ -3887,6 +3896,15 @@ class PayloadToASTBridge:
                         val_str = _sanitize_localized_kpi_leaks(
                             val_str, meta_l
                         )
+                        if not str(meta_l).lower().startswith("en"):
+                            fallback_label = t(
+                                "domain_control_standard_fallback",
+                                locale=meta_l,
+                                default="la gobernanza operativa del dominio",
+                            )
+                            val_str = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
+                                fallback_label, val_str
+                            )
 
                     if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
                         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
