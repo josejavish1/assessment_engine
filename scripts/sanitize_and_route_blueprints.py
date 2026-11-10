@@ -193,29 +193,29 @@ def update_t10():
         if pi.get("pillar_id") == "T10.P4":
             pi["asis_architecture_description"] = (
                 "La integración de los sistemas de pesaje y expedición de planta (Truck-to-Cash) sufre de una dependencia síncrona "
-                "respecto al centro de datos central de Sant Vicenç dels Horts. Las básculas de las fábricas de cemento, hormigoneras "
-                "y canteras carecen de un búfer transaccional local o modo de supervivencia autónoma (Island Mode). Ante un corte en el "
-                "enlace WAN, el pesaje y la impresión de albaranes se detienen por completo, lo que en el negocio de hormigón preparado "
-                "desencadena un riesgo crítico al superar el límite químico de fraguado de 60 minutos del producto en las cubas de los camiones."
+                "respecto al centro de datos central de Sant Vicenç dels Horts. Las básculas de las fábricas de cemento y "
+                "canteras carecen de un búfer transaccional local o modo de supervivencia autónoma (Island Mode). Ante un corte en el "
+                "enlace WAN, el pesaje automatizado y la emisión de albaranes electrónicos se detienen, provocando colas de camiones "
+                "en los accesos viales, sobrecostes por demoras de transportistas (demurrage) y degradación del rendimiento de despacho al pasar a contingencia manual en papel."
             )
             for hc in pi.get("health_check_asis", []):
                 if hc.get("node_id") == "t10-p4-hc-01":
-                    hc["capability"] = "Resiliencia de Báscula en Modo Isla y Fraguado de Hormigón"
+                    hc["capability"] = "Resiliencia de Báscula en Modo Isla y Continuidad de Expedición"
                     hc["finding"] = (
                         "Dependencia síncrona del software de expedición de báscula respecto a la base de datos central de Sant Vicenç "
-                        "sin almacenamiento local autónomo (modo isla), provocando que un corte WAN detenga inmediatamente el pesaje y emisión de albaranes de camiones hormigonera."
+                        "sin almacenamiento local autónomo (modo isla), provocando que un corte WAN detenga inmediatamente el pesaje automático y la emisión electrónica de albaranes de salida."
                     )
                     hc["business_risk"] = (
-                        "Parálisis de expedición que supera el límite crítico de fraguado de 60 minutos del hormigón preparado en las cubas "
-                        "de los camiones, provocando pérdidas directas por producto fraguado, costes mecánicos de desincrustación de cubas y bloqueos de tráfico en accesos viales públicos."
+                        "Colapso en la expedición a granel que genera colas de camiones en los accesos de fábrica y cantera, "
+                        "incurriendo en penalizaciones por paralización de transportistas (demurrage), pérdida de turnos de entrega y sobrecostes de reconciliación contable por emisión de albaranes manuales en papel."
                     )
-                    hc["severity"] = "CRITICAL"
+                    hc["severity"] = "HIGH"
                     hc["literal_evidence"] = (
                         "si se cae el enlace o la base de datos central, las básculas se paran... "
-                        "el camión de hormigón no puede esperar más de una hora porque el hormigón se fragua en la cuba."
+                        "no podemos pesar camiones de forma automática y tenemos que pasar a albarán manual con retrasos en expedición."
                     )
                     hc["threat_event_frequency"] = 3
-                    hc["loss_magnitude"] = 4
+                    hc["loss_magnitude"] = 3
         elif pi.get("pillar_id") == "T10.P5":
             for hc in pi.get("health_check_asis", []):
                 if hc.get("node_id") == "t10-p5-hc-03":

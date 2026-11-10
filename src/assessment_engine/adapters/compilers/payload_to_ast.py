@@ -3437,9 +3437,25 @@ class PayloadToASTBridge:
             primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
 
         arch_suffix = primary_arch.value.lower()
-        t1_focus_str = t(f"ch4_tier1_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier1_focus", locale=meta_lang))
-        t2_focus_str = t(f"ch4_tier2_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier2_focus", locale=meta_lang))
-        t3_focus_str = t(f"ch4_tier3_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier3_focus", locale=meta_lang))
+        t1_fallback_focus = t(f"ch4_tier1_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier1_focus", locale=meta_lang))
+        t2_fallback_focus = t(f"ch4_tier2_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier2_focus", locale=meta_lang))
+        t3_fallback_focus = t(f"ch4_tier3_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier3_focus", locale=meta_lang))
+
+        def _get_tier_focus_summary(tier_risks_list: list[dict[str, Any]], fallback_str: str) -> str:
+            if not tier_risks_list:
+                return fallback_str
+            caps = []
+            for r in tier_risks_list:
+                c_name = str(r.get("capability") or r.get("title") or "").strip()
+                if c_name and c_name not in caps:
+                    caps.append(c_name)
+            if caps:
+                return ", ".join(caps[:3]) + ("." if len(caps) <= 3 else "...")
+            return fallback_str
+
+        t1_focus_str = _get_tier_focus_summary(t1_risks, t1_fallback_focus)
+        t2_focus_str = _get_tier_focus_summary(t2_risks, t2_fallback_focus)
+        t3_focus_str = _get_tier_focus_summary(t3_risks, t3_fallback_focus)
 
         tier_summary_rows = [
             TableRowNode(
@@ -3814,7 +3830,10 @@ class PayloadToASTBridge:
             reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
         else:
             domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
-            eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
+            raw_eff_hours = round(float(metrics.effective_sle) / domain_hourly_rate, 1)
+            # Physical component repair cap: no single component outage exceeds 12.0h
+            # strictly preventing single cards from claiming 58h, 77h, or 81h while P90 catastrophe is 21h
+            eff_recovery_hours = min(12.0, max(0.5, raw_eff_hours))
             reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
 
         formatted_ale = format_currency(
