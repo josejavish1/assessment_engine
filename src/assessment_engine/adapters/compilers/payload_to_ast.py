@@ -452,7 +452,13 @@ _CAMELCASE_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
 
 _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
     r"\[\s*(?:INSERT\s+)?(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
-    r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name)\s*\]",
+    r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name|"
+    r"Control\s*Name|Framework\s*Reference)\s*\]",
+    re.IGNORECASE,
+)
+
+_GENERIC_BOILERPLATE_IMPACT_RE: Final[re.Pattern[str]] = re.compile(
+    r"Exposici[oó]n\s+operativa\s+y\s+riesgo\s+de\s+interrupci[oó]n\s+del\s+servicio\s+ante\s+incidencias\s+no\s+contenidas\s+en\s+la\s+arquitectura\s+operativa\s+del\s+dominio\.?",
     re.IGNORECASE,
 )
 
@@ -3712,7 +3718,35 @@ class PayloadToASTBridge:
             vuln_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", vuln_txt)
             impact_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", impact_txt)
 
-        # Normalize corrupted camelCase prefixes and repair broken template grammar
+        # Replace generic template boilerplate on FinOps / Governance / Chronic Toil cards with domain-accurate impact
+        if _GENERIC_BOILERPLATE_IMPACT_RE.search(impact_txt):
+            title_check = f"{loss_event.title} {fallback_pillar_ref}".lower()
+            is_es_card = str(meta_lang).lower().startswith("es")
+            if any(k in title_check for k in ("finops", "cost", "coste", "econom", "licenc", "presupuest", "tag")):
+                impact_txt = (
+                    "Ineficiencia financiera estructural, opacidad en la imputación de costes por unidad de negocio (Showback/Chargeback) "
+                    "y desviación presupuestaria entre modelos CAPEX/OPEX sin trazabilidad unitaria."
+                    if is_es_card
+                    else "Structural financial inefficiency, lack of unit-cost attribution (Showback/Chargeback), and unmonitored CAPEX/OPEX budget drift."
+                )
+            elif any(k in title_check for k in ("dex", "workplace", "puesto", "endpoint", "provisioning", "aprovisionamiento", "toil")):
+                impact_txt = (
+                    "Fricción operativa crónica en la productividad del empleado, sobrecarga de soporte reactivo N1/N2/N3 y "
+                    "exceso de horas de ingeniería dedicadas a tareas manuales repetitivas."
+                    if is_es_card
+                    else "Chronic operational friction in employee productivity, elevated reactive support ticket volume, and excessive engineering toil on manual tasks."
+                )
+            else:
+                impact_txt = (
+                    f"Degradación de los niveles de servicio (SLA), fricción operativa recurrente y sobrecoste de remediación reactiva en {fallback_pillar_ref or 'el dominio evaluado'}."
+                    if is_es_card
+                    else f"Service level degradation, recurring operational friction, and reactive remediation overhead across {fallback_pillar_ref or 'the assessed domain'}."
+                )
+
+        # Normalize corrupted camelCase prefixes, unresolved bracket placeholders, and repair broken template grammar
+        vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", vuln_txt)
+        impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", impact_txt)
+        actuarial_box_text = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", actuarial_box_text)
         vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
         impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), impact_txt)
         actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), actuarial_box_text)
@@ -3845,10 +3879,11 @@ class PayloadToASTBridge:
             # Sanitization: Replace non-standard vocabulary, camelCase artifacts, and any leaked English KPI tokens
             if isinstance(cleaned, str):
                 doc_locale = getattr(self, "meta_lang", "en")
+                fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
+                cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_label, cleaned)
                 cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), cleaned)
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
                 if not str(doc_locale).lower().startswith("en"):
-                    fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
                     cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
                     cleaned = _repair_broken_template_grammar(cleaned, doc_locale, fallback_label)
                 cleaned = _deduplicate_prose_sentences(cleaned)
@@ -3968,6 +4003,14 @@ class PayloadToASTBridge:
                     val_str = str(val)
                     if isinstance(val_str, str):
                         meta_l = getattr(self, "meta_lang", "en")
+                        fallback_label = t(
+                            "domain_control_standard_fallback",
+                            locale=meta_l,
+                            default="la gobernanza operativa del dominio",
+                        )
+                        val_str = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
+                            fallback_label, val_str
+                        )
                         val_str = _CAMELCASE_ARTIFACT_RE.sub(
                             lambda m: m.group(1).upper() + m.group(2), val_str
                         )
@@ -3975,11 +4018,6 @@ class PayloadToASTBridge:
                             val_str, meta_l
                         )
                         if not str(meta_l).lower().startswith("en"):
-                            fallback_label = t(
-                                "domain_control_standard_fallback",
-                                locale=meta_l,
-                                default="la gobernanza operativa del dominio",
-                            )
                             val_str = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
                                 fallback_label, val_str
                             )
