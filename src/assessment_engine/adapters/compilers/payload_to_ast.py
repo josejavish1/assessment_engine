@@ -4441,6 +4441,13 @@ class PayloadToASTBridge:
                         val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
                         val_str = _synchronize_inline_recalibrated_scores(val_str, meta_l)
                         val_str = _deduplicate_prose_sentences(val_str)
+                        if not str(meta_l).lower().startswith("en"):
+                            val_str = re.sub(
+                                r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
+                                lambda m: f"{m.group(1)} {fallback_label}",
+                                val_str,
+                            )
+                            val_str = re.sub(r"\s+([.,;:])", r"\1", val_str)
 
                     if c_idx == 2:
                         just_hdr = t("asis_header_score_justification", locale=getattr(self, "meta_lang", "en"))
