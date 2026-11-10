@@ -109,11 +109,14 @@ def audit_enterprise_deliverable(ent: Dict[str, Any]) -> Dict[str, Any]:
 
     # Distribute calibrated loss across towers
     base_ale = float(rev_dec) * random.uniform(0.0008, 0.0025)
-    remaining_weight = Decimal("100.0")
+    raw_weights = [random.uniform(10.0, 25.0) for _ in towers]
+    sum_w = sum(raw_weights)
+    norm_weights = [Decimal(str(round(w / sum_w * 100.0, 1))) for w in raw_weights]
+    diff = Decimal("100.0") - sum(norm_weights)
+    norm_weights[-1] += diff
 
     for i, t_id in enumerate(towers):
-        weight = remaining_weight if i == len(towers) - 1 else Decimal(str(round(random.uniform(10.0, 18.0), 1)))
-        remaining_weight -= weight
+        weight = norm_weights[i]
 
         raw_standalone = int(round(base_ale * float(weight) / 100.0 * 1.25))
         diversification_adj = -int(round(raw_standalone * 0.20))

@@ -3524,7 +3524,8 @@ class PayloadToASTBridge:
             operational_recovery_ceiling_hours=ceiling_hours,
         )
         p90_rec_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
-        p90_contingency_str = format_currency(total_p90_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+        closed_form_p90_total = tail_decomp.primary_operational_p90_loss + tail_decomp.secondary_tail_p90_loss
+        p90_contingency_str = format_currency(closed_form_p90_total, currency_symbol=currency, locale=meta_lang, decimals=0)
         direct_stoppage_str = format_currency(tail_decomp.primary_operational_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
         secondary_spend_str = format_currency(tail_decomp.secondary_tail_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
 
