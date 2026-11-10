@@ -1036,7 +1036,7 @@ class TowerPayloadHydrator:
                 )
 
                 dynamic_p90_ratio = ActuarialCalibrationEngine.calculate_dynamic_p90_ratio(
-                    maturity_score=t_score,
+                    maturity_score=cmmi_u,
                     industry=fin_tel.get("industry_vertical") or meta.get("industry_vertical") or "manufacturing",
                 )
 
@@ -1403,10 +1403,9 @@ class TowerPayloadHydrator:
                     payload["worst_crisis_event"] = t_result.worst_crisis_event
                     payload["worst_crisis_rto_hours"] = t_result.worst_crisis_rto_hours
 
-                    if payload.get("total_fair_ale") is None:
-                        payload["total_fair_ale"] = t_result.standalone_ale
-                        payload["total_fair_p90"] = t_result.worst_crisis_event
-                        payload["total_fair_max"] = t_result.var_99
+                    payload["total_fair_ale"] = t_result.standalone_ale
+                    payload["total_fair_p90"] = t_result.var_90
+                    payload["total_fair_max"] = t_result.var_99
 
                     finding_results = {f.finding_id: f for f in t_result.findings}
 
@@ -1420,10 +1419,9 @@ class TowerPayloadHydrator:
                             f_id = hc.get("node_id")
                             if f_id in finding_results:
                                 f_res = finding_results[f_id]
-                                if hc.get("fair_ale_score") is None:
-                                    hc["fair_ale_score"] = f_res.portfolio_allocated_ale
-                                    hc["fair_p90_score"] = f_res.var_90
-                                    hc["fair_max_score"] = f_res.var_99
+                                hc["fair_ale_score"] = f_res.portfolio_allocated_ale
+                                hc["fair_p90_score"] = f_res.var_90
+                                hc["fair_max_score"] = f_res.var_99
                                 hc["worst_crisis_event"] = f_res.worst_crisis_event
                                 hc["worst_crisis_rto_hours"] = f_res.worst_crisis_rto_hours
                                 hc["dissonance_applied"] = f_res.dissonance_applied

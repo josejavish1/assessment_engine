@@ -188,6 +188,10 @@ class ActuarialCalibrationEngine:
 
         Covers all 11 GICS sectors via the 6 Universal Operational Archetypes with zero bias.
         """
+        if not (0.5 <= maturity_score <= 6.0):
+            raise ValueError(
+                f"Dimensional Violation: maturity_score must be a dimensionless CMMI index in [1.0, 5.0], got {maturity_score}"
+            )
         m_clamped = max(1.0, min(5.0, maturity_score))
         # Base ratio: High maturity has tight distributions (2.1x); low maturity has fat tails (3.8x)
         base_ratio = 3.80 - ((m_clamped - 1.0) / 4.0) * 1.70  # [2.10, 3.80]

@@ -46,7 +46,8 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
             rationale = finding.get("_consensus_justification", "No deviation recorded.")
             
             ale = finding.get("fair_ale_score", 0.0)
-            cvar = finding.get("fair_p90_score", 0.0)
+            var_90 = finding.get("fair_p90_score", 0.0)
+            cvar = finding.get("fair_cvar_score") or (var_90 * 1.15 if var_90 > 0 else 0.0)
             max_p99 = finding.get("fair_max_score", 0.0)
             
             lines.append("---")
@@ -67,7 +68,8 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
             
             lines.append("### 3. Certified Financial Exposure")
             lines.append(f"- **Annual Loss Exposure (ALE - Mean):** {ale:,.2f} €")
-            lines.append(f"- **Conditional Value-at-Risk (CVaR - P90):** {cvar:,.2f} €")
+            lines.append(f"- **Value-at-Risk (VaR - P90):** {var_90:,.2f} €")
+            lines.append(f"- **Conditional Value-at-Risk (CVaR - Expected Shortfall):** {cvar:,.2f} €")
             lines.append(f"- **Maximum Plausible Bound (P99):** {max_p99:,.2f} €\n")
             
             lines.append("### 4. Auditor Replication Script (Python/NumPy)")

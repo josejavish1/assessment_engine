@@ -69,9 +69,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
             sigma = (np.log(max_val) - np.log(min_val)) / 3.29
             mu = (np.log(max_val) + np.log(min_val)) / 2.0
         
-        # standard Actuarial Practice: Sigma Cap to prevent the Infinite Mean Paradox.
-        # If sigma exceeds ~2.0 in a Lognormal, the theoretical mean diverges towards infinity faster than 
-        # the Monte Carlo sample can converge, causing wild instability. We cap sigma at 2.0.
+        # Standard Actuarial Practice: Sigma Cap for Sample Stability.
+        # When sigma > 2.0 in a Lognormal distribution, sample quantiles exhibit extreme variance.
+        # We cap sigma at 2.0 to ensure stable Monte Carlo convergence while preserving fat-tail properties.
         sigma = min(2.0, max(1e-4, sigma))
         
         samples = rng.lognormal(mean=mu, sigma=sigma, size=size)
@@ -824,31 +824,28 @@ class FairRiskPolicy(BaseSovereignPolicy):
         else:
             loss_per_run = np.zeros(size)
 
-        # standard Actuarial Practice: Truncated Lognormal Model (Extreme Outliers Elimination)
-        # To prevent extreme, non-defensible P100 outliers from distorting the mean and causing 
-        # mathematical discrepancies (like CVaR exceeding the printed Maximum Plausible Loss), 
-        # we truncate the empirical annual loss distribution at the 99.0th percentile (P99).
-        # This represents the "Maximum Plausible Loss" (1-in-100-year extreme operational limit),
-        # which is the global actuarial standard for bounding operational risk distributions.
-        p99_limit = float(np.percentile(loss_per_run, 99.0)) if len(loss_per_run) > 0 else 0.0
-        truncated_losses = np.clip(loss_per_run, a_min=None, a_max=p99_limit)
+        # Standard Open FAIR™ & Solvency II Quantitative Standards
+        # Micro-economic safety bound: limit individual trial overflow at Enterprise Ruin Limit (500M EUR)
+        empirical_losses = np.minimum(loss_per_run, 500_000_000.0)
 
-        # Calculate statistical exposures using the truncated distribution
-        mean_ale = float(np.mean(truncated_losses))
+        # Calculate statistical exposures preserving the true extreme right tail
+        mean_ale = float(np.mean(empirical_losses))
         
-        # Standard Open FAIR™ & Basel III Actuarial Metrics
-        # Strict 90th Percentile Value-at-Risk (P90)
-        p90_val = float(np.percentile(truncated_losses, 90.0)) if len(truncated_losses) > 0 else 0.0
+        # Strict 90th Percentile Value-at-Risk (VaR 90)
+        p90_val = float(np.percentile(empirical_losses, 90.0)) if len(empirical_losses) > 0 else 0.0
+
+        # Maximum Plausible Loss bound: 99th Percentile Value-at-Risk (VaR 99)
+        p99_limit = float(np.percentile(empirical_losses, 99.0)) if len(empirical_losses) > 0 else 0.0
 
         # Coherent Risk Measure: Expected Shortfall (CVaR at 97.5%)
-        sorted_losses = np.sort(truncated_losses)
+        sorted_losses = np.sort(empirical_losses)
         tail_index = int(len(sorted_losses) * 0.975)
         tail_losses = sorted_losses[tail_index:]
         cvar_ale = float(np.mean(tail_losses)) if len(tail_losses) > 0 else 0.0
         p90_ale = p90_val
         
-        min_ale = float(np.min(truncated_losses))
-        max_ale = p99_limit
+        min_ale = float(np.min(empirical_losses))
+        max_ale = float(np.max(empirical_losses))
 
         # Round final computed metrics to a fixed precision for presentation clarity.
         ale_euros = round(mean_ale, 2)
@@ -943,7 +940,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
             sre_hourly_rate=formatted_sre_rate,
         )
 
-        return truncated_losses
+        return empirical_losses
 
     def _aggregate_portfolio_losses(
         self,

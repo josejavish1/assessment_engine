@@ -191,7 +191,7 @@ class RegulatoryBreachCalculator(OpenFairActuarialStrategy[RegulatoryBreachVecto
             annual_breach_prob = min(0.35, annual_breach_prob * (0.8 + 0.4 * avg_severity))
 
         turnover = telemetry.regulatory.annual_global_turnover
-        max_statutory_fine = min(20_000_000.0, turnover * 0.04)
+        max_statutory_fine = max(20_000_000.0, turnover * 0.04)
 
         b2b_dampener = telemetry.regulatory.b2b_exposure_dampener
         statutory_fine = round(max_statutory_fine * max(0.05, ((5.0 - score) / 4.0)) * b2b_dampener, 2)

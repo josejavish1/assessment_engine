@@ -32,6 +32,7 @@ class ArchetypePriors(BaseModel):
     regulatory_statutory_cap_pct: float = Field(..., ge=0.005, le=0.10)
     base_enforcement_discretion_theta: float = Field(..., ge=0.02, le=0.50)
     cyber_frequency_lambda_base: float = Field(..., ge=0.05, le=1.0)
+    calibration_metadata: Optional[Dict[str, Any]] = Field(default=None)
 
 
 class TenantTelemetryOverrides(BaseModel):
@@ -101,6 +102,7 @@ class UniversalActuarialCalibrationEngine:
                     regulatory_statutory_cap_pct=float(v["regulatory_statutory_cap_pct"]),
                     base_enforcement_discretion_theta=float(v["base_enforcement_discretion_theta"]),
                     cyber_frequency_lambda_base=float(v["cyber_frequency_lambda_base"]),
+                    calibration_metadata=v.get("calibration_metadata"),
                 )
             cls._priors_cache = cache
         return cls._priors_cache

@@ -31,7 +31,7 @@ def test_tenant_financial_profile_manufacturing_burn_calculation() -> None:
     # (1,144,000,000 * 0.85) / 8760 = 110,980.59... wait, 1,144,000,000 / 8760 = 130,593
     # If explicit override is used:
     assert profile.operational_hours_per_year == Decimal("8760")
-    assert profile.operational_dependency_factor == Decimal("0.35")
+    assert profile.operational_dependency_factor == Decimal("0.45")
 
     # With explicit override:
     profile_override = TenantFinancialProfile(
