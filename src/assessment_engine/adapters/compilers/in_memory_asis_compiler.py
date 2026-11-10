@@ -1704,6 +1704,24 @@ def derive_in_memory_maturity_matrix(
                     clean_state,
                     flags=re.IGNORECASE,
                 )
+        # Prevent over-scoring in Observability/AIOps when operations rely on reactive scripts or manual log cleanup
+        if (
+            canonical_p_id.endswith("T7.P1")
+            or ("T7" in current_tower_id and canonical_p_id.endswith("P1"))
+            or re.search(r"\b(?:observability|observabilidad|aiops)\b", pillar_name, re.IGNORECASE)
+        ):
+            if re.search(
+                r"\b(?:manual(?:ly)?\s+(?:clear|delete|clean|purge)|borrado\s+manual|limpieza\s+manual|reactive\s+script|scripts?\s+reactivos?|sin\s+correlaci[oó]n|lack\s+of\s+.*correlation|no\s+.*aiops|sin\s+aiops|logrotate|llenado\s+de\s+disco|disk\s+full)\b",
+                f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}",
+                re.IGNORECASE,
+            ):
+                exact_score = min(exact_score, 1.50)
+                clean_state = re.sub(
+                    r"\b(?:madurez\s+avanzada|advanced\s+maturity|proactive\s+observability|observabilidad\s+proactiva)\b",
+                    "monitorización básica reactiva" if doc_lang.startswith("es") else "basic reactive monitoring",
+                    clean_state,
+                    flags=re.IGNORECASE,
+                )
         # Synchronize calibrated score and CMMI band label back into the source pillar payload so Executive Summary,
         # Table 4, and global averages remain 100% mathematically consistent with Table 5/6.
         pillar["score"] = exact_score
@@ -1760,15 +1778,30 @@ def derive_in_memory_maturity_matrix(
             fallback_pos=clean_state,
             fallback_neg=clean_f,
         )
-        arch_paras = [
-            _scrub_foreign_domain_bleed_for_tower(
-                _scrub_broken_kpi_boilerplate_clauses(p, clean_state or clean_f, doc_lang),
+        deduped_arch_paras: list[str] = []
+        seen_sentences: set[str] = set()
+        for raw_p in raw_arch_paras:
+            if not raw_p:
+                continue
+            cleaned_p = _scrub_foreign_domain_bleed_for_tower(
+                _scrub_broken_kpi_boilerplate_clauses(raw_p, clean_state or clean_f, doc_lang),
                 current_tower_id,
                 clean_state or clean_f,
             )
-            for p in raw_arch_paras
-            if p
-        ]
+            if not cleaned_p:
+                continue
+            unique_sents: list[str] = []
+            for sent in re.split(r"(?<=[.!?])\s+", cleaned_p):
+                norm_s = re.sub(r"\W+", "", sent).lower()
+                if len(norm_s) > 25 and norm_s in seen_sentences:
+                    continue
+                if len(norm_s) > 25:
+                    seen_sentences.add(norm_s)
+                unique_sents.append(sent)
+            rejoined_p = " ".join(unique_sents).strip()
+            if rejoined_p:
+                deduped_arch_paras.append(rejoined_p)
+        arch_paras = deduped_arch_paras
         op_reality = arch_paras[0] if arch_paras else ""
 
         # TRI-MODAL ENROUTER LOGIC (Argon Persona Mandate)
@@ -1786,9 +1819,13 @@ def derive_in_memory_maturity_matrix(
         if is_alpha_hammer:
             sota_benchmark = _build_sota_benchmark_paragraph(canonical_p_id, doc_lang)
             if sota_benchmark and diag_rationale:
-                fused_para = _scrub_template_glitches_and_token_leaks(
-                    f"{sota_benchmark} {diag_rationale}", doc_lang
-                )
+                norm_sota = re.sub(r"\W+", "", sota_benchmark).lower()
+                if norm_sota and any(norm_sota[:40] in re.sub(r"\W+", "", existing).lower() for existing in arch_paras):
+                    fused_para = _scrub_template_glitches_and_token_leaks(diag_rationale, doc_lang)
+                else:
+                    fused_para = _scrub_template_glitches_and_token_leaks(
+                        f"{sota_benchmark} {diag_rationale}", doc_lang
+                    )
                 if len(arch_paras) > 1:
                     arch_paras = [arch_paras[0], fused_para]
                 elif arch_paras:
