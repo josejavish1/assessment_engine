@@ -407,11 +407,11 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 
 _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling)|"
-    r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning)|"
-    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal|monitoring|tracing|apm)|"
-    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry|observability)|"
+    r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning|drp)|"
+    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal|monitoring|tracing|apm|clean\s+agent)|"
+    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry|observability|ashrae)|"
     r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|observabilidad)|"
-    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n|correlaci[óo]n\s+de\s+eventos)|"
+    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n|correlaci[óo]n\s+de\s+eventos|drp)|"
     r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex|trazabilidad)|"
     r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n|observabilidad)|"
     r"ausencia\s+de\s+(?:un\s+ciclo\s+formal\s+de\s+renovaci[óo]n|herramientas\s+dex|telemetr[íi]a|control\s+de\s+obsolescencia)|"
@@ -419,20 +419,68 @@ _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
     r"artisanal\s+preparation|static\s+images|"
     r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones|"
-    r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual|ca[íi]da\s+por\s+llenado\s+de\s+disco)\b",
+    r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual|ca[íi]da\s+por\s+llenado\s+de\s+disco|"
+    r"acometida\s+el[ée]ctrica\s+[úu]nica|single\s+municipal\s+medium-voltage\s+feed)\b",
     re.IGNORECASE,
 )
 
 _CONTRADICTORY_PRAISE_RE: Final[re.Pattern[str]] = re.compile(
     r"(?:exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal|"
     r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?|"
-    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+(?:boundary|limit)\s+of\s+level\s+[234]|"
-    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
-    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite)|al\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
-    r"at\s+the\s+(?:boundary|limit)\s+of\s+level\s+[234]|"
+    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
+    r"sit\s+at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
+    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)\s+del\s+nivel\s+[234]|"
+    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)|al\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
+    r"at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
     r"plataforma\s+legacy\s*/\s*mainframe\s*(?:&|y)\s*operaci[óo]n\s+core)",
     re.IGNORECASE,
 )
+
+
+def _synchronize_inline_recalibrated_scores(text: str, locale: str = "es") -> str:
+    """Reconcile inline narrative score recalibrations and CMMI level threshold contradictions."""
+    if not text:
+        return text
+    is_es = str(locale).lower().startswith("es")
+
+    def _fix_score_level_clause(match: re.Match[str]) -> str:
+        full_str = match.group(0)
+        score_str = match.group(1).replace(",", ".")
+        try:
+            score_val = float(score_str)
+        except ValueError:
+            return full_str
+        correct_label = _resolve_cmmi_maturity_label(score_val, locale=locale)
+        replaced = re.sub(
+            r"\((?:Nivel|Level)\s*\d\s*[-–—]\s*[^)]+\)",
+            f"({correct_label})",
+            full_str,
+            flags=re.IGNORECASE,
+        )
+        if score_val < 2.50:
+            if is_es:
+                replaced = re.sub(
+                    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)|al\s+l[íi]mite)\s+del\s+nivel\s+[34]",
+                    f"dentro del rango operativo de {correct_label}",
+                    replaced,
+                    flags=re.IGNORECASE,
+                )
+            else:
+                replaced = re.sub(
+                    r"(?:at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[34])",
+                    f"within the operational band of {correct_label}",
+                    replaced,
+                    flags=re.IGNORECASE,
+                )
+        return replaced
+
+    text = re.sub(
+        r"\b(\d[.,]\d{1,2})\s*(?:sobre|out\s+of|/)\s*5[.,]0{1,2}\s*\((?:Nivel|Level)\s*\d\s*[-–—]\s*[^)]+\)[^.;]*",
+        _fix_score_level_clause,
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text
 
 
 def _resolve_cmmi_maturity_label(score: float, locale: str = "es") -> str:
@@ -4230,11 +4278,12 @@ class PayloadToASTBridge:
                 )
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
+                cleaned = _synchronize_inline_recalibrated_scores(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
                 # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets .")
                 if not str(doc_locale).lower().startswith("en"):
                     cleaned = re.sub(
-                        r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){2,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,5}(?=\s*[.,;:])",
+                        r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
                         lambda m: f"{m.group(1)} {fallback_label}",
                         cleaned,
                     )
@@ -4390,6 +4439,7 @@ class PayloadToASTBridge:
                             )
                         val_str = _reconcile_replication_topology_prose(val_str, meta_l)
                         val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
+                        val_str = _synchronize_inline_recalibrated_scores(val_str, meta_l)
                         val_str = _deduplicate_prose_sentences(val_str)
 
                     if c_idx == 2:
