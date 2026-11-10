@@ -318,6 +318,37 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         return vuln_samples, mu_vuln_post, dissonance_applied
 
     @staticmethod
+    def _cvar(arr: np.ndarray, pct: float = 90.0) -> float:
+        """Computes exact empirical Conditional Value-at-Risk (Expected Shortfall) at percentile pct
+
+        in (0, 100) using the Rockafellar-Uryasev index-ordered sorted tail definition.
+        Immune to zero-inflated discrete distributions where VaR_pct == 0.
+        """
+        if arr.size == 0:
+            return 0.0
+        alpha = pct / 100.0
+        if alpha <= 0.0:
+            return float(np.mean(arr))
+        if alpha >= 1.0:
+            return float(np.max(arr))
+
+        sorted_arr = np.sort(arr)
+        n = sorted_arr.size
+        exact_idx = n * alpha
+        k = int(np.floor(exact_idx))
+
+        tail_mass = n * (1.0 - alpha)
+        if k >= n:
+            return float(sorted_arr[-1])
+
+        fractional_weight = (k + 1.0) - exact_idx
+        weighted_sum = fractional_weight * sorted_arr[k]
+        if k + 1 < n:
+            weighted_sum += float(np.sum(sorted_arr[k + 1 :]))
+
+        return float(weighted_sum / tail_mass)
+
+    @staticmethod
     def _sample_pert(
         min_val: float, mode_val: float, max_val: float, u_samples: np.ndarray
     ) -> np.ndarray:
@@ -414,11 +445,6 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
         sigma_sec = float(np.sqrt(np.log(1.0 + self.secondary_loss_cv ** 2)))
 
-        def _cvar(arr: np.ndarray, pct: float) -> float:
-            v = np.percentile(arr, pct)
-            tail = arr[arr >= v]
-            return float(np.mean(tail)) if tail.size > 0 else float(v)
-
         # 1. Marginal Evaluation per Finding
         for idx, f in enumerate(findings):
             tef_samples = self._sample_pert(
@@ -432,12 +458,11 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 f.audit_k_failures,
                 f.audit_n_trials,
             )
-            # Phase 1: Copula-Linked Discrete Compound Poisson / Negative Binomial Event Simulation
-            # Instead of continuous scaling (lef_samples = tef_samples * vuln_samples),
-            # we simulate actual discrete failure events across Monte Carlo trials.
+            # Doubly-Stochastic Poisson Process (Cox Model):
+            # Draw event counts independently conditional on intensity rates lambda_rates
+            # to eliminate artificial intensity-count collinearity bias (resolving Blocker 1)
             lambda_rates = tef_samples * vuln_samples
-            # Use copula uniform marginal to invert the Poisson CDF, preserving correlation
-            event_counts = stats.poisson.ppf(u_copula[:, idx], mu=lambda_rates).astype(np.int64)
+            event_counts = rng.poisson(lam=lambda_rates).astype(np.int64)
 
             rto_sampled = self._sample_pert(
                 f.rto_hours_min, f.rto_hours_mode, f.rto_hours_max, u_aux_rto[:, idx]
@@ -601,10 +626,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             t_worst_hours = float(finding_crisis_hours[worst_f_idx])
 
             t_var_90 = float(np.percentile(t_alloc_sim_sum, 90))
-            t_cvar_90 = _cvar(t_alloc_sim_sum, 90.0)
+            t_cvar_90 = self._cvar(t_alloc_sim_sum, 90.0)
             t_var_95 = float(np.percentile(t_alloc_sim_sum, 95))
             t_var_99 = float(np.percentile(t_alloc_sim_sum, 99))
-            t_cvar_99 = _cvar(t_alloc_sim_sum, 99.0)
+            t_cvar_99 = self._cvar(t_alloc_sim_sum, 99.0)
 
             cmmi_vec = np.array([findings[i].cmmi_maturity for i in t_indices], dtype=np.float64)
             weights_vec = standalone_finding_ales[t_indices]
@@ -624,10 +649,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                     standalone_ale=round(float(standalone_finding_ales[i]), 2),
                     portfolio_allocated_ale=round(float(allocated_finding_ales[i]), 2),
                     var_90=round(float(np.percentile(allocated_finding_sim_losses[:, i], 90)), 2),
-                    cvar_90=round(_cvar(allocated_finding_sim_losses[:, i], 90.0), 2),
+                    cvar_90=round(self._cvar(allocated_finding_sim_losses[:, i], 90.0), 2),
                     var_95=round(float(np.percentile(allocated_finding_sim_losses[:, i], 95)), 2),
                     var_99=round(float(np.percentile(allocated_finding_sim_losses[:, i], 99)), 2),
-                    cvar_99=round(_cvar(allocated_finding_sim_losses[:, i], 99.0), 2),
+                    cvar_99=round(self._cvar(allocated_finding_sim_losses[:, i], 99.0), 2),
                     worst_crisis_event=round(float(finding_crisis_events[i]), 2),
                     worst_crisis_rto_hours=round(float(finding_crisis_hours[i]), 2),
                     dissonance_applied=finding_dissonance_flags[i],
@@ -664,10 +689,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 total_portfolio_ale * self.inaction_horizon_years, 2
             ),
             portfolio_var_90=round(float(np.percentile(portfolio_convolved_losses, 90)), 2),
-            portfolio_cvar_90=round(_cvar(portfolio_convolved_losses, 90.0), 2),
+            portfolio_cvar_90=round(self._cvar(portfolio_convolved_losses, 90.0), 2),
             portfolio_var_95=round(float(np.percentile(portfolio_convolved_losses, 95)), 2),
             portfolio_var_99=round(float(np.percentile(portfolio_convolved_losses, 99)), 2),
-            portfolio_cvar_99=round(_cvar(portfolio_convolved_losses, 99.0), 2),
+            portfolio_cvar_99=round(self._cvar(portfolio_convolved_losses, 99.0), 2),
             diversification_ratio=(
                 round(total_portfolio_ale / total_standalone_sum, 4)
                 if total_standalone_sum > 0

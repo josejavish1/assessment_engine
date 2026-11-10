@@ -87,6 +87,14 @@ class HealthCheckAsIs(BaseModel):
         None,
         description="The calculated worst-case 90th percentile loss in the designated currency.",
     )
+    fair_cvar_score: Optional[float] = Field(
+        None,
+        description="The calculated 90th percentile Conditional Value-at-Risk (CVaR_90 / Expected Shortfall) in the designated currency.",
+    )
+    fair_cvar_99_score: Optional[float] = Field(
+        None,
+        description="The calculated 99th percentile Conditional Value-at-Risk (CVaR_99 / Expected Shortfall) in the designated currency.",
+    )
     fair_min_score: Optional[float] = Field(
         None,
         description="The calculated minimum loss in the designated currency.",
@@ -621,13 +629,25 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
 
     document_meta: BlueprintDocumentMeta
     pillars_analysis: list[PillarBlueprintDraft]
+    standalone_fair_ale: Optional[float] = Field(
+        None,
+        description="The standalone non-diversified Annualized Loss Expectancy (ALE) prior to copula diversification.",
+    )
     total_fair_ale: Optional[float] = Field(
         None,
         description="The consolidated Annualized Loss Expectancy (ALE), denominated in the target assessment currency.",
     )
     total_fair_p90: Optional[float] = Field(
         None,
-        description="The consolidated Conditional Value-at-Risk (CVaR / P90), denominated in the target assessment currency.",
+        description="The consolidated 90th percentile Value-at-Risk (VaR_90), denominated in the target assessment currency.",
+    )
+    total_fair_cvar_90: Optional[float] = Field(
+        None,
+        description="The consolidated 90th percentile Conditional Value-at-Risk (CVaR_90 / Expected Shortfall), denominated in the target assessment currency.",
+    )
+    total_fair_cvar_99: Optional[float] = Field(
+        None,
+        description="The consolidated 99th percentile Conditional Value-at-Risk (CVaR_99 / Expected Shortfall), denominated in the target assessment currency.",
     )
     total_fair_max: Optional[float] = Field(
         None,

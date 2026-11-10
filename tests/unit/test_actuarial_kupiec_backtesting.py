@@ -127,8 +127,7 @@ def test_bayesian_copula_var90_coverage_kupiec() -> None:
         exceedances=exceedances,
         total_trials=n_oos,
         nominal_p=0.10,
-        significance_level=0.01,
+        significance_level=0.05,
     )
-    # Validate that empirical exceedance is in reasonable statistical vicinity of nominal 10%
-    assert exceedances <= 200, f"Excessive exceedances ({exceedances}/{n_oos}) indicates tail collapse"
+    assert passed, f"Kupiec POF test failed at 5% significance: LR={lr:.4f}, p_val={p_val:.4f}, exceedances={exceedances}/{n_oos}"
     assert t_result.cvar_90 >= t_result.var_90, "Coherence violation: CVaR90 must be >= VaR90"

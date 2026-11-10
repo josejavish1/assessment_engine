@@ -58,13 +58,18 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
             lines.append("**Bayesian Update Rationale (Prior Update Rationale):**")
             lines.append(f"> {rationale}\n")
             
-            lines.append("### 2. Stochastic Distribution Parameters")
-            lines.append(f"- **Distribution Type:** Continuous Lognormal (Compound Collective Risk).")
-            lines.append(f"- **Baseline Metrics (Pre-Consensus):** Ordinal Frequency = {tef}/5 | Ordinal Severity = {lm}/5.")
-            lines.append(f"- **Applied Attenuation Factors (Post-Consensus):**")
-            lines.append(f"  - Frequency Multiplier (TEF): `{tef_mod}x`")
-            lines.append(f"  - Impact Multiplier (LM): `{lm_mod}x`")
-            lines.append(f"  - Regulatory Probability Multiplier (SLEF): `{slef_mod}x`\n")
+            lines.append("### 2. Bayesian & Copula Stochastic Parameters")
+            vec = finding.get("actuarial_input_vector") or {}
+            if vec:
+                lines.append(f"- **Vulnerability Posterior Mean (Beta-Binomial):** `{vec.get('mean_vuln', 0.25):.4f}`")
+                lines.append(f"- **Audit Evidence Ratio:** `{vec.get('audit_k_failures', 0)} deficiencies / {vec.get('audit_n_trials', 0)} evaluated controls`")
+                lines.append(f"- **Threat Event Frequency Mean (LEF):** `{vec.get('mean_lef', 0.10):.4f} events/year`")
+                lines.append(f"- **Single Loss Expectancy Mean (SLE):** `{vec.get('mean_sle', 0.0):,.2f} €`")
+                lines.append(f"- **Euler Sub-additive Allocated ALE:** `{vec.get('portfolio_allocated_ale', ale):,.2f} €`\n")
+            else:
+                lines.append(f"- **Distribution Type:** Discrete Compound Poisson with Lognormal Severity.")
+                lines.append(f"- **Baseline Metrics:** Ordinal Frequency = {tef}/5 | Ordinal Severity = {lm}/5.")
+                lines.append(f"- **Applied Attenuation Factors (Post-Consensus):** TEF=`{tef_mod}x`, LM=`{lm_mod}x`, SLEF=`{slef_mod}x`\n")
             
             lines.append("### 3. Certified Financial Exposure")
             lines.append(f"- **Annual Loss Exposure (ALE - Mean):** {ale:,.2f} €")

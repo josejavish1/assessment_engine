@@ -1221,6 +1221,8 @@ class TowerPayloadHydrator:
                     hc["node_id"] = finding_id
                     title = str(hc.get("capability") or f"Architectural Finding {finding_id}")
 
+                    # 1. Zero lexical leakage: explicitly initialize per-finding loop state
+                    rating_key: Optional[int] = None
                     raw_sev = str(hc.get("severity") or hc.get("impact_severity") or "").upper()
                     raw_lm = safe_float(hc.get("loss_magnitude"), locale=doc_lang)
                     raw_tef_rating = safe_float(hc.get("threat_event_frequency"), locale=doc_lang)
@@ -1302,7 +1304,7 @@ class TowerPayloadHydrator:
                         sec_mean_val = float(labor_wage * (20.0 + 30.0 * lm_scale_factor))
                     else:
                         sec_mean_val = float(
-                            derived_hourly_rate * (sec_hours_scale.get(rating_key, 1.0) if 'rating_key' in locals() else 1.5)
+                            derived_hourly_rate * (sec_hours_scale.get(rating_key, 1.5) if rating_key is not None else 1.5)
                         )
 
                     spof_flag = (
@@ -1313,7 +1315,8 @@ class TowerPayloadHydrator:
                     if spof_flag:
                         tef_mode_val = max(tef_mode_val, 0.30)
                         rto_mode_val = max(rto_mode_val, 4.50)
-                        sec_mean_val = max(sec_mean_val, derived_hourly_rate * 2.65)
+                        if t_arch == LossArchetypeType.AVAILABILITY_OUTAGE:
+                            sec_mean_val = max(sec_mean_val, derived_hourly_rate * 2.65)
 
                     explicit_rho = safe_float(hc.get("shared_dependence_factor"), locale=doc_lang)
                     rho_val = (
@@ -1408,8 +1411,10 @@ class TowerPayloadHydrator:
                 "total_secondary_ale": portfolio_summary.total_secondary_ale,
                 "three_year_cost_of_inaction": portfolio_summary.three_year_cost_of_inaction,
                 "portfolio_var_90": portfolio_summary.portfolio_var_90,
+                "portfolio_cvar_90": portfolio_summary.portfolio_cvar_90,
                 "portfolio_var_95": portfolio_summary.portfolio_var_95,
                 "portfolio_var_99": portfolio_summary.portfolio_var_99,
+                "portfolio_cvar_99": portfolio_summary.portfolio_cvar_99,
                 "diversification_ratio": portfolio_summary.diversification_ratio,
                 "total_standalone_sum": portfolio_summary.total_standalone_sum,
             }
@@ -1451,6 +1456,22 @@ class TowerPayloadHydrator:
                                 hc["worst_crisis_event"] = f_res.worst_crisis_event
                                 hc["worst_crisis_rto_hours"] = f_res.worst_crisis_rto_hours
                                 hc["dissonance_applied"] = f_res.dissonance_applied
+                                # Attach complete empirical parameter provenance vector (Blocker 7)
+                                hc["actuarial_input_vector"] = {
+                                    "finding_id": f_id,
+                                    "tower_id": code,
+                                    "mean_vuln": f_res.mean_vuln,
+                                    "mean_lef": f_res.mean_lef,
+                                    "mean_sle": f_res.mean_sle,
+                                    "standalone_ale": f_res.standalone_ale,
+                                    "portfolio_allocated_ale": f_res.portfolio_allocated_ale,
+                                    "var_90": f_res.var_90,
+                                    "cvar_90": f_res.cvar_90,
+                                    "var_99": f_res.var_99,
+                                    "cvar_99": f_res.cvar_99,
+                                    "audit_k_failures": hc.get("audit_k_failures", 0),
+                                    "audit_n_trials": hc.get("audit_n_trials", 0),
+                                }
 
                     if persist_to_disk:
                         code_lower = code.lower()
@@ -1459,5 +1480,15 @@ class TowerPayloadHydrator:
                         if local_payload_path.exists():
                             with open(local_payload_path, "w", encoding="utf-8") as pf:
                                 json.dump(payload, pf, indent=2, ensure_ascii=False)
+
+                    # Generate formal Whitebox Audit Dossier post-Copula execution (Blocker 4)
+                    try:
+                        from assessment_engine.application.tools.actuarial_ledger_generator import (
+                            generate_actuarial_ledger,
+                        )
+
+                        generate_actuarial_ledger(code, payload)
+                    except Exception as ledger_err:
+                        logger.warning("Could not flush actuarial ledger for tower %s: %s", code, ledger_err)
 
         return hydrated_map

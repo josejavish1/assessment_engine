@@ -1236,11 +1236,6 @@ async def run_tower_blueprint(
 
         engine = SovereignPolicyEngine(graph)
         blueprint_payload = engine.compile(blueprint_payload)
-        from assessment_engine.application.tools.actuarial_ledger_generator import (
-            generate_actuarial_ledger,
-        )
-
-        generate_actuarial_ledger(tower_id, blueprint_payload)
     except Exception as policy_err:
         raise RuntimeError(
             f"Critical failure in SovereignPolicyEngine: {policy_err}"

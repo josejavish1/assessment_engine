@@ -79,6 +79,43 @@ class ActuarialTaxonomyRegistry(BaseModel):
         if normalized_key in self.mappings:
             return self.mappings[normalized_key]
 
+        # Dynamic / custom enterprise domain fallback (e.g. D_FAC, D_OT, D_AI, D_SEC, EDGE_01)
+        # Sourced from standard enterprise infrastructure baseline (RFC 088 / SR 11-7 Section II)
+        dynamic_defaults: Dict[str, str] = {
+            "D_FAC": "T1",
+            "D_OT": "T1",
+            "D_AI": "T4",
+            "D_SEC": "T6",
+            "D_FIN": "T8",
+            "D_EUC": "T9",
+        }
+        if normalized_key in dynamic_defaults and dynamic_defaults[normalized_key] in self.mappings:
+            target_map = self.mappings[dynamic_defaults[normalized_key]]
+            return TowerActuarialMapping(
+                tower_id=cleaned,
+                domain_name=f"Dynamic Domain ({cleaned})",
+                primary_archetype=target_map.primary_archetype,
+                secondary_archetype=target_map.secondary_archetype,
+                default_cmmi_benchmark=target_map.default_cmmi_benchmark,
+                vector_alpha_weight=target_map.vector_alpha_weight,
+                vector_beta_weight=target_map.vector_beta_weight,
+                vector_gamma_weight=target_map.vector_gamma_weight,
+            )
+
+        # Generic enterprise fallback for arbitrary dynamic towers
+        t1_map = self.mappings.get("T1")
+        if t1_map:
+            return TowerActuarialMapping(
+                tower_id=cleaned,
+                domain_name=f"Enterprise Operational Tower ({cleaned})",
+                primary_archetype=LossArchetypeType.AVAILABILITY_OUTAGE,
+                secondary_archetype=LossArchetypeType.PRODUCTIVITY_TOIL,
+                default_cmmi_benchmark=2.5,
+                vector_alpha_weight=t1_map.vector_alpha_weight,
+                vector_beta_weight=t1_map.vector_beta_weight,
+                vector_gamma_weight=t1_map.vector_gamma_weight,
+            )
+
         raise KeyError(
             f"Forensic Taxonomy Error: Tower ID '{raw_tower_id}' (normalized: '{normalized_key}') "
             f"is not mapped in ActuarialTaxonomyRegistry. Available towers: {list(self.mappings.keys())}"
