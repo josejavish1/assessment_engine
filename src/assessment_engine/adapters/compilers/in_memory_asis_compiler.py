@@ -1191,6 +1191,86 @@ _PLACEHOLDER_BOILERPLATE_RE: Final[re.Pattern[str]] = re.compile(
     re.IGNORECASE,
 )
 
+_ORPHAN_PREPOSITION_GLITCH_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(condicionad[oa]s?\s+por|afectad[oa]s?\s+por|limitad[oa]s?\s+por|caracterizad[oa]s?\s+por|impacted\s+by|constrained\s+by)\s+(en\s+|in\s+|at\s+)",
+    re.IGNORECASE,
+)
+
+_UNTRANSLATED_KPI_TOKEN_LEAK_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:\)\s*&\s*[A-Za-z0-9\-\s]+(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b|"
+    r"\b(?:en|de|para|sobre|con)\s+[A-Z][A-Za-z0-9\-\/]+(?:\s+[A-Z&][A-Za-z0-9\-\/]+){2,})",
+)
+
+_TOTAL_ABSENCE_OF_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:carece\s+por\s+completo\s+de\s+herramientas|sin\s+herramientas\s+de\s+(?:telemetr[íi]a|monitorizaci[óo]n|medici[óo]n|control|gesti[óo]n)|"
+    r"ausencia\s+total\s+de\s+(?:herramientas|telemetr[íi]a|visibilidad|control)|no\s+(?:existen|cuenta\s+con|dispone\s+de)\s+herramientas|"
+    r"zero\s+(?:telemetry|monitoring|visibility)\s+tools|completely\s+lacks\s+(?:tools|telemetry|visibility)|"
+    r"inexistencia\s+de\s+herramientas\s+de\s+(?:medici[óo]n|telemetr[íi]a|experiencia))\b",
+    re.IGNORECASE,
+)
+
+_SYNC_REPLICATION_CLAIM_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(replicaci[óo]n\s+s[íi]ncrona\s+ordinaria|ordinary\s+synchronous\s+replication|replicaci[óo]n\s+s[íi]ncrona\s+activa)\b",
+    re.IGNORECASE,
+)
+
+_ASYNC_WITHOUT_METROCLUSTER_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(sin\s+replicaci[óo]n\s+s[íi]ncrona|r[ée]plica\s+as[íi]ncrona|asynchronous\s+replication|without\s+synchronous\s+replication)\b",
+    re.IGNORECASE,
+)
+
+
+def _scrub_template_glitches_and_token_leaks(text: str, doc_lang: str) -> str:
+    """Repair copy-paste template glitches, orphan prepositions, and raw framework KPI token leaks."""
+    if not text:
+        return ""
+    cleaned = str(text).strip()
+    # Fix broken copy-paste prepositions like "condicionada por en la mayoría" -> "condicionada en la mayoría"
+    cleaned = _ORPHAN_PREPOSITION_GLITCH_RE.sub(r"\1 ", cleaned)
+    # Strip trailing English KPI placeholder suffixes like ") & Noisy-Neighbor Mitigation"
+    cleaned = re.sub(
+        r"\)\s*&\s*[A-Za-z0-9\-\s]+(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b",
+        "",
+        cleaned,
+    )
+    # Collapse double spaces or stray punctuation created during scrubbing
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
+    return cleaned
+
+
+def _reconcile_contradictory_replication_claims(
+    paragraphs: list[str], full_context_text: str, doc_lang: str
+) -> list[str]:
+    """Ensure architectural consistency when asynchronous replication is established in primary evidence."""
+    if not paragraphs:
+        return paragraphs
+    if _ASYNC_WITHOUT_METROCLUSTER_RE.search(full_context_text):
+        norm_lang = (doc_lang or "es").strip().lower()
+        replacement = (
+            "replicación asíncrona programada (sin conmutación síncrona activa)"
+            if norm_lang.startswith("es")
+            else "scheduled asynchronous replication (without active synchronous failover)"
+        )
+        return [_SYNC_REPLICATION_CLAIM_RE.sub(replacement, p) for p in paragraphs]
+    return paragraphs
+
+
+def _calibrate_empirical_maturity_score(
+    raw_score: float, pillar: dict[str, Any], clean_narrative: str, clean_breach: str
+) -> float:
+    """Enforce CMMI & FinOps empirical score ceilings when evidence confirms total absence of tooling."""
+    combined = " ".join(
+        [
+            str(pillar.get("asis_architecture_description") or ""),
+            str(pillar.get("literal_evidence") or ""),
+            clean_narrative,
+            clean_breach,
+        ]
+    )
+    if _TOTAL_ABSENCE_OF_TELEMETRY_RE.search(combined) and raw_score > 1.50:
+        return min(raw_score, 1.35)
+    return raw_score
+
 
 def _is_placeholder_boilerplate(text: str) -> bool:
     """Detect synthetic single-sentence template placeholders that lack empirical telemetry."""
@@ -1284,7 +1364,7 @@ def _sanitize_architectural_narrative(
 
     cleaned_paras: list[str] = []
     for para in raw_paras:
-        p_clean = para.strip()
+        p_clean = _scrub_template_glitches_and_token_leaks(para.strip(), doc_lang)
         words = p_clean.split(None, 1)
         if words:
             first_w = f"{words[0].lower().rstrip(' ,;:.')} "
@@ -1303,7 +1383,10 @@ def _sanitize_architectural_narrative(
         if _estimate_lexical_units(p_clean) >= 4:
             cleaned_paras.append(p_clean)
 
-    return cleaned_paras if cleaned_paras else [desc]
+    full_ctx = f"{desc} {fallback_pos} {fallback_neg} {pillar.get('literal_evidence', '')}"
+    cleaned_paras = _reconcile_contradictory_replication_claims(cleaned_paras, full_ctx, doc_lang)
+
+    return cleaned_paras if cleaned_paras else [_scrub_template_glitches_and_token_leaks(desc, doc_lang)]
 
 
 def _extract_safe_score(val: Any, default: float = DEFAULT_PILLAR_ASSESSMENT_SCORE) -> float:
@@ -1433,13 +1516,29 @@ def derive_in_memory_maturity_matrix(
         if sanitized_findings:
             top_f = sanitized_findings[0]
             f_text = (top_f.get("finding") or top_f.get("risk_observed") or "").strip()
-            clean_f = _sanitize_breach_clause(f_text, fallback_neg, doc_lang)
+            clean_f = _scrub_template_glitches_and_token_leaks(
+                _sanitize_breach_clause(f_text, fallback_neg, doc_lang), doc_lang
+            )
         else:
-            clean_f = fallback_neg
+            clean_f = _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
+
+        clean_state = _scrub_template_glitches_and_token_leaks(clean_state, doc_lang)
+        exact_score = _calibrate_empirical_maturity_score(exact_score, pillar, clean_state, clean_f)
+        band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
+        band_label = band_info.get("label", "")
+
+        if exact_score < LOW_MATURITY_CALIBRATION_THRESHOLD:
+            lbl_pos = t("calib_label_observed_state", locale=doc_lang)
+            lbl_neg = t("calib_label_critical_gap", locale=doc_lang)
+        else:
+            lbl_pos = t("calib_label_operational_strength", locale=doc_lang)
+            lbl_neg = t("calib_label_operational_gap", locale=doc_lang)
 
         if raw_justification:
-            raw_clean = _sanitize_strength_clause(raw_justification, "", exact_score, doc_lang)
-            justification = raw_clean or raw_justification
+            raw_clean = _scrub_template_glitches_and_token_leaks(
+                _sanitize_strength_clause(raw_justification, "", exact_score, doc_lang), doc_lang
+            )
+            justification = raw_clean or _scrub_template_glitches_and_token_leaks(raw_justification, doc_lang)
         elif clean_state:
             justification = f"• **{lbl_pos}:** {clean_state}\n\n• **{lbl_neg}:** {clean_f.rstrip('.')}."
         else:
