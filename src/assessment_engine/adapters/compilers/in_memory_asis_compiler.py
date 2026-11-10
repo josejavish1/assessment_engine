@@ -178,6 +178,22 @@ _CANONICAL_ACRONYM_MAP: Final[Mapping[str, str]] = MappingProxyType({
     "SAAS": "SaaS",
     "PAAS": "PaaS",
     "IAAS": "IaaS",
+    "DAAS": "DaaS",
+    "VDI": "VDI",
+    "DEX": "DEX",
+    "EUC": "EUC",
+    "MDM": "MDM",
+    "MAM": "MAM",
+    "UEM": "UEM",
+    "GPO": "GPO",
+    "WSUS": "WSUS",
+    "SCCM": "SCCM",
+    "MECM": "MECM",
+    "OEM": "OEM",
+    "TPM": "TPM",
+    "UEFI": "UEFI",
+    "BIOS": "BIOS",
+    "PXE": "PXE",
     "ESXI": "ESXi",
     "VCPU": "vCPU",
     "GRPC": "gRPC",
@@ -199,6 +215,23 @@ _CANONICAL_ACRONYM_MAP: Final[Mapping[str, str]] = MappingProxyType({
     "SSL": "SSL",
     "IAM": "IAM",
     "PAM": "PAM",
+    "MFA": "MFA",
+    "SSO": "SSO",
+    "RBAC": "RBAC",
+    "ABAC": "ABAC",
+    "SAML": "SAML",
+    "OIDC": "OIDC",
+    "LDAP": "LDAP",
+    "LDAPS": "LDAPS",
+    "AD": "AD",
+    "ENTRA": "Entra",
+    "CIS": "CIS",
+    "NIST": "NIST",
+    "ISO": "ISO",
+    "IEC": "IEC",
+    "ISA": "ISA",
+    "CMMI": "CMMI",
+    "OWASP": "OWASP",
     "SOC": "SOC",
     "SIEM": "SIEM",
     "SOAR": "SOAR",
@@ -206,12 +239,24 @@ _CANONICAL_ACRONYM_MAP: Final[Mapping[str, str]] = MappingProxyType({
     "XDR": "XDR",
     "NDR": "NDR",
     "WAF": "WAF",
+    "ZTNA": "ZTNA",
+    "SASE": "SASE",
+    "NAC": "NAC",
+    "DLP": "DLP",
+    "CASB": "CASB",
+    "PKI": "PKI",
+    "HSM": "HSM",
+    "KMS": "KMS",
+    "WORM": "WORM",
     "LAN": "LAN",
     "WAN": "WAN",
+    "WLAN": "WLAN",
+    "WIFI": "Wi-Fi",
     "MPLS": "MPLS",
     "BGP": "BGP",
     "OSPF": "OSPF",
     "VLAN": "VLAN",
+    "VXLAN": "VXLAN",
     "VPN": "VPN",
     "SAN": "SAN",
     "NAS": "NAS",
@@ -224,6 +269,10 @@ _CANONICAL_ACRONYM_MAP: Final[Mapping[str, str]] = MappingProxyType({
     "SMTP": "SMTP",
     "IMAP": "IMAP",
     "POP3": "POP3",
+    "SSH": "SSH",
+    "RDP": "RDP",
+    "SMB": "SMB",
+    "NFS": "NFS",
     # Industrial OT & Manufacturing
     "SCADA": "SCADA",
     "PLC": "PLC",
@@ -364,6 +413,14 @@ def _decapitalize_single_subtoken(
         or bool(_ROMAN_NUMERAL_RE.fullmatch(stripped))
     ):
         return subtoken
+
+    # Repair corrupted camelCase acronym prefixes (e.g., "pAM" -> "PAM", "cIS" -> "CIS", "mFA" -> "MFA")
+    if len(stripped) >= 2 and stripped[0].islower() and stripped[1:].isupper():
+        upper_cand = stripped.upper()
+        if upper_cand in _CANONICAL_ACRONYM_MAP:
+            return f"{leading_punct}{_CANONICAL_ACRONYM_MAP[upper_cand]}{trailing_punct}"
+        if len(stripped) <= 5:
+            return f"{leading_punct}{upper_cand}{trailing_punct}"
 
     # Preserve internal camelCase / PascalCase with internal uppercase (e.g., "FortiGate", "OpenShift", "SaaS")
     if any(c.isupper() for c in stripped[1:]) and any(c.islower() for c in stripped):
@@ -1127,9 +1184,90 @@ def _chunk_monolithic_paragraph(text: str, doc_lang: str) -> list[str]:
     return [joiner.join(sentences[:half]), joiner.join(sentences[half:])]
 
 
-def _sanitize_architectural_narrative(pillar: dict[str, Any], doc_lang: str) -> list[str]:
+_PLACEHOLDER_BOILERPLATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Arquitectura y procesos operativos estructurados conforme a los est[áa]ndares de|"
+    r"Architecture and operational processes structured in accordance with|"
+    r"Arquitetura e processos operacionais estruturados de acordo com)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_placeholder_boilerplate(text: str) -> bool:
+    """Detect synthetic single-sentence template placeholders that lack empirical telemetry."""
+    cleaned = str(text or "").strip()
+    if not cleaned:
+        return True
+    if _PLACEHOLDER_BOILERPLATE_RE.search(cleaned) and _estimate_lexical_units(cleaned) < 28:
+        return True
+    return False
+
+
+def _synthesize_empirical_narrative_from_findings(
+    pillar: dict[str, Any],
+    canonical_pillar_id: str,
+    fallback_pos: str,
+    fallback_neg: str,
+    doc_lang: str,
+) -> str:
+    """Synthesize a substantive, evidence-grounded architectural narrative when raw description is a placeholder or truncated."""
+    findings = pillar.get("health_check_asis") or []
+    finding_clauses: list[str] = []
+    impact_clauses: list[str] = []
+
+    if isinstance(findings, list):
+        for hc in findings[:3]:
+            if not isinstance(hc, dict):
+                continue
+            f_txt = str(hc.get("finding") or hc.get("description") or hc.get("risk_observed") or "").strip().rstrip(".")
+            if f_txt and not _is_placeholder_boilerplate(f_txt) and len(f_txt.split()) >= 5:
+                finding_clauses.append(f_txt)
+            imp_txt = str(hc.get("business_risk") or hc.get("operational_impact") or hc.get("primary_impact") or "").strip().rstrip(".")
+            if imp_txt and not _is_severity_enum_token(imp_txt, doc_lang) and len(imp_txt.split()) >= 5:
+                impact_clauses.append(imp_txt)
+
+    lit_ev = str(pillar.get("literal_evidence") or "").strip().rstrip(".")
+    sota_benchmark = _build_sota_benchmark_paragraph(canonical_pillar_id, doc_lang)
+    nexus_narrative = _build_cross_domain_nexus(canonical_pillar_id, doc_lang)
+
+    parts: list[str] = []
+    if finding_clauses:
+        parts.append(". ".join(finding_clauses) + ".")
+    elif fallback_neg:
+        parts.append(fallback_neg.rstrip(".") + ".")
+
+    if lit_ev and len(lit_ev.split()) >= 6 and lit_ev not in " ".join(parts):
+        parts.append(lit_ev + ".")
+
+    if impact_clauses:
+        parts.append(". ".join(impact_clauses[:2]) + ".")
+    elif fallback_pos:
+        parts.append(fallback_pos.rstrip(".") + ".")
+
+    if sota_benchmark:
+        parts.append(sota_benchmark.rstrip(".") + ".")
+    elif nexus_narrative:
+        parts.append(nexus_narrative.rstrip(".") + ".")
+
+    return " ".join(p for p in parts if p).strip()
+
+
+def _sanitize_architectural_narrative(
+    pillar: dict[str, Any],
+    doc_lang: str,
+    *,
+    canonical_pillar_id: str = "",
+    fallback_pos: str = "",
+    fallback_neg: str = "",
+) -> list[str]:
     """Extracts the authentic architectural narrative, dynamically formatting paragraphs to eliminate cognitive fatigue."""
     desc = str(pillar.get("asis_architecture_description") or "").strip()
+    if _is_placeholder_boilerplate(desc) or _estimate_lexical_units(desc) < 22:
+        synthesized = _synthesize_empirical_narrative_from_findings(
+            pillar, canonical_pillar_id, fallback_pos, fallback_neg, doc_lang
+        )
+        if synthesized:
+            desc = synthesized if _is_placeholder_boilerplate(desc) else f"{desc.rstrip('.')}." + " " + synthesized
+
     if not desc:
         return []
 
@@ -1260,6 +1398,8 @@ def derive_in_memory_maturity_matrix(
 
         # 1. Resolve and sanitize Observed State / Strength
         asis_desc = (pillar.get("asis_architecture_description") or "").strip()
+        if _is_placeholder_boilerplate(asis_desc):
+            asis_desc = ""
         clean_state = _sanitize_strength_clause(asis_desc, fallback_pos, exact_score, doc_lang)
 
         raw_justification = str(pillar.get("justification") or "").strip()
@@ -1312,7 +1452,18 @@ def derive_in_memory_maturity_matrix(
         dec_band_info = resolve_maturity_band(declared_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         dec_band_label = dec_band_info.get("label", "")
 
-        arch_paras = _sanitize_architectural_narrative(pillar, doc_lang)
+        pillar_for_narrative = dict(pillar)
+        pillar_for_narrative["health_check_asis"] = sanitized_findings
+        if quarantined_count > 0 and clean_state == fallback_pos:
+            pillar_for_narrative["asis_architecture_description"] = ""
+
+        arch_paras = _sanitize_architectural_narrative(
+            pillar_for_narrative,
+            doc_lang,
+            canonical_pillar_id=canonical_p_id,
+            fallback_pos=clean_state,
+            fallback_neg=clean_f,
+        )
         op_reality = arch_paras[0] if arch_paras else ""
 
         # TRI-MODAL ENROUTER LOGIC (Argon Persona Mandate)
