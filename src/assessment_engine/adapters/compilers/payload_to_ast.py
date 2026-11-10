@@ -408,31 +408,98 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling)|"
     r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning)|"
-    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal)|"
-    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry)|"
-    r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
-    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n)|"
-    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex)|"
-    r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n)|"
+    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal|monitoring|tracing|apm)|"
+    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry|observability)|"
+    r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|observabilidad)|"
+    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n|correlaci[óo]n\s+de\s+eventos)|"
+    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex|trazabilidad)|"
+    r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n|observabilidad)|"
     r"ausencia\s+de\s+(?:un\s+ciclo\s+formal\s+de\s+renovaci[óo]n|herramientas\s+dex|telemetr[íi]a|control\s+de\s+obsolescencia)|"
     r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex|ciclo\s+formal)|"
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
     r"artisanal\s+preparation|static\s+images|"
     r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones|"
-    r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual)\b",
+    r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual|ca[íi]da\s+por\s+llenado\s+de\s+disco)\b",
     re.IGNORECASE,
 )
 
 _CONTRADICTORY_PRAISE_RE: Final[re.Pattern[str]] = re.compile(
     r"(?:exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal|"
     r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?|"
-    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+boundary\s+of\s+level\s+3|"
-    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+3|"
-    r"al\s+l[íi]mite\s+del\s+nivel\s+3|"
-    r"at\s+the\s+limit\s+of\s+level\s+3|"
+    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+(?:boundary|limit)\s+of\s+level\s+[234]|"
+    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
+    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite)|al\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
+    r"at\s+the\s+(?:boundary|limit)\s+of\s+level\s+[234]|"
     r"plataforma\s+legacy\s*/\s*mainframe\s*(?:&|y)\s*operaci[óo]n\s+core)",
     re.IGNORECASE,
 )
+
+
+def _resolve_cmmi_maturity_label(score: float, locale: str = "es") -> str:
+    """Resolve deterministic CMMI maturity level label strictly aligned with rubric boundaries:
+    1.00 - 1.59: Level 1 (Initial)
+    1.60 - 2.59: Level 2 (Managed / Repeatable)
+    2.60 - 3.59: Level 3 (Defined)
+    3.60 - 4.59: Level 4 (Quantitatively Managed)
+    4.60 - 5.00: Level 5 (Optimizing)
+    """
+    is_es = str(locale).lower().startswith("es")
+    val = round(float(score), 2)
+    if val < 1.60:
+        return "Nivel 1 - Inicial" if is_es else "Level 1 - Initial"
+    if val < 2.60:
+        return "Nivel 2 - Gestionado" if is_es else "Level 2 - Managed"
+    if val < 3.60:
+        return "Nivel 3 - Definido" if is_es else "Level 3 - Defined"
+    if val < 4.60:
+        return "Nivel 4 - Gestionado Cuantitativamente" if is_es else "Level 4 - Quantitatively Managed"
+    return "Nivel 5 - Optimizado" if is_es else "Level 5 - Optimizing"
+
+
+def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str = "es") -> str:
+    """Detect inline score-to-CMMI-level mismatches in prose (e.g. '1.78 (Nivel 1 - Initial)') and correct them."""
+    if not text:
+        return text
+    is_es = str(locale).lower().startswith("es")
+
+    def _replace_score_level(match: re.Match[str]) -> str:
+        prefix = match.group(1)
+        score_raw = match.group(2)
+        suffix = match.group(4)
+        score_val = _safe_float(score_raw.replace(",", "."), default=0.0)
+        if score_val < 1.0 or score_val > 5.0:
+            return match.group(0)
+        correct_label = _resolve_cmmi_maturity_label(score_val, locale=locale)
+        return f"{prefix}{score_raw}{suffix}{correct_label}"
+
+    pattern = re.compile(
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5(?:[.,]0+)?\s*)?\(\s*)(Nivel\s+[1-5]\s*[-–—:]\s*[^)]+|Level\s+[1-5]\s*[-–—:]\s*[^)]+)",
+        re.IGNORECASE,
+    )
+    text = pattern.sub(_replace_score_level, text)
+
+    # Also sanitize inverted 'Nivel 1 (Inicial)' or 'Nivel 1 - Initial' preceded by a score within 25 chars
+    def _replace_nearby_score_level(match: re.Match[str]) -> str:
+        score_raw = match.group(1)
+        mid = match.group(2)
+        score_val = _safe_float(score_raw.replace(",", "."), default=0.0)
+        if score_val < 1.0 or score_val > 5.0:
+            return match.group(0)
+        correct_label = _resolve_cmmi_maturity_label(score_val, locale=locale)
+        return f"{score_raw}{mid}{correct_label}"
+
+    nearby_pattern = re.compile(
+        r"\b(\d[.,]\d{2})(\s*(?:puntos|/\s*5[.,]0\b|sobre\s+5[.,]0)?\s*(?:,\s*|\s+situ[áa]ndose\s+en\s+|\s+correspondiente\s+a\s+|\s+clasificado\s+como\s+|\s*[-–—]\s*))"
+        r"(?:Nivel\s+[1-5]\s*(?:[-–—:]\s*[A-Za-zÁÉÍÓÚáéíóúñÑ]+|\([A-Za-zÁÉÍÓÚáéíóúñÑ]+\))|Level\s+[1-5]\s*(?:[-–—:]\s*[A-Za-z]+|\([A-Za-z]+\)))",
+        re.IGNORECASE,
+    )
+    text = nearby_pattern.sub(_replace_nearby_score_level, text)
+
+    if is_es:
+        text = re.sub(r"\bNivel\s+1\s*[-–—]\s*Initial\b", "Nivel 1 - Inicial", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNivel\s+2\s*[-–—]\s*(?:Managed|Repeatable)\b", "Nivel 2 - Gestionado", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNivel\s+3\s*[-–—]\s*Defined\b", "Nivel 3 - Definido", text, flags=re.IGNORECASE)
+    return text
 
 
 def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") -> str:
@@ -440,6 +507,7 @@ def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") 
     if not text:
         return text
     is_es = str(locale).lower().startswith("es")
+    text = _reconcile_cmmi_level_mentions_in_prose(text, locale=locale)
     if is_es:
         text = re.sub(
             r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?",
@@ -448,14 +516,27 @@ def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") 
             flags=re.IGNORECASE,
         )
         text = re.sub(
-            r",?\s*situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+3",
+            r",?\s*situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+[234]",
             "",
             text,
             flags=re.IGNORECASE,
         )
         text = re.sub(
-            r",?\s*al\s+l[íi]mite\s+del\s+nivel\s+3",
+            r",?\s*(?:en\s+(?:la\s+frontera|el\s+l[íi]mite)|al\s+l[íi]mite)\s+del\s+nivel\s+[234]",
             "",
+            text,
+            flags=re.IGNORECASE,
+        )
+        # Reconcile "Idle Compute / Over-provisioning" vs "Extreme Rightsizing / Resource Starvation" contradiction
+        text = re.sub(
+            r"C[óo]mputo\s+Ocioso\s+e\s+Infraestructura\s+Zombi\s*\(\s*sobre-?aprovisionamiento\s*\)",
+            "Desequilibrio de Capacidad, Deuda de Licenciamiento y Fricción FinOps",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"c[óo]mputo\s+ocioso\s+e\s+infraestructura\s+zombi\s*\(\s*sobre-?aprovisionamiento\s*\)",
+            "desequilibrio de asignación de recursos y fricción de capacidad",
             text,
             flags=re.IGNORECASE,
         )
@@ -4150,11 +4231,19 @@ class PayloadToASTBridge:
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
+                # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets .")
+                if not str(doc_locale).lower().startswith("en"):
+                    cleaned = re.sub(
+                        r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){2,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,5}(?=\s*[.,;:])",
+                        lambda m: f"{m.group(1)} {fallback_label}",
+                        cleaned,
+                    )
+                    cleaned = re.sub(r"\s+([.,;:])", r"\1", cleaned)
 
-            # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
+            # Prevent consecutive or duplicate identical narrative paragraphs or benchmark citations
             if not cleaned.startswith("#"):
                 norm_line = re.sub(r"\s+", " ", cleaned.lower()).strip(" .;:,-*")
-                if len(norm_line) > 45:
+                if len(norm_line) > 35:
                     if norm_line in seen_paragraphs:
                         continue
                     seen_paragraphs.add(norm_line)
