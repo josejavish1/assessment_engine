@@ -140,6 +140,15 @@ _ARCHETYPE_KEYWORD_RULES: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
             "manufacturing",
             "plant",
             "telecontrol",
+            "weighbridge",
+            "bascula",
+            "báscula",
+            "básculas",
+            "expedicion",
+            "expedición",
+            "dispatch",
+            "isa-95",
+            "iec 62443",
         ),
     ),
     (
@@ -396,6 +405,51 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 )
 
 
+_CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling)|"
+    r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning)|"
+    r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
+    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real)|"
+    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
+    r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex)|"
+    r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
+    r"artisanal\s+preparation|static\s+images)\b",
+    re.IGNORECASE,
+)
+
+
+def _calibrate_pillar_score_from_evidence(pillar_dict: Mapping[str, Any], raw_score: float) -> float:
+    """Enforce epistemic consistency between qualitative pillar evidence and numerical maturity score.
+
+    If a pillar sits at or near the default unassessed baseline (e.g., 2.50) or higher,
+    but its explicit calibrated score or diagnostic prose testifies to a complete absence
+    of foundational telemetry/tooling (Level 1 Initial), cap the score to prevent
+    executive summary praise of non-existent capabilities.
+    """
+    calibrated_override = pillar_dict.get("calibrated_score") or pillar_dict.get("audited_score")
+    if calibrated_override is not None:
+        cal_val = _safe_float(calibrated_override, default=raw_score)
+        if 1.0 <= cal_val < raw_score:
+            return cal_val
+
+    evidence_corpus = " ".join(
+        str(pillar_dict.get(k) or "")
+        for k in ("finding", "findings", "justification", "description", "narrative", "gap_analysis", "status")
+    )
+    if raw_score >= 2.0 and _CRITICAL_DEFICIT_TELEMETRY_RE.search(evidence_corpus):
+        # If prose explicitly states zero telemetry/tooling, cap maturity at 1.25 (Initial)
+        if re.search(
+            r"\b(?:zero\s+(?:dex|telemetry|tooling)|nula\s+telemetr[íi]a|sin\s+telemetr[íi]a|"
+            r"carece\s+de\s+telemetr[íi]a|inexistencia\s+de\s+telemetr[íi]a)\b",
+            evidence_corpus,
+            re.IGNORECASE,
+        ):
+            return min(raw_score, 1.00)
+        return min(raw_score, 1.50)
+
+    return raw_score
+
+
 def extract_dimension_boundary_profile(
     pillars_analysis: List[Dict[str, Any]],
     current_maturity_score: float,
@@ -412,7 +466,9 @@ def extract_dimension_boundary_profile(
         raw_score = p.get("score") if p.get("score") is not None else p.get("maturity_score")
         if name and raw_score is not None:
             try:
-                valid_dims.append((name, float(raw_score)))
+                eff_score = _calibrate_pillar_score_from_evidence(p, float(raw_score))
+                p["score"] = eff_score
+                valid_dims.append((name, eff_score))
             except (ValueError, TypeError):
                 continue
 
