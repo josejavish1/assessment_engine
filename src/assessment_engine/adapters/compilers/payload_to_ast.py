@@ -421,13 +421,20 @@ _ENGLISH_KPI_MARKER_RE: Final[re.Pattern[str]] = re.compile(
     r"Deployment|Pipeline|Container|Kubernetes|Virtualization|Hypervisor|Storage|"
     r"Network|Firewall|Routing|Switching|Wireless|Bandwidth|Latency|Throughput|"
     r"Redundancy|Failover|Load\s+Balancing|Power|Cooling|Thermal|Environmental|"
-    r"Physical\s+Access|Surveillance|Cabling|Rack|UPS|Generator|Substation)\b",
+    r"Physical\s+Access|Surveillance|Cabling|Rack|UPS|Generator|Substation|"
+    r"Enclosure|Benchmark|Alignment|Target|Strategic|Cultural|FinOps|Experience|"
+    r"Workspace|Workplace|Collaboration|Productivity|Directory|Identity|Federation|"
+    r"Single\s+Sign-On|Zero\s+Trust|Microsegmentation|Bastion|Vault|Rotation)\b",
     re.IGNORECASE,
+)
+
+_CAMELCASE_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b([a-z])([A-Z]{2,}[a-z0-9]*|[A-Z][a-z0-9]+)\b"
 )
 
 _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
     r"\[\s*(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
-    r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio)\s*\]",
+    r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name)\s*\]",
     re.IGNORECASE,
 )
 
@@ -437,8 +444,9 @@ _LOCALIZED_KPI_CLAUSE_RE: Final[re.Pattern[str]] = re.compile(
     r"riesgo(?:s)?(?:\s+\w+){0,4}\s+en|exposición(?:\s+\w+){0,4}\s+en|"
     r"fallos(?:\s+\w+){0,3}\s+en|control(?:es)?\s+de|ámbito\s+de|dominio\s+de|"
     r"factores\s+clave\s+como|aspectos\s+críticos\s+como|métricas\s+como|"
-    r"capacidades\s+de|estándares\s+de|procesos\s+de|arquitectura\s+de)\s+)"
-    r"([A-Za-z][A-Za-z0-9\s,&/\-()]{8,}?)"
+    r"capacidades\s+de|estándares\s+de|procesos\s+de|arquitectura\s+de|"
+    r"evaluando\s+dimensiones\s+como|analizando\s+críticamente\s+factores\s+clave\s+como)\s+)"
+    r"([A-Za-z][A-Za-z0-9\s,&/\-()]{6,}?)"
     r"(?=[.;:)\n]|$)"
 )
 
@@ -3559,6 +3567,28 @@ class PayloadToASTBridge:
         if scope_note:
             actuarial_box_text += f"\n• *{scope_note}*"
 
+        # Deduplicate repeated sentence fragments caused by upstream template concatenation
+        def _dedup_clauses(raw_txt: str) -> str:
+            if not raw_txt:
+                return raw_txt
+            parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+|\n+", raw_txt) if p.strip()]
+            seen: set[str] = set()
+            unique_parts: list[str] = []
+            for p in parts:
+                norm_p = re.sub(r"\s+", " ", p.lower()).strip(" .;:,-")
+                if norm_p and norm_p not in seen:
+                    seen.add(norm_p)
+                    unique_parts.append(p)
+            return " ".join(unique_parts) if unique_parts else raw_txt
+
+        vuln_txt = _dedup_clauses(vuln_txt)
+        impact_txt = _dedup_clauses(impact_txt)
+
+        # Normalize corrupted camelCase prefixes (e.g. 'pAM Enclosure' -> 'PAM Enclosure', 'iT &' -> 'IT &')
+        vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
+        impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), impact_txt)
+        actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), actuarial_box_text)
+
         # Prioritize stack-grounded causal threat title over generic taxonomy labels
         causal_title = str(
             hc.get("causal_risk_title")
@@ -3570,6 +3600,8 @@ class PayloadToASTBridge:
         if ":" in causal_title and len(causal_title.split(":", 1)[0]) <= 40:
             causal_title = causal_title.split(":", 1)[1].strip()
         display_title = causal_title if len(causal_title) > 10 else loss_event.title
+        display_title = _dedup_clauses(display_title)
+        display_title = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), display_title)
         display_title = _sanitize_localized_kpi_leaks(
             display_title, meta_lang, fallback_pillar=fallback_pillar_ref
         )
@@ -3673,9 +3705,10 @@ class PayloadToASTBridge:
             if not cleaned:
                 continue
 
-            # Sanitization: Replace non-standard vocabulary and any leaked English KPI tokens with canonical localized terms
+            # Sanitization: Replace non-standard vocabulary, camelCase artifacts, and any leaked English KPI tokens
             if isinstance(cleaned, str):
                 doc_locale = getattr(self, "meta_lang", "en")
+                cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), cleaned)
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
@@ -3785,6 +3818,9 @@ class PayloadToASTBridge:
                     val_str = str(val)
                     if isinstance(val_str, str):
                         meta_l = getattr(self, "meta_lang", "en")
+                        val_str = _CAMELCASE_ARTIFACT_RE.sub(
+                            lambda m: m.group(1).upper() + m.group(2), val_str
+                        )
                         val_str = _sanitize_localized_kpi_leaks(
                             val_str, meta_l
                         )
