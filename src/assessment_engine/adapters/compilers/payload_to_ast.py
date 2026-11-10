@@ -216,6 +216,24 @@ _ARCHETYPE_KEYWORD_RULES: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
         ),
     ),
     (
+        "DIGITAL_WORKPLACE",
+        (
+            "workplace",
+            "end-user",
+            "end user",
+            "euc",
+            "endpoint",
+            "desktop",
+            "vdi",
+            "intune",
+            "autopilot",
+            "dex",
+            "collaboration",
+            "productivity",
+            "service desk",
+        ),
+    ),
+    (
         "COMPUTE_PLATFORMS",
         (
             "compute",
@@ -3635,8 +3653,17 @@ class PayloadToASTBridge:
                 locale=meta_lang,
                 default="la gobernanza operativa del dominio",
             )
+            vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, vuln_txt)
+            impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, impact_txt)
             vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, vuln_txt)
             impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, impact_txt)
+            # Repair orphaned prepositions from template splicing (e.g., 'condicionada por en la mayoría')
+            _orphan_prep_re = re.compile(
+                r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
+                re.IGNORECASE,
+            )
+            vuln_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", vuln_txt)
+            impact_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", impact_txt)
 
         # Normalize corrupted camelCase prefixes (e.g. 'pAM Enclosure' -> 'PAM Enclosure', 'iT &' -> 'IT &')
         vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
@@ -3772,7 +3799,14 @@ class PayloadToASTBridge:
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
                 if not str(doc_locale).lower().startswith("en"):
                     fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
+                    cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_label, cleaned)
                     cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
+                    cleaned = re.sub(
+                        r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
+                        r"\1 deficiencias críticas \2",
+                        cleaned,
+                        flags=re.IGNORECASE,
+                    )
                 cleaned = _deduplicate_prose_sentences(cleaned)
 
             # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
@@ -3902,8 +3936,17 @@ class PayloadToASTBridge:
                                 locale=meta_l,
                                 default="la gobernanza operativa del dominio",
                             )
+                            val_str = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
+                                fallback_label, val_str
+                            )
                             val_str = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
                                 fallback_label, val_str
+                            )
+                            val_str = re.sub(
+                                r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
+                                r"\1 deficiencias críticas \2",
+                                val_str,
+                                flags=re.IGNORECASE,
                             )
 
                     if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
