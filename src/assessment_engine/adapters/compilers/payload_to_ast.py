@@ -4588,6 +4588,21 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         flags=re.IGNORECASE,
     )
 
+    # Reconcile contradictory DEX / equipment refresh claims within the same paragraph
+    if _CRITICAL_DEFICIT_TELEMETRY_RE.search(reconciled):
+        reconciled = re.sub(
+            r"(?:mostrando\s+una\s+)?disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?",
+            "presentando brechas operativas en la gestión del ciclo de vida y telemetría de dispositivos",
+            reconciled,
+            flags=re.IGNORECASE,
+        )
+        reconciled = re.sub(
+            r"(?:showing\s+)?exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+(?:refresh|renewal)",
+            "exhibiting operational gaps in endpoint lifecycle management and telemetry",
+            reconciled,
+            flags=re.IGNORECASE,
+        )
+
     # Repair dangling truncated sentences ending mid-clause without terminal punctuation
     if len(reconciled) > 40 and not reconciled.lstrip().startswith(("#", "*", "-", "|", ">")):
         stripped_end = reconciled.rstrip()
