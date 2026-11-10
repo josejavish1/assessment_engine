@@ -116,8 +116,10 @@ class FindingRiskResult:
     standalone_ale: float
     portfolio_allocated_ale: float
     var_90: float
+    cvar_90: float
     var_95: float
     var_99: float
+    cvar_99: float
     worst_crisis_event: float = 0.0       # Physical Single Loss Expectancy (SLE_max)
     worst_crisis_rto_hours: float = 0.0   # Physical recovery hours under worst-case disaster
     dissonance_applied: bool = False
@@ -134,8 +136,10 @@ class TowerRiskResult:
     primary_ale: float                    # Allocated primary operational downtime loss
     secondary_ale: float                  # Allocated secondary response/regulatory/SLA loss
     var_90: float                         # 90th Percentile Value at Risk
+    cvar_90: float                        # 90th Percentile Expected Shortfall (CVaR)
     var_95: float                         # 95th Percentile Value at Risk
     var_99: float                         # 99th Percentile Value at Risk
+    cvar_99: float                        # 99th Percentile Expected Shortfall (CVaR)
     diversification_benefit: float        # standalone_ale - portfolio_allocated_ale
     findings: List[FindingRiskResult]
     worst_crisis_event: float = 0.0       # Physical Single Loss Expectancy (SLE_max) of worst disaster
@@ -154,8 +158,10 @@ class PortfolioRiskSummary:
     total_secondary_ale: float            # Convolved secondary response & SLA loss
     three_year_cost_of_inaction: float    # 3-year baseline cumulative exposure
     portfolio_var_90: float               # 90% Value at Risk
+    portfolio_cvar_90: float              # 90% Expected Shortfall
     portfolio_var_95: float               # 95% Value at Risk
     portfolio_var_99: float               # 99% Catastrophic Value at Risk
+    portfolio_cvar_99: float              # 99% Catastrophic Expected Shortfall
     diversification_ratio: float
     towers: Dict[str, TowerRiskResult]
 
@@ -390,6 +396,11 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
         sigma_sec = float(np.sqrt(np.log(1.0 + self.secondary_loss_cv ** 2)))
 
+        def _cvar(arr: np.ndarray, pct: float) -> float:
+            v = np.percentile(arr, pct)
+            tail = arr[arr >= v]
+            return float(np.mean(tail)) if tail.size > 0 else float(v)
+
         # 1. Marginal Evaluation per Finding
         for idx, f in enumerate(findings):
             tef_samples = self._sample_pert(
@@ -398,7 +409,12 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             vuln_samples, mu_vuln, diss_vuln_applied = self._calibrate_fair_cam_vuln(
                 f.cmmi_maturity, f.is_spof, u_aux_vuln[:, idx], f.dissonance
             )
-            lef_samples = tef_samples * vuln_samples
+            # Phase 1: Copula-Linked Discrete Compound Poisson / Negative Binomial Event Simulation
+            # Instead of continuous scaling (lef_samples = tef_samples * vuln_samples),
+            # we simulate actual discrete failure events across Monte Carlo trials.
+            lambda_rates = tef_samples * vuln_samples
+            # Use copula uniform marginal to invert the Poisson CDF, preserving correlation
+            event_counts = stats.poisson.ppf(u_copula[:, idx], mu=lambda_rates).astype(np.int64)
 
             rto_sampled = self._sample_pert(
                 f.rto_hours_min, f.rto_hours_mode, f.rto_hours_max, u_aux_rto[:, idx]
@@ -440,11 +456,11 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             alpha_effective = float(np.clip(f.blast_radius_alpha, 0.05, 1.0))
             effective_hourly_rate = f.zone.hourly_burn_rate * alpha_effective
 
-            annual_downtime_s = lef_samples * effective_rto
+            annual_downtime_s = event_counts * effective_rto
             safe_replacement_cost = max(0.0, float(f.direct_replacement_cost))
-            replacement_loss_s = lef_samples * safe_replacement_cost
+            replacement_loss_s = event_counts * safe_replacement_cost
             primary_loss_s = (annual_downtime_s * effective_hourly_rate) + replacement_loss_s
-            secondary_loss_s = lef_samples * sec_sle_samples
+            secondary_loss_s = event_counts * sec_sle_samples
 
             # Equivalent full-zone outage hours preserve blast_radius_alpha during zone convolution
             finding_equivalent_zone_hours[:, idx] = annual_downtime_s * alpha_effective
@@ -452,7 +468,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             finding_raw_losses[:, idx] = primary_loss_s + secondary_loss_s
 
             mean_vulns[idx] = mu_vuln
-            mean_lefs[idx] = float(np.mean(lef_samples))
+            mean_lefs[idx] = float(np.mean(lambda_rates))
             mean_sles[idx] = float(
                 np.mean(
                     effective_rto * effective_hourly_rate
@@ -562,8 +578,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             t_worst_hours = float(finding_crisis_hours[worst_f_idx])
 
             t_var_90 = float(np.percentile(t_alloc_sim_sum, 90))
+            t_cvar_90 = _cvar(t_alloc_sim_sum, 90.0)
             t_var_95 = float(np.percentile(t_alloc_sim_sum, 95))
             t_var_99 = float(np.percentile(t_alloc_sim_sum, 99))
+            t_cvar_99 = _cvar(t_alloc_sim_sum, 99.0)
 
             cmmi_vec = np.array([findings[i].cmmi_maturity for i in t_indices], dtype=np.float64)
             weights_vec = standalone_finding_ales[t_indices]
@@ -583,8 +601,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                     standalone_ale=round(float(standalone_finding_ales[i]), 2),
                     portfolio_allocated_ale=round(float(allocated_finding_ales[i]), 2),
                     var_90=round(float(np.percentile(allocated_finding_sim_losses[:, i], 90)), 2),
+                    cvar_90=round(_cvar(allocated_finding_sim_losses[:, i], 90.0), 2),
                     var_95=round(float(np.percentile(allocated_finding_sim_losses[:, i], 95)), 2),
                     var_99=round(float(np.percentile(allocated_finding_sim_losses[:, i], 99)), 2),
+                    cvar_99=round(_cvar(allocated_finding_sim_losses[:, i], 99.0), 2),
                     worst_crisis_event=round(float(finding_crisis_events[i]), 2),
                     worst_crisis_rto_hours=round(float(finding_crisis_hours[i]), 2),
                     dissonance_applied=finding_dissonance_flags[i],
@@ -600,8 +620,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 primary_ale=round(t_primary_ale, 2),
                 secondary_ale=round(t_secondary_ale, 2),
                 var_90=round(t_var_90, 2),
+                cvar_90=round(t_cvar_90, 2),
                 var_95=round(t_var_95, 2),
                 var_99=round(t_var_99, 2),
+                cvar_99=round(t_cvar_99, 2),
                 diversification_benefit=round(t_standalone_ale - t_allocated_ale, 2),
                 findings=f_results,
                 worst_crisis_event=round(t_worst_crisis, 2),
@@ -619,8 +641,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 total_portfolio_ale * self.inaction_horizon_years, 2
             ),
             portfolio_var_90=round(float(np.percentile(portfolio_convolved_losses, 90)), 2),
+            portfolio_cvar_90=round(_cvar(portfolio_convolved_losses, 90.0), 2),
             portfolio_var_95=round(float(np.percentile(portfolio_convolved_losses, 95)), 2),
             portfolio_var_99=round(float(np.percentile(portfolio_convolved_losses, 99)), 2),
+            portfolio_cvar_99=round(_cvar(portfolio_convolved_losses, 99.0), 2),
             diversification_ratio=(
                 round(total_portfolio_ale / total_standalone_sum, 4)
                 if total_standalone_sum > 0

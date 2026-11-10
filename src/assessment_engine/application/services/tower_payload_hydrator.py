@@ -1403,9 +1403,12 @@ class TowerPayloadHydrator:
                     payload["worst_crisis_event"] = t_result.worst_crisis_event
                     payload["worst_crisis_rto_hours"] = t_result.worst_crisis_rto_hours
 
-                    payload["total_fair_ale"] = t_result.standalone_ale
+                    payload["standalone_fair_ale"] = t_result.standalone_ale
+                    payload["total_fair_ale"] = t_result.portfolio_allocated_ale
                     payload["total_fair_p90"] = t_result.var_90
+                    payload["total_fair_cvar_90"] = t_result.cvar_90
                     payload["total_fair_max"] = t_result.var_99
+                    payload["total_fair_cvar_99"] = t_result.cvar_99
 
                     finding_results = {f.finding_id: f for f in t_result.findings}
 
@@ -1421,7 +1424,9 @@ class TowerPayloadHydrator:
                                 f_res = finding_results[f_id]
                                 hc["fair_ale_score"] = f_res.portfolio_allocated_ale
                                 hc["fair_p90_score"] = f_res.var_90
+                                hc["fair_cvar_score"] = f_res.cvar_90
                                 hc["fair_max_score"] = f_res.var_99
+                                hc["fair_cvar_99_score"] = f_res.cvar_99
                                 hc["worst_crisis_event"] = f_res.worst_crisis_event
                                 hc["worst_crisis_rto_hours"] = f_res.worst_crisis_rto_hours
                                 hc["dissonance_applied"] = f_res.dissonance_applied

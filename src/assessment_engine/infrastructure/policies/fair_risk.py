@@ -973,9 +973,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
             tail_idx = int(len(portfolio_sorted) * 0.975)
             portfolio_cvar = float(np.mean(portfolio_sorted[tail_idx:])) if len(portfolio_sorted[tail_idx:]) > 0 else portfolio_mean
 
-            payload["total_fair_ale"] = round(portfolio_mean, 2)
-            payload["total_fair_p90"] = round(portfolio_cvar, 2)
-            payload["total_fair_max"] = round(float(np.percentile(total_annual_losses, 99.0)), 2)
+            # Phase 2 SR 11-7: Purge Legacy Metric Writes.
+            # FairRiskPolicy is demoted to a pre-simulation classifier.
+            # Total tower metrics are unconditionally hydrated by the Bayesian FAIR Copula Engine in tower_payload_hydrator.py.
 
         # Generate the Loss Exceedance Curve (LEC) Chart (Gap 2)
         if len(total_annual_losses) > 0 and np.sum(total_annual_losses) > 0:
