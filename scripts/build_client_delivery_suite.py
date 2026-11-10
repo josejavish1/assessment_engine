@@ -107,6 +107,19 @@ def generate_tower_case_inputs(
         case_out.write_text(json.dumps(case_data, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+def resolve_contextual_technology(tower_code: str, pillar_name: str, group_stack: list[dict[str, Any]]) -> str:
+    """Map tower domain to the most relevant technology component using external configuration."""
+    kw_path = REPO_ROOT / "engine_config" / "tower_classification_keywords.json"
+    tower_keywords: dict[str, list[str]] = json.loads(kw_path.read_text(encoding="utf-8")) if kw_path.exists() else {}
+    kw_list = tower_keywords.get(tower_code.upper(), [])
+    matching = [
+        t.get("name")
+        for t in group_stack
+        if any(kw in str(t.get("category", "")).lower() or kw in str(t.get("name", "")).lower() for kw in kw_list)
+    ]
+    return matching[0] if matching else pillar_name
+
+
 def synthesize_tower_blueprints(
     working_dir: Path,
     intel_data: dict[str, Any],
@@ -132,6 +145,7 @@ def synthesize_tower_blueprints(
     blueprints: dict[str, dict[str, Any]] = {}
 
     for t_id in active_towers:
+        print(f"  [{t_id}] Synthesizing domain blueprint ({'Neurosymbolic LLM' if enrich_risks else 'Deterministic'})...", flush=True)
         case_input_file = working_dir / t_id / "case_input.json"
         case_data = load_json(case_input_file) if case_input_file.exists() else {}
         answers = case_data.get("answers", [])
@@ -148,9 +162,65 @@ def synthesize_tower_blueprints(
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
         resolver = get_taxonomy_resolver()
 
-        tower_scores: list[float] = []
         total_pillars_count = max(1, len(def_data.get("pillars", [])))
         normalized_pillar_weight = round(1.0 / total_pillars_count, 4)
+        group_stack = intel_data.get("technology_context", {}).get("group_level_stack", [])
+
+        # If enrich_risks is enabled, batch synthesize primary pillar risks in a single LLM pass per tower
+        enriched_by_kpi: dict[str, Any] = {}
+        if enrich_risks and isinstance(synthesizer, NeurosymbolicLLMSynthesizer):
+            tower_primary_contexts: list[RiskSynthesisContext] = []
+            for p_idx, pillar in enumerate(def_data.get("pillars", [])):
+                p_id = pillar.get("pillar_id") or f"{t_id}.P{p_idx+1}"
+                raw_pname = pillar.get("pillar_name", f"Pillar {p_idx+1}")
+                p_name = resolver.resolve_pillar_by_any_reference(
+                    p_id or raw_pname,
+                    default=raw_pname,
+                    locale=doc_lang,
+                    tower_id=t_id,
+                )
+                p_kpis = pillar.get("kpis", [])
+                if p_kpis:
+                    k_id = p_kpis[0].get("kpi_id")
+                    sc = score_by_kpi.get(k_id, 3.5)
+                    deficit = max(0.04, round(5.0 - sc, 2))
+                    calibrated_ale = round(hourly_rate * (deficit ** 1.8) * 0.8, 2)
+                    tech_name = resolve_contextual_technology(t_id, p_name, group_stack)
+                    dt_mins = max(8, round((calibrated_ale / hourly_rate) * 60))
+                    stoppage = round(calibrated_ale * 0.65, 2)
+                    recovery = round(calibrated_ale * 0.25, 2)
+                    penalty = round(calibrated_ale * 0.10, 2)
+                    sle = round(stoppage + recovery + penalty, 2)
+
+                    tower_primary_contexts.append(
+                        RiskSynthesisContext(
+                            client_name=client_name,
+                            industry=intel_data.get("profile", {}).get("industry", "Enterprise"),
+                            sub_industry=sub_ind,
+                            maturity_tier=f"Score: {sc:.2f}",
+                            doc_lang=doc_lang,
+                            currency_symbol=currency_symbol,
+                            hourly_rate=hourly_rate,
+                            verified_tech_stack=[tech_name],
+                            tower_code=t_id,
+                            tower_name=tower_name,
+                            pillar_id=p_id,
+                            pillar_name=p_name,
+                            kpi_id=k_id,
+                            assessed_score=sc,
+                            calibrated_ale=calibrated_ale,
+                            downtime_minutes=dt_mins,
+                            stoppage_loss=stoppage,
+                            recovery_burn=recovery,
+                            penalty_loss=penalty,
+                            total_sle=sle,
+                        )
+                    )
+            if tower_primary_contexts:
+                enriched_items = synthesizer.synthesize_tower_risks(tower_primary_contexts)
+                enriched_by_kpi = {item.risk_id.replace("RSK-", ""): item for item in enriched_items}
+
+        tower_scores: list[float] = []
         for p_idx, pillar in enumerate(def_data.get("pillars", [])):
             p_id = pillar.get("pillar_id")
             raw_pname = pillar.get("pillar_name", f"Pillar {p_idx+1}")
@@ -165,8 +235,6 @@ def synthesize_tower_blueprints(
             p_score = round(sum(k_scores) / len(k_scores), 2) if k_scores else 3.5
             tower_scores.append(p_score)
 
-            group_stack = intel_data.get("technology_context", {}).get("group_level_stack", [])
-
             # Health check findings with non-linear FAIR risk calibration and Reverse-FAIR narrative synthesis
             health_checks = []
             for k_idx, k in enumerate(p_kpis[:3]):
@@ -176,18 +244,8 @@ def synthesize_tower_blueprints(
                 # Non-linear quadratic severity scaling reflecting tail-risk escalation
                 calibrated_hc_ale = round(hourly_rate * (deficit ** 1.8) * (0.8 + 0.3 * (k_idx % 3)), 2)
 
-                # Select contextual technology item from client intelligence without modulo round-robin
-                matching_tech = [
-                    t.get("name")
-                    for t in group_stack
-                    if str(t.get("tower", "")).upper() == t_id.upper()
-                    or t_id.lower() in str(t.get("category", "")).lower()
-                ]
-                tech_name = (
-                    matching_tech[0]
-                    if matching_tech
-                    else (group_stack[0].get("name") if group_stack else p_name)
-                )
+                # Select contextual technology item from client intelligence matching domain
+                tech_name = resolve_contextual_technology(t_id, p_name, group_stack)
 
                 # Calculate bottom-up actuarial loss decomposition
                 downtime_minutes = max(8, round((calibrated_hc_ale / hourly_rate) * 60))
@@ -220,8 +278,8 @@ def synthesize_tower_blueprints(
                 )
                 # Use live LLM enrichment for the primary representative risk of each pillar (k_idx == 0)
                 # while secondary contributors use the sub-millisecond deterministic provider.
-                if enrich_risks and k_idx == 0:
-                    syn_item = synthesizer.synthesize_risk(syn_ctx)
+                if enrich_risks and k_idx == 0 and k_id in enriched_by_kpi:
+                    syn_item = enriched_by_kpi[k_id]
                 else:
                     syn_item = DeterministicFallbackSynthesizer().synthesize_risk(syn_ctx)
 
@@ -289,33 +347,181 @@ def synthesize_tower_blueprints(
         top_pillar = sorted_by_score[0] if sorted_by_score else None
         lowest_pillar = sorted_by_score[-1] if sorted_by_score else None
 
-        top_strengths = []
-        if top_pillar:
-            top_strengths.append(f"{top_pillar['pillar_name']}: Demonstrates verified operational control ({top_pillar['score']:.2f}/5.00) with established procedures.")
-        if len(sorted_by_score) > 1 and sorted_by_score[1]["score"] >= 3.0:
-            second_p = sorted_by_score[1]
-            top_strengths.append(f"{second_p['pillar_name']}: Standardized execution ({second_p['score']:.2f}/5.00) supporting enterprise operational continuity.")
-        if not top_strengths:
-            top_strengths.append("Standardized baseline operational practices established across primary workflows.")
+        strongest_name = top_pillar["pillar_name"] if top_pillar else "arquitetura base"
+        strongest_sc = top_pillar["score"] if top_pillar else 4.0
+        lowest_name = lowest_pillar["pillar_name"] if lowest_pillar else "capacidade operacional"
+        lowest_sc = lowest_pillar["score"] if lowest_pillar else 3.0
 
-        top_friction = []
-        if lowest_pillar and lowest_pillar["score"] < 4.8:
-            top_friction.append(f"{lowest_pillar['pillar_name']}: Operational friction and capacity constraints observed ({lowest_pillar['score']:.2f}/5.00).")
-        reg_framework = intel_data.get("regulatory_context", [{}])[0].get("regulation", "industry standards")
-        top_friction.append(f"Regulatory scrutiny and continuous audit verification requirements under {reg_framework}.")
+        if doc_lang == "pt":
+            top_strengths = [
+                f"{strongest_name}: Demonstra controle operacional verificado ({strongest_sc:.2f}/5,00) com procedimentos estabelecidos."
+            ]
+            if len(sorted_by_score) > 1 and sorted_by_score[1]["score"] >= 3.0:
+                sec_p = sorted_by_score[1]
+                top_strengths.append(f"{sec_p['pillar_name']}: Execução padronizada ({sec_p['score']:.2f}/5,00) assegurando a continuidade de serviços.")
+            if not top_strengths:
+                top_strengths.append("Práticas operacionais de linha de base estabelecidas nos fluxos principais.")
 
-        # Dynamic, client-tailored domain semantics generated from evidence without static fallbacks
-        sub_ind = intel_data.get("profile", {}).get("sub_industry", "enterprise")
-        op_mission = f"{tower_name} architecture, managed operational workloads, and automated control procedures"
-        pw_summary = f"mission-critical customer-facing workloads, real-time transaction pipelines, and core {sub_ind} digital services"
-        pm_focus = f"reinforcing automated resiliency, eliminating single points of dependency, and consolidating {lowest_pillar['pillar_name'] if lowest_pillar else 'core operational capabilities'}"
-        cf_trigger = f"concurrent core component failure and operational redundancy loss across {tower_name} under peak transaction load"
-        sc_comm = (
-            f"Evaluated at {avg_tower_score:.2f} out of 5.0, {tower_name} demonstrates structured operational capabilities across {client_name}. "
-            f"While primary controls ({top_pillar['pillar_name'] if top_pillar else 'baseline architecture'}, {top_pillar['score']:.2f}/5.00) reflect verified resilience, "
-            f"targeted modernization in {lowest_pillar['pillar_name'] if lowest_pillar else 'capacity planning'} ({lowest_pillar['score']:.2f}/5.00) remains an essential priority to eliminate operational friction and ensure long-term scalability."
-        )
-        dt_context = f"Within {tower_name}, a severe operational interruption or component failure directly degrades transactional processing and enterprise services at {client_name}, resulting in an estimated operational loss rate of {hourly_rate:,.2f} {currency}."
+            top_friction = []
+            if lowest_pillar and lowest_pillar["score"] < 4.8:
+                top_friction.append(f"{lowest_name}: Fricção operacional e restrições de capacidade observadas ({lowest_sc:.2f}/5,00).")
+            reg_framework = intel_data.get("regulatory_context", [{}])[0].get("regulation", "normas regulatórias do setor")
+            top_friction.append(f"Exigências de escrutínio contínuo e conformidade de governança sob {reg_framework}.")
+
+            sub_ind_pt = "hospitalar e serviços de saúde integrados"
+            op_mission = f"arquitetura de {tower_name}, cargas de trabalho gerenciadas e controles operacionais automatizados"
+            pw_summary = f"cargas de trabalho de atendimento assistencial, processamento em tempo real e serviços digitais da rede {sub_ind_pt}"
+            pm_focus = f"reforço da resiliência automatizada, eliminação de pontos únicos de falha e consolidação de {lowest_name}"
+            cf_trigger = f"falha simultânea de componentes centrais e perda de redundância operacional em {tower_name} sob pico de demanda"
+            sc_comm = (
+                f"Com maturidade avaliada em {avg_tower_score:.2f} sobre 5,0, o domínio de {tower_name} demonstra capacidades operacionais estruturadas na {client_name}. "
+                f"Enquanto os controles principais ({strongest_name}, {strongest_sc:.2f}/5,00) refletem resiliência verificada, "
+                f"a modernização direcionada em {lowest_name} ({lowest_sc:.2f}/5,00) permanece como prioridade essencial para eliminar fricções e assegurar a escalabilidade a longo prazo."
+            )
+            if t_id == "T1":
+                dt_context = f"No âmbito de {tower_name}, contingências físicas em salas técnicas ou colocation impactam a infraestrutura de borda e HSMs a uma taxa atenuada de {currency_symbol} {round(hourly_rate * 0.20):,.2f}/h (20% do basal), escalando para a taxa total apenas em desastres simultâneos multirregionais."
+            else:
+                dt_context = f"No âmbito de {tower_name}, uma interrupção operacional severa ou falha de componente degrada diretamente os serviços transacionais na {client_name}, resultando em uma taxa de perda operacional estimada em {hourly_rate:,.2f} {currency_symbol}/h."
+
+            exec_p1 = (
+                f"A avaliação técnica do domínio de **{tower_name}** na {client_name} ({op_mission}) estabelece uma maturidade arquitetural estimada de **{avg_tower_score:.2f} sobre 5,0**. "
+                f"A infraestrutura atual sustenta com solvência as operações diárias de {pw_summary} através da dedicação contínua da equipe técnica. "
+                f"Contudo, identificam-se oportunidades claras de modernização para **{pm_focus}** à medida que as exigências assistenciais e corporativas continuam a expandir."
+            )
+            exec_p2 = "A análise técnica destaca as seguintes áreas prioritárias para reforçar a resiliência dos serviços:"
+            exec_p3 = (
+                f"Sob a metodologia internacional Open FAIR™ (Factor Analysis of Information Risk), a indisponibilidade não planejada de serviços acarreta uma taxa de perda operacional direta de **{currency_symbol} {hourly_rate:,.2f}/h** (detalhado na Seção 4.1). "
+                f"Em condições ordinárias, as lacunas técnicas avaliadas especificamente no âmbito de **{tower_name}** representam uma **exposição de risco latente estimada em {currency_symbol} {tower_ale:,.0f} anualizados**, refletindo a perda média esperada por fricções operacionais e incidentes ao longo de um ano neste domínio.\n\n"
+                f"Adicionalmente, perante um **cenário adverso de crise por contingência extrema nesta plataforma**, a recuperação técnica pode demandar uma janela estendida de intervenção, elevando o impacto financeiro contingente para até **{currency_symbol} {round(tower_ale * 2.2):,.0f}** ao computar a paralisação acumulada somada aos custos extraordinários de contingência e suporte emergencial."
+            )
+            exec_p4 = (
+                f"Em conclusão, o diagnóstico do estado atual demonstra que a plataforma provê uma base operacional consolidada sobre a qual evoluir. "
+                f"Enquanto a capacidade mais desenvolvida atinge {strongest_sc:.2f} sobre 5,0 ({strongest_name}), a maturidade global do domínio ({avg_tower_score:.2f} sobre 5,0) apresenta sua principal margem de evolução em {lowest_name} ({lowest_sc:.2f} sobre 5,0). "
+                f"Manter a inércia do status quo prolongará a dependência de intervenções manuais reativas e aumentará os tempos de recuperação de incidentes, enquanto consolidar estas oportunidades de automação fortalecerá a continuidade operacional e assistencial necessária aos negócios."
+            )
+        elif doc_lang == "es":
+            top_strengths = [
+                f"{strongest_name}: Demuestra control operativo verificado ({strongest_sc:.2f}/5,00) con procedimientos establecidos."
+            ]
+            if len(sorted_by_score) > 1 and sorted_by_score[1]["score"] >= 3.0:
+                sec_p = sorted_by_score[1]
+                top_strengths.append(f"{sec_p['pillar_name']}: Ejecución estandarizada ({sec_p['score']:.2f}/5,00) asegurando la continuidad operativa.")
+            if not top_strengths:
+                top_strengths.append("Prácticas operativas de línea base establecidas en los flujos principales.")
+
+            top_friction = []
+            if lowest_pillar and lowest_pillar["score"] < 4.8:
+                top_friction.append(f"{lowest_name}: Fricción operativa y restricciones de capacidad observadas ({lowest_sc:.2f}/5,00).")
+            reg_framework = intel_data.get("regulatory_context", [{}])[0].get("regulation", "normativas regulatorias aplicables")
+            top_friction.append(f"Exigencias de supervisión continua y cumplimiento de gobernanza bajo {reg_framework}.")
+
+            sub_ind_es = "red corporativa y transaccional"
+            op_mission = f"arquitectura de {tower_name}, cargas de trabajo gestionadas y controles operativos automatizados"
+            pw_summary = f"cargas de trabajo críticas de negocio, procesamiento en tiempo real y servicios digitales de la red {sub_ind_es}"
+            pm_focus = f"refuerzo de la resiliencia automatizada, eliminación de puntos únicos de fallo y consolidación de {lowest_name}"
+            cf_trigger = f"fallo simultáneo de componentes centrales y pérdida de redundancia operativa en {tower_name} bajo pico de demanda"
+            sc_comm = (
+                f"Con una madurez evaluada de {avg_tower_score:.2f} sobre 5,0, el dominio de {tower_name} demuestra capacidades operativas estructuradas en {client_name}. "
+                f"Mientras los controles principales ({strongest_name}, {strongest_sc:.2f}/5,00) reflejan resiliencia verificada, "
+                f"la modernización focalizada en {lowest_name} ({lowest_sc:.2f}/5,00) se mantiene como prioridad esencial para eliminar fricciones y asegurar la escalabilidad a largo plazo."
+            )
+            if t_id == "T1":
+                dt_context = f"En el ámbito de {tower_name}, contingencias físicas en salas técnicas o colocation impactan la infraestructura de borde y HSMs a una tasa atenuada de {currency_symbol} {round(hourly_rate * 0.20):,.2f}/h (20% del basal), escalando a la tasa bruta únicamente ante desastres multirregionales."
+            else:
+                dt_context = f"En el ámbito de {tower_name}, una interrupción operativa severa o fallo de componente degrada directamente el procesamiento transaccional en {client_name}, resultando en una tasa de pérdida operativa estimada en {hourly_rate:,.2f} {currency_symbol}/h."
+
+            exec_p1 = (
+                f"La evaluación técnica del dominio de **{tower_name}** en {client_name} ({op_mission}) sitúa su madurez arquitectural estimada en **{avg_tower_score:.2f} sobre 5,0**. "
+                f"La infraestructura actual sostiene con solvencia la operativa diaria de {pw_summary} gracias a la dedicación continua del equipo técnico. "
+                f"No obstante, se identifican oportunidades claras de modernización para **{pm_focus}** ante el incremento en la exigencia operativa del negocio."
+            )
+            exec_p2 = "El análisis técnico destaca las siguientes áreas prioritarias para reforzar la resiliencia de los servicios:"
+            exec_p3 = (
+                f"Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada de servicios conlleva un coste operativo directo de **{currency_symbol} {hourly_rate:,.2f}/h** (detallado en la Sección 4.1). "
+                f"En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **{tower_name}** representan una **exposición de riesgo latente estimada en {currency_symbol} {tower_ale:,.0f} anualizados**, como prima de riesgo implícita por la fricción operativa a lo largo de un año en este dominio.\n\n"
+                f"Adicionalmente, ante un **escenario adverso de crisis por contingencia extrema en esta plataforma**, la recuperación técnica mediante procedimientos de contingencia podría demorarse, elevando el impacto económico contingente hasta **{currency_symbol} {round(tower_ale * 2.2):,.0f}** al computar la parada acumulada junto a los costes extraordinarios de soporte y recuperación."
+            )
+            exec_p4 = (
+                f"En conclusión, el diagnóstico del estado actual demuestra una base operativa consolidada sobre la cual evolucionar. "
+                f"Mientras la capacidad más desarrollada alcanza {strongest_sc:.2f} sobre 5,0 ({strongest_name}), la madurez global ({avg_tower_score:.2f} sobre 5,0) presenta su mayor margen de avance en {lowest_name} ({lowest_sc:.2f} sobre 5,0). "
+                f"Superar la inercia del statu quo evitará tiempos de parada prolongados y afianzará la continuidad que requiere el negocio."
+            )
+        else:
+            top_strengths = [
+                f"{strongest_name}: Demonstrates verified operational control ({strongest_sc:.2f}/5.00) with established procedures."
+            ]
+            if len(sorted_by_score) > 1 and sorted_by_score[1]["score"] >= 3.0:
+                sec_p = sorted_by_score[1]
+                top_strengths.append(f"{sec_p['pillar_name']}: Standardized execution ({sec_p['score']:.2f}/5.00) supporting enterprise operational continuity.")
+            if not top_strengths:
+                top_strengths.append("Standardized baseline operational practices established across primary workflows.")
+
+            top_friction = []
+            if lowest_pillar and lowest_pillar["score"] < 4.8:
+                top_friction.append(f"{lowest_name}: Operational friction and capacity constraints observed ({lowest_sc:.2f}/5.00).")
+            reg_framework = intel_data.get("regulatory_context", [{}])[0].get("regulation", "industry standards")
+            top_friction.append(f"Regulatory scrutiny and continuous audit verification requirements under {reg_framework}.")
+
+            sub_ind_en = sub_ind
+            op_mission = f"{tower_name} architecture, managed operational workloads, and automated control procedures"
+            pw_summary = f"mission-critical customer-facing workloads, real-time transaction pipelines, and core {sub_ind_en} digital services"
+            pm_focus = f"reinforcing automated resiliency, eliminating single points of dependency, and consolidating {lowest_name}"
+            cf_trigger = f"concurrent core component failure and operational redundancy loss across {tower_name} under peak transaction load"
+            sc_comm = (
+                f"Evaluated at {avg_tower_score:.2f} out of 5.0, {tower_name} demonstrates structured operational capabilities across {client_name}. "
+                f"While primary controls ({strongest_name}, {strongest_sc:.2f}/5.00) reflect verified resilience, "
+                f"targeted modernization in {lowest_name} ({lowest_sc:.2f}/5.00) remains an essential priority to eliminate operational friction and ensure long-term scalability."
+            )
+            from assessment_engine.domain.taxonomy.archetype_registry import (
+                LossArchetypeType,
+                get_actuarial_archetype_registry,
+            )
+            try:
+                arch_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(t_id)
+                primary_arch = arch_mapping.primary_archetype
+            except (KeyError, ValueError):
+                primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
+
+            if primary_arch == LossArchetypeType.CAPITAL_INEFFICIENCY:
+                dt_context = f"Within {tower_name}, technical governance and lifecycle gaps induce unbudgeted capital drift across {client_name}'s infrastructure estate, with annual addressable waste evaluated at {currency_symbol}{tower_ale:,.0f}/year."
+                exec_p3 = (
+                    f"Under the international Open FAIR™ (Factor Analysis of Information Risk) standard, economic exposure within **{tower_name}** represents capital inefficiency and cloud commitment drift rather than transactional service downtime. "
+                    f"Unmonitored resource provisioning and unaligned commercial agreements represent an **estimated latent risk exposure of {currency_symbol}{tower_ale:,.0f} annualized**, reflecting unhedged compute commitments and addressable spend drift across {client_name}'s estate.\n\n"
+                    f"Additionally, under an **adverse compounding fiscal scenario involving multi-year contractual renewals and unhedged compute surges**, contingent financial liability reaches up to **{currency_symbol}{round(tower_ale * 2.2):,.0f}** when factoring in cumulative budget overruns, unreserved on-demand rates, and retroactive vendor licensing true-ups."
+                )
+            elif primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+                dt_context = f"Within {tower_name}, operational friction and manual runbook dependencies degrade workforce velocity across {client_name}, resulting in an estimated annual productivity drag of {currency_symbol}{tower_ale:,.0f}/year."
+                exec_p3 = (
+                    f"Under the international Open FAIR™ (Factor Analysis of Information Risk) standard, economic exposure within **{tower_name}** represents workforce cognitive friction and engineering toil rather than transactional clearing downtime. "
+                    f"Operational friction, ticket handling latency, and manual workflows represent an **estimated latent risk exposure of {currency_symbol}{tower_ale:,.0f} annualized** in burned engineering capacity across {client_name}.\n\n"
+                    f"Additionally, under an **adverse compounding scenario involving simultaneous operational incidents and platform tooling degradation**, cumulative friction elevates the contingent economic impact up to **{currency_symbol}{round(tower_ale * 2.2):,.0f}** when factoring in emergency specialist intervention and lost workforce productive hours."
+                )
+            elif primary_arch == LossArchetypeType.REGULATORY_AND_BREACH:
+                dt_context = f"Within {tower_name}, security perimeter weaknesses and identity vulnerabilities expose {client_name} to statutory regulatory penalties and forensic recovery costs, evaluated at {currency_symbol}{tower_ale:,.0f}/year."
+                exec_p3 = (
+                    f"Under the international Open FAIR™ (Factor Analysis of Information Risk) standard, economic exposure within **{tower_name}** represents statutory regulatory non-compliance liabilities (such as DORA, PRA, and GDPR frameworks) alongside forensic response costs rather than standard operational downtime. "
+                    f"Identified security gaps represent an **estimated latent risk exposure of {currency_symbol}{tower_ale:,.0f} annualized** across {client_name}.\n\n"
+                    f"Additionally, under a **severe compounding data compromise or critical identity breach scenario**, contingent exposure reaches up to **{currency_symbol}{round(tower_ale * 2.2):,.0f}** when accounting for statutory enforcement sanctions, forensic investigation audits, and customer remediation protocols."
+                )
+            elif t_id == "T1":
+                dt_context = f"Within {tower_name}, physical disruptions in server rooms or colocation suites impact ingress routing and cryptographic HSM hardware at an attenuated operational rate of {currency_symbol}{round(hourly_rate * 0.20):,.2f}/hr (20% of baseline), scaling up to the full gross run-rate only in multi-site catastrophic events."
+                exec_p3 = (
+                    f"Under the international Open FAIR™ (Factor Analysis of Information Risk) standard, unplanned service downtime incurs an attenuated operational cost of **{currency_symbol}{round(hourly_rate * 0.20):,.2f}/hr** (detailed in Section 4.1). "
+                    f"Under ordinary conditions, technical gaps assessed specifically within the scope of **{tower_name}** represent an **estimated latent risk exposure of {currency_symbol}{tower_ale:,.0f} annualized**, reflecting the expected average loss from operational friction and incidents throughout a year within this domain.\n\n"
+                    f"Additionally, under an **adverse crisis scenario involving multi-component failure or severe contingency on this platform**, technical recovery via contingency procedures could require an extended window, elevating the contingent economic impact up to **{currency_symbol}{round(tower_ale * 2.2):,.0f}** when factoring in cumulative downtime alongside emergency restoration and specialist support."
+                )
+            else:
+                dt_context = f"Within {tower_name}, a severe operational interruption or component failure directly degrades transactional processing and enterprise services at {client_name}, resulting in an estimated operational loss rate of {currency_symbol}{hourly_rate:,.2f}/hr."
+                exec_p3 = (
+                    f"Under the international Open FAIR™ (Factor Analysis of Information Risk) standard, unplanned service downtime incurs a direct operational cost of **{currency_symbol}{hourly_rate:,.2f}/hr** (detailed in Section 4.1). "
+                    f"Under ordinary conditions, technical gaps assessed specifically within the scope of **{tower_name}** represent an **estimated latent risk exposure of {currency_symbol}{tower_ale:,.0f} annualized**, reflecting the expected average loss from operational friction and incidents throughout a year within this domain.\n\n"
+                    f"Additionally, under an **adverse crisis scenario involving multi-component failure or severe contingency on this platform**, technical recovery via contingency procedures could require an extended window, elevating the contingent economic impact up to **{currency_symbol}{round(tower_ale * 2.2):,.0f}** when factoring in cumulative downtime alongside emergency restoration and specialist support."
+                )
+            exec_p4 = (
+                f"In conclusion, the current-state diagnostic demonstrates that the platform provides a solid operational foundation to build upon. "
+                f"While the most developed capability reaches {strongest_sc:.2f} out of 5.0 ({strongest_name}), overall domain maturity ({avg_tower_score:.2f} out of 5.0) exhibits its primary opportunity for advancement in {lowest_name} ({lowest_sc:.2f} out of 5.0). "
+                f"Maintaining status-quo inertia would prolong reliance on reactive manual interventions and extend incident recovery durations, whereas addressing these automation opportunities will solidify the business continuity required by the enterprise."
+            )
 
         blueprint_payload = {
             "document_meta": {
@@ -330,7 +536,15 @@ def synthesize_tower_blueprints(
                 "annual_revenue": annual_revenue,
                 "version": "1.0",
                 "date": "October 2026",
+                "industry": intel_data.get("profile", {}).get("industry", "banking"),
+                "industry_vertical": intel_data.get("profile", {}).get("industry", "banking"),
+                "sub_industry": intel_data.get("profile", {}).get("sub_industry", "Digital Challenger Clearing Bank"),
+                "delivery_model": "CLOUD_NATIVE" if any(k in str(intel_data.get("profile", {})).upper() for k in ("FINTECH", "BANK", "SAAS", "DIGITAL")) else "ON_PREM_HEAVY",
             },
+            "industry": intel_data.get("profile", {}).get("industry", "banking"),
+            "industry_vertical": intel_data.get("profile", {}).get("industry", "banking"),
+            "sub_industry": intel_data.get("profile", {}).get("sub_industry", "Digital Challenger Clearing Bank"),
+            "delivery_model": "CLOUD_NATIVE" if any(k in str(intel_data.get("profile", {})).upper() for k in ("FINTECH", "BANK", "SAAS", "DIGITAL")) else "ON_PREM_HEAVY",
             "financial_telemetry": {
                 "consolidated_annual_revenue": annual_revenue,
                 "annual_revenue": annual_revenue,

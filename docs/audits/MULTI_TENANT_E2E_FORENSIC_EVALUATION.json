@@ -1,0 +1,30 @@
+{
+  "molins": {
+    "viewport_clean": true,
+    "has_dora_leak": false,
+    "has_nis2": true,
+    "has_spain_localized": true,
+    "has_industry_localized": true,
+    "transcript_ingested": true,
+    "evidence_fragments_count": 150,
+    "matrix_ingested": true,
+    "towers_ingested_count": 10,
+    "compilation_success": true,
+    "compiled_files_count": 4
+  },
+  "starling": {
+    "viewport_clean": true,
+    "has_pra_resilience": true,
+    "has_gbp_currency": true,
+    "has_bfsi_industry": true,
+    "has_uk_country": true
+  },
+  "rededor": {
+    "viewport_clean": true,
+    "has_anvisa_framework": true,
+    "has_dora_leak": false,
+    "has_brl_currency": true,
+    "has_healthcare_pt": true,
+    "has_brasil_country": true
+  }
+}

@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T7",
   "tower_name": "ITSM & Digital Operations",
-  "purpose": "La torre ITSM & Digital Operations cubre las capacidades necesarias para gestionar servicios TI extremo a extremo, desde la solicitud del usuario hasta la resolución, el control del cambio, la gestión del conocimiento, la medición de niveles de servicio, la operación basada en observabilidad, y la mejora continua.",
+  "purpose": "The ITSM & Digital Operations domain encompasses IT service governance, service catalog, incident response, change control (CMDB), problem management (SRE), and AIOps event correlation.",
   "scope_summary": [
     "Gobierno del servicio y catálogo",
     "Procesos ITSM core",
@@ -93,46 +93,46 @@
   "pillars": [
     {
       "pillar_id": "T7.P1",
-      "pillar_name": "Gobierno del Servicio, Catálogo y SLAs/SLOs",
+      "pillar_name": "Service Governance, Catalog & SLA Management",
       "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T7.P1.K1",
-          "kpi_name": "Cobertura y calidad del Catálogo de Servicios (definición + ownership)",
+          "kpi_name": "Service Catalog Completeness, Classification & Service Ownership",
           "questions": [
             {
               "question_id": "T7.P1.K1.PR1",
-              "question_text": "Disponer de un catálogo de servicios claro permite entender qué se ofrece y quién es responsable. ¿Cómo describirías la cobertura y calidad del catálogo de servicios?"
+              "question_text": "How does the enterprise govern and measure Service Catalog Completeness, Classification & Service Ownership across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P1.K2",
-          "kpi_name": "Cumplimiento de SLAs (Disponibilidad y tiempos de respuesta/resolución)",
+          "kpi_name": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
           "questions": [
             {
               "question_id": "T7.P1.K2.PR1",
-              "question_text": "Medir y gestionar los SLAs permite garantizar la calidad del servicio. ¿Cómo se gestionan los SLAs?"
+              "question_text": "How does the enterprise govern and measure Service Level Agreement (SLA/SLO) Adherence & Response Metrics across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P1.K3",
-          "kpi_name": "Cadencia y eficacia de revisiones de servicio (Service Reviews)",
+          "kpi_name": "Structured Service Review Cadence & Executive Governance",
           "questions": [
             {
               "question_id": "T7.P1.K3.PR1",
-              "question_text": "Las revisiones de servicio permiten mejorar continuamente la calidad. ¿Cómo se realizan las revisiones de servicio?"
+              "question_text": "How does the enterprise govern and measure Structured Service Review Cadence & Executive Governance across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P1.K4",
-          "kpi_name": "Modelo de responsabilidades (RACI/Service Ownership) y accountability",
+          "kpi_name": "Operating Model Accountability & Operational RACI Governance",
           "questions": [
             {
               "question_id": "T7.P1.K4.PR1",
-              "question_text": "Definir claramente responsabilidades evita dependencias y mejora la operación. ¿Cómo está definido el modelo de responsabilidades (RACI/ownership)?"
+              "question_text": "How does the enterprise govern and measure Operating Model Accountability & Operational RACI Governance across the operational environment?"
             }
           ]
         }
@@ -140,46 +140,46 @@
     },
     {
       "pillar_id": "T7.P2",
-      "pillar_name": "Service Desk, Gestión de Incidentes y Solicitudes",
-      "weight_pct": 22,
+      "pillar_name": "Service Desk & Incident Management",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T7.P2.K1",
-          "kpi_name": "MTTR (Mean Time To Restore) por criticidad de servicio",
+          "kpi_name": "Mean Time to Restore (MTTR) by Service Criticality Tier",
           "questions": [
             {
               "question_id": "T7.P2.K1.PR1",
-              "question_text": "Reducir el tiempo de recuperación es clave para la continuidad del servicio. ¿Cómo se gestiona el MTTR por criticidad?"
+              "question_text": "How does the enterprise govern and measure Mean Time to Restore (MTTR) by Service Criticality Tier across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P2.K2",
-          "kpi_name": "Eficacia del primer nivel (FCR / resolución en primer contacto)",
+          "kpi_name": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
           "questions": [
             {
               "question_id": "T7.P2.K2.PR1",
-              "question_text": "Resolver incidencias en el primer nivel mejora la eficiencia operativa. ¿Cuál es la eficacia del primer nivel (FCR)?"
+              "question_text": "How does the enterprise govern and measure First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P2.K3",
-          "kpi_name": "Gestión de Major Incidents (coordinación, comunicación y post-incident)",
+          "kpi_name": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
           "questions": [
             {
               "question_id": "T7.P2.K3.PR1",
-              "question_text": "Gestionar correctamente incidencias críticas reduce el impacto en el negocio. ¿Cómo se gestionan los Major Incidents?"
+              "question_text": "How does the enterprise govern and measure Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P2.K4",
-          "kpi_name": "Control de backlog y tasa de envejecimiento de tickets",
+          "kpi_name": "Incident Backlog Burndown Rate & Aging Ticket Governance",
           "questions": [
             {
               "question_id": "T7.P2.K4.PR1",
-              "question_text": "Controlar el volumen de tickets evita saturación operativa. ¿Cómo se gestiona el backlog y el aging de tickets?"
+              "question_text": "How does the enterprise govern and measure Incident Backlog Burndown Rate & Aging Ticket Governance across the operational environment?"
             }
           ]
         }
@@ -187,46 +187,46 @@
     },
     {
       "pillar_id": "T7.P3",
-      "pillar_name": "Gestión de Cambios, Releases y Configuración (CMDB/ITAM)",
-      "weight_pct": 24,
+      "pillar_name": "Change, Release & Configuration Management (CMDB)",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T7.P3.K1",
-          "kpi_name": "Tasa de éxito de cambios (Change Success Rate) y cambios que causan incidentes",
+          "kpi_name": "Change Success Rate (CSR) & Incident Induction Rate",
           "questions": [
             {
               "question_id": "T7.P3.K1.PR1",
-              "question_text": "Gestionar correctamente los cambios reduce incidencias en producción. ¿Cuál es la tasa de éxito de los cambios?"
+              "question_text": "How does the enterprise govern and measure Change Success Rate (CSR) & Incident Induction Rate across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P3.K2",
-          "kpi_name": "Clasificación y evaluación de riesgo del cambio (standard/normal/emergency)",
+          "kpi_name": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
           "questions": [
             {
               "question_id": "T7.P3.K2.PR1",
-              "question_text": "Evaluar correctamente el riesgo de los cambios evita impactos en el servicio. ¿Cómo se clasifican y evalúan los cambios?"
+              "question_text": "How does the enterprise govern and measure Change Risk Assessment Automation (Standard vs Emergency Approval) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P3.K3",
-          "kpi_name": "Calidad y actualización de CMDB (cobertura y relaciones)",
+          "kpi_name": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
           "questions": [
             {
               "question_id": "T7.P3.K3.PR1",
-              "question_text": "Disponer de una CMDB fiable es clave para la operación. ¿Cuál es la calidad y actualización de la CMDB?"
+              "question_text": "How does the enterprise govern and measure CMDB Accuracy, Automated Discovery & Service Dependency Mapping across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P3.K4",
-          "kpi_name": "Control del cambio emergente",
+          "kpi_name": "Emergency Change Control Governance & Post-Change Justification",
           "questions": [
             {
               "question_id": "T7.P3.K4.PR1",
-              "question_text": "Reducir cambios urgentes mejora la estabilidad del servicio. ¿Cómo se gestionan los cambios emergentes?"
+              "question_text": "How does the enterprise govern and measure Emergency Change Control Governance & Post-Change Justification across the operational environment?"
             }
           ]
         }
@@ -234,46 +234,46 @@
     },
     {
       "pillar_id": "T7.P4",
-      "pillar_name": "Problem Management, Mejora Continua y Fiabilidad (SRE)",
-      "weight_pct": 21,
+      "pillar_name": "Problem Management & Site Reliability Engineering (SRE)",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T7.P4.K1",
-          "kpi_name": "% de incidentes recurrentes y tendencia (repeat incidents)",
+          "kpi_name": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
           "questions": [
             {
               "question_id": "T7.P4.K1.PR1",
-              "question_text": "Reducir incidencias repetitivas mejora la estabilidad operativa. ¿Cuál es el nivel de incidencias recurrentes?"
+              "question_text": "How does the enterprise govern and measure Repeat Incident Suppression Rate & Incident Recurrence Trends across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P4.K2",
-          "kpi_name": "Calidad y trazabilidad del RCA (Root Cause Analysis)",
+          "kpi_name": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
           "questions": [
             {
               "question_id": "T7.P4.K2.PR1",
-              "question_text": "Analizar correctamente las causas raíz evita repetir errores. ¿Cómo es la calidad del RCA?"
+              "question_text": "How does the enterprise govern and measure Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P4.K3",
-          "kpi_name": "Backlog de problemas (Problem Backlog) y ejecución de acciones",
+          "kpi_name": "Problem Backlog Execution Rate & Corrective Action Closure",
           "questions": [
             {
               "question_id": "T7.P4.K3.PR1",
-              "question_text": "Gestionar el backlog de problemas permite mejorar la estabilidad del servicio. ¿Cómo se gestiona el backlog de problemas?"
+              "question_text": "How does the enterprise govern and measure Problem Backlog Execution Rate & Corrective Action Closure across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P4.K4",
-          "kpi_name": "Madurez operativa: definición de SLOs, SLIs y reducción de toil",
+          "kpi_name": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
           "questions": [
             {
               "question_id": "T7.P4.K4.PR1",
-              "question_text": "Gestionar la fiabilidad como producto permite mejorar la calidad del servicio. ¿Cuál es la madurez SRE (SLO/SLI y reducción de toil)?"
+              "question_text": "How does the enterprise govern and measure Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction across the operational environment?"
             }
           ]
         }
@@ -281,56 +281,56 @@
     },
     {
       "pillar_id": "T7.P5",
-      "pillar_name": "Observabilidad, Event Management y Automatización Operativa (AIOps/Runbooks)",
-      "weight_pct": 13,
+      "pillar_name": "Observability, Event Management & AIOps",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T7.P5.K1",
-          "kpi_name": "Cobertura de observabilidad por servicio (métricas/logs/trazas)",
+          "kpi_name": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
           "questions": [
             {
               "question_id": "T7.P5.K1.PR1",
-              "question_text": "Tener visibilidad completa del servicio permite detectar problemas antes de que impacten. ¿Cuál es la cobertura de observabilidad por servicio?"
+              "question_text": "How does the enterprise govern and measure Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P5.K2",
-          "kpi_name": "Reducción de ruido de alertas (alert fatigue) y calidad de eventos",
+          "kpi_name": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
           "questions": [
             {
               "question_id": "T7.P5.K2.PR1",
-              "question_text": "Reducir el ruido de alertas mejora la eficiencia operativa. ¿Cómo se gestiona el ruido de alertas?"
+              "question_text": "How does the enterprise govern and measure Event Noise Reduction, Alert De-Duplication & Fatigue Prevention across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P5.K3",
-          "kpi_name": "Runbooks, automatización operativa y remediación basada en contexto fiable",
+          "kpi_name": "Automated Operational Runbooks & Self-Healing Remediation",
           "questions": [
             {
               "question_id": "T7.P5.K3.PR1",
-              "question_text": "Automatizar tareas operativas reduce errores y tiempos de resolución. ¿Cuál es el nivel de automatización operativa y runbooks?"
+              "question_text": "How does the enterprise govern and measure Automated Operational Runbooks & Self-Healing Remediation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P5.K4",
-          "kpi_name": "Detección proactiva (antes de que el usuario reporte)",
+          "kpi_name": "Proactive Incident Detection Prior to End-User Impact",
           "questions": [
             {
               "question_id": "T7.P5.K4.PR1",
-              "question_text": "Detectar incidentes antes del usuario mejora la experiencia del servicio. ¿Cómo se realiza la detección proactiva de incidentes?"
+              "question_text": "How does the enterprise govern and measure Proactive Incident Detection Prior to End-User Impact across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T7.P5.K5",
-          "kpi_name": "Correlación end-to-end entre eventos, dependencias e impacto de servicio",
+          "kpi_name": "End-to-End Event Correlation Across Infrastructure & Business Services",
           "questions": [
             {
               "question_id": "T7.P5.K5.PR1",
-              "question_text": "Entender el impacto real de los eventos permite priorizar correctamente. ¿Cómo se correlacionan eventos, dependencias e impacto de servicio?"
+              "question_text": "How does the enterprise govern and measure End-to-End Event Correlation Across Infrastructure & Business Services across the operational environment?"
             }
           ]
         }
@@ -340,129 +340,150 @@
   "questions": [
     {
       "question_id": "T7.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Service Catalog Completeness, Classification & Service Ownership across the operational environment?",
       "pillar_id": "T7.P1",
       "kpi_id": "T7.P1.K1",
-      "question_text": "Disponer de un catálogo de servicios claro permite entender qué se ofrece y quién es responsable. ¿Cómo describirías la cobertura y calidad del catálogo de servicios?"
+      "kpi_name": "Service Catalog Completeness, Classification & Service Ownership"
     },
     {
       "question_id": "T7.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Service Level Agreement (SLA/SLO) Adherence & Response Metrics across the operational environment?",
       "pillar_id": "T7.P1",
       "kpi_id": "T7.P1.K2",
-      "question_text": "Medir y gestionar los SLAs permite garantizar la calidad del servicio. ¿Cómo se gestionan los SLAs?"
+      "kpi_name": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics"
     },
     {
       "question_id": "T7.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Structured Service Review Cadence & Executive Governance across the operational environment?",
       "pillar_id": "T7.P1",
       "kpi_id": "T7.P1.K3",
-      "question_text": "Las revisiones de servicio permiten mejorar continuamente la calidad. ¿Cómo se realizan las revisiones de servicio?"
+      "kpi_name": "Structured Service Review Cadence & Executive Governance"
     },
     {
       "question_id": "T7.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Operating Model Accountability & Operational RACI Governance across the operational environment?",
       "pillar_id": "T7.P1",
       "kpi_id": "T7.P1.K4",
-      "question_text": "Definir claramente responsabilidades evita dependencias y mejora la operación. ¿Cómo está definido el modelo de responsabilidades (RACI/ownership)?"
+      "kpi_name": "Operating Model Accountability & Operational RACI Governance"
     },
     {
       "question_id": "T7.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Mean Time to Restore (MTTR) by Service Criticality Tier across the operational environment?",
       "pillar_id": "T7.P2",
       "kpi_id": "T7.P2.K1",
-      "question_text": "Reducir el tiempo de recuperación es clave para la continuidad del servicio. ¿Cómo se gestiona el MTTR por criticidad?"
+      "kpi_name": "Mean Time to Restore (MTTR) by Service Criticality Tier"
     },
     {
       "question_id": "T7.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation across the operational environment?",
       "pillar_id": "T7.P2",
       "kpi_id": "T7.P2.K2",
-      "question_text": "Resolver incidencias en el primer nivel mejora la eficiencia operativa. ¿Cuál es la eficacia del primer nivel (FCR)?"
+      "kpi_name": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation"
     },
     {
       "question_id": "T7.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews across the operational environment?",
       "pillar_id": "T7.P2",
       "kpi_id": "T7.P2.K3",
-      "question_text": "Gestionar correctamente incidencias críticas reduce el impacto en el negocio. ¿Cómo se gestionan los Major Incidents?"
+      "kpi_name": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews"
     },
     {
       "question_id": "T7.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Incident Backlog Burndown Rate & Aging Ticket Governance across the operational environment?",
       "pillar_id": "T7.P2",
       "kpi_id": "T7.P2.K4",
-      "question_text": "Controlar el volumen de tickets evita saturación operativa. ¿Cómo se gestiona el backlog y el aging de tickets?"
+      "kpi_name": "Incident Backlog Burndown Rate & Aging Ticket Governance"
     },
     {
       "question_id": "T7.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Change Success Rate (CSR) & Incident Induction Rate across the operational environment?",
       "pillar_id": "T7.P3",
       "kpi_id": "T7.P3.K1",
-      "question_text": "Gestionar correctamente los cambios reduce incidencias en producción. ¿Cuál es la tasa de éxito de los cambios?"
+      "kpi_name": "Change Success Rate (CSR) & Incident Induction Rate"
     },
     {
       "question_id": "T7.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Change Risk Assessment Automation (Standard vs Emergency Approval) across the operational environment?",
       "pillar_id": "T7.P3",
       "kpi_id": "T7.P3.K2",
-      "question_text": "Evaluar correctamente el riesgo de los cambios evita impactos en el servicio. ¿Cómo se clasifican y evalúan los cambios?"
+      "kpi_name": "Change Risk Assessment Automation (Standard vs Emergency Approval)"
     },
     {
       "question_id": "T7.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure CMDB Accuracy, Automated Discovery & Service Dependency Mapping across the operational environment?",
       "pillar_id": "T7.P3",
       "kpi_id": "T7.P3.K3",
-      "question_text": "Disponer de una CMDB fiable es clave para la operación. ¿Cuál es la calidad y actualización de la CMDB?"
+      "kpi_name": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping"
     },
     {
       "question_id": "T7.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Emergency Change Control Governance & Post-Change Justification across the operational environment?",
       "pillar_id": "T7.P3",
       "kpi_id": "T7.P3.K4",
-      "question_text": "Reducir cambios urgentes mejora la estabilidad del servicio. ¿Cómo se gestionan los cambios emergentes?"
+      "kpi_name": "Emergency Change Control Governance & Post-Change Justification"
     },
     {
       "question_id": "T7.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Repeat Incident Suppression Rate & Incident Recurrence Trends across the operational environment?",
       "pillar_id": "T7.P4",
       "kpi_id": "T7.P4.K1",
-      "question_text": "Reducir incidencias repetitivas mejora la estabilidad operativa. ¿Cuál es el nivel de incidencias recurrentes?"
+      "kpi_name": "Repeat Incident Suppression Rate & Incident Recurrence Trends"
     },
     {
       "question_id": "T7.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems across the operational environment?",
       "pillar_id": "T7.P4",
       "kpi_id": "T7.P4.K2",
-      "question_text": "Analizar correctamente las causas raíz evita repetir errores. ¿Cómo es la calidad del RCA?"
+      "kpi_name": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems"
     },
     {
       "question_id": "T7.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Problem Backlog Execution Rate & Corrective Action Closure across the operational environment?",
       "pillar_id": "T7.P4",
       "kpi_id": "T7.P4.K3",
-      "question_text": "Gestionar el backlog de problemas permite mejorar la estabilidad del servicio. ¿Cómo se gestiona el backlog de problemas?"
+      "kpi_name": "Problem Backlog Execution Rate & Corrective Action Closure"
     },
     {
       "question_id": "T7.P4.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction across the operational environment?",
       "pillar_id": "T7.P4",
       "kpi_id": "T7.P4.K4",
-      "question_text": "Gestionar la fiabilidad como producto permite mejorar la calidad del servicio. ¿Cuál es la madurez SRE (SLO/SLI y reducción de toil)?"
+      "kpi_name": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction"
     },
     {
       "question_id": "T7.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces) across the operational environment?",
       "pillar_id": "T7.P5",
       "kpi_id": "T7.P5.K1",
-      "question_text": "Tener visibilidad completa del servicio permite detectar problemas antes de que impacten. ¿Cuál es la cobertura de observabilidad por servicio?"
+      "kpi_name": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)"
     },
     {
       "question_id": "T7.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Event Noise Reduction, Alert De-Duplication & Fatigue Prevention across the operational environment?",
       "pillar_id": "T7.P5",
       "kpi_id": "T7.P5.K2",
-      "question_text": "Reducir el ruido de alertas mejora la eficiencia operativa. ¿Cómo se gestiona el ruido de alertas?"
+      "kpi_name": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention"
     },
     {
       "question_id": "T7.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Automated Operational Runbooks & Self-Healing Remediation across the operational environment?",
       "pillar_id": "T7.P5",
       "kpi_id": "T7.P5.K3",
-      "question_text": "Automatizar tareas operativas reduce errores y tiempos de resolución. ¿Cuál es el nivel de automatización operativa y runbooks?"
+      "kpi_name": "Automated Operational Runbooks & Self-Healing Remediation"
     },
     {
       "question_id": "T7.P5.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Proactive Incident Detection Prior to End-User Impact across the operational environment?",
       "pillar_id": "T7.P5",
       "kpi_id": "T7.P5.K4",
-      "question_text": "Detectar incidentes antes del usuario mejora la experiencia del servicio. ¿Cómo se realiza la detección proactiva de incidentes?"
+      "kpi_name": "Proactive Incident Detection Prior to End-User Impact"
     },
     {
       "question_id": "T7.P5.K5.PR1",
+      "question_text": "How does the enterprise govern and measure End-to-End Event Correlation Across Infrastructure & Business Services across the operational environment?",
       "pillar_id": "T7.P5",
       "kpi_id": "T7.P5.K5",
-      "question_text": "Entender el impacto real de los eventos permite priorizar correctamente. ¿Cómo se correlacionan eventos, dependencias e impacto de servicio?"
+      "kpi_name": "End-to-End Event Correlation Across Infrastructure & Business Services"
     }
   ]
 }

@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Network architecture is ad-hoc, unsegmented, or lacks documented topology."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Baseline routing and switching exist but failover and observability lack automation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Network topology, routing policies, and segmentation standards are standardized enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Network is automated via NetDevOps, continuous telemetry flows, and automated failover."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Software-defined network mesh with autonomous self-healing, predictive capacity scaling, and zero-trust microsegmentation."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -94,41 +94,41 @@
       "kpis": [
         {
           "kpi_id": "T3.P1.K1",
-          "kpi_name": "Resiliencia del Core y eliminación de SPOF (diseño y mantenibilidad)",
+          "kpi_name": "Core Network Resiliency & Single Point of Failure Elimination",
           "questions": [
             {
               "question_id": "T3.P1.K1.PR1",
-              "question_text": "La disponibilidad de la red interna depende de la redundancia del core y de la eliminación de puntos únicos de fallo. ¿Cuál es el nivel real de resiliencia del core de red en el CPD o campus?"
+              "question_text": "How are core switching fabrics and distribution layers designed to eliminate single points of failure across primary facilities?"
             }
           ]
         },
         {
           "kpi_id": "T3.P1.K2",
-          "kpi_name": "Madurez de segmentación interna por VLAN, VRF y zonas de seguridad",
+          "kpi_name": "Internal Segmentation Maturity: VLANs, VRFs & Security Zones",
           "questions": [
             {
               "question_id": "T3.P1.K2.PR1",
-              "question_text": "La segmentación de red reduce la propagación de incidentes y mejora la seguridad. ¿Cómo está definida y gobernada la segmentación interna de la red?"
+              "question_text": "What level of macro and micro-segmentation isolates workloads and traffic zones across local switching fabrics?"
             }
           ]
         },
         {
           "kpi_id": "T3.P1.K3",
-          "kpi_name": "Estandarización de arquitectura y configuración (plantillas, coherencia, control de drift)",
+          "kpi_name": "Architecture & Configuration Standardization (Templates & Drift Control)",
           "questions": [
             {
               "question_id": "T3.P1.K3.PR1",
-              "question_text": "La estandarización de configuraciones facilita la operación y reduce errores. ¿Qué nivel de estandarización y control de configuración tiene la red LAN o core?"
+              "question_text": "How are switch configurations, firmware baselines, and configuration drift managed across network hardware?"
             }
           ]
         },
         {
           "kpi_id": "T3.P1.K4",
-          "kpi_name": "Gestión de capacidad y performance LAN (utilización, oversubscription y latencia interna)",
+          "kpi_name": "LAN Capacity & Performance Management (Oversubscription & Latency)",
           "questions": [
             {
               "question_id": "T3.P1.K4.PR1",
-              "question_text": "La planificación de capacidad permite evitar saturaciones en la red interna. ¿Cómo se gestiona la capacidad y el rendimiento de la red interna?"
+              "question_text": "How are port capacity, oversubscription ratios, and packet buffer latency monitored across core switches?"
             }
           ]
         }
@@ -141,41 +141,41 @@
       "kpis": [
         {
           "kpi_id": "T3.P2.K1",
-          "kpi_name": "Resiliencia de conectividad en sedes (redundancia, diversidad y failover)",
+          "kpi_name": "Site Connectivity Resiliency (Redundancy, Carrier Diversity & Failover)",
           "questions": [
             {
               "question_id": "T3.P2.K1.PR1",
-              "question_text": "La continuidad del negocio depende de la resiliencia de la conectividad de las sedes. ¿Qué nivel de resiliencia tienen las sedes en su conectividad WAN?"
+              "question_text": "What carrier diversity, dual-homing, and automated failover mechanisms protect regional branch and facility connections?"
             }
           ]
         },
         {
           "kpi_id": "T3.P2.K2",
-          "kpi_name": "Gestión de rendimiento WAN para latencia, pérdida y jitter por aplicación",
+          "kpi_name": "WAN Performance Governance: Latency, Loss & Per-Application Jitter",
           "questions": [
             {
               "question_id": "T3.P2.K2.PR1",
-              "question_text": "El rendimiento WAN afecta directamente a aplicaciones críticas y experiencia de usuario. ¿Cómo se monitoriza y gestiona el rendimiento WAN (latencia, pérdida o jitter)?"
+              "question_text": "How is network latency, packet loss, and jitter measured and enforced for critical application transport?"
             }
           ]
         },
         {
           "kpi_id": "T3.P2.K3",
-          "kpi_name": "Políticas de tráfico y QoS (priorización de servicios críticos)",
+          "kpi_name": "Traffic Steering Policies & Quality of Service (QoS) Prioritization",
           "questions": [
             {
               "question_id": "T3.P2.K3.PR1",
-              "question_text": "Las políticas de tráfico permiten priorizar aplicaciones críticas en la red. ¿Qué nivel de madurez tienen las políticas de QoS y gestión de tráfico?"
+              "question_text": "How does SD-WAN dynamic path selection prioritize mission-critical business transactions over bulk traffic?"
             }
           ]
         },
         {
           "kpi_id": "T3.P2.K4",
-          "kpi_name": "Gobierno de proveedor y cumplimiento de SLAs (disponibilidad y tiempos de resolución)",
+          "kpi_name": "Carrier Vendor Governance & Contractual SLA Compliance",
           "questions": [
             {
               "question_id": "T3.P2.K4.PR1",
-              "question_text": "La gestión de proveedores WAN es clave para asegurar el cumplimiento de niveles de servicio. ¿Cómo se gobiernan los proveedores WAN y el cumplimiento de los SLAs?"
+              "question_text": "How are telecommunication provider SLAs, MTTR commitments, and credit penalties monitored and audited?"
             }
           ]
         }
@@ -184,35 +184,35 @@
     {
       "pillar_id": "T3.P3",
       "pillar_name": "DCI (Data Center Interconnect) & Resilient Transport",
-      "weight_pct": 21,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T3.P3.K1",
-          "kpi_name": "Diversidad y redundancia real del DCI (rutas, proveedores, canalización)",
+          "kpi_name": "Physical Route Diversity & DCI Conduit Redundancy",
           "questions": [
             {
               "question_id": "T3.P3.K1.PR1",
-              "question_text": "La interconexión entre CPDs es crítica para continuidad y replicación de datos. ¿Cuál es el nivel de diversidad y redundancia de la conectividad entre centros de datos (DCI)?"
+              "question_text": "What physical conduit separation, fiber path diversity, and right-of-way independence protect critical DCI circuits?"
             }
           ]
         },
         {
           "kpi_id": "T3.P3.K2",
-          "kpi_name": "Gestión de latencia y rendimiento del DCI (requisitos y monitorización)",
+          "kpi_name": "DCI Throughput SLA, Latency Telemetry & Optical Monitoring",
           "questions": [
             {
               "question_id": "T3.P3.K2.PR1",
-              "question_text": "El rendimiento del transporte entre CPDs impacta en replicación y aplicaciones distribuidas. ¿Cómo se monitoriza la latencia y el rendimiento del DCI?"
+              "question_text": "How are sub-millisecond round-trip times and optical signal levels monitored across high-speed interconnect links?"
             }
           ]
         },
         {
           "kpi_id": "T3.P3.K3",
-          "kpi_name": "Pruebas de conmutación y resiliencia del transporte (evidencia operativa)",
+          "kpi_name": "Transport Switching Cadence & Live Failover Drill Evidence",
           "questions": [
             {
               "question_id": "T3.P3.K3.PR1",
-              "question_text": "Las pruebas de resiliencia permiten validar que la red se recuperará correctamente ante fallos. ¿Cómo se prueban los escenarios de conmutación entre CPDs?"
+              "question_text": "How frequently are unannounced optical link cuts and BGP route convergence drills executed under production load?"
             }
           ]
         }
@@ -221,35 +221,35 @@
     {
       "pillar_id": "T3.P4",
       "pillar_name": "Hybrid Cloud Connectivity & Edge Services",
-      "weight_pct": 18,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T3.P4.K1",
-          "kpi_name": "Patrones de conectividad híbrida (rutas, segmentación, separación de entornos)",
+          "kpi_name": "Hybrid Cloud Transit Architecture: BGP Routing, Segmentation & Peering",
           "questions": [
             {
               "question_id": "T3.P4.K1.PR1",
-              "question_text": "La conectividad híbrida debe diseñarse de forma consistente para evitar configuraciones ad-hoc. ¿Cómo están definidos los patrones de conectividad entre los CPDs y la nube?"
+              "question_text": "How are AWS Direct Connect, Azure ExpressRoute, or Transit Gateways segmented between production and non-production?"
             }
           ]
         },
         {
           "kpi_id": "T3.P4.K2",
-          "kpi_name": "Resiliencia de conectividad cloud (redundancia, fallback y pruebas)",
+          "kpi_name": "Cloud Interconnect Resiliency: Multi-Region Redundancy & Automated Fallback",
           "questions": [
             {
               "question_id": "T3.P4.K2.PR1",
-              "question_text": "La disponibilidad de servicios cloud depende de la resiliencia de la conectividad hacia la nube. ¿Qué nivel de resiliencia tiene la conectividad hacia cloud?"
+              "question_text": "What automated BFD-backed route failover protects dedicated cloud interconnects from cross-region outages?"
             }
           ]
         },
         {
           "kpi_id": "T3.P4.K3",
-          "kpi_name": "Publicación de servicios (edge L4/L7) operable y estandarizada",
+          "kpi_name": "Edge Service Ingress: L4/L7 Load Balancing, WAF & Public API Protection",
           "questions": [
             {
               "question_id": "T3.P4.K3.PR1",
-              "question_text": "La publicación de servicios debe ser consistente para evitar errores y problemas de seguridad. ¿Cómo se gestionan los servicios de edge y publicación de aplicaciones (L4/L7)?"
+              "question_text": "How do perimeter ingress load balancers, DDoS mitigation, and API gateways protect public endpoints?"
             }
           ]
         }
@@ -258,45 +258,45 @@
     {
       "pillar_id": "T3.P5",
       "pillar_name": "Network Operations, Observability & Automation (NetOps/NetDevOps)",
-      "weight_pct": 19,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T3.P5.K1",
-          "kpi_name": "Cobertura de observabilidad de red (telemetría + flows + alertas)",
+          "kpi_name": "Full-Stack Network Observability: SNMP Telemetry, NetFlow & Streaming Analytics",
           "questions": [
             {
               "question_id": "T3.P5.K1.PR1",
-              "question_text": "La visibilidad de la red es clave para detectar problemas antes de que afecten al servicio. ¿Qué nivel de observabilidad existe sobre la red?"
+              "question_text": "What unified observability platform aggregates flow telemetry, interface drops, and synthetic network latency probes 24/7?"
             }
           ]
         },
         {
           "kpi_id": "T3.P5.K2",
-          "kpi_name": "Gestión de cambios y configuración (trazabilidad + rollback)",
+          "kpi_name": "Infrastructure as Code (IaC) Network Change Governance & Versioned Rollbacks",
           "questions": [
             {
               "question_id": "T3.P5.K2.PR1",
-              "question_text": "La gestión controlada de cambios reduce el riesgo de interrupciones en la red. ¿Cómo se gestionan los cambios de configuración en la red?"
+              "question_text": "How are network configuration changes governed through version control, CI/CD pipelines, and automated rollback triggers?"
             }
           ]
         },
         {
           "kpi_id": "T3.P5.K3",
-          "kpi_name": "Automatización de red basada en source of truth y modelos reproducibles (fiabilidad operativa)",
+          "kpi_name": "Source-of-Truth Network Automation (NetDevOps & Reproducible Fleet Baselines)",
           "questions": [
             {
               "question_id": "T3.P5.K3.PR1",
-              "question_text": "Para entender si la automatización es fiable y no depende de conocimiento tácito:¿La automatización de red se apoya realmente en inventario, topología y observabilidad suficientes, o sigue descansando sobre scripts puntuales y conocimiento experto?"
+              "question_text": "How does a single source of truth (e.g. NetBox) drive automated configuration generation and device provisioning?"
             }
           ]
         },
         {
           "kpi_id": "T3.P5.K4",
-          "kpi_name": "Gestión de incidentes y mejora continua (runbooks, postmortems, MTTR)",
+          "kpi_name": "Network Incident Response Lifecycle, Automated Runbooks & MTTR Governance",
           "questions": [
             {
               "question_id": "T3.P5.K4.PR1",
-              "question_text": "La gestión de incidentes permite mejorar la estabilidad de la red a largo plazo. ¿Cómo se gestionan los incidentes de red y la mejora continua?"
+              "question_text": "What automated triage runbooks, root-cause post-mortems, and mean-time-to-repair (MTTR) metrics govern network incidents?"
             }
           ]
         }
@@ -306,111 +306,129 @@
   "questions": [
     {
       "question_id": "T3.P1.K1.PR1",
+      "question_text": "How are core switching fabrics and distribution layers designed to eliminate single points of failure across primary facilities?",
       "pillar_id": "T3.P1",
       "kpi_id": "T3.P1.K1",
-      "question_text": "La disponibilidad de la red interna depende de la redundancia del core y de la eliminación de puntos únicos de fallo. ¿Cuál es el nivel real de resiliencia del core de red en el CPD o campus?"
+      "kpi_name": "Core Network Resiliency & Single Point of Failure Elimination"
     },
     {
       "question_id": "T3.P1.K2.PR1",
+      "question_text": "What level of macro and micro-segmentation isolates workloads and traffic zones across local switching fabrics?",
       "pillar_id": "T3.P1",
       "kpi_id": "T3.P1.K2",
-      "question_text": "La segmentación de red reduce la propagación de incidentes y mejora la seguridad. ¿Cómo está definida y gobernada la segmentación interna de la red?"
+      "kpi_name": "Internal Segmentation Maturity: VLANs, VRFs & Security Zones"
     },
     {
       "question_id": "T3.P1.K3.PR1",
+      "question_text": "How are switch configurations, firmware baselines, and configuration drift managed across network hardware?",
       "pillar_id": "T3.P1",
       "kpi_id": "T3.P1.K3",
-      "question_text": "La estandarización de configuraciones facilita la operación y reduce errores. ¿Qué nivel de estandarización y control de configuración tiene la red LAN o core?"
+      "kpi_name": "Architecture & Configuration Standardization (Templates & Drift Control)"
     },
     {
       "question_id": "T3.P1.K4.PR1",
+      "question_text": "How are port capacity, oversubscription ratios, and packet buffer latency monitored across core switches?",
       "pillar_id": "T3.P1",
       "kpi_id": "T3.P1.K4",
-      "question_text": "La planificación de capacidad permite evitar saturaciones en la red interna. ¿Cómo se gestiona la capacidad y el rendimiento de la red interna?"
+      "kpi_name": "LAN Capacity & Performance Management (Oversubscription & Latency)"
     },
     {
       "question_id": "T3.P2.K1.PR1",
+      "question_text": "What carrier diversity, dual-homing, and automated failover mechanisms protect regional branch and facility connections?",
       "pillar_id": "T3.P2",
       "kpi_id": "T3.P2.K1",
-      "question_text": "La continuidad del negocio depende de la resiliencia de la conectividad de las sedes. ¿Qué nivel de resiliencia tienen las sedes en su conectividad WAN?"
+      "kpi_name": "Site Connectivity Resiliency (Redundancy, Carrier Diversity & Failover)"
     },
     {
       "question_id": "T3.P2.K2.PR1",
+      "question_text": "How is network latency, packet loss, and jitter measured and enforced for critical application transport?",
       "pillar_id": "T3.P2",
       "kpi_id": "T3.P2.K2",
-      "question_text": "El rendimiento WAN afecta directamente a aplicaciones críticas y experiencia de usuario. ¿Cómo se monitoriza y gestiona el rendimiento WAN (latencia, pérdida o jitter)?"
+      "kpi_name": "WAN Performance Governance: Latency, Loss & Per-Application Jitter"
     },
     {
       "question_id": "T3.P2.K3.PR1",
+      "question_text": "How does SD-WAN dynamic path selection prioritize mission-critical business transactions over bulk traffic?",
       "pillar_id": "T3.P2",
       "kpi_id": "T3.P2.K3",
-      "question_text": "Las políticas de tráfico permiten priorizar aplicaciones críticas en la red. ¿Qué nivel de madurez tienen las políticas de QoS y gestión de tráfico?"
+      "kpi_name": "Traffic Steering Policies & Quality of Service (QoS) Prioritization"
     },
     {
       "question_id": "T3.P2.K4.PR1",
+      "question_text": "How are telecommunication provider SLAs, MTTR commitments, and credit penalties monitored and audited?",
       "pillar_id": "T3.P2",
       "kpi_id": "T3.P2.K4",
-      "question_text": "La gestión de proveedores WAN es clave para asegurar el cumplimiento de niveles de servicio. ¿Cómo se gobiernan los proveedores WAN y el cumplimiento de los SLAs?"
+      "kpi_name": "Carrier Vendor Governance & Contractual SLA Compliance"
     },
     {
       "question_id": "T3.P3.K1.PR1",
+      "question_text": "What physical conduit separation, fiber path diversity, and right-of-way independence protect critical DCI circuits?",
       "pillar_id": "T3.P3",
       "kpi_id": "T3.P3.K1",
-      "question_text": "La interconexión entre CPDs es crítica para continuidad y replicación de datos. ¿Cuál es el nivel de diversidad y redundancia de la conectividad entre centros de datos (DCI)?"
+      "kpi_name": "Physical Route Diversity & DCI Conduit Redundancy"
     },
     {
       "question_id": "T3.P3.K2.PR1",
+      "question_text": "How are sub-millisecond round-trip times and optical signal levels monitored across high-speed interconnect links?",
       "pillar_id": "T3.P3",
       "kpi_id": "T3.P3.K2",
-      "question_text": "El rendimiento del transporte entre CPDs impacta en replicación y aplicaciones distribuidas. ¿Cómo se monitoriza la latencia y el rendimiento del DCI?"
+      "kpi_name": "DCI Throughput SLA, Latency Telemetry & Optical Monitoring"
     },
     {
       "question_id": "T3.P3.K3.PR1",
+      "question_text": "How frequently are unannounced optical link cuts and BGP route convergence drills executed under production load?",
       "pillar_id": "T3.P3",
       "kpi_id": "T3.P3.K3",
-      "question_text": "Las pruebas de resiliencia permiten validar que la red se recuperará correctamente ante fallos. ¿Cómo se prueban los escenarios de conmutación entre CPDs?"
+      "kpi_name": "Transport Switching Cadence & Live Failover Drill Evidence"
     },
     {
       "question_id": "T3.P4.K1.PR1",
+      "question_text": "How are AWS Direct Connect, Azure ExpressRoute, or Transit Gateways segmented between production and non-production?",
       "pillar_id": "T3.P4",
       "kpi_id": "T3.P4.K1",
-      "question_text": "La conectividad híbrida debe diseñarse de forma consistente para evitar configuraciones ad-hoc. ¿Cómo están definidos los patrones de conectividad entre los CPDs y la nube?"
+      "kpi_name": "Hybrid Cloud Transit Architecture: BGP Routing, Segmentation & Peering"
     },
     {
       "question_id": "T3.P4.K2.PR1",
+      "question_text": "What automated BFD-backed route failover protects dedicated cloud interconnects from cross-region outages?",
       "pillar_id": "T3.P4",
       "kpi_id": "T3.P4.K2",
-      "question_text": "La disponibilidad de servicios cloud depende de la resiliencia de la conectividad hacia la nube. ¿Qué nivel de resiliencia tiene la conectividad hacia cloud?"
+      "kpi_name": "Cloud Interconnect Resiliency: Multi-Region Redundancy & Automated Fallback"
     },
     {
       "question_id": "T3.P4.K3.PR1",
+      "question_text": "How do perimeter ingress load balancers, DDoS mitigation, and API gateways protect public endpoints?",
       "pillar_id": "T3.P4",
       "kpi_id": "T3.P4.K3",
-      "question_text": "La publicación de servicios debe ser consistente para evitar errores y problemas de seguridad. ¿Cómo se gestionan los servicios de edge y publicación de aplicaciones (L4/L7)?"
+      "kpi_name": "Edge Service Ingress: L4/L7 Load Balancing, WAF & Public API Protection"
     },
     {
       "question_id": "T3.P5.K1.PR1",
+      "question_text": "What unified observability platform aggregates flow telemetry, interface drops, and synthetic network latency probes 24/7?",
       "pillar_id": "T3.P5",
       "kpi_id": "T3.P5.K1",
-      "question_text": "La visibilidad de la red es clave para detectar problemas antes de que afecten al servicio. ¿Qué nivel de observabilidad existe sobre la red?"
+      "kpi_name": "Full-Stack Network Observability: SNMP Telemetry, NetFlow & Streaming Analytics"
     },
     {
       "question_id": "T3.P5.K2.PR1",
+      "question_text": "How are network configuration changes governed through version control, CI/CD pipelines, and automated rollback triggers?",
       "pillar_id": "T3.P5",
       "kpi_id": "T3.P5.K2",
-      "question_text": "La gestión controlada de cambios reduce el riesgo de interrupciones en la red. ¿Cómo se gestionan los cambios de configuración en la red?"
+      "kpi_name": "Infrastructure as Code (IaC) Network Change Governance & Versioned Rollbacks"
     },
     {
       "question_id": "T3.P5.K3.PR1",
+      "question_text": "How does a single source of truth (e.g. NetBox) drive automated configuration generation and device provisioning?",
       "pillar_id": "T3.P5",
       "kpi_id": "T3.P5.K3",
-      "question_text": "Para entender si la automatización es fiable y no depende de conocimiento tácito:¿La automatización de red se apoya realmente en inventario, topología y observabilidad suficientes, o sigue descansando sobre scripts puntuales y conocimiento experto?"
+      "kpi_name": "Source-of-Truth Network Automation (NetDevOps & Reproducible Fleet Baselines)"
     },
     {
       "question_id": "T3.P5.K4.PR1",
+      "question_text": "What automated triage runbooks, root-cause post-mortems, and mean-time-to-repair (MTTR) metrics govern network incidents?",
       "pillar_id": "T3.P5",
       "kpi_id": "T3.P5.K4",
-      "question_text": "La gestión de incidentes permite mejorar la estabilidad de la red a largo plazo. ¿Cómo se gestionan los incidentes de red y la mejora continua?"
+      "kpi_name": "Network Incident Response Lifecycle, Automated Runbooks & MTTR Governance"
     }
   ]
 }

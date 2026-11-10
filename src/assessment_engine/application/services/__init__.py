@@ -12,6 +12,9 @@ from assessment_engine.application.services.neurosymbolic_risk_synthesizer impor
 from assessment_engine.application.services.risk_synthesis_service import (
     DeterministicFallbackSynthesizer,
 )
+from assessment_engine.application.services.structured_evidence_extractor import (
+    StructuredEvidenceExtractor,
+)
 from assessment_engine.application.services.synthesis_facade import (
     PolymorphicSynthesisFacade,
     SynthesisAntiCorruptionLayer,
@@ -23,6 +26,7 @@ __all__ = [
     "DeterministicFallbackSynthesizer",
     "NeurosymbolicLLMSynthesizer",
     "PolymorphicSynthesisFacade",
+    "StructuredEvidenceExtractor",
     "SynthesisAntiCorruptionLayer",
     "SynthesisGeneratorPort",
     "SynthesisMode",

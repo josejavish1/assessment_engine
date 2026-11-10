@@ -145,9 +145,9 @@ def build_cmmi_methodology_and_capabilities(
             loc_kname = kpi.get(f"kpi_name_{meta_lang}") or resolver.resolve_capability_name(
                 k_id or raw_kname, default="", locale=meta_lang
             )
-            if loc_kname and loc_kname != raw_kname:
-                distinct_names.append(loc_kname)
-            elif meta_lang == "es" and raw_kname:
+            if loc_kname and loc_kname.strip():
+                distinct_names.append(loc_kname.strip())
+            elif raw_kname:
                 distinct_names.append(raw_kname)
 
         if distinct_names and len(distinct_names) == len(kpi_list):
@@ -395,7 +395,23 @@ def build_appendix_c_glossary_and_disclaimer(
                 is_header=True,
             )
         ]
-        for term, definition in sorted(glossary.items()):
+        # Collect full textual corpus of the document to filter relevant glossary terms dynamically
+        doc_corpus_parts = []
+        for n in nodes:
+            if hasattr(n, "text") and n.text:
+                doc_corpus_parts.append(str(n.text))
+        bp_data = ctx.get("blueprint_data") or {}
+        doc_corpus = " ".join(doc_corpus_parts) + " " + json.dumps(bp_data)
+
+        filtered_terms = {}
+        for term, definition in glossary.items():
+            if re.search(r"\b" + re.escape(term) + r"\b", doc_corpus):
+                filtered_terms[term] = definition
+
+        if not filtered_terms:
+            filtered_terms = dict(list(glossary.items())[:10])
+
+        for term, definition in sorted(filtered_terms.items()):
             rows.append(
                 TableRowNode(
                     cells=[

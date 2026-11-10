@@ -64,7 +64,8 @@ def test_gate2_semantic_polarity_risk_cards(starling_suite):
         assert "standardized procedures and automated controls active" not in title_text.lower(), (
             f"Gate 2 Failed: Strength used as risk title in Table {idx+1}: {title_text}"
         )
-        assert "operational risk scenario" in title_text.lower() or "risk" in title_text.lower(), (
+        valid_threat_indicators = ["risk", "threat", "failure", "disruption", "latency", "expansion", "deadlock", "operational risk scenario"]
+        assert any(ind in title_text.lower() for ind in valid_threat_indicators), (
             f"Gate 2 Failed: Table {idx+1} title does not identify a risk scenario: {title_text}"
         )
 

@@ -2,14 +2,74 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 
 from assessment_engine.domain.schemas.risk_synthesis import (
     IRiskSynthesizer,
     RiskSynthesisContext,
     SynthesizedRiskItem,
 )
+from assessment_engine.domain.taxonomy.archetype_registry import (
+    LossArchetypeType,
+    get_actuarial_archetype_registry,
+)
 from assessment_engine.infrastructure.localization import format_currency
+
+# Bijective Pillar-Specific Failure Patterns to guarantee 0% title cloning
+PILLAR_FAILURE_PATTERNS: dict[str, dict[str, str]] = {
+    # Tower 8: Strategy, Governance & FinOps
+    "T8.P1": {
+        "title": "Target architecture misalignment and technical debt accumulation in {tech_name}",
+        "mechanism": "Uncoordinated roadmap prioritization and deferred technical debt across {tech_name} lead to architectural divergence and elevated lifecycle maintenance overhead.",
+        "remediation": "Establish formal Architecture Review Board (ARB) governance and technical debt retirement milestones for {tech_name}.",
+    },
+    "T8.P2": {
+        "title": "Portfolio demand fragmentation and delayed business value realization in {tech_name}",
+        "mechanism": "Lack of disciplined capacity allocation and un-tiered decision frameworks for {tech_name} induce budget variances and prolonged initiative delivery cycles.",
+        "remediation": "Implement value-driven portfolio governance and stage-gate investment prioritization for {tech_name}.",
+    },
+    "T8.P3": {
+        "title": "Unverified regulatory control attestation and vendor concentration risk in {tech_name}",
+        "mechanism": "Inadequate continuous compliance auditing and unmitigated vendor concentration on {tech_name} expose the enterprise to regulatory sanctions and single-partner bottlenecks.",
+        "remediation": "Automate risk register synchronization and continuous control attestation under applicable regulatory compliance frameworks for {tech_name}.",
+    },
+    "T8.P4": {
+        "title": "Unreserved on-demand compute drift and unallocated cloud spend leakage in {tech_name}",
+        "mechanism": "Absence of tag-based cost allocation and low commitment coverage on {tech_name} lead to continuous cloud budget overruns and EBITDA margin erosion.",
+        "remediation": "Enforce automated FinOps cost-allocation tags and automated Savings Plans / Reserved Instance commitments for {tech_name}.",
+    },
+    "T8.P5": {
+        "title": "Executive KPI visibility vacuum and unmeasured ROI on technology investments in {tech_name}",
+        "mechanism": "Absence of unit-economics telemetry and structured post-implementation reviews on {tech_name} obscures business value attainment and continuous improvement.",
+        "remediation": "Deploy unified executive value dashboards and operational OKR tracking for {tech_name}.",
+    },
+    # Tower 1: Physical Data Center & Facilities
+    "T1.P1": {
+        "title": "UPS autonomy degradation and switchgear single point of failure in {tech_name}",
+        "mechanism": "Unverified battery discharge cycles and single-cord power paths on {tech_name} eliminate electrical redundancy during utility brownouts.",
+        "remediation": "Deploy dual-feed ATS distribution circuits and certified automated load-bank testing for {tech_name}.",
+    },
+    "T1.P2": {
+        "title": "Thermal hotspot accumulation and HVAC cooling redundancy deficit in {tech_name}",
+        "mechanism": "Uncontained airflow mixing and lack of N+1 precision CRAC unit maintainability in {tech_name} cause localized thermal throttling under peak server loads.",
+        "remediation": "Implement aisle containment and continuous ASHRAE TC 9.9 thermal telemetry probes for {tech_name}.",
+    },
+    "T1.P3": {
+        "title": "Whitespace physical access auditing latency and permit-to-work gaps in {tech_name}",
+        "mechanism": "Unsynchronized biometric logs and manual vendor escorts in {tech_name} suites compromise physical security compliance boundaries.",
+        "remediation": "Integrate two-factor biometric access controls and immutable CCTV audit logging for {tech_name}.",
+    },
+    "T1.P4": {
+        "title": "Aspirating smoke detection delay and clean-agent discharge compliance in {tech_name}",
+        "mechanism": "Deferred room integrity testing and unmonitored gaseous suppression circuits in {tech_name} risk catastrophic environmental damage.",
+        "remediation": "Conduct annual room enclosure integrity certification and continuous VESDA aspirating smoke telemetry for {tech_name}.",
+    },
+    "T1.P5": {
+        "title": "DCIM telemetry fragmentation and facility lifecycle obsolescence in {tech_name}",
+        "mechanism": "Fragmented building management alarms and manual capacity planning for {tech_name} delay detection of mechanical facility degradation.",
+        "remediation": "Deploy unified DCIM infrastructure monitoring and predictive maintenance lifecycle schedules for {tech_name}.",
+    },
+}
 
 DOMAIN_FAILURE_PATTERNS: dict[str, dict[str, str]] = {
     "T1": {
@@ -86,21 +146,60 @@ class DeterministicFallbackSynthesizer(IRiskSynthesizer):
         penalty_str = format_currency(ctx.penalty_loss, currency_symbol=ctx.currency_symbol, locale=ctx.doc_lang, decimals=0)
         hourly_str = format_currency(ctx.hourly_rate, currency_symbol=ctx.currency_symbol, locale=ctx.doc_lang, decimals=0)
 
-        # Lookup domain-native failure pattern by tower code
+        # Lookup pillar-specific failure pattern first to prevent 100% title duplication
         tower_key = str(ctx.tower_code).upper()
-        pattern = DOMAIN_FAILURE_PATTERNS.get(tower_key, DEFAULT_FAILURE_PATTERN)
+        pillar_key = f"{tower_key}.{ctx.pillar_id}" if not str(ctx.pillar_id).startswith("T") else str(ctx.pillar_id)
+        
+        pattern = (
+            PILLAR_FAILURE_PATTERNS.get(pillar_key)
+            or DOMAIN_FAILURE_PATTERNS.get(tower_key)
+            or DEFAULT_FAILURE_PATTERN
+        )
 
         title = pattern["title"].format(tech_name=tech_name, pillar_name=ctx.pillar_name)
         mechanism = pattern["mechanism"].format(tech_name=tech_name, pillar_name=ctx.pillar_name)
         remediation = pattern["remediation"].format(tech_name=tech_name, pillar_name=ctx.pillar_name)
 
-        justification = (
-            f"Under the Open FAIR taxonomy, this operational risk models an Annualized Loss Expectancy (ALE) of {ale_str}/year. "
-            f"A single occurrence ({sle_str} SLE across a {ctx.downtime_minutes}-minute recovery window) decomposes into: "
-            f"{stoppage_str} in direct operational stoppage against the baseline hourly burn rate of {hourly_str}/hr; "
-            f"{recovery_str} in emergency SRE and engineering recovery labor; and "
-            f"{penalty_str} in contractual SLA breach penalties and audit attestation overhead."
-        )
+        # Actuarial justification decoupled by loss archetype
+        try:
+            arch_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(tower_key)
+            primary_arch = arch_mapping.primary_archetype
+        except (KeyError, ValueError):
+            primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
+
+        if primary_arch == LossArchetypeType.CAPITAL_INEFFICIENCY:
+            justification = (
+                f"Under the Open FAIR taxonomy, this economic risk models an Annualized Loss Expectancy (ALE) of {ale_str}/year "
+                f"with a single loss exposure benchmark of {sle_str}. "
+                f"Across annual cloud infrastructure and software asset expenditures, this capital exposure decomposes into: "
+                f"{stoppage_str} in direct unbudgeted on-demand compute drift; "
+                f"{recovery_str} in engineering remediation labor and tagging governance overhead; and "
+                f"{penalty_str} in retroactive vendor licensing true-up variances and unoptimized commitment penalties."
+            )
+        elif primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+            justification = (
+                f"Under the Open FAIR taxonomy, this operational toil risk models an Annualized Loss Expectancy (ALE) of {ale_str}/year. "
+                f"Across aggregate workforce capacity, this cognitive friction decomposes into: "
+                f"{stoppage_str} in lost productive employee hours against fully-burdened payroll rates; "
+                f"{recovery_str} in tier-2/tier-3 escalation and manual ticket triage labor; and "
+                f"{penalty_str} in delayed feature delivery velocity and project schedule slippage."
+            )
+        elif primary_arch == LossArchetypeType.REGULATORY_AND_BREACH:
+            justification = (
+                f"Under the Open FAIR taxonomy, this security compliance risk models an Annualized Loss Expectancy (ALE) of {ale_str}/year. "
+                f"In the event of a significant security compromise, this liability decomposes into: "
+                f"{stoppage_str} in potential statutory enforcement sanctions under regulatory frameworks (DORA/GDPR); "
+                f"{recovery_str} in third-party forensic investigation and audit attestation costs; and "
+                f"{penalty_str} in customer notification protocols and mandatory regulatory disclosures."
+            )
+        else:
+            justification = (
+                f"Under the Open FAIR taxonomy, this operational risk models an Annualized Loss Expectancy (ALE) of {ale_str}/year. "
+                f"A single occurrence ({sle_str} SLE across a {ctx.downtime_minutes}-minute recovery window) decomposes into: "
+                f"{stoppage_str} in direct operational stoppage against the baseline hourly burn rate of {hourly_str}/hr; "
+                f"{recovery_str} in emergency SRE and engineering recovery labor; and "
+                f"{penalty_str} in contractual SLA breach penalties and audit attestation overhead."
+            )
 
         return SynthesizedRiskItem(
             risk_id=f"RSK-{ctx.kpi_id}",

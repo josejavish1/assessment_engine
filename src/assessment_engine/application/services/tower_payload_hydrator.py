@@ -21,13 +21,18 @@ from assessment_engine.domain.actuarial import (
     ActuarialCalibrationEngine,
     IndustryArchetype,
 )
+from assessment_engine.domain.actuarial_calculator import calculate_severity_weighted_sle
+from assessment_engine.domain.exceptions import PayloadIntegrityError
 from assessment_engine.domain.actuarial_scale_calibrator import (
     resolve_iso_currency_code as _resolve_iso_currency_code,
 )
 from assessment_engine.domain.actuarial_scale_calibrator import (
     safe_float,
 )
-from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
+from assessment_engine.domain.taxonomy_resolver import (
+    extract_pillar_identifiers,
+    get_taxonomy_resolver,
+)
 from assessment_engine.infrastructure.localization import t
 
 logger = logging.getLogger(__name__)
@@ -45,6 +50,19 @@ DEFAULT_TENANT_PLACEHOLDER_TITLE: Final[str] = "Enterprise"
 DEFAULT_CURRENCY_CODE: Final[str] = "EUR"
 DEFAULT_CURRENCY_SYMBOL: Final[str] = "€"
 DEFAULT_SECTOR_BENCHMARK_LABEL: Final[str] = "Industry Baseline"
+
+CANONICAL_TOWER_ZONE_MAPPING: Final[dict[str, str]] = {
+    "T1": "TIER_1_MISSION_CRITICAL",
+    "T2": "TIER_1_MISSION_CRITICAL",
+    "T3": "TIER_3_EDGE_DISTRIBUTION",
+    "T4": "TIER_1_MISSION_CRITICAL",
+    "T5": "TIER_2_CORE_OPERATIONS",
+    "T6": "TIER_2_CORE_OPERATIONS",
+    "T7": "TIER_2_CORE_OPERATIONS",
+    "T8": "TIER_1_MISSION_CRITICAL",
+    "T9": "TIER_3_EDGE_DISTRIBUTION",
+    "T10": "TIER_3_EDGE_DISTRIBUTION",
+}
 
 
 def _round_currency_half_up(val: float | int | Decimal | str | None) -> float:
@@ -192,7 +210,10 @@ def _generate_canonical_kpi_finding(
                 if p_code == pillar_id.upper() or p_code.endswith(f".{pillar_id.upper()}"):
                     cap_name = str(p.get("pillar_name", "")).strip()
                     kpis = p.get("kpis", [])
-                    k_name = str(kpis[-1].get("kpi_name", "")).strip() if kpis else cap_name
+                    raw_k_name = str(kpis[-1].get("kpi_name", "")).strip() if kpis else cap_name
+                    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                    resolver = get_taxonomy_resolver()
+                    k_name = resolver.resolve_capability_name(raw_k_name, default=raw_k_name, locale=doc_lang)
 
                     # Use RFC 084 ActuarialInferenceEngine for mathematical calibration
                     act_engine = ActuarialInferenceEngine()
@@ -241,6 +262,156 @@ def _generate_canonical_kpi_finding(
 
 class TowerPayloadHydrator:
     """Hydrates raw tower blueprint payloads with authoritative corporate telemetry."""
+
+    @staticmethod
+    def _hydrate_epistemic_ledger_evidence(
+        raw_payload: Dict[str, Any],
+        code_upper: str,
+        ledger_entries_by_tower: Dict[str, Dict[str, Any]],
+    ) -> None:
+        """Attaches reconciled epistemic evidence from immutable ledger (RFC 082)."""
+        if code_upper not in ledger_entries_by_tower:
+            return
+
+        t_entry = ledger_entries_by_tower[code_upper]
+        raw_payload["epistemic_ledger_entry"] = t_entry
+        raw_payload["epistemic_truth_status"] = t_entry.get("truth_status")
+        raw_payload["epistemic_composite_confidence"] = t_entry.get("composite_confidence")
+        frags = t_entry.get("supporting_fragments", [])
+        raw_payload["epistemic_supporting_fragments"] = frags
+
+        pos_facts = [
+            str(f.get("canonical_assertion", "")).strip()
+            for f in frags
+            if isinstance(f, dict) and f.get("polarity") == "POSITIVE" and f.get("canonical_assertion")
+        ]
+        neg_facts = [
+            str(f.get("canonical_assertion", "")).strip()
+            for f in frags
+            if isinstance(f, dict) and f.get("polarity") == "NEGATIVE" and f.get("canonical_assertion")
+        ]
+        if pos_facts:
+            raw_payload["epistemic_positive_assertions"] = pos_facts
+        if neg_facts:
+            raw_payload["epistemic_negative_assertions"] = neg_facts
+
+        resolved_entities_list: List[Dict[str, Any]] = []
+        for f in frags:
+            if isinstance(f, dict):
+                f_meta = f.get("metadata", {})
+                if isinstance(f_meta, dict):
+                    for ent in f_meta.get("resolved_entities", []):
+                        if isinstance(ent, dict) and ent not in resolved_entities_list:
+                            resolved_entities_list.append(ent)
+        if resolved_entities_list:
+            raw_payload["verified_entities"] = resolved_entities_list
+
+    @staticmethod
+    def _enforce_ontological_gatekeeping(
+        raw_payload: Dict[str, Any],
+        code_upper: str,
+        active_gatekeeper: Any,
+        doc_lang: str,
+        resolved_repo_root: Path,
+    ) -> None:
+        """Enforces Ontological Semantic Gatekeeping on payload findings before disk persistence."""
+        if not active_gatekeeper:
+            return
+
+        for pil in raw_payload.get("pillars_analysis", []):
+            if not isinstance(pil, dict):
+                continue
+            p_id = str(pil.get("pillar_id") or "").strip().upper()
+
+            # Refresh existing canonical findings with latest localized templates
+            current_findings = pil.get("health_check_asis", [])
+            if isinstance(current_findings, list):
+                for f_idx, f_item in enumerate(current_findings):
+                    if isinstance(f_item, dict) and str(f_item.get("node_id", "")).endswith("-CANONICAL-01"):
+                        refreshed = _generate_canonical_kpi_finding(
+                            tower_id=code_upper,
+                            pillar_id=p_id,
+                            doc_lang=doc_lang,
+                            repo_root=resolved_repo_root,
+                        )
+                        if refreshed:
+                            current_findings[f_idx] = refreshed
+
+            raw_findings = current_findings
+            if isinstance(raw_findings, list) and raw_findings and p_id:
+                sanitized_findings, quarantined = active_gatekeeper.sanitize_pillar_findings(
+                    pillar_id=p_id,
+                    findings=raw_findings,
+                    tower_id=code_upper,
+                )
+                if quarantined:
+                    logger.info(
+                        "[Payload Hydrator] Quarantined %d out-of-domain findings in %s -> %s",
+                        len(quarantined),
+                        code_upper,
+                        p_id,
+                    )
+                    if not sanitized_findings:
+                        nexus_findings = [
+                            f
+                            for f in raw_findings
+                            if isinstance(f, dict)
+                            and (
+                                f.get("is_nexus")
+                                or "NEXUS" in str(f.get("node_id", "")).upper()
+                            )
+                        ]
+                        if nexus_findings:
+                            logger.info(
+                                "[Payload Hydrator] Preserving %d cross-cutting nexus findings in %s -> %s",
+                                len(nexus_findings),
+                                code_upper,
+                                p_id,
+                            )
+                            sanitized_findings = nexus_findings
+                        else:
+                            logger.info(
+                                "[Payload Hydrator] All findings quarantined in %s -> %s; generating canonical KPI finding fallback",
+                                code_upper,
+                                p_id,
+                            )
+                            canonical_fallback = _generate_canonical_kpi_finding(
+                                tower_id=code_upper,
+                                pillar_id=p_id,
+                                doc_lang=doc_lang,
+                                repo_root=resolved_repo_root,
+                            )
+                            sanitized_findings = [canonical_fallback] if canonical_fallback else []
+
+                    pil["health_check_asis"] = sanitized_findings
+
+            asis_desc = str(pil.get("asis_architecture_description") or "").strip()
+            if asis_desc and p_id:
+                state_val = active_gatekeeper.validate_text_for_pillar(
+                    text=asis_desc,
+                    target_pillar_id=p_id,
+                    tower_id=code_upper,
+                )
+                if state_val.verdict.value == "QUARANTINED_FOREIGN_DOMAIN":
+                    sentences = re.split(
+                        r"(?<!\be\.g)(?<!\bi\.e)(?<!\bvs)(?<=[.!?])\s+", asis_desc
+                    )
+                    clean_sentences = [
+                        s.strip()
+                        for s in sentences
+                        if active_gatekeeper.validate_text_for_pillar(
+                            text=s, target_pillar_id=p_id, tower_id=code_upper
+                        ).verdict.value != "QUARANTINED_FOREIGN_DOMAIN"
+                        and len(s.strip()) > 10
+                    ]
+                    if clean_sentences:
+                        pil["asis_architecture_description"] = " ".join(clean_sentences)
+                    else:
+                        pil["asis_architecture_description"] = t(
+                            "asis_architecture_description_fallback",
+                            locale=doc_lang,
+                            pillar_name=pil.get("pillar_name", p_id),
+                        )
 
     @staticmethod
     def compute_canonical_score(payload: Dict[str, Any], doc_lang: str = "en") -> float:
@@ -293,9 +464,15 @@ class TowerPayloadHydrator:
         raw_ext = payload.get("exact_score") or payload.get("score")
         parsed_ext = safe_float(raw_ext, locale=doc_lang, allow_zero=True)
         if parsed_ext is not None:
-            return round(parsed_ext, 2)
+            return float(Decimal(str(parsed_ext)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-        return 2.50
+        t_code = str(payload.get("tower_code") or payload.get("tower_id") or "UNKNOWN")
+        raise PayloadIntegrityError(
+            tower_id=t_code,
+            control_id="GLOBAL_MATURITY",
+            missing_attribute="score",
+            context={"reason": "Payload lacks verifiable pillars_analysis and explicit maturity score."},
+        )
 
     @staticmethod
     def load_and_hydrate_all_towers(
@@ -389,6 +566,8 @@ class TowerPayloadHydrator:
                     if t_ref:
                         ledger_entries_by_tower[t_ref] = entry
 
+        taxonomy_resolver = get_taxonomy_resolver()
+
         for tower_code in target_towers:
             code_upper = _FILENAME_TOKEN_SPLIT_PATTERN.sub("_", tower_code.strip().upper()).strip("_")
             if not code_upper:
@@ -456,39 +635,11 @@ class TowerPayloadHydrator:
                     if p_name and "pillar_name" not in pil:
                         pil["pillar_name"] = p_name
 
-            # RFC 075: Compute canonical maturity score strictly from weighted pillars_analysis dot-product
-            pa = raw_payload.get("pillars_analysis") or []
-            weighted_pillar_sum = Decimal("0")
-            total_pillar_weight = Decimal("0")
-            for p_item in pa:
-                if isinstance(p_item, dict):
-                    raw_sc = p_item.get("score") if p_item.get("score") is not None else p_item.get("maturity_score")
-                    sc_f = safe_float(raw_sc, locale=doc_lang, allow_zero=True)
-                    raw_w = p_item.get("weight") if p_item.get("weight") is not None else p_item.get("weight_pct")
-                    w_f = safe_float(raw_w, locale=doc_lang, allow_zero=True)
-                    if sc_f is not None and w_f is not None:
-                        w_dec = Decimal(str(w_f))
-                        if w_dec > Decimal("1.0"):
-                            w_dec = w_dec / Decimal("100.0")
-                        sc_dec = Decimal(str(sc_f))
-                        weighted_pillar_sum += sc_dec * w_dec
-                        total_pillar_weight += w_dec
-
-            if total_pillar_weight > Decimal("0"):
-                canonical_score_dec = (weighted_pillar_sum / total_pillar_weight).quantize(
-                    Decimal("0.01"), rounding=ROUND_HALF_UP
-                )
-                canonical_score_float = float(canonical_score_dec)
-                canonical_score_str = f"{canonical_score_dec:.2f}"
-            else:
-                raw_ext = raw_payload.get("exact_score") or raw_payload.get("score")
-                parsed_ext = safe_float(raw_ext, locale=doc_lang, allow_zero=True)
-                if parsed_ext is not None:
-                    canonical_score_float = parsed_ext
-                    canonical_score_str = f"{parsed_ext:.2f}"
-                else:
-                    canonical_score_float = 2.50
-                    canonical_score_str = "2.50"
+            # RFC 075: Compute canonical maturity score strictly from compute_canonical_score SSOT
+            canonical_score_float = TowerPayloadHydrator.compute_canonical_score(
+                raw_payload, doc_lang=doc_lang
+            )
+            canonical_score_str = f"{canonical_score_float:.2f}"
 
             raw_payload["score"] = canonical_score_float
             raw_payload["exact_score"] = canonical_score_float
@@ -583,9 +734,15 @@ class TowerPayloadHydrator:
             existing_tower_name = str(
                 raw_payload.get("tower_name") or doc_meta.get("tower_name") or ""
             ).strip()
-            resolved_tower_name = existing_tower_name or CANONICAL_TOWER_NAMES.get(
-                code_upper, f"Domain {code_upper}"
+            resolved_tower_name = (
+                existing_tower_name
+                or taxonomy_resolver.resolve_tower_name(
+                    code_upper,
+                    locale=doc_lang,
+                    default=CANONICAL_TOWER_NAMES.get(code_upper, f"Domain {code_upper}"),
+                )
             )
+
             raw_payload["tower_name"] = resolved_tower_name
             doc_meta["client_name"] = client_name
             doc_meta["currency"] = currency
@@ -596,113 +753,14 @@ class TowerPayloadHydrator:
             raw_payload["document_meta"] = doc_meta
 
             # RFC 082: Attach reconciled epistemic evidence from immutable ledger
-            if code_upper in ledger_entries_by_tower:
-                t_entry = ledger_entries_by_tower[code_upper]
-                raw_payload["epistemic_ledger_entry"] = t_entry
-                raw_payload["epistemic_truth_status"] = t_entry.get("truth_status")
-                raw_payload["epistemic_composite_confidence"] = t_entry.get("composite_confidence")
-                frags = t_entry.get("supporting_fragments", [])
-                raw_payload["epistemic_supporting_fragments"] = frags
-
-                pos_facts = [
-                    str(f.get("canonical_assertion", "")).strip()
-                    for f in frags
-                    if isinstance(f, dict) and f.get("polarity") == "POSITIVE" and f.get("canonical_assertion")
-                ]
-                neg_facts = [
-                    str(f.get("canonical_assertion", "")).strip()
-                    for f in frags
-                    if isinstance(f, dict) and f.get("polarity") == "NEGATIVE" and f.get("canonical_assertion")
-                ]
-                if pos_facts:
-                    raw_payload["epistemic_positive_assertions"] = pos_facts
-                if neg_facts:
-                    raw_payload["epistemic_negative_assertions"] = neg_facts
-
-                resolved_entities_list: List[Dict[str, Any]] = []
-                for f in frags:
-                    if isinstance(f, dict):
-                        f_meta = f.get("metadata", {})
-                        if isinstance(f_meta, dict):
-                            for ent in f_meta.get("resolved_entities", []):
-                                if isinstance(ent, dict) and ent not in resolved_entities_list:
-                                    resolved_entities_list.append(ent)
-                if resolved_entities_list:
-                    raw_payload["verified_entities"] = resolved_entities_list
+            TowerPayloadHydrator._hydrate_epistemic_ledger_evidence(
+                raw_payload, code_upper, ledger_entries_by_tower
+            )
 
             # Phase 5: Enforce Ontological Semantic Gatekeeping on Payload Findings before disk persistence
-            if active_gatekeeper:
-                for pil in raw_payload.get("pillars_analysis", []):
-                    if not isinstance(pil, dict):
-                        continue
-                    p_id = str(pil.get("pillar_id") or "").strip().upper()
-
-                    # Refresh existing canonical findings with latest localized templates
-                    current_findings = pil.get("health_check_asis", [])
-                    if isinstance(current_findings, list):
-                        for f_idx, f_item in enumerate(current_findings):
-                            if isinstance(f_item, dict) and str(f_item.get("node_id", "")).endswith("-CANONICAL-01"):
-                                refreshed = _generate_canonical_kpi_finding(
-                                    tower_id=code_upper,
-                                    pillar_id=p_id,
-                                    doc_lang=doc_lang,
-                                    repo_root=resolved_repo_root,
-                                )
-                                if refreshed:
-                                    current_findings[f_idx] = refreshed
-
-                    raw_findings = current_findings
-                    if isinstance(raw_findings, list) and raw_findings and p_id:
-                        sanitized_findings, quarantined = active_gatekeeper.sanitize_pillar_findings(
-                            pillar_id=p_id,
-                            findings=raw_findings,
-                            tower_id=code_upper,
-                        )
-                        if quarantined:
-                            logger.info(
-                                "[Payload Hydrator] Quarantined %d out-of-domain findings in %s -> %s",
-                                len(quarantined),
-                                code_upper,
-                                p_id,
-                            )
-                            if not sanitized_findings:
-                                # RFC 084 (Cross-Tower Nexus): Preserve cross-cutting empirical findings
-                                # rather than replacing deep technical analysis with boilerplate macros.
-                                logger.info(
-                                    "[Payload Hydrator] Preserving %d cross-cutting nexus findings in %s -> %s",
-                                    len(raw_findings),
-                                    code_upper,
-                                    p_id,
-                                )
-                                sanitized_findings = raw_findings
-
-                            pil["health_check_asis"] = sanitized_findings
-
-                    asis_desc = str(pil.get("asis_architecture_description") or "").strip()
-                    if asis_desc and p_id:
-                        state_val = active_gatekeeper.validate_text_for_pillar(
-                            text=asis_desc,
-                            target_pillar_id=p_id,
-                            tower_id=code_upper,
-                        )
-                        if state_val.verdict.value == "QUARANTINED_FOREIGN_DOMAIN":
-                            sentences = re.split(r"(?<=[.!?])\s+", asis_desc)
-                            clean_sentences = [
-                                s.strip()
-                                for s in sentences
-                                if active_gatekeeper.validate_text_for_pillar(
-                                    text=s, target_pillar_id=p_id, tower_id=code_upper
-                                ).verdict.value != "QUARANTINED_FOREIGN_DOMAIN"
-                                and len(s.strip()) > 10
-                            ]
-                            if clean_sentences:
-                                pil["asis_architecture_description"] = " ".join(clean_sentences)
-                            else:
-                                pil["asis_architecture_description"] = t(
-                                    "asis_architecture_description_fallback",
-                                    locale=doc_lang,
-                                    pillar_name=pil.get("pillar_name", p_id),
-                                )
+            TowerPayloadHydrator._enforce_ontological_gatekeeping(
+                raw_payload, code_upper, active_gatekeeper, doc_lang, resolved_repo_root
+            )
 
             if persist_to_disk:
                 local_tower_dir = resolved_repo_root / "working" / client_id_norm / code_upper
@@ -743,18 +801,7 @@ class TowerPayloadHydrator:
         )
 
         actuarial_cfg = global_payload.get("actuarial_configuration") or {}
-        tower_zone_map = actuarial_cfg.get("tower_zone_map") or {
-            "T1": "TIER_1_MISSION_CRITICAL",
-            "T2": "TIER_1_MISSION_CRITICAL",
-            "T3": "TIER_3_EDGE_DISTRIBUTION",
-            "T4": "TIER_3_EDGE_DISTRIBUTION",
-            "T5": "TIER_2_CORE_OPERATIONS",
-            "T6": "TIER_2_CORE_OPERATIONS",
-            "T7": "TIER_2_CORE_OPERATIONS",
-            "T8": "TIER_1_MISSION_CRITICAL",
-            "T9": "TIER_3_EDGE_DISTRIBUTION",
-            "T10": "TIER_3_EDGE_DISTRIBUTION",
-        }
+        tower_zone_map = actuarial_cfg.get("tower_zone_map") or CANONICAL_TOWER_ZONE_MAPPING
 
         annual_rev = (
             safe_float(fin_tel.get("annual_revenue"), locale=doc_lang)
@@ -805,13 +852,10 @@ class TowerPayloadHydrator:
                     or any(k in code_u.lower() for k in ("edge", "facility", "plant", "site"))
                 )
                 effective_rate = plant_downtime_rate if is_facility_edge else base_downtime_rate
-                cmmi = float(
-                    safe_float(
-                        payload.get("exact_score") or payload.get("score"),
-                        locale=doc_lang,
-                        allow_zero=True,
-                    )
-                    or 2.50
+                cmmi = (
+                    float(payload["score"])
+                    if "score" in payload and payload["score"] is not None
+                    else TowerPayloadHydrator.compute_canonical_score(payload, doc_lang=doc_lang)
                 )
                 vuln = max(0.12, min(0.95, (5.0 - cmmi) / 4.0))
 
@@ -850,20 +894,12 @@ class TowerPayloadHydrator:
                             else _derive_cmmi_rto(cmmi, sev, is_spof)
                         )
 
-                        if is_spof or sev == "CRITICAL":
-                            f_alpha = 0.85
-                            f_repl = effective_rate * 2.0
-                            f_sec = effective_rate * 3.5
-                        elif sev == "HIGH":
-                            f_alpha = 0.55
-                            f_repl = effective_rate * 0.75
-                            f_sec = effective_rate * 1.5
-                        else:
-                            f_alpha = 0.25
-                            f_repl = 0.0
-                            f_sec = effective_rate * 0.5
-
-                        sle = (f_rto * f_alpha * effective_rate) + f_repl + f_sec
+                        sle, f_alpha, f_repl, f_sec = calculate_severity_weighted_sle(
+                            rto_hours=f_rto,
+                            effective_rate=effective_rate,
+                            severity=sev,
+                            is_spof=is_spof,
+                        )
                         ale = tef * vuln * sle
                         t_score += ale
                         tower_sles.append(sle)
@@ -899,13 +935,10 @@ class TowerPayloadHydrator:
                 or any(k in code_u.lower() for k in ("edge", "facility", "plant", "site"))
             )
             effective_dom_rate = plant_downtime_rate if is_facility_dom else base_downtime_rate
-            cmmi_u = float(
-                safe_float(
-                    payload.get("exact_score") or payload.get("score"),
-                    locale=doc_lang,
-                    allow_zero=True,
-                )
-                or 2.50
+            cmmi_u = (
+                float(payload["score"])
+                if "score" in payload and payload["score"] is not None
+                else TowerPayloadHydrator.compute_canonical_score(payload, doc_lang=doc_lang)
             )
 
             finding_sles: List[float] = []
@@ -936,10 +969,12 @@ class TowerPayloadHydrator:
                             h_rto = float(r_val) if r_val is not None else _derive_cmmi_rto(cmmi_u, s_val, spof_val)
                             finding_rtos.append(h_rto)
 
-                            h_alpha = 0.85 if (spof_val or s_val == "CRITICAL") else (0.55 if s_val == "HIGH" else 0.25)
-                            h_repl = effective_dom_rate * (2.0 if (spof_val or s_val == "CRITICAL") else (0.75 if s_val == "HIGH" else 0.0))
-                            h_sec = effective_dom_rate * (3.5 if (spof_val or s_val == "CRITICAL") else (1.5 if s_val == "HIGH" else 0.5))
-                            h_sle = (h_rto * h_alpha * effective_dom_rate) + h_repl + h_sec
+                            h_sle, h_alpha, h_repl, h_sec = calculate_severity_weighted_sle(
+                                rto_hours=h_rto,
+                                effective_rate=effective_dom_rate,
+                                severity=s_val,
+                                is_spof=spof_val,
+                            )
                             finding_sles.append(h_sle)
 
             dom_max_rto = round(max(finding_rtos), 1) if finding_rtos else _derive_cmmi_rto(cmmi_u, "HIGH", False)
@@ -1098,18 +1133,7 @@ class TowerPayloadHydrator:
                 ),
             }
 
-        tower_zone_map = actuarial_cfg.get("tower_zone_mapping") or {
-            "T1": "TIER_1_MISSION_CRITICAL",
-            "T2": "TIER_1_MISSION_CRITICAL",
-            "T3": "TIER_3_EDGE_DISTRIBUTION",
-            "T4": "TIER_3_EDGE_DISTRIBUTION",
-            "T5": "TIER_2_CORE_OPERATIONS",
-            "T6": "TIER_2_CORE_OPERATIONS",
-            "T7": "TIER_2_CORE_OPERATIONS",
-            "T8": "TIER_1_MISSION_CRITICAL",
-            "T9": "TIER_3_EDGE_DISTRIBUTION",
-            "T10": "TIER_3_EDGE_DISTRIBUTION",
-        }
+        tower_zone_map = actuarial_cfg.get("tower_zone_mapping") or CANONICAL_TOWER_ZONE_MAPPING
 
         default_zone = zones.get("TIER_4_ENTERPRISE_SUPPORT") or next(iter(zones.values()))
 
@@ -1186,7 +1210,7 @@ class TowerPayloadHydrator:
                     locale=doc_lang,
                     allow_zero=True,
                 )
-                cmmi = float(raw_cmmi) if raw_cmmi is not None and raw_cmmi > 0.0 else 2.50
+                cmmi = float(raw_cmmi if raw_cmmi is not None and raw_cmmi > 0.0 else payload["score"])
 
                 for hc in pillar.get("health_check_asis", []):
                     if not isinstance(hc, dict):

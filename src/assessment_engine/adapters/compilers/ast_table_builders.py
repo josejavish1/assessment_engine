@@ -239,7 +239,8 @@ def build_heatmap_mosaic(
     )
 
     for tef_val in range(5, 0, -1):
-        tef_freq_label = t(f"tef_annual_freq_{tef_val}", locale=locale) if locale else ""
+        freq_locale = locale or "en"
+        tef_freq_label = t(f"tef_annual_freq_{tef_val}", locale=freq_locale)
         row_header_text = (
             f"TEF {tef_val}\n({tef_freq_label})"
             if tef_freq_label and not tef_freq_label.startswith("tef_annual_freq_")

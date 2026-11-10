@@ -1008,9 +1008,12 @@ class Volume1AsisASTCompiler:
             "tomo_ch1_p1",
             locale=doc_lang,
             client=client_name,
+            client_name=client_name,
             domain_count=polarity.domain_count,
             score=format_number(global_score, locale=doc_lang, decimals=2),
+            global_score=format_number(global_score, locale=doc_lang, decimals=2),
             cmmi_label=level_display,
+            maturity_tier_label=level_display,
         )
         nodes.append(ParagraphNode(text=p1, font_size=9.5, space_after=6))
 
@@ -1425,100 +1428,143 @@ class Volume1AsisASTCompiler:
             )
         )
         bridge_text = t(
-            "tomo_ch3_sec31_reconciliation_bridge",
+            "tomo_table5_bridge_explanation",
             locale=doc_lang,
         )
         nodes.append(ParagraphNode(text=bridge_text, font_size=9.5, space_after=8))
 
-        reconciled_allocations = self._resolve_domain_allocations(
-            global_payload=global_payload,
-            tower_payloads=tower_payloads,
-            target_corporate_ale=total_ale,
-            domain_meta=domain_meta,
-            catalog_loc=catalog_loc,
-            doc_lang=doc_lang,
+        from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
+
+        # Build raw standalone ALE map directly from active tower payloads (Bottom-Up)
+        raw_standalone_map: dict[str, float] = {}
+        for code, clean_tower_name, score, _, _ in domain_topology:
+            code_u = code.upper()
+            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
+            s_ale = safe_float(tp.get("total_fair_ale") or tp.get("ale"), locale=doc_lang, allow_zero=True)
+            if s_ale is None or s_ale <= 0.0:
+                s_ale = float(total_ale) / max(1, len(domain_topology)) if total_ale > 0 else 0.0
+            raw_standalone_map[code] = float(s_ale)
+
+        from assessment_engine.domain.actuarial_scale_calibrator import resolve_iso_currency_code
+        currency_code = str(
+            global_payload.get("currency_code")
+            or fin_metrics.get("currency_code")
+            or resolve_iso_currency_code(currency, locale=doc_lang)
+            or "USD"
+        ).upper()
+
+        decomp = EulerPortfolioAllocator.allocate_portfolio(
+            standalone_ales=raw_standalone_map,
+            total_portfolio_ale=total_ale,
+            currency_iso=currency_code,
         )
+        target_ale_int = decomp.total_net_consolidated_ale
+        row_map = {r.tower_id: r for r in decomp.allocations}
+        reconciled_allocations = {r.tower_id: r.euler_net_contribution for r in decomp.allocations}
 
-        target_ale_int = self._round_half_up_int(total_ale, locale=doc_lang)
-
-        col_dom_lbl = t("tomo_ch3_table4_col_domain", locale=doc_lang)
-        col_cmmi_lbl = t("tomo_ch3_table_col_cmmi", locale=doc_lang)
-        col_ann_lbl = t("tomo_ch3_table4_col_annual_exposure", locale=doc_lang)
-        col_sev_lbl = t("tomo_ch3_table4_col_severe_event", locale=doc_lang)
-        col_pct_lbl = t("tomo_ch3_table4_col_share_pct", locale=doc_lang)
+        col_dom_lbl = t("tomo_table5_col_domain", locale=doc_lang)
+        col_cmmi_lbl = t("tomo_table5_col_cmmi", locale=doc_lang)
+        col_standalone = t("tomo_table5_col_standalone", locale=doc_lang)
+        col_adjustment = t("tomo_table5_col_adjustment", locale=doc_lang)
+        col_euler_net = t("tomo_table5_col_euler_net", locale=doc_lang)
+        col_share_pct = t("tomo_table5_col_share_pct", locale=doc_lang)
 
         table4_rows = [
             TableRowNode(
                 cells=[
                     CellNode(text=col_dom_lbl, bold=True, is_header=True, font_size=8.5),
                     CellNode(text=col_cmmi_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
-                    CellNode(text=col_ann_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
-                    CellNode(text=col_sev_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
-                    CellNode(text=col_pct_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
+                    CellNode(text=col_standalone, bold=True, is_header=True, font_size=8.5, align="RIGHT"),
+                    CellNode(text=col_adjustment, bold=True, is_header=True, font_size=8.5, align="RIGHT"),
+                    CellNode(text=col_euler_net, bold=True, is_header=True, font_size=8.5, align="RIGHT"),
+                    CellNode(text=col_share_pct, bold=True, is_header=True, font_size=8.5, align="RIGHT"),
                 ],
                 is_header=True,
             )
         ]
 
-        target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
-        raw_p90_pairs: List[Tuple[str, Decimal]] = []
-        for code, *_ in domain_meta:
-            code_u = code.upper()
-            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
-            tp_p90 = safe_float(tp.get("total_fair_p90"), locale=doc_lang)
-            if tp_p90 is not None:
-                p90_val = Decimal(str(tp_p90))
-            else:
-                p90_val = Decimal(str(reconciled_allocations.get(code, 0)))
-            raw_p90_pairs.append((code, p90_val))
-
-        reconciled_p90_allocations = ActuarialReconciler.reconcile_domain_allocations(
-            target_corporate_ale=target_p90_int,
-            domain_raw_exposures=raw_p90_pairs,
-        )
-
-        # Reconcile percentage shares across domains to strictly sum to 100.0%
-        equal_share_tenths = (
-            Decimal("1000") / Decimal(str(max(1, len(domain_topology))))
-        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        raw_pct_pairs: List[Tuple[str, Decimal]] = [
-            (
-                code,
-                (Decimal(str(reconciled_allocations.get(code, 0))) / Decimal(str(target_ale_int)) * Decimal("1000"))
-                if target_ale_int > 0
-                else equal_share_tenths,
-            )
-            for code, *_ in domain_topology
-        ]
-        reconciled_pct_tenths = ActuarialReconciler.reconcile_domain_allocations(
-            target_corporate_ale=1000,
-            domain_raw_exposures=raw_pct_pairs,
-        )
-
         for code, clean_tower_name, score, _, _ in domain_topology:
-            code_u = code.upper()
-            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
-            d_ale = reconciled_allocations.get(code, 0)
-            d_p90 = round(safe_float(tp.get("worst_crisis_event") or tp.get("total_fair_p90"), locale=doc_lang) or (float(d_ale) * 1.5))
-            d_pct_val = reconciled_pct_tenths.get(code, 100) / 10.0
-            d_pct_str = f"{format_number(d_pct_val, locale=doc_lang, decimals=1)}%"
+            alloc = row_map.get(code)
+            if not alloc:
+                continue
+
             score_str = format_number(score, locale=doc_lang, decimals=2)
+            standalone_str = format_currency(alloc.standalone_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+            adj_str = format_currency(alloc.diversification_adjustment, currency_symbol=currency, locale=doc_lang, decimals=0)
+            net_str = format_currency(alloc.euler_net_contribution, currency_symbol=currency, locale=doc_lang, decimals=0)
+            pct_str = f"{format_number(float(alloc.portfolio_weight_pct), locale=doc_lang, decimals=1)}%"
 
             table4_rows.append(
                 TableRowNode(
                     cells=[
-                        CellNode(text=f"{code} — {clean_tower_name}", font_size=8.0),
+                        CellNode(text=f"{code} - {clean_tower_name}", font_size=8.0),
                         CellNode(text=score_str, font_size=8.0, align="CENTER"),
-                        CellNode(text=format_currency(d_ale, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
-                        CellNode(text=format_currency(d_p90, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
-                        CellNode(text=d_pct_str, font_size=8.0, align="CENTER"),
+                        CellNode(text=standalone_str, font_size=8.0, align="RIGHT"),
+                        CellNode(text=adj_str, font_size=8.0, align="RIGHT"),
+                        CellNode(text=net_str, font_size=8.0, align="RIGHT"),
+                        CellNode(text=pct_str, font_size=8.0, align="RIGHT"),
                     ]
                 )
             )
 
-        tot_label = t("tomo_ch3_table4_total_row_label", locale=doc_lang, total_domains=len(domain_meta))
+        subtotal_lbl = t("tomo_table5_row_subtotal_gross", locale=doc_lang)
+        subtotal_str = format_currency(decomp.subtotal_gross_undiversified_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+        symbol_na = t("tomo_table5_symbol_na", locale=doc_lang)
+
+        table4_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(text=subtotal_lbl, bold=True, font_size=8.0, bg_color="F0F4F8"),
+                    CellNode(text=format_number(global_score, locale=doc_lang, decimals=2), bold=True, font_size=8.0, align="CENTER", bg_color="F0F4F8"),
+                    CellNode(text=subtotal_str, bold=True, font_size=8.0, align="RIGHT", bg_color="F0F4F8"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F0F4F8"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F0F4F8"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F0F4F8"),
+                ]
+            )
+        )
+
+        adj_lbl = t("tomo_table5_row_copula_adjustment", locale=doc_lang)
+        copula_adj_str = format_currency(decomp.actuarial_copula_adjustment_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+        badge_overlap = t(
+            "tomo_table5_badge_copula_overlap",
+            locale=doc_lang,
+            overlap_pct=format_number(float(decomp.actuarial_copula_overlap_pct), locale=doc_lang, decimals=1),
+        )
+
+        table4_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(text=adj_lbl, bold=True, font_size=8.0, bg_color="F9FAFC"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
+                    CellNode(text=f"{copula_adj_str} {badge_overlap}", bold=True, font_size=8.0, align="RIGHT", bg_color="F9FAFC"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
+                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
+                ]
+            )
+        )
+
+        tot_label = t("tomo_table5_row_total_net", locale=doc_lang)
+        net_tot_str = format_currency(decomp.total_net_consolidated_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
         pct_100_str = f"{format_number(100.0, locale=doc_lang, decimals=1)}%"
 
+        table4_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(text=tot_label, bold=True, font_size=8.5, bg_color="E6EDF5"),
+                    CellNode(text=format_number(global_score, locale=doc_lang, decimals=2), bold=True, font_size=8.5, align="CENTER", bg_color="E6EDF5"),
+                    CellNode(text=symbol_na, font_size=8.5, align="CENTER", bg_color="E6EDF5"),
+                    CellNode(text=symbol_na, font_size=8.5, align="CENTER", bg_color="E6EDF5"),
+                    CellNode(text=net_tot_str, bold=True, font_size=8.5, align="RIGHT", bg_color="E6EDF5"),
+                    CellNode(text=pct_100_str, bold=True, font_size=8.5, align="RIGHT", bg_color="E6EDF5"),
+                ]
+            )
+        )
+
+        nodes.append(TableNode(rows=table4_rows, autofit=True, col_widths=[0.28, 0.09, 0.16, 0.18, 0.17, 0.12]))
+
+        target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
         actual_crisis_map = {
             code: round(
                 safe_float(
@@ -1526,7 +1572,7 @@ class Volume1AsisASTCompiler:
                     or (tower_payloads.get(code) or tower_payloads.get(code.upper()) or {}).get("total_fair_p90"),
                     locale=doc_lang,
                 )
-                or (float(reconciled_allocations.get(code, 0)) * 1.5)
+                or (float(row_map.get(code).euler_net_contribution if row_map.get(code) else 0) * 1.5)
             )
             for code, *_ in domain_topology
         }
@@ -1534,22 +1580,6 @@ class Volume1AsisASTCompiler:
         peak_code, peak_domain, peak_cost, peak_cost_fmt = self._compute_peak_single_incident(
             domain_topology, actual_crisis_map, currency, doc_lang
         )
-        max_qualifier = t("tomo_ch3_table4_max_tag", locale=doc_lang)
-        peak_summary_text = f"{peak_cost_fmt} {max_qualifier}"
-        tot_cmmi_str = format_number(global_score, locale=doc_lang, decimals=2)
-
-        table4_rows.append(
-            TableRowNode(
-                cells=[
-                    CellNode(text=tot_label, bold=True, bg_color="F8FAFC", font_size=8.5),
-                    CellNode(text=tot_cmmi_str, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                    CellNode(text=format_currency(target_ale_int, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                    CellNode(text=peak_summary_text, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                    CellNode(text=pct_100_str, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                ]
-            )
-        )
-        nodes.append(TableNode(rows=table4_rows, autofit=True, col_widths=[0.32, 0.14, 0.22, 0.20, 0.12]))
 
         # Actuarial footnote explaining non-additivity of tail incidents
         footnote_text = t(

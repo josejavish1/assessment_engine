@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T4",
   "tower_name": "Data Services & Storage",
-  "purpose": "La torre Data Services & Storage cubre la infraestructura y los servicios necesarios para almacenar, servir, proteger a nivel de plataforma y optimizar los datos del cliente, garantizando que el almacenamiento es operable y responde a las necesidades del negocio con criterios de rendimiento, disponibilidad, escalabilidad y control.",
+  "purpose": "The Data Services & Storage domain encompasses primary enterprise storage arrays (Block, File, Object), storage area networks (SAN), performance tuning, capacity lifecycle, snapshot replication, and data platform integration.",
   "scope_summary": [
     "Almacenamiento primario para cargas de producción (y no producción)",
     "Servicios de datos y eficiencia",
@@ -87,46 +87,46 @@
   "pillars": [
     {
       "pillar_id": "T4.P1",
-      "pillar_name": "Storage Architecture & Service Levels (Block/File/Object)",
+      "pillar_name": "Storage Architecture & Service Levels",
       "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T4.P1.K1",
-          "kpi_name": "Catálogo de servicios y clases de almacenamiento (SLAs por clase)",
+          "kpi_name": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
           "questions": [
             {
               "question_id": "T4.P1.K1.PR1",
-              "question_text": "Para ofrecer servicios de almacenamiento de forma consistente es necesario definir clases de servicio con niveles de rendimiento y disponibilidad. ¿Cómo está definido el catálogo de servicios y clases de almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Storage Service Catalog & Tiered Service Level Agreements (SLAs) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P1.K2",
-          "kpi_name": "Cobertura y gobernanza de tipologías (Block/File/Object) según necesidades",
+          "kpi_name": "Storage Protocol Governance (Block, File & Object Alignment)",
           "questions": [
             {
               "question_id": "T4.P1.K2.PR1",
-              "question_text": "Las distintas tipologías de almacenamiento (block, file y object) deben usarse según las necesidades de las aplicaciones. ¿Cómo se gobierna el uso de estas tipologías en la organización?"
+              "question_text": "How does the enterprise govern and measure Storage Protocol Governance (Block, File & Object Alignment) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P1.K3",
-          "kpi_name": "Resiliencia del servicio de almacenamiento (diseño y eliminación de SPOF a nivel de storage)",
+          "kpi_name": "Storage Fabric Resiliency & High-Availability Architecture",
           "questions": [
             {
               "question_id": "T4.P1.K3.PR1",
-              "question_text": "La resiliencia del almacenamiento es clave para evitar pérdida de servicio o de datos. ¿Cuál es el nivel de resiliencia real del servicio de almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Storage Fabric Resiliency & High-Availability Architecture across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P1.K4",
-          "kpi_name": "Estandarización del aprovisionamiento (naming, plantillas, cuotas y consistencia)",
+          "kpi_name": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
           "questions": [
             {
               "question_id": "T4.P1.K4.PR1",
-              "question_text": "El aprovisionamiento de almacenamiento debe seguir estándares para evitar inconsistencias. ¿Cómo se gestiona el aprovisionamiento de almacenamiento (naming, plantillas y cuotas)?"
+              "question_text": "How does the enterprise govern and measure Provisioning Standardization (Naming, Quotas & Allocation Templates) across the operational environment?"
             }
           ]
         }
@@ -135,45 +135,45 @@
     {
       "pillar_id": "T4.P2",
       "pillar_name": "Performance, Capacity & Lifecycle Management",
-      "weight_pct": 24,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T4.P2.K1",
-          "kpi_name": "Cumplimiento de SLAs de rendimiento (latencia/IOPS/throughput) con evidencia",
+          "kpi_name": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
           "questions": [
             {
               "question_id": "T4.P2.K1.PR1",
-              "question_text": "El rendimiento del almacenamiento impacta directamente en el rendimiento de las aplicaciones. ¿Cómo se garantiza el cumplimiento de SLAs de rendimiento?"
+              "question_text": "How does the enterprise govern and measure Storage Performance SLA Compliance (IOPS, Latency & Throughput) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P2.K2",
-          "kpi_name": "Control de capacidad (uso real vs provisionado, umbrales y prevención de saturación)",
+          "kpi_name": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
           "questions": [
             {
               "question_id": "T4.P2.K2.PR1",
-              "question_text": "Controlar la capacidad disponible evita saturaciones y degradaciones del servicio. ¿Cómo se controla la capacidad del almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Capacity Utilization Governance (Allocated vs Usable Headroom) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P2.K3",
-          "kpi_name": "Forecasting y planificación de crecimiento (capacidad y rendimiento)",
+          "kpi_name": "Storage Capacity Forecasting & Proactive Growth Modeling",
           "questions": [
             {
               "question_id": "T4.P2.K3.PR1",
-              "question_text": "El crecimiento del almacenamiento debe planificarse para evitar ampliaciones urgentes. ¿Cómo se planifica el crecimiento futuro del almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Storage Capacity Forecasting & Proactive Growth Modeling across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P2.K4",
-          "kpi_name": "Gestión del ciclo de vida (firmware, compatibilidades, obsolescencia y upgrades controlados)",
+          "kpi_name": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
           "questions": [
             {
               "question_id": "T4.P2.K4.PR1",
-              "question_text": "Mantener actualizado el firmware y las versiones es clave para estabilidad y soporte del fabricante. ¿Cómo se gestiona el ciclo de vida del almacenamiento (firmware, upgrades y compatibilidad)?"
+              "question_text": "How does the enterprise govern and measure Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh) across the operational environment?"
             }
           ]
         }
@@ -186,41 +186,41 @@
       "kpis": [
         {
           "kpi_id": "T4.P3.K1",
-          "kpi_name": "Política de snapshots y consistencia (frecuencia, retención y cobertura)",
+          "kpi_name": "Snapshot Policy Governance & Application Consistency Verification",
           "questions": [
             {
               "question_id": "T4.P3.K1.PR1",
-              "question_text": "Los snapshots permiten recuperar rápidamente datos ante errores o incidentes. ¿Cómo está definida la política de snapshots y consistencia?"
+              "question_text": "How does the enterprise govern and measure Snapshot Policy Governance & Application Consistency Verification across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P3.K2",
-          "kpi_name": "Replicación de storage gestionada (objetivos, cobertura y pruebas básicas)",
+          "kpi_name": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
           "questions": [
             {
               "question_id": "T4.P3.K2.PR1",
-              "question_text": "La replicación de almacenamiento permite proteger los datos ante fallos de infraestructura. ¿Cómo se gestiona la replicación de datos?"
+              "question_text": "How does the enterprise govern and measure Storage Replication Management (RPO, Sync/Async SLA Testing) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P3.K3",
-          "kpi_name": "Eficiencia de almacenamiento (dedupe/compresión/tiering) y TB útil optimizado",
+          "kpi_name": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
           "questions": [
             {
               "question_id": "T4.P3.K3.PR1",
-              "question_text": "Las tecnologías de eficiencia permiten optimizar el uso real del almacenamiento disponible. ¿Qué nivel de eficiencia tiene la plataforma de almacenamiento (deduplicación, compresión o tiering)?"
+              "question_text": "How does the enterprise govern and measure Data Efficiency Optimization (Deduplication, Compression & Tiering) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P3.K4",
-          "kpi_name": "QoS / Control de “noisy neighbor” (garantía de niveles de servicio)",
+          "kpi_name": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
           "questions": [
             {
               "question_id": "T4.P3.K4.PR1",
-              "question_text": "Las políticas de QoS permiten evitar que una carga afecte negativamente al rendimiento de otras. ¿Cómo se controla el efecto de cargas intensivas mediante QoS de almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation across the operational environment?"
             }
           ]
         }
@@ -229,35 +229,35 @@
     {
       "pillar_id": "T4.P4",
       "pillar_name": "Security & Access Controls for Data Platforms",
-      "weight_pct": 18,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T4.P4.K1",
-          "kpi_name": "Control de acceso y segregación (roles, mínimo privilegio, multitenencia/entornos)",
+          "kpi_name": "Storage Access Control & Multi-Tenancy Isolation",
           "questions": [
             {
               "question_id": "T4.P4.K1.PR1",
-              "question_text": "La gestión de accesos al almacenamiento es clave para proteger los datos. ¿Cómo se gestionan los accesos y la segregación en las plataformas de almacenamiento?"
+              "question_text": "How does the enterprise govern and measure Storage Access Control & Multi-Tenancy Isolation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P4.K2",
-          "kpi_name": "Cifrado en reposo y gestión de claves (cobertura y operabilidad)",
+          "kpi_name": "Data Encryption at Rest & Key Management Integration",
           "questions": [
             {
               "question_id": "T4.P4.K2.PR1",
-              "question_text": "El cifrado de datos protege la información frente a accesos no autorizados. ¿Cuál es el nivel de cobertura de cifrado en reposo y gestión de claves?"
+              "question_text": "How does the enterprise govern and measure Data Encryption at Rest & Key Management Integration across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P4.K3",
-          "kpi_name": "Auditoría y trazabilidad (logs de acceso, cambios y retención)",
+          "kpi_name": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
           "questions": [
             {
               "question_id": "T4.P4.K3.PR1",
-              "question_text": "La trazabilidad de accesos permite detectar usos indebidos o cambios no autorizados. ¿Cómo se gestionan la auditoría y los registros de acceso y cambios?"
+              "question_text": "How does the enterprise govern and measure Storage Audit Logging, Tamper-Resistance & Access Tracking across the operational environment?"
             }
           ]
         }
@@ -265,46 +265,46 @@
     },
     {
       "pillar_id": "T4.P5",
-      "pillar_name": "Platform Integration & Storage Operations (VM/Kubernetes/DB)",
-      "weight_pct": 18,
+      "pillar_name": "Platform Integration & Storage Operations",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T4.P5.K1",
-          "kpi_name": "Integración con virtualización (datastores, multipathing, buenas prácticas)",
+          "kpi_name": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
           "questions": [
             {
               "question_id": "T4.P5.K1.PR1",
-              "question_text": "La integración con la plataforma de virtualización es clave para el rendimiento y la operación de las cargas. ¿Cómo se integra el almacenamiento con las plataformas de virtualización?"
+              "question_text": "How does the enterprise govern and measure Hypervisor Storage Integration (Datastores, Multipathing & VAAI) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P5.K2",
-          "kpi_name": "Integración con Kubernetes (CSI, storage classes, persistencia y snapshots CSI cuando aplique)",
+          "kpi_name": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
           "questions": [
             {
               "question_id": "T4.P5.K2.PR1",
-              "question_text": "Las plataformas de contenedores requieren mecanismos consistentes de persistencia de datos. ¿Cómo está integrada la persistencia de almacenamiento en Kubernetes?"
+              "question_text": "How does the enterprise govern and measure Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P5.K3",
-          "kpi_name": "Provisioning y time-to-provision (autoservicio controlado / plantillas)",
+          "kpi_name": "Automated Storage Provisioning & Self-Service Workflows",
           "questions": [
             {
               "question_id": "T4.P5.K3.PR1",
-              "question_text": "El tiempo de provisión de almacenamiento impacta directamente en la agilidad de los equipos de IT. ¿Cómo se gestiona el proceso de provisioning y el tiempo de entrega?"
+              "question_text": "How does the enterprise govern and measure Automated Storage Provisioning & Self-Service Workflows across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T4.P5.K4",
-          "kpi_name": "Operación cross-domain (runbooks, escalado, reducción de “ping-pong”)",
+          "kpi_name": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
           "questions": [
             {
               "question_id": "T4.P5.K4.PR1",
-              "question_text": "La resolución de incidencias en plataformas complejas requiere coordinación entre varios equipos. ¿Cómo se gestionan las incidencias de almacenamiento entre equipos y dominios tecnológicos?"
+              "question_text": "How does the enterprise govern and measure Cross-Domain Storage Operations & Cross-Functional Runbooks across the operational environment?"
             }
           ]
         }
@@ -314,117 +314,136 @@
   "questions": [
     {
       "question_id": "T4.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Service Catalog & Tiered Service Level Agreements (SLAs) across the operational environment?",
       "pillar_id": "T4.P1",
       "kpi_id": "T4.P1.K1",
-      "question_text": "Para ofrecer servicios de almacenamiento de forma consistente es necesario definir clases de servicio con niveles de rendimiento y disponibilidad. ¿Cómo está definido el catálogo de servicios y clases de almacenamiento?"
+      "kpi_name": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)"
     },
     {
       "question_id": "T4.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Protocol Governance (Block, File & Object Alignment) across the operational environment?",
       "pillar_id": "T4.P1",
       "kpi_id": "T4.P1.K2",
-      "question_text": "Las distintas tipologías de almacenamiento (block, file y object) deben usarse según las necesidades de las aplicaciones. ¿Cómo se gobierna el uso de estas tipologías en la organización?"
+      "kpi_name": "Storage Protocol Governance (Block, File & Object Alignment)"
     },
     {
       "question_id": "T4.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Fabric Resiliency & High-Availability Architecture across the operational environment?",
       "pillar_id": "T4.P1",
       "kpi_id": "T4.P1.K3",
-      "question_text": "La resiliencia del almacenamiento es clave para evitar pérdida de servicio o de datos. ¿Cuál es el nivel de resiliencia real del servicio de almacenamiento?"
+      "kpi_name": "Storage Fabric Resiliency & High-Availability Architecture"
     },
     {
       "question_id": "T4.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Provisioning Standardization (Naming, Quotas & Allocation Templates) across the operational environment?",
       "pillar_id": "T4.P1",
       "kpi_id": "T4.P1.K4",
-      "question_text": "El aprovisionamiento de almacenamiento debe seguir estándares para evitar inconsistencias. ¿Cómo se gestiona el aprovisionamiento de almacenamiento (naming, plantillas y cuotas)?"
+      "kpi_name": "Provisioning Standardization (Naming, Quotas & Allocation Templates)"
     },
     {
       "question_id": "T4.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Performance SLA Compliance (IOPS, Latency & Throughput) across the operational environment?",
       "pillar_id": "T4.P2",
       "kpi_id": "T4.P2.K1",
-      "question_text": "El rendimiento del almacenamiento impacta directamente en el rendimiento de las aplicaciones. ¿Cómo se garantiza el cumplimiento de SLAs de rendimiento?"
+      "kpi_name": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)"
     },
     {
       "question_id": "T4.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Capacity Utilization Governance (Allocated vs Usable Headroom) across the operational environment?",
       "pillar_id": "T4.P2",
       "kpi_id": "T4.P2.K2",
-      "question_text": "Controlar la capacidad disponible evita saturaciones y degradaciones del servicio. ¿Cómo se controla la capacidad del almacenamiento?"
+      "kpi_name": "Capacity Utilization Governance (Allocated vs Usable Headroom)"
     },
     {
       "question_id": "T4.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Capacity Forecasting & Proactive Growth Modeling across the operational environment?",
       "pillar_id": "T4.P2",
       "kpi_id": "T4.P2.K3",
-      "question_text": "El crecimiento del almacenamiento debe planificarse para evitar ampliaciones urgentes. ¿Cómo se planifica el crecimiento futuro del almacenamiento?"
+      "kpi_name": "Storage Capacity Forecasting & Proactive Growth Modeling"
     },
     {
       "question_id": "T4.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh) across the operational environment?",
       "pillar_id": "T4.P2",
       "kpi_id": "T4.P2.K4",
-      "question_text": "Mantener actualizado el firmware y las versiones es clave para estabilidad y soporte del fabricante. ¿Cómo se gestiona el ciclo de vida del almacenamiento (firmware, upgrades y compatibilidad)?"
+      "kpi_name": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)"
     },
     {
       "question_id": "T4.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Snapshot Policy Governance & Application Consistency Verification across the operational environment?",
       "pillar_id": "T4.P3",
       "kpi_id": "T4.P3.K1",
-      "question_text": "Los snapshots permiten recuperar rápidamente datos ante errores o incidentes. ¿Cómo está definida la política de snapshots y consistencia?"
+      "kpi_name": "Snapshot Policy Governance & Application Consistency Verification"
     },
     {
       "question_id": "T4.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Replication Management (RPO, Sync/Async SLA Testing) across the operational environment?",
       "pillar_id": "T4.P3",
       "kpi_id": "T4.P3.K2",
-      "question_text": "La replicación de almacenamiento permite proteger los datos ante fallos de infraestructura. ¿Cómo se gestiona la replicación de datos?"
+      "kpi_name": "Storage Replication Management (RPO, Sync/Async SLA Testing)"
     },
     {
       "question_id": "T4.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Data Efficiency Optimization (Deduplication, Compression & Tiering) across the operational environment?",
       "pillar_id": "T4.P3",
       "kpi_id": "T4.P3.K3",
-      "question_text": "Las tecnologías de eficiencia permiten optimizar el uso real del almacenamiento disponible. ¿Qué nivel de eficiencia tiene la plataforma de almacenamiento (deduplicación, compresión o tiering)?"
+      "kpi_name": "Data Efficiency Optimization (Deduplication, Compression & Tiering)"
     },
     {
       "question_id": "T4.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation across the operational environment?",
       "pillar_id": "T4.P3",
       "kpi_id": "T4.P3.K4",
-      "question_text": "Las políticas de QoS permiten evitar que una carga afecte negativamente al rendimiento de otras. ¿Cómo se controla el efecto de cargas intensivas mediante QoS de almacenamiento?"
+      "kpi_name": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation"
     },
     {
       "question_id": "T4.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Access Control & Multi-Tenancy Isolation across the operational environment?",
       "pillar_id": "T4.P4",
       "kpi_id": "T4.P4.K1",
-      "question_text": "La gestión de accesos al almacenamiento es clave para proteger los datos. ¿Cómo se gestionan los accesos y la segregación en las plataformas de almacenamiento?"
+      "kpi_name": "Storage Access Control & Multi-Tenancy Isolation"
     },
     {
       "question_id": "T4.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Data Encryption at Rest & Key Management Integration across the operational environment?",
       "pillar_id": "T4.P4",
       "kpi_id": "T4.P4.K2",
-      "question_text": "El cifrado de datos protege la información frente a accesos no autorizados. ¿Cuál es el nivel de cobertura de cifrado en reposo y gestión de claves?"
+      "kpi_name": "Data Encryption at Rest & Key Management Integration"
     },
     {
       "question_id": "T4.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Storage Audit Logging, Tamper-Resistance & Access Tracking across the operational environment?",
       "pillar_id": "T4.P4",
       "kpi_id": "T4.P4.K3",
-      "question_text": "La trazabilidad de accesos permite detectar usos indebidos o cambios no autorizados. ¿Cómo se gestionan la auditoría y los registros de acceso y cambios?"
+      "kpi_name": "Storage Audit Logging, Tamper-Resistance & Access Tracking"
     },
     {
       "question_id": "T4.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Hypervisor Storage Integration (Datastores, Multipathing & VAAI) across the operational environment?",
       "pillar_id": "T4.P5",
       "kpi_id": "T4.P5.K1",
-      "question_text": "La integración con la plataforma de virtualización es clave para el rendimiento y la operación de las cargas. ¿Cómo se integra el almacenamiento con las plataformas de virtualización?"
+      "kpi_name": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)"
     },
     {
       "question_id": "T4.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning) across the operational environment?",
       "pillar_id": "T4.P5",
       "kpi_id": "T4.P5.K2",
-      "question_text": "Las plataformas de contenedores requieren mecanismos consistentes de persistencia de datos. ¿Cómo está integrada la persistencia de almacenamiento en Kubernetes?"
+      "kpi_name": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)"
     },
     {
       "question_id": "T4.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Automated Storage Provisioning & Self-Service Workflows across the operational environment?",
       "pillar_id": "T4.P5",
       "kpi_id": "T4.P5.K3",
-      "question_text": "El tiempo de provisión de almacenamiento impacta directamente en la agilidad de los equipos de IT. ¿Cómo se gestiona el proceso de provisioning y el tiempo de entrega?"
+      "kpi_name": "Automated Storage Provisioning & Self-Service Workflows"
     },
     {
       "question_id": "T4.P5.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Cross-Domain Storage Operations & Cross-Functional Runbooks across the operational environment?",
       "pillar_id": "T4.P5",
       "kpi_id": "T4.P5.K4",
-      "question_text": "La resolución de incidencias en plataformas complejas requiere coordinación entre varios equipos. ¿Cómo se gestionan las incidencias de almacenamiento entre equipos y dominios tecnológicos?"
+      "kpi_name": "Cross-Domain Storage Operations & Cross-Functional Runbooks"
     }
   ]
 }

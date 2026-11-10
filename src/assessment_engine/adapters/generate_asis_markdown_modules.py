@@ -844,7 +844,7 @@ def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -
 
     re_content.append(c_to_action)
 
-    # 5. Escribir archivo de resumen ejecutivo consolidador
+    # 5. Write consolidated executive summary file
     with open(modules_dir / "02_resumen_ejecutivo.md", "w", encoding="utf-8") as f_out:
         f_out.write("\n".join(re_content).strip())
 

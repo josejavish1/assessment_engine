@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T6",
   "tower_name": "Infrastructure Security & Identity",
-  "purpose": "La torre Infrastructure Security & Identity cubre las capacidades necesarias para asegurar y gobernar el acceso a la infraestructura, reduciendo la superficie de ataque y la probabilidad de compromiso, y limitando el impacto si ocurre un incidente.",
+  "purpose": "The Infrastructure Security & Identity domain covers Zero Trust identity governance, privileged access management (PAM), security baselines, vulnerability remediation, and network microsegmentation.",
   "scope_summary": [
     "Identidad y control de acceso (IAM)",
     "Privileged Access Management (PAM)",
@@ -94,56 +94,56 @@
   "pillars": [
     {
       "pillar_id": "T6.P1",
-      "pillar_name": "Identidad y Control de Acceso (IAM)",
-      "weight_pct": 21,
+      "pillar_name": "Identity & Access Management (IAM)",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T6.P1.K1",
-          "kpi_name": "Cobertura de MFA en accesos críticos y cuentas privilegiadas",
+          "kpi_name": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
           "questions": [
             {
               "question_id": "T6.P1.K1.PR1",
-              "question_text": "La autenticación multifactor reduce el riesgo de acceso no autorizado a sistemas críticos. ¿Cuál es el nivel de cobertura de MFA en los accesos críticos de infraestructura?"
+              "question_text": "How does the enterprise govern and measure Phishing-Resistant MFA Coverage Across Critical Infrastructure across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P1.K2",
-          "kpi_name": "Gestión del ciclo de vida JML (Joiner-Mover-Leaver) y desprovisionado",
+          "kpi_name": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
           "questions": [
             {
               "question_id": "T6.P1.K2.PR1",
-              "question_text": "La gestión del ciclo de vida de accesos permite dar altas, cambios y bajas de forma segura y oportuna. ¿Cómo se gestiona el ciclo de vida de accesos de usuarios y administradores (JML)?"
+              "question_text": "How does the enterprise govern and measure Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P1.K3",
-          "kpi_name": "Mínimo privilegio, recertificación y control de privilegios excesivos",
+          "kpi_name": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
           "questions": [
             {
               "question_id": "T6.P1.K3.PR1",
-              "question_text": "Para entender el control real sobre privilegios y accesos innecesarios:¿Cómo detectáis, revisáis y corregís hoy permisos excesivos o accesos que ya no deberían mantenerse?"
+              "question_text": "How does the enterprise govern and measure Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P1.K4",
-          "kpi_name": "Gestión de accesos de terceros (temporalidad, trazabilidad y control)",
+          "kpi_name": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
           "questions": [
             {
               "question_id": "T6.P1.K4.PR1",
-              "question_text": "Los accesos de terceros deben estar controlados para evitar riesgos en entornos críticos. ¿Cómo se gestionan los accesos de proveedores y terceros a la infraestructura?"
+              "question_text": "How does the enterprise govern and measure Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P1.K5",
-          "kpi_name": "Gobierno de identidades no humanas (service accounts, tokens y certificados)",
+          "kpi_name": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
           "questions": [
             {
               "question_id": "T6.P1.K5.PR1",
-              "question_text": "Para entender el control real sobre identidades no humanas y su riesgo asociado:¿Cómo se inventarían, asignan, revisan y retiran hoy las identidades no humanas que acceden a infraestructura, plataformas o automatizaciones?"
+              "question_text": "How does the enterprise govern and measure Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation) across the operational environment?"
             }
           ]
         }
@@ -151,46 +151,46 @@
     },
     {
       "pillar_id": "T6.P2",
-      "pillar_name": "Privileged Access Management (PAM) y Secret Management",
-      "weight_pct": 24,
+      "pillar_name": "Privileged Access Management (PAM) & Secrets",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T6.P2.K1",
-          "kpi_name": "Cobertura de PAM sobre cuentas privilegiadas (por criticidad)",
+          "kpi_name": "PAM Enclosure Coverage Across Administrative Accounts",
           "questions": [
             {
               "question_id": "T6.P2.K1.PR1",
-              "question_text": "Las cuentas privilegiadas deben estar protegidas y controladas de forma centralizada. ¿Qué nivel de cobertura tiene la gestión de accesos privilegiados (PAM) sobre las cuentas críticas?"
+              "question_text": "How does the enterprise govern and measure PAM Enclosure Coverage Across Administrative Accounts across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P2.K2",
-          "kpi_name": "Vaulting y rotación de credenciales/secretos privilegiados",
+          "kpi_name": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
           "questions": [
             {
               "question_id": "T6.P2.K2.PR1",
-              "question_text": "La rotación y custodia segura de secretos reduce el riesgo de compromiso de credenciales privilegiadas. ¿Cómo se gestionan el almacenamiento y la rotación de secretos privilegiados?"
+              "question_text": "How does the enterprise govern and measure Automated Secrets Vaulting, Dynamic Credential Generation & Rotation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P2.K3",
-          "kpi_name": "Trazabilidad de sesiones privilegiadas (session recording / audit)",
+          "kpi_name": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
           "questions": [
             {
               "question_id": "T6.P2.K3.PR1",
-              "question_text": "Registrar las sesiones privilegiadas permite investigar acciones críticas y detectar usos indebidos. ¿Se registran y auditan las sesiones privilegiadas?"
+              "question_text": "How does the enterprise govern and measure Privileged Session Recording, Keystroke Logging & Audit Traceability across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P2.K4",
-          "kpi_name": "JIT/JEA y control de cuentas break-glass",
+          "kpi_name": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
           "questions": [
             {
               "question_id": "T6.P2.K4.PR1",
-              "question_text": "Los privilegios temporales reducen la exposición frente a accesos elevados permanentes. ¿Cómo se gestionan los privilegios temporales y las cuentas de emergencia (JIT/JEA y break-glass)?"
+              "question_text": "How does the enterprise govern and measure Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures across the operational environment?"
             }
           ]
         }
@@ -198,46 +198,46 @@
     },
     {
       "pillar_id": "T6.P3",
-      "pillar_name": "Hardening & Secure Configuration (baseline y control de drift)",
-      "weight_pct": 19,
+      "pillar_name": "Hardening & Secure Configuration Baseline",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T6.P3.K1",
-          "kpi_name": "Existencia y aplicación de baselines de hardening (por tipo de activo)",
+          "kpi_name": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
           "questions": [
             {
               "question_id": "T6.P3.K1.PR1",
-              "question_text": "Definir configuraciones seguras por defecto es clave para reducir la superficie de ataque. ¿Existen baselines de hardening definidos y aplicados en la infraestructura?"
+              "question_text": "How does the enterprise govern and measure CIS Benchmark Hardening Baselines Deployment by Asset Class across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P3.K2",
-          "kpi_name": "Cumplimiento de hardening en activos críticos (índice de compliance)",
+          "kpi_name": "Continuous Compliance Index & Automated Baseline Auditing",
           "questions": [
             {
               "question_id": "T6.P3.K2.PR1",
-              "question_text": "Medir el cumplimiento permite saber si los activos mantienen un nivel adecuado de seguridad. ¿Cómo se mide el cumplimiento de hardening en los activos críticos?"
+              "question_text": "How does the enterprise govern and measure Continuous Compliance Index & Automated Baseline Auditing across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P3.K3",
-          "kpi_name": "Control de drift y cambios no autorizados de configuración",
+          "kpi_name": "Unauthorized Configuration Drift Detection & Automated Remediation",
           "questions": [
             {
               "question_id": "T6.P3.K3.PR1",
-              "question_text": "Las configuraciones cambian con el tiempo y pueden alejarse del estado seguro definido. ¿Cómo se controla la desviación de configuración respecto al estándar de seguridad?"
+              "question_text": "How does the enterprise govern and measure Unauthorized Configuration Drift Detection & Automated Remediation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P3.K4",
-          "kpi_name": "Gestión de excepciones de hardening (justificación, caducidad y compensación)",
+          "kpi_name": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
           "questions": [
             {
               "question_id": "T6.P3.K4.PR1",
-              "question_text": "Las excepciones de seguridad deben justificarse, controlarse y revisarse. ¿Cómo se gestionan las excepciones al hardening definido?"
+              "question_text": "How does the enterprise govern and measure Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals) across the operational environment?"
             }
           ]
         }
@@ -245,46 +245,46 @@
     },
     {
       "pillar_id": "T6.P4",
-      "pillar_name": "Vulnerability & Patch Management (exposición y remediación)",
-      "weight_pct": 23,
+      "pillar_name": "Vulnerability & Patch Management",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T6.P4.K1",
-          "kpi_name": "Cobertura de inventario y escaneo de vulnerabilidades (activos infra)",
+          "kpi_name": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
           "questions": [
             {
               "question_id": "T6.P4.K1.PR1",
-              "question_text": "El escaneo de vulnerabilidades permite identificar riesgos antes de que sean explotados. ¿Cuál es la cobertura del escaneo de vulnerabilidades en la infraestructura?"
+              "question_text": "How does the enterprise govern and measure Comprehensive Asset Inventory & Automated Vulnerability Scanning across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P4.K2",
-          "kpi_name": "Cumplimiento de SLA de parcheo (críticas/altas) basado en riesgo",
+          "kpi_name": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
           "questions": [
             {
               "question_id": "T6.P4.K2.PR1",
-              "question_text": "Parchear según criticidad es clave para reducir la ventana de exposición. ¿Se cumplen los tiempos objetivo de parcheo según la criticidad de las vulnerabilidades?"
+              "question_text": "How does the enterprise govern and measure Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P4.K3",
-          "kpi_name": "Backlog de vulnerabilidades críticas y control de remediación",
+          "kpi_name": "Vulnerability Backlog Remediation Rate & Aging Metrics",
           "questions": [
             {
               "question_id": "T6.P4.K3.PR1",
-              "question_text": "El backlog de vulnerabilidades muestra si la organización está reduciendo o acumulando riesgo. ¿Cómo se gestiona el backlog de vulnerabilidades críticas?"
+              "question_text": "How does the enterprise govern and measure Vulnerability Backlog Remediation Rate & Aging Metrics across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P4.K4",
-          "kpi_name": "Gestión de excepciones/compensación cuando no se puede parchear",
+          "kpi_name": "Compensating Control Governance & Virtual Patching SLAs",
           "questions": [
             {
               "question_id": "T6.P4.K4.PR1",
-              "question_text": "Cuando no se puede parchear, deben existir medidas alternativas para reducir el riesgo. ¿Cómo se gestionan las excepciones cuando un sistema no puede parchearse?"
+              "question_text": "How does the enterprise govern and measure Compensating Control Governance & Virtual Patching SLAs across the operational environment?"
             }
           ]
         }
@@ -292,43 +292,48 @@
     },
     {
       "pillar_id": "T6.P5",
-      "pillar_name": "Seguridad de red para infraestructura + Logging y Auditoría (segregación y trazabilidad)",
-      "weight_pct": 13,
+      "pillar_name": "Network Segmentation, Logging & Audit",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T6.P5.K1",
-          "kpi_name": "Segmentación por zonas de criticidad e inspección de tráfico este-oeste",
+          "kpi_name": "Workload Microsegmentation & East-West Traffic Filtering",
           "questions": [
             {
               "question_id": "T6.P5.K1.PR1",
-              "question_text": "La segmentación limita la propagación de ataques y reduce el impacto de incidentes. ¿Cuál es el nivel de segmentación de la infraestructura?"
+              "question_text": "How does the enterprise govern and measure Workload Microsegmentation & East-West Traffic Filtering across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P5.K2",
-          "kpi_name": "Aislamiento y control del plano de administración (bastión/jump, acceso restringido)",
+          "kpi_name": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
           "questions": [
             {
               "question_id": "T6.P5.K2.PR1",
-              "question_text": "El acceso al plano de administración debe estar especialmente protegido para evitar compromisos críticos. ¿Cómo se protege el acceso a las consolas y redes de administración?"
+              "question_text": "How does the enterprise govern and measure Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P5.K3",
-          "kpi_name": "Centralización de logs críticos de identidad e infraestructura",
+          "kpi_name": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
           "questions": [
             {
               "question_id": "T6.P5.K3.PR1",
-              "question_text": "Centralizar los logs facilita la investigación, la auditoría y la detección de incidentes. ¿Se centralizan y explotan los logs críticos de infraestructura e identidad?"
+              "question_text": "How does the enterprise govern and measure Centralized Security Telemetry Ingestion (SIEM / SOC Integration) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T6.P5.K4",
-          "kpi_name": "Retención, integridad y revisión/auditoría de logs",
-          "questions": []
+          "kpi_name": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+          "questions": [
+            {
+              "question_id": "T6.P5.K4.PR1",
+              "question_text": "How does the enterprise govern and measure Audit Trail Retention, Immutability & Forensic Integrity Verification across the operational environment?"
+            }
+          ]
         }
       ]
     }
@@ -336,123 +341,150 @@
   "questions": [
     {
       "question_id": "T6.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Phishing-Resistant MFA Coverage Across Critical Infrastructure across the operational environment?",
       "pillar_id": "T6.P1",
       "kpi_id": "T6.P1.K1",
-      "question_text": "La autenticación multifactor reduce el riesgo de acceso no autorizado a sistemas críticos. ¿Cuál es el nivel de cobertura de MFA en los accesos críticos de infraestructura?"
+      "kpi_name": "Phishing-Resistant MFA Coverage Across Critical Infrastructure"
     },
     {
       "question_id": "T6.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance across the operational environment?",
       "pillar_id": "T6.P1",
       "kpi_id": "T6.P1.K2",
-      "question_text": "La gestión del ciclo de vida de accesos permite dar altas, cambios y bajas de forma segura y oportuna. ¿Cómo se gestiona el ciclo de vida de accesos de usuarios y administradores (JML)?"
+      "kpi_name": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance"
     },
     {
       "question_id": "T6.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal across the operational environment?",
       "pillar_id": "T6.P1",
       "kpi_id": "T6.P1.K3",
-      "question_text": "Para entender el control real sobre privilegios y accesos innecesarios:¿Cómo detectáis, revisáis y corregís hoy permisos excesivos o accesos que ya no deberían mantenerse?"
+      "kpi_name": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal"
     },
     {
       "question_id": "T6.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access) across the operational environment?",
       "pillar_id": "T6.P1",
       "kpi_id": "T6.P1.K4",
-      "question_text": "Los accesos de terceros deben estar controlados para evitar riesgos en entornos críticos. ¿Cómo se gestionan los accesos de proveedores y terceros a la infraestructura?"
+      "kpi_name": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)"
     },
     {
       "question_id": "T6.P1.K5.PR1",
+      "question_text": "How does the enterprise govern and measure Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation) across the operational environment?",
       "pillar_id": "T6.P1",
       "kpi_id": "T6.P1.K5",
-      "question_text": "Para entender el control real sobre identidades no humanas y su riesgo asociado:¿Cómo se inventarían, asignan, revisan y retiran hoy las identidades no humanas que acceden a infraestructura, plataformas o automatizaciones?"
+      "kpi_name": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)"
     },
     {
       "question_id": "T6.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure PAM Enclosure Coverage Across Administrative Accounts across the operational environment?",
       "pillar_id": "T6.P2",
       "kpi_id": "T6.P2.K1",
-      "question_text": "Las cuentas privilegiadas deben estar protegidas y controladas de forma centralizada. ¿Qué nivel de cobertura tiene la gestión de accesos privilegiados (PAM) sobre las cuentas críticas?"
+      "kpi_name": "PAM Enclosure Coverage Across Administrative Accounts"
     },
     {
       "question_id": "T6.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Automated Secrets Vaulting, Dynamic Credential Generation & Rotation across the operational environment?",
       "pillar_id": "T6.P2",
       "kpi_id": "T6.P2.K2",
-      "question_text": "La rotación y custodia segura de secretos reduce el riesgo de compromiso de credenciales privilegiadas. ¿Cómo se gestionan el almacenamiento y la rotación de secretos privilegiados?"
+      "kpi_name": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation"
     },
     {
       "question_id": "T6.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Privileged Session Recording, Keystroke Logging & Audit Traceability across the operational environment?",
       "pillar_id": "T6.P2",
       "kpi_id": "T6.P2.K3",
-      "question_text": "Registrar las sesiones privilegiadas permite investigar acciones críticas y detectar usos indebidos. ¿Se registran y auditan las sesiones privilegiadas?"
+      "kpi_name": "Privileged Session Recording, Keystroke Logging & Audit Traceability"
     },
     {
       "question_id": "T6.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures across the operational environment?",
       "pillar_id": "T6.P2",
       "kpi_id": "T6.P2.K4",
-      "question_text": "Los privilegios temporales reducen la exposición frente a accesos elevados permanentes. ¿Cómo se gestionan los privilegios temporales y las cuentas de emergencia (JIT/JEA y break-glass)?"
+      "kpi_name": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures"
     },
     {
       "question_id": "T6.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure CIS Benchmark Hardening Baselines Deployment by Asset Class across the operational environment?",
       "pillar_id": "T6.P3",
       "kpi_id": "T6.P3.K1",
-      "question_text": "Definir configuraciones seguras por defecto es clave para reducir la superficie de ataque. ¿Existen baselines de hardening definidos y aplicados en la infraestructura?"
+      "kpi_name": "CIS Benchmark Hardening Baselines Deployment by Asset Class"
     },
     {
       "question_id": "T6.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Continuous Compliance Index & Automated Baseline Auditing across the operational environment?",
       "pillar_id": "T6.P3",
       "kpi_id": "T6.P3.K2",
-      "question_text": "Medir el cumplimiento permite saber si los activos mantienen un nivel adecuado de seguridad. ¿Cómo se mide el cumplimiento de hardening en los activos críticos?"
+      "kpi_name": "Continuous Compliance Index & Automated Baseline Auditing"
     },
     {
       "question_id": "T6.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Unauthorized Configuration Drift Detection & Automated Remediation across the operational environment?",
       "pillar_id": "T6.P3",
       "kpi_id": "T6.P3.K3",
-      "question_text": "Las configuraciones cambian con el tiempo y pueden alejarse del estado seguro definido. ¿Cómo se controla la desviación de configuración respecto al estándar de seguridad?"
+      "kpi_name": "Unauthorized Configuration Drift Detection & Automated Remediation"
     },
     {
       "question_id": "T6.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals) across the operational environment?",
       "pillar_id": "T6.P3",
       "kpi_id": "T6.P3.K4",
-      "question_text": "Las excepciones de seguridad deben justificarse, controlarse y revisarse. ¿Cómo se gestionan las excepciones al hardening definido?"
+      "kpi_name": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)"
     },
     {
       "question_id": "T6.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Comprehensive Asset Inventory & Automated Vulnerability Scanning across the operational environment?",
       "pillar_id": "T6.P4",
       "kpi_id": "T6.P4.K1",
-      "question_text": "El escaneo de vulnerabilidades permite identificar riesgos antes de que sean explotados. ¿Cuál es la cobertura del escaneo de vulnerabilidades en la infraestructura?"
+      "kpi_name": "Comprehensive Asset Inventory & Automated Vulnerability Scanning"
     },
     {
       "question_id": "T6.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure) across the operational environment?",
       "pillar_id": "T6.P4",
       "kpi_id": "T6.P4.K2",
-      "question_text": "Parchear según criticidad es clave para reducir la ventana de exposición. ¿Se cumplen los tiempos objetivo de parcheo según la criticidad de las vulnerabilidades?"
+      "kpi_name": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)"
     },
     {
       "question_id": "T6.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Vulnerability Backlog Remediation Rate & Aging Metrics across the operational environment?",
       "pillar_id": "T6.P4",
       "kpi_id": "T6.P4.K3",
-      "question_text": "El backlog de vulnerabilidades muestra si la organización está reduciendo o acumulando riesgo. ¿Cómo se gestiona el backlog de vulnerabilidades críticas?"
+      "kpi_name": "Vulnerability Backlog Remediation Rate & Aging Metrics"
     },
     {
       "question_id": "T6.P4.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Compensating Control Governance & Virtual Patching SLAs across the operational environment?",
       "pillar_id": "T6.P4",
       "kpi_id": "T6.P4.K4",
-      "question_text": "Cuando no se puede parchear, deben existir medidas alternativas para reducir el riesgo. ¿Cómo se gestionan las excepciones cuando un sistema no puede parchearse?"
+      "kpi_name": "Compensating Control Governance & Virtual Patching SLAs"
     },
     {
       "question_id": "T6.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Workload Microsegmentation & East-West Traffic Filtering across the operational environment?",
       "pillar_id": "T6.P5",
       "kpi_id": "T6.P5.K1",
-      "question_text": "La segmentación limita la propagación de ataques y reduce el impacto de incidentes. ¿Cuál es el nivel de segmentación de la infraestructura?"
+      "kpi_name": "Workload Microsegmentation & East-West Traffic Filtering"
     },
     {
       "question_id": "T6.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes) across the operational environment?",
       "pillar_id": "T6.P5",
       "kpi_id": "T6.P5.K2",
-      "question_text": "El acceso al plano de administración debe estar especialmente protegido para evitar compromisos críticos. ¿Cómo se protege el acceso a las consolas y redes de administración?"
+      "kpi_name": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)"
     },
     {
       "question_id": "T6.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Centralized Security Telemetry Ingestion (SIEM / SOC Integration) across the operational environment?",
       "pillar_id": "T6.P5",
       "kpi_id": "T6.P5.K3",
-      "question_text": "Centralizar los logs facilita la investigación, la auditoría y la detección de incidentes. ¿Se centralizan y explotan los logs críticos de infraestructura e identidad?"
+      "kpi_name": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)"
+    },
+    {
+      "question_id": "T6.P5.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Audit Trail Retention, Immutability & Forensic Integrity Verification across the operational environment?",
+      "pillar_id": "T6.P5",
+      "kpi_id": "T6.P5.K4",
+      "kpi_name": "Audit Trail Retention, Immutability & Forensic Integrity Verification"
     }
   ]
 }

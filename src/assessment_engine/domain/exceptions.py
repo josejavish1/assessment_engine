@@ -96,3 +96,33 @@ class UnmappedScoreError(AssessmentDomainError):
             error_code="UNMAPPED_MATURITY_SCORE",
             context={"score": score},
         )
+
+
+class PayloadIntegrityError(DomainValidationError):
+    """Raised when raw telemetry violates epistemic completeness invariants."""
+
+    def __init__(
+        self,
+        tower_id: str,
+        control_id: str,
+        missing_attribute: str,
+        context: Mapping[str, Any] | None = None,
+    ) -> None:
+        ctx = dict(context or {})
+        ctx.update(
+            {
+                "tower_id": tower_id,
+                "control_id": control_id,
+                "missing_attribute": missing_attribute,
+            }
+        )
+        super().__init__(
+            f"Epistemic Integrity Violation in Tower [{tower_id}], Control [{control_id}]: "
+            f"Mandatory attribute '{missing_attribute}' is null or unresolvable. "
+            "Ghost scoring is strictly prohibited.",
+            error_code="PAYLOAD_INTEGRITY_VIOLATION",
+            context=ctx,
+        )
+        self.tower_id = tower_id
+        self.control_id = control_id
+        self.missing_attribute = missing_attribute

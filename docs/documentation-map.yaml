@@ -1381,6 +1381,10 @@ coverage:
   - docs/audits/**
   - docs/architecture/RFC_*.md
   - docs/architecture/*ARGON*.md
+  - docs/architecture/SOTA_*.md
+  - docs/architecture/LEAN_*.md
+  - docs/architecture/ZERO_*.md
+  - docs/architecture/ROBUST_*.md
   - docs/architecture/FINAL_*.md
   - docs/architecture/DEEP_*.md
   - docs/architecture/USER_OBSERVATIONS*.md

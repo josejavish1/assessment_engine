@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -71,8 +71,8 @@
     "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
   },
   "tower_id": "T9",
-  "tower_name": "Digital Workplace",
-  "purpose": "La torre Digital Workplace cubre el conjunto de capacidades para proporcionar y operar un entorno de trabajo digital consistente, gestionado y seguro, orientado a productividad y experiencia de usuario.",
+  "tower_name": "Digital Workplace & User Services",
+  "purpose": "The Digital Workplace & User Services domain encompasses modern endpoint management, zero-trust digital identity, unified communications, collaboration suites, and digital employee experience (DEX).",
   "scope_summary": [
     "Workplace Endpoint",
     "UEM/MDM/MAM (Unified Endpoint Management)",
@@ -92,45 +92,45 @@
     {
       "pillar_id": "T9.P1",
       "pillar_name": "Endpoint & Device Lifecycle Management",
-      "weight_pct": 22,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T9.P1.K1",
-          "kpi_name": "Estandarización del endpoint (modelos, imagen base y configuración)",
+          "kpi_name": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
           "questions": [
             {
               "question_id": "T9.P1.K1.PR1",
-              "question_text": "Mantener configuraciones estándar en los dispositivos ayuda a reducir incidencias y simplificar la operación. ¿Cómo describiría el nivel de estandarización de los endpoints?"
+              "question_text": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P1.K2",
-          "kpi_name": "Tiempo de provisión / alta de puesto (end-to-end)",
+          "kpi_name": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
           "questions": [
             {
               "question_id": "T9.P1.K2.PR1",
-              "question_text": "La provisión eficiente de dispositivos impacta directamente en la productividad del usuario. ¿Cómo es el proceso de provisión de nuevos puestos de trabajo?"
+              "question_text": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P1.K3",
-          "kpi_name": "Cumplimiento de posture del dispositivo (cifrado, parches, agentes, políticas)",
+          "kpi_name": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
           "questions": [
             {
               "question_id": "T9.P1.K3.PR1",
-              "question_text": "El estado de seguridad y configuración del dispositivo (posture) es clave para proteger el entorno digital. ¿Cómo se controla el cumplimiento del posture del dispositivo?"
+              "question_text": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P1.K4",
-          "kpi_name": "Gestión del ciclo de vida (renovación y obsolescencia)",
+          "kpi_name": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
           "questions": [
             {
               "question_id": "T9.P1.K4.PR1",
-              "question_text": "La renovación planificada de dispositivos evita obsolescencia y degradación del servicio. ¿Cómo se gestiona la renovación y obsolescencia de dispositivos?"
+              "question_text": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?"
             }
           ]
         }
@@ -138,46 +138,46 @@
     },
     {
       "pillar_id": "T9.P2",
-      "pillar_name": "Workplace Identity & Access Experience",
-      "weight_pct": 23,
+      "pillar_name": "Workplace Identity & User Access Experience",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T9.P2.K1",
-          "kpi_name": "Cobertura de SSO en aplicaciones y plataformas críticas",
+          "kpi_name": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
           "questions": [
             {
               "question_id": "T9.P2.K1.PR1",
-              "question_text": "El uso de Single Sign-On simplifica el acceso a aplicaciones y reduce la fricción para el usuario. ¿Cuál es el nivel de cobertura de SSO en aplicaciones críticas?"
+              "question_text": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P2.K2",
-          "kpi_name": "Acceso Condicional + MFA adaptativa (por contexto y riesgo)",
+          "kpi_name": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
           "questions": [
             {
               "question_id": "T9.P2.K2.PR1",
-              "question_text": "El acceso seguro debe equilibrar seguridad y facilidad de uso para el usuario final. ¿Cómo se aplican el acceso condicional y MFA en el entorno workplace?"
+              "question_text": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P2.K3",
-          "kpi_name": "Autoservicio de credenciales (reset/recuperación) y reducción de tickets",
+          "kpi_name": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
           "questions": [
             {
               "question_id": "T9.P2.K3.PR1",
-              "question_text": "Permitir autoservicio para recuperación de credenciales reduce la carga sobre el soporte técnico. ¿Qué nivel de autoservicio existe para recuperación de credenciales?"
+              "question_text": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P2.K4",
-          "kpi_name": "Tasa de incidencias de acceso y soporte por usuario",
+          "kpi_name": "User Access Request Incident Rate & Access Provisioning Lead Time",
           "questions": [
             {
               "question_id": "T9.P2.K4.PR1",
-              "question_text": "Los problemas de acceso suelen ser una causa importante de tickets al soporte. ¿Cómo es la tasa de tickets relacionados con problemas de acceso?"
+              "question_text": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?"
             }
           ]
         }
@@ -185,46 +185,46 @@
     },
     {
       "pillar_id": "T9.P3",
-      "pillar_name": "Productividad, Colaboración y Gestión del Conocimiento",
-      "weight_pct": 19,
+      "pillar_name": "Productivity, Collaboration & Knowledge Platforms",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T9.P3.K1",
-          "kpi_name": "Gobernanza de espacios colaborativos (lifecycle, ownership, sprawl)",
+          "kpi_name": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
           "questions": [
             {
               "question_id": "T9.P3.K1.PR1",
-              "question_text": "Los espacios colaborativos requieren gobierno para evitar proliferación y desorden de la información. ¿Cómo se gobiernan los espacios colaborativos?"
+              "question_text": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P3.K2",
-          "kpi_name": "Gestión documental y control de permisos (repositorios y clasificación)",
+          "kpi_name": "Enterprise Content & Document Management (DLP & Classification)",
           "questions": [
             {
               "question_id": "T9.P3.K2.PR1",
-              "question_text": "La gestión adecuada de documentos y permisos es clave para proteger la información. ¿Cómo se gestionan los documentos y permisos de acceso?"
+              "question_text": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P3.K3",
-          "kpi_name": "Calidad de servicio de comunicaciones (reuniones/voz/video)",
+          "kpi_name": "Unified Communications Quality of Service (QoS for Voice & Video)",
           "questions": [
             {
               "question_id": "T9.P3.K3.PR1",
-              "question_text": "La calidad de las comunicaciones digitales impacta directamente en la experiencia del usuario. ¿Cómo es la calidad del servicio de reuniones y comunicaciones?"
+              "question_text": "How does the enterprise govern and measure Unified Communications Quality of Service (QoS for Voice & Video) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P3.K4",
-          "kpi_name": "Adopción efectiva de herramientas clave (uso real vs habilitado)",
+          "kpi_name": "Digital Workplace Platform Utilization & Feature Adoption Depth",
           "questions": [
             {
               "question_id": "T9.P3.K4.PR1",
-              "question_text": "Disponer de herramientas colaborativas no garantiza su adopción efectiva por parte de los usuarios. ¿Cuál es el nivel de adopción real de herramientas colaborativas?"
+              "question_text": "How does the enterprise govern and measure Digital Workplace Platform Utilization & Feature Adoption Depth across the operational environment?"
             }
           ]
         }
@@ -232,46 +232,46 @@
     },
     {
       "pillar_id": "T9.P4",
-      "pillar_name": "Operación, Soporte y Autoservicio del Workplace",
-      "weight_pct": 21,
+      "pillar_name": "Workplace Operations, Support & Self-Service",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T9.P4.K1",
-          "kpi_name": "Cumplimiento de SLAs de soporte del workplace (incidencias y solicitudes)",
+          "kpi_name": "Workplace Support SLA Adherence (Incident & Request Resolution)",
           "questions": [
             {
               "question_id": "T9.P4.K1.PR1",
-              "question_text": "El soporte del workplace debe cumplir tiempos de resolución adecuados para garantizar la productividad. ¿Cómo es el cumplimiento de los SLAs de soporte del workplace?"
+              "question_text": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P4.K2",
-          "kpi_name": "Autoservicio y knowledge base (ratio de resolución sin intervención humana)",
+          "kpi_name": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
           "questions": [
             {
               "question_id": "T9.P4.K2.PR1",
-              "question_text": "Facilitar autoservicio y documentación reduce la carga operativa del soporte. ¿Qué nivel de autoservicio y knowledge base existe?"
+              "question_text": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P4.K3",
-          "kpi_name": "Automatización y self-healing (remediación automática de incidencias recurrentes)",
+          "kpi_name": "Endpoint Self-Healing & Automated Client-Side Remediation",
           "questions": [
             {
               "question_id": "T9.P4.K3.PR1",
-              "question_text": "Automatizar tareas repetitivas permite mejorar la eficiencia del soporte. ¿Cómo se aplica la automatización y el self-healing en el workplace?"
+              "question_text": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P4.K4",
-          "kpi_name": "Gestión de problemas (reducción de recurrentes por RCA)",
+          "kpi_name": "Workplace Problem Management & Endpoint Crash Trend Reduction",
           "questions": [
             {
               "question_id": "T9.P4.K4.PR1",
-              "question_text": "Identificar las causas raíz permite evitar que los problemas se repitan. ¿Cómo se gestionan las causas raíz de problemas recurrentes?"
+              "question_text": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?"
             }
           ]
         }
@@ -279,46 +279,46 @@
     },
     {
       "pillar_id": "T9.P5",
-      "pillar_name": "Digital Employee Experience (DEX), Rendimiento y Adopción",
-      "weight_pct": 15,
+      "pillar_name": "Digital Employee Experience (DEX) & Adoption",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T9.P5.K1",
-          "kpi_name": "Cobertura de telemetría DEX (visibilidad real del endpoint y experiencia)",
+          "kpi_name": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
           "questions": [
             {
               "question_id": "T9.P5.K1.PR1",
-              "question_text": "Medir la experiencia digital del empleado permite identificar problemas antes de que impacten al usuario. ¿Qué nivel de telemetría DEX existe en el workplace?"
+              "question_text": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P5.K2",
-          "kpi_name": "Rendimiento del endpoint (arranque, crashes, performance de apps)",
+          "kpi_name": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
           "questions": [
             {
               "question_id": "T9.P5.K2.PR1",
-              "question_text": "El rendimiento del endpoint influye directamente en la experiencia del usuario. ¿Cómo se gestiona el rendimiento del endpoint?"
+              "question_text": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P5.K3",
-          "kpi_name": "Satisfacción del usuario (CSAT/NPS por servicios del workplace)",
+          "kpi_name": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
           "questions": [
             {
               "question_id": "T9.P5.K3.PR1",
-              "question_text": "La satisfacción del usuario es un indicador clave del éxito del workplace digital. ¿Cómo se mide y gestiona la satisfacción del usuario?"
+              "question_text": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T9.P5.K4",
-          "kpi_name": "Mejora continua basada en DEX (ciclo de detectar-priorizar-remediar)",
+          "kpi_name": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
           "questions": [
             {
               "question_id": "T9.P5.K4.PR1",
-              "question_text": "Analizar los datos de experiencia permite mejorar continuamente el entorno de trabajo digital. ¿Cómo se aplica la mejora continua basada en datos de experiencia?"
+              "question_text": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?"
             }
           ]
         }
@@ -328,123 +328,143 @@
   "questions": [
     {
       "question_id": "T9.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?",
       "pillar_id": "T9.P1",
       "kpi_id": "T9.P1.K1",
-      "question_text": "Mantener configuraciones estándar en los dispositivos ayuda a reducir incidencias y simplificar la operación. ¿Cómo describiría el nivel de estandarización de los endpoints?"
+      "kpi_name": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)"
     },
     {
       "question_id": "T9.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?",
       "pillar_id": "T9.P1",
       "kpi_id": "T9.P1.K2",
-      "question_text": "La provisión eficiente de dispositivos impacta directamente en la productividad del usuario. ¿Cómo es el proceso de provisión de nuevos puestos de trabajo?"
+      "kpi_name": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration"
     },
     {
       "question_id": "T9.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?",
       "pillar_id": "T9.P1",
       "kpi_id": "T9.P1.K3",
-      "question_text": "El estado de seguridad y configuración del dispositivo (posture) es clave para proteger el entorno digital. ¿Cómo se controla el cumplimiento del posture del dispositivo?"
+      "kpi_name": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)"
     },
     {
       "question_id": "T9.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?",
       "pillar_id": "T9.P1",
       "kpi_id": "T9.P1.K4",
-      "question_text": "La renovación planificada de dispositivos evita obsolescencia y degradación del servicio. ¿Cómo se gestiona la renovación y obsolescencia de dispositivos?"
+      "kpi_name": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal"
     },
     {
       "question_id": "T9.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?",
       "pillar_id": "T9.P2",
       "kpi_id": "T9.P2.K1",
-      "question_text": "El uso de Single Sign-On simplifica el acceso a aplicaciones y reduce la fricción para el usuario. ¿Cuál es el nivel de cobertura de SSO en aplicaciones críticas?"
+      "kpi_name": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications"
     },
     {
       "question_id": "T9.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?",
       "pillar_id": "T9.P2",
       "kpi_id": "T9.P2.K2",
-      "question_text": "El acceso seguro debe equilibrar seguridad y facilidad de uso para el usuario final. ¿Cómo se aplican el acceso condicional y MFA en el entorno workplace?"
+      "kpi_name": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA"
     },
     {
       "question_id": "T9.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?",
       "pillar_id": "T9.P2",
       "kpi_id": "T9.P2.K3",
-      "question_text": "Permitir autoservicio para recuperación de credenciales reduce la carga sobre el soporte técnico. ¿Qué nivel de autoservicio existe para recuperación de credenciales?"
+      "kpi_name": "Self-Service Password Reset (SSPR) & User Account Self-Remediation"
     },
     {
       "question_id": "T9.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?",
       "pillar_id": "T9.P2",
       "kpi_id": "T9.P2.K4",
-      "question_text": "Los problemas de acceso suelen ser una causa importante de tickets al soporte. ¿Cómo es la tasa de tickets relacionados con problemas de acceso?"
+      "kpi_name": "User Access Request Incident Rate & Access Provisioning Lead Time"
     },
     {
       "question_id": "T9.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?",
       "pillar_id": "T9.P3",
       "kpi_id": "T9.P3.K1",
-      "question_text": "Los espacios colaborativos requieren gobierno para evitar proliferación y desorden de la información. ¿Cómo se gobiernan los espacios colaborativos?"
+      "kpi_name": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)"
     },
     {
       "question_id": "T9.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?",
       "pillar_id": "T9.P3",
       "kpi_id": "T9.P3.K2",
-      "question_text": "La gestión adecuada de documentos y permisos es clave para proteger la información. ¿Cómo se gestionan los documentos y permisos de acceso?"
+      "kpi_name": "Enterprise Content & Document Management (DLP & Classification)"
     },
     {
       "question_id": "T9.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Unified Communications Quality of Service (QoS for Voice & Video) across the operational environment?",
       "pillar_id": "T9.P3",
       "kpi_id": "T9.P3.K3",
-      "question_text": "La calidad de las comunicaciones digitales impacta directamente en la experiencia del usuario. ¿Cómo es la calidad del servicio de reuniones y comunicaciones?"
+      "kpi_name": "Unified Communications Quality of Service (QoS for Voice & Video)"
     },
     {
       "question_id": "T9.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Digital Workplace Platform Utilization & Feature Adoption Depth across the operational environment?",
       "pillar_id": "T9.P3",
       "kpi_id": "T9.P3.K4",
-      "question_text": "Disponer de herramientas colaborativas no garantiza su adopción efectiva por parte de los usuarios. ¿Cuál es el nivel de adopción real de herramientas colaborativas?"
+      "kpi_name": "Digital Workplace Platform Utilization & Feature Adoption Depth"
     },
     {
       "question_id": "T9.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?",
       "pillar_id": "T9.P4",
       "kpi_id": "T9.P4.K1",
-      "question_text": "El soporte del workplace debe cumplir tiempos de resolución adecuados para garantizar la productividad. ¿Cómo es el cumplimiento de los SLAs de soporte del workplace?"
+      "kpi_name": "Workplace Support SLA Adherence (Incident & Request Resolution)"
     },
     {
       "question_id": "T9.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?",
       "pillar_id": "T9.P4",
       "kpi_id": "T9.P4.K2",
-      "question_text": "Facilitar autoservicio y documentación reduce la carga operativa del soporte. ¿Qué nivel de autoservicio y knowledge base existe?"
+      "kpi_name": "Self-Service Support Portal & Knowledge Base Deflection Ratio"
     },
     {
       "question_id": "T9.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?",
       "pillar_id": "T9.P4",
       "kpi_id": "T9.P4.K3",
-      "question_text": "Automatizar tareas repetitivas permite mejorar la eficiencia del soporte. ¿Cómo se aplica la automatización y el self-healing en el workplace?"
+      "kpi_name": "Endpoint Self-Healing & Automated Client-Side Remediation"
     },
     {
       "question_id": "T9.P4.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?",
       "pillar_id": "T9.P4",
       "kpi_id": "T9.P4.K4",
-      "question_text": "Identificar las causas raíz permite evitar que los problemas se repitan. ¿Cómo se gestionan las causas raíz de problemas recurrentes?"
+      "kpi_name": "Workplace Problem Management & Endpoint Crash Trend Reduction"
     },
     {
       "question_id": "T9.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?",
       "pillar_id": "T9.P5",
       "kpi_id": "T9.P5.K1",
-      "question_text": "Medir la experiencia digital del empleado permite identificar problemas antes de que impacten al usuario. ¿Qué nivel de telemetría DEX existe en el workplace?"
+      "kpi_name": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage"
     },
     {
       "question_id": "T9.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?",
       "pillar_id": "T9.P5",
       "kpi_id": "T9.P5.K2",
-      "question_text": "El rendimiento del endpoint influye directamente en la experiencia del usuario. ¿Cómo se gestiona el rendimiento del endpoint?"
+      "kpi_name": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics"
     },
     {
       "question_id": "T9.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?",
       "pillar_id": "T9.P5",
       "kpi_id": "T9.P5.K3",
-      "question_text": "La satisfacción del usuario es un indicador clave del éxito del workplace digital. ¿Cómo se mide y gestiona la satisfacción del usuario?"
+      "kpi_name": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)"
     },
     {
       "question_id": "T9.P5.K4.PR1",
+      "question_text": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?",
       "pillar_id": "T9.P5",
       "kpi_id": "T9.P5.K4",
-      "question_text": "Analizar los datos de experiencia permite mejorar continuamente el entorno de trabajo digital. ¿Cómo se aplica la mejora continua basada en datos de experiencia?"
+      "kpi_name": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)"
     }
   ]
 }

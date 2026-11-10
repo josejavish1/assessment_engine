@@ -563,7 +563,10 @@ def derive_in_memory_fair_risks(
                 calc_lef = min(0.50, max(0.08, tef_val * 0.09))
             else:
                 calc_lef = max(0.05, tef_val)
-            calc_sle = intrinsic_ale / calc_lef if (intrinsic_ale > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
+            if eff_hc.get("sle") is not None:
+                calc_sle = float(eff_hc["sle"]) * rate_mult
+            else:
+                calc_sle = intrinsic_ale / calc_lef if (intrinsic_ale > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
 
             # Enforce zero financial double counting in ledger totals for tangential contributors:
             calibrated_ale = 0.0 if is_tangential else intrinsic_ale
@@ -733,8 +736,12 @@ def _resolve_pillar_kpi_fallback(tower_id: str, pillar_id: str, doc_lang: str) -
                 if p_code == pillar_id.upper() or p_code.endswith(f".{pillar_id.upper()}"):
                     kpis = p.get("kpis", [])
                     if kpis:
-                        first_kpi = str(kpis[0].get("kpi_name", "")).strip()
-                        last_kpi = str(kpis[-1].get("kpi_name", "")).strip()
+                        raw_first = str(kpis[0].get("kpi_name", "")).strip()
+                        raw_last = str(kpis[-1].get("kpi_name", "")).strip()
+                        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                        res = get_taxonomy_resolver()
+                        first_kpi = res.resolve_capability_name(raw_first, default=raw_first, locale=doc_lang)
+                        last_kpi = res.resolve_capability_name(raw_last, default=raw_last, locale=doc_lang)
                         fallback_pos = t("calib_fallback_pos_template", locale=doc_lang, kpi_name=first_kpi)
                         fallback_neg = t("calib_fallback_neg_template", locale=doc_lang, kpi_name=last_kpi)
                         return fallback_pos, fallback_neg

@@ -15,6 +15,9 @@ from typing import Any, Dict
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
 
+DEFAULT_SYSTEM_LOCALE: str = "en"
+
+
 class MissingLocalizationKeyError(KeyError):
     """Raised when an AST node requests an unregistered i18n key (Invariant III)."""
     pass
@@ -36,20 +39,27 @@ class DeclarativeI18nResolver:
             data: Dict[str, Any] = json.load(f)
         return data
 
+    @staticmethod
+    def normalize_locale(locale: str | None) -> str:
+        """Deterministically normalize locale token or return default system locale."""
+        if not locale or not str(locale).strip():
+            return DEFAULT_SYSTEM_LOCALE
+        return str(locale).lower().strip().replace("-", "_").split("_")[0]
+
     def resolve(self, key: str, locale: str) -> str:
         """Resolve localized string strictly for the given key and locale."""
-        clean_locale = locale.lower().strip().replace("-", "_").split("_")[0] if locale else "en"
+        clean_locale = self.normalize_locale(locale)
         
         # Try clean locale first, then base language, then en fallback
         target_dict: Dict[str, Any] | None = None
         if clean_locale in self._registry:
             target_dict = self._registry[clean_locale]
-        elif "en" in self._registry:
-            target_dict = self._registry["en"]
+        elif DEFAULT_SYSTEM_LOCALE in self._registry:
+            target_dict = self._registry[DEFAULT_SYSTEM_LOCALE]
             
         if target_dict is None or key not in target_dict or not str(target_dict[key]).strip():
             # Check if key is available in en
-            en_dict = self._registry.get("en", {})
+            en_dict = self._registry.get(DEFAULT_SYSTEM_LOCALE, {})
             if key in en_dict and str(en_dict[key]).strip():
                 return str(en_dict[key])
             raise MissingLocalizationKeyError(
@@ -63,7 +73,7 @@ class DeclarativeI18nResolver:
     @classmethod
     def format_currency(cls, amount: float, currency_code: str, locale: str) -> str:
         """Format currency according to ISO 4217 standard and locale conventions."""
-        clean_loc = locale.lower().strip().replace("-", "_").split("_")[0] if locale else "en"
+        clean_loc = cls.normalize_locale(locale)
         code = currency_code.upper().strip() if currency_code else "USD"
 
         symbol_map = {

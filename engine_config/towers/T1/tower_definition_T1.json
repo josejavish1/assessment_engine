@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced across facilities."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and automated failover orchestration."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T1",
   "tower_name": "Physical Data Center & Facilities",
-  "purpose": "La torre Physical Data Center & Facilities cubre todos los elementos físicos que hacen posible que los servicios de TI existan y se mantengan operativos: edificio/sala técnica, alimentación eléctrica, climatización, condiciones ambientales, Seguridad Física y Control de Accesos, protección contra incendios, accesos, monitorización y procedimientos operativos del CPD (o salas técnicas equivalentes).",
+  "purpose": "The Physical Data Center & Facilities domain covers all physical infrastructure and mechanical systems required to sustain enterprise IT operations: technical facilities, electrical power distribution, HVAC climate control, physical perimeter security, fire suppression, and facility monitoring.",
   "scope_summary": [
     "Sitio y sala",
     "Energía",
@@ -97,46 +97,46 @@
   "pillars": [
     {
       "pillar_id": "T1.P1",
-      "pillar_name": "Energía y Continuidad Eléctrica",
+      "pillar_name": "Power & Electrical Continuity",
       "weight_pct": 24,
       "kpis": [
         {
           "kpi_id": "T1.P1.K1",
-          "kpi_name": "Autonomía eléctrica garantizada (UPS + Generador)",
+          "kpi_name": "Guaranteed Electrical Autonomy (UPS & Backup Generators)",
           "questions": [
             {
               "question_id": "T1.P1.K1.PR1",
-              "question_text": "La autonomía eléctrica determina cuánto tiempo puede seguir funcionando el CPD si se pierde el suministro externo. ¿Cuál es el nivel de autonomía eléctrica real del CPD ante un corte de energía?"
+              "question_text": "What is the certified autonomous runtime of critical facility loads under complete utility power loss?"
             }
           ]
         },
         {
           "kpi_id": "T1.P1.K2",
-          "kpi_name": "Éxito de pruebas de conmutación y fallos controlados (UPS/ATS/Gen)",
+          "kpi_name": "Switching Test Cadence & Controlled Failover Verification",
           "questions": [
             {
               "question_id": "T1.P1.K2.PR1",
-              "question_text": "Los sistemas eléctricos críticos deben probarse periódicamente para garantizar que funcionan correctamente durante una contingencia. ¿Cómo se realizan las pruebas de conmutación eléctrica (UPS, ATS, generadores)?"
+              "question_text": "How frequently and under what operational methodology are automated transfer switches (ATS) and emergency generators tested under full load?"
             }
           ]
         },
         {
           "kpi_id": "T1.P1.K3",
-          "kpi_name": "Redundancia y eliminación de SPOF en la cadena eléctrica",
+          "kpi_name": "Power Distribution Redundancy & Single Points of Failure Elimination",
           "questions": [
             {
               "question_id": "T1.P1.K3.PR1",
-              "question_text": "La resiliencia eléctrica depende de eliminar puntos únicos de fallo que puedan provocar la caída del CPD. ¿Cómo se identifican y gestionan los puntos únicos de fallo eléctricos (SPOF)?"
+              "question_text": "How are single points of failure (SPOFs) in dual-cord electrical distribution paths identified and mitigated across server racks?"
             }
           ]
         },
         {
           "kpi_id": "T1.P1.K4",
-          "kpi_name": "Utilización de capacidad eléctrica (potencia instalada vs potencia usada)",
+          "kpi_name": "Electrical Capacity Utilization & Planned Headroom Management",
           "questions": [
             {
               "question_id": "T1.P1.K4.PR1",
-              "question_text": "Conocer el consumo eléctrico y la capacidad disponible es clave para evitar saturaciones y planificar crecimiento. ¿Cómo se controla la utilización de la capacidad eléctrica instalada en el CPD?"
+              "question_text": "How is electrical load capacity monitored against provisioned thresholds to prevent circuit overload and manage expansion headroom?"
             }
           ]
         }
@@ -144,36 +144,36 @@
     },
     {
       "pillar_id": "T1.P2",
-      "pillar_name": "Climatización, Refrigeración y Control Ambiental",
+      "pillar_name": "Climate Control & Environmental Resilience",
       "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T1.P2.K1",
-          "kpi_name": "Cumplimiento de rangos ambientales (temperatura/humedad) con evidencia",
+          "kpi_name": "Environmental Threshold Compliance & Continuous Thermal Telemetry",
           "questions": [
             {
               "question_id": "T1.P2.K1.PR1",
-              "question_text": "La estabilidad térmica es fundamental para garantizar la fiabilidad del equipamiento IT. ¿Cómo se controla el cumplimiento de los rangos de temperatura y humedad en el CPD?"
+              "question_text": "How are ambient temperature and relative humidity monitored and controlled in accordance with ASHRAE TC 9.9 standards?"
             }
           ]
         },
         {
           "kpi_id": "T1.P2.K2",
-          "kpi_name": "Resiliencia del sistema de climatización (redundancia y tolerancia a fallos)",
+          "kpi_name": "Thermal Hotspot Mitigation & Per-Rack Power Density Governance",
           "questions": [
             {
               "question_id": "T1.P2.K2.PR1",
-              "question_text": "La redundancia en climatización evita que un fallo térmico provoque la parada de los sistemas IT. ¿Qué nivel de redundancia existe en los sistemas de climatización del CPD?"
+              "question_text": "How are airflow containment, cold/hot aisle layouts, and thermal hotspots managed across high-density server enclosures?"
             }
           ]
         },
         {
           "kpi_id": "T1.P2.K3",
-          "kpi_name": "Gestión de hotspots y densidad por rack y zona",
+          "kpi_name": "HVAC Cooling Resiliency (N+1 / 2N) & Concurrent Maintainability",
           "questions": [
             {
               "question_id": "T1.P2.K3.PR1",
-              "question_text": "Las altas densidades de computación pueden generar puntos calientes que afectan al rendimiento y la estabilidad. ¿Cómo se gestionan la densidad térmica y los hotspots en los racks?"
+              "question_text": "What level of cooling redundancy (N+1 or 2N) is maintained, and can chillers/CRAC units be serviced concurrently without thermal degradation?"
             }
           ]
         }
@@ -181,36 +181,36 @@
     },
     {
       "pillar_id": "T1.P3",
-      "pillar_name": "Seguridad Física y Control de Accesos",
+      "pillar_name": "Physical Security & Access Control",
       "weight_pct": 16,
       "kpis": [
         {
           "kpi_id": "T1.P3.K1",
-          "kpi_name": "Control de accesos por zonas y principio de mínimo privilegio físico",
+          "kpi_name": "Zoned Physical Access Control & Biometric Multi-Factor Authentication",
           "questions": [
             {
               "question_id": "T1.P3.K1.PR1",
-              "question_text": "La protección física del CPD requiere limitar el acceso únicamente al personal autorizado. ¿Cómo está estructurado el control de accesos físicos por zonas dentro del CPD?"
+              "question_text": "What multi-layered physical security controls and biometric validation mechanisms govern ingress to critical whitespace and caged suites?"
             }
           ]
         },
         {
           "kpi_id": "T1.P3.K2",
-          "kpi_name": "Trazabilidad y auditoría de accesos (logs, retención, revisiones)",
+          "kpi_name": "Vendor Escort Protocols, Room Access Logging & Permits to Work",
           "questions": [
             {
               "question_id": "T1.P3.K2.PR1",
-              "question_text": "La trazabilidad de accesos permite identificar quién ha accedido al CPD y cuándo. ¿Cómo se registran y revisan los accesos físicos a las instalaciones?"
+              "question_text": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?"
             }
           ]
         },
         {
           "kpi_id": "T1.P3.K3",
-          "kpi_name": "Gestión de visitantes/proveedores y trabajos en sala (permits to work)",
+          "kpi_name": "CCTV Surveillance Coverage, Access Logs & Tamper-Proof Audit Retention",
           "questions": [
             {
               "question_id": "T1.P3.K3.PR1",
-              "question_text": "Las intervenciones de terceros en el CPD deben controlarse para evitar riesgos operativos o de seguridad. ¿Cómo se gestionan los trabajos de proveedores o terceros en la sala técnica?"
+              "question_text": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?"
             }
           ]
         }
@@ -218,36 +218,36 @@
     },
     {
       "pillar_id": "T1.P4",
-      "pillar_name": "Protección Contra Incendios y Seguridad Ambiental",
+      "pillar_name": "Fire Suppression & Environmental Safety",
       "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T1.P4.K1",
-          "kpi_name": "Detección temprana de humo y temperatura en zonas críticas",
+          "kpi_name": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization",
           "questions": [
             {
               "question_id": "T1.P4.K1.PR1",
-              "question_text": "La detección temprana de incendios es clave para minimizar daños en los sistemas IT. ¿Cómo se gestiona la detección de incendios en el CPD?"
+              "question_text": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?"
             }
           ]
         },
         {
           "kpi_id": "T1.P4.K2",
-          "kpi_name": "Sistema de supresión y extinción adecuado para seguridad de personas",
+          "kpi_name": "Clean Agent Gaseous Fire Suppression & Discharge System Certification",
           "questions": [
             {
               "question_id": "T1.P4.K2.PR1",
-              "question_text": "Los sistemas de extinción deben ser adecuados para entornos IT y mantenerse correctamente. ¿Qué nivel de adecuación y mantenimiento tiene el sistema de supresión de incendios?"
+              "question_text": "What gaseous clean-agent suppression systems (e.g. FM-200, Novec 1230, Inergen) protectWhitespace, and how frequently are room integrity tests conducted?"
             }
           ]
         },
         {
           "kpi_id": "T1.P4.K3",
-          "kpi_name": "Gestión de riesgos ambientales asociados (fugas de agua, condensación, alarmas críticas)",
+          "kpi_name": "Environmental Perimeter Hazards: Water Ingress, Flood & Contaminant Mitigation",
           "questions": [
             {
               "question_id": "T1.P4.K3.PR1",
-              "question_text": "Factores como fugas de agua o condensación pueden afectar gravemente a la infraestructura. ¿Cómo se monitorizan y gestionan los riesgos ambientales en el CPD?"
+              "question_text": "What water-detection rope telemetry, flood mitigation barriers, and particulate contaminant controls protect technical rooms?"
             }
           ]
         }
@@ -255,36 +255,36 @@
     },
     {
       "pillar_id": "T1.P5",
-      "pillar_name": "Operación de Facilities, Monitorización y Mantenimiento",
+      "pillar_name": "Facilities Operations, Monitoring & Maintenance",
       "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T1.P5.K1",
-          "kpi_name": "Cobertura de monitorización y gestión de alarmas (BMS/DCIM o equivalente)",
+          "kpi_name": "Continuous Infrastructure Telemetry (DCIM/BMS) & Unified Alarm Triage",
           "questions": [
             {
               "question_id": "T1.P5.K1.PR1",
-              "question_text": "La visibilidad operativa permite detectar incidencias antes de que afecten al servicio. ¿Qué nivel de monitorización existe sobre las infraestructuras de facilities?"
+              "question_text": "How does the building management system (BMS) and DCIM platform monitor facility sensors and alert on anomalous conditions 24/7?"
             }
           ]
         },
         {
           "kpi_id": "T1.P5.K2",
-          "kpi_name": "Cumplimiento del plan de mantenimiento preventivo con evidencias trazables",
+          "kpi_name": "Preventive Maintenance Schedules, Vendor SLAs & Spares Inventory",
           "questions": [
             {
               "question_id": "T1.P5.K2.PR1",
-              "question_text": "El mantenimiento preventivo es esencial para evitar fallos en infraestructuras críticas. ¿Cómo se gestiona el cumplimiento del plan de mantenimiento preventivo?"
+              "question_text": "What preventive maintenance cadences, vendor response SLAs, and on-site spare part inventories protect critical power and cooling gear?"
             }
           ]
         },
         {
           "kpi_id": "T1.P5.K3",
-          "kpi_name": "Pruebas operativas periódicas y simulación de contingencia de facilities",
+          "kpi_name": "Facility Capacity Planning & Lifecycle Refresh (Space, Power, Cooling)",
           "questions": [
             {
               "question_id": "T1.P5.K3.PR1",
-              "question_text": "Las pruebas operativas permiten verificar que las infraestructuras funcionarán correctamente en situaciones reales. ¿Cómo se realizan las pruebas operativas periódicas de las infraestructuras de facilities?"
+              "question_text": "How is long-term capacity utilization across floor space, power circuits, and cooling loops modeled to anticipate equipment end-of-life?"
             }
           ]
         }
@@ -294,99 +294,115 @@
   "questions": [
     {
       "question_id": "T1.P1.K1.PR1",
+      "question_text": "What is the certified autonomous runtime of critical facility loads under complete utility power loss?",
       "pillar_id": "T1.P1",
       "kpi_id": "T1.P1.K1",
-      "question_text": "La autonomía eléctrica determina cuánto tiempo puede seguir funcionando el CPD si se pierde el suministro externo. ¿Cuál es el nivel de autonomía eléctrica real del CPD ante un corte de energía?"
+      "kpi_name": "Guaranteed Electrical Autonomy (UPS & Backup Generators)"
     },
     {
       "question_id": "T1.P1.K2.PR1",
+      "question_text": "How frequently and under what operational methodology are automated transfer switches (ATS) and emergency generators tested under full load?",
       "pillar_id": "T1.P1",
       "kpi_id": "T1.P1.K2",
-      "question_text": "Los sistemas eléctricos críticos deben probarse periódicamente para garantizar que funcionan correctamente durante una contingencia. ¿Cómo se realizan las pruebas de conmutación eléctrica (UPS, ATS, generadores)?"
+      "kpi_name": "Switching Test Cadence & Controlled Failover Verification"
     },
     {
       "question_id": "T1.P1.K3.PR1",
+      "question_text": "How are single points of failure (SPOFs) in dual-cord electrical distribution paths identified and mitigated across server racks?",
       "pillar_id": "T1.P1",
       "kpi_id": "T1.P1.K3",
-      "question_text": "La resiliencia eléctrica depende de eliminar puntos únicos de fallo que puedan provocar la caída del CPD. ¿Cómo se identifican y gestionan los puntos únicos de fallo eléctricos (SPOF)?"
+      "kpi_name": "Power Distribution Redundancy & Single Points of Failure Elimination"
     },
     {
       "question_id": "T1.P1.K4.PR1",
+      "question_text": "How is electrical load capacity monitored against provisioned thresholds to prevent circuit overload and manage expansion headroom?",
       "pillar_id": "T1.P1",
       "kpi_id": "T1.P1.K4",
-      "question_text": "Conocer el consumo eléctrico y la capacidad disponible es clave para evitar saturaciones y planificar crecimiento. ¿Cómo se controla la utilización de la capacidad eléctrica instalada en el CPD?"
+      "kpi_name": "Electrical Capacity Utilization & Planned Headroom Management"
     },
     {
       "question_id": "T1.P2.K1.PR1",
+      "question_text": "How are ambient temperature and relative humidity monitored and controlled in accordance with ASHRAE TC 9.9 standards?",
       "pillar_id": "T1.P2",
       "kpi_id": "T1.P2.K1",
-      "question_text": "La estabilidad térmica es fundamental para garantizar la fiabilidad del equipamiento IT. ¿Cómo se controla el cumplimiento de los rangos de temperatura y humedad en el CPD?"
+      "kpi_name": "Environmental Threshold Compliance & Continuous Thermal Telemetry"
     },
     {
       "question_id": "T1.P2.K2.PR1",
+      "question_text": "How are airflow containment, cold/hot aisle layouts, and thermal hotspots managed across high-density server enclosures?",
       "pillar_id": "T1.P2",
       "kpi_id": "T1.P2.K2",
-      "question_text": "La redundancia en climatización evita que un fallo térmico provoque la parada de los sistemas IT. ¿Qué nivel de redundancia existe en los sistemas de climatización del CPD?"
+      "kpi_name": "Thermal Hotspot Mitigation & Per-Rack Power Density Governance"
     },
     {
       "question_id": "T1.P2.K3.PR1",
+      "question_text": "What level of cooling redundancy (N+1 or 2N) is maintained, and can chillers/CRAC units be serviced concurrently without thermal degradation?",
       "pillar_id": "T1.P2",
       "kpi_id": "T1.P2.K3",
-      "question_text": "Las altas densidades de computación pueden generar puntos calientes que afectan al rendimiento y la estabilidad. ¿Cómo se gestionan la densidad térmica y los hotspots en los racks?"
+      "kpi_name": "HVAC Cooling Resiliency (N+1 / 2N) & Concurrent Maintainability"
     },
     {
       "question_id": "T1.P3.K1.PR1",
+      "question_text": "What multi-layered physical security controls and biometric validation mechanisms govern ingress to critical whitespace and caged suites?",
       "pillar_id": "T1.P3",
       "kpi_id": "T1.P3.K1",
-      "question_text": "La protección física del CPD requiere limitar el acceso únicamente al personal autorizado. ¿Cómo está estructurado el control de accesos físicos por zonas dentro del CPD?"
+      "kpi_name": "Zoned Physical Access Control & Biometric Multi-Factor Authentication"
     },
     {
       "question_id": "T1.P3.K2.PR1",
+      "question_text": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?",
       "pillar_id": "T1.P3",
       "kpi_id": "T1.P3.K2",
-      "question_text": "La trazabilidad de accesos permite identificar quién ha accedido al CPD y cuándo. ¿Cómo se registran y revisan los accesos físicos a las instalaciones?"
+      "kpi_name": "Vendor Escort Protocols, Room Access Logging & Permits to Work"
     },
     {
       "question_id": "T1.P3.K3.PR1",
+      "question_text": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?",
       "pillar_id": "T1.P3",
       "kpi_id": "T1.P3.K3",
-      "question_text": "Las intervenciones de terceros en el CPD deben controlarse para evitar riesgos operativos o de seguridad. ¿Cómo se gestionan los trabajos de proveedores o terceros en la sala técnica?"
+      "kpi_name": "CCTV Surveillance Coverage, Access Logs & Tamper-Proof Audit Retention"
     },
     {
       "question_id": "T1.P4.K1.PR1",
+      "question_text": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?",
       "pillar_id": "T1.P4",
       "kpi_id": "T1.P4.K1",
-      "question_text": "La detección temprana de incendios es clave para minimizar daños en los sistemas IT. ¿Cómo se gestiona la detección de incendios en el CPD?"
+      "kpi_name": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization"
     },
     {
       "question_id": "T1.P4.K2.PR1",
+      "question_text": "What gaseous clean-agent suppression systems (e.g. FM-200, Novec 1230, Inergen) protectWhitespace, and how frequently are room integrity tests conducted?",
       "pillar_id": "T1.P4",
       "kpi_id": "T1.P4.K2",
-      "question_text": "Los sistemas de extinción deben ser adecuados para entornos IT y mantenerse correctamente. ¿Qué nivel de adecuación y mantenimiento tiene el sistema de supresión de incendios?"
+      "kpi_name": "Clean Agent Gaseous Fire Suppression & Discharge System Certification"
     },
     {
       "question_id": "T1.P4.K3.PR1",
+      "question_text": "What water-detection rope telemetry, flood mitigation barriers, and particulate contaminant controls protect technical rooms?",
       "pillar_id": "T1.P4",
       "kpi_id": "T1.P4.K3",
-      "question_text": "Factores como fugas de agua o condensación pueden afectar gravemente a la infraestructura. ¿Cómo se monitorizan y gestionan los riesgos ambientales en el CPD?"
+      "kpi_name": "Environmental Perimeter Hazards: Water Ingress, Flood & Contaminant Mitigation"
     },
     {
       "question_id": "T1.P5.K1.PR1",
+      "question_text": "How does the building management system (BMS) and DCIM platform monitor facility sensors and alert on anomalous conditions 24/7?",
       "pillar_id": "T1.P5",
       "kpi_id": "T1.P5.K1",
-      "question_text": "La visibilidad operativa permite detectar incidencias antes de que afecten al servicio. ¿Qué nivel de monitorización existe sobre las infraestructuras de facilities?"
+      "kpi_name": "Continuous Infrastructure Telemetry (DCIM/BMS) & Unified Alarm Triage"
     },
     {
       "question_id": "T1.P5.K2.PR1",
+      "question_text": "What preventive maintenance cadences, vendor response SLAs, and on-site spare part inventories protect critical power and cooling gear?",
       "pillar_id": "T1.P5",
       "kpi_id": "T1.P5.K2",
-      "question_text": "El mantenimiento preventivo es esencial para evitar fallos en infraestructuras críticas. ¿Cómo se gestiona el cumplimiento del plan de mantenimiento preventivo?"
+      "kpi_name": "Preventive Maintenance Schedules, Vendor SLAs & Spares Inventory"
     },
     {
       "question_id": "T1.P5.K3.PR1",
+      "question_text": "How is long-term capacity utilization across floor space, power circuits, and cooling loops modeled to anticipate equipment end-of-life?",
       "pillar_id": "T1.P5",
       "kpi_id": "T1.P5.K3",
-      "question_text": "Las pruebas operativas permiten verificar que las infraestructuras funcionarán correctamente en situaciones reales. ¿Cómo se realizan las pruebas operativas periódicas de las infraestructuras de facilities?"
+      "kpi_name": "Facility Capacity Planning & Lifecycle Refresh (Space, Power, Cooling)"
     }
   ]
 }

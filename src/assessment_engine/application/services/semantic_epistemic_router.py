@@ -11,6 +11,7 @@ import json
 import math
 import re
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -135,7 +136,8 @@ _POSITIVE_MARKERS: frozenset[str] = frozenset({
     "encrypted",
     "validated",
     "certified",
-    "ha",
+    "active-active",
+    "fault-tolerant",
 })
 
 _STOPWORDS: frozenset[str] = frozenset({
@@ -152,7 +154,7 @@ _STOPWORDS: frozenset[str] = frozenset({
     "routine", "cadence", "updates", "morning", "everyone", "start",
 })
 
-_WORD_TOKEN_REGEX = re.compile(r"[a-z0-9]+")
+_WORD_TOKEN_REGEX = re.compile(r"\w+", re.UNICODE)
 
 _SUFFIX_RULES: tuple[tuple[str, int, int], ...] = (
     ("s", 3, -1),
@@ -161,6 +163,25 @@ _SUFFIX_RULES: tuple[tuple[str, int, int], ...] = (
     ("ing", 5, -3),
     ("tion", 6, -4),
 )
+
+
+class EpistemicModality(str, Enum):
+    """Categorizes the temporal and modal certainty of an extracted utterance."""
+
+    FACT_PRODUCTION_ASIS = "FACT_PRODUCTION_ASIS"       # Active empirical reality in production
+    ASPIRATIONAL_TOBE = "ASPIRATIONAL_TOBE"             # Future desire, wish, plan, or PoC intent
+    TECHNICAL_ABSENCE_GAP = "TECHNICAL_ABSENCE_GAP"     # Explicit confirmation of non-existence or void
+
+
+def _is_cjk(char: str) -> bool:
+    """Detects whether a character belongs to CJK or Hangul Unicode blocks."""
+    cp = ord(char)
+    return (
+        0x4E00 <= cp <= 0x9FFF
+        or 0x3040 <= cp <= 0x309F
+        or 0x30A0 <= cp <= 0x30FF
+        or 0xAC00 <= cp <= 0xD7AF
+    )
 
 
 @dataclass(frozen=True)
@@ -172,6 +193,7 @@ class SemanticProposition:
     speaker: str = "Unknown"
     polarity: PolarityType = "NEUTRAL"
     affinity_scores: dict[str, float] = field(default_factory=dict)
+    modality: EpistemicModality = EpistemicModality.FACT_PRODUCTION_ASIS
 
 
 @dataclass(frozen=True)
@@ -182,6 +204,26 @@ class EpistemicContextPacket:
     propositions: list[SemanticProposition]
     semantic_density_score: float
     epistemic_state: EpistemicState
+
+    def get_asis_facts(self) -> list[SemanticProposition]:
+        """Returns empirical production facts and confirmed absences, strictly omitting future TO-BE aspirations."""
+        return [
+            p
+            for p in self.propositions
+            if p.modality
+            in (
+                EpistemicModality.FACT_PRODUCTION_ASIS,
+                EpistemicModality.TECHNICAL_ABSENCE_GAP,
+            )
+        ]
+
+    def get_tobe_aspirations(self) -> list[SemanticProposition]:
+        """Returns future desires, roadmap aspirations, and planned transformation intent."""
+        return [
+            p
+            for p in self.propositions
+            if p.modality == EpistemicModality.ASPIRATIONAL_TOBE
+        ]
 
 
 def _extract_word_features(word: str) -> list[str]:
@@ -197,11 +239,16 @@ def _extract_word_features(word: str) -> list[str]:
 
 
 def _tokenize_and_stem(text: str) -> list[str]:
-    """Extracts normalized alphanumeric tokens and structural character n-grams."""
+    """Extracts normalized Unicode word tokens, stems, and CJK character n-grams."""
     raw_words = _WORD_TOKEN_REGEX.findall(text.lower())
     features: list[str] = []
     for word in raw_words:
-        if len(word) > 1 and word not in _STOPWORDS:
+        if any(_is_cjk(c) for c in word):
+            for i, c in enumerate(word):
+                features.append(c)
+                if i + 1 < len(word):
+                    features.append(word[i : i + 2])
+        elif len(word) > 1 and word not in _STOPWORDS:
             features.extend(_extract_word_features(word))
     return features
 
@@ -245,16 +292,22 @@ def _infer_polarity(text: str) -> PolarityType:
 
 
 def _parse_speaker_and_body(raw_line: str) -> tuple[str, str]:
-    """Splits a transcript utterance into speaker label and proposition text without ReDoS."""
+    """Splits a transcript utterance into speaker label and proposition text supporting global scripts."""
     stripped = raw_line.strip()
+    delimiter = None
     if ":" in stripped:
-        prefix, rest = stripped.split(":", 1)
+        delimiter = ":"
+    elif "\uff1a" in stripped:  # Japanese / Chinese full-width colon
+        delimiter = "\uff1a"
+
+    if delimiter:
+        prefix, rest = stripped.split(delimiter, 1)
         clean_prefix = prefix.strip()
         clean_rest = rest.strip()
         if (
-            1 <= len(clean_prefix) <= 40
+            1 <= len(clean_prefix) <= 50
             and clean_rest
-            and all(c.isalnum() or c in "_- " for c in clean_prefix)
+            and all(c.isalnum() or c in "_- .,()[]" or _is_cjk(c) for c in clean_prefix)
         ):
             return clean_prefix, clean_rest
     return "Participant", stripped
@@ -346,10 +399,52 @@ class EpistemicGraphRouter:
                     turn_index=idx,
                     speaker=speaker,
                     polarity=polarity,
+                    modality=EpistemicModality.FACT_PRODUCTION_ASIS,
                     affinity_scores=affinities,
                 )
             )
         return propositions
+
+    def route_verified_claims(
+        self,
+        ledger: Any,
+    ) -> dict[str, EpistemicContextPacket]:
+        """Routes typed VerifiedEpistemicClaim objects with 100% semantic model-driven modality."""
+        from assessment_engine.domain.schemas.evidence_extraction import ClaimStatus
+
+        status_to_modality = {
+            ClaimStatus.ACTIVE_PRODUCTION: EpistemicModality.FACT_PRODUCTION_ASIS,
+            ClaimStatus.FUTURE_PLAN: EpistemicModality.ASPIRATIONAL_TOBE,
+            ClaimStatus.CONFIRMED_ABSENCE: EpistemicModality.TECHNICAL_ABSENCE_GAP,
+        }
+
+        routed_buckets: dict[str, list[SemanticProposition]] = {
+            code: [] for code in CANONICAL_TOWERS
+        }
+
+        for idx, claim in enumerate(getattr(ledger, "claims", [])):
+            clean_text = f"{claim.canonical_entity}: {claim.claim_statement} ({claim.verbatim_evidence_quote})"
+            modality = status_to_modality.get(claim.status, EpistemicModality.FACT_PRODUCTION_ASIS)
+            affinities = self.compute_affinities(clean_text)
+
+            target_tower = claim.tower_code.upper().strip()
+            prop = SemanticProposition(
+                text=clean_text,
+                turn_index=idx,
+                speaker="Verified Claim",
+                polarity="NEGATIVE" if modality == EpistemicModality.TECHNICAL_ABSENCE_GAP else "NEUTRAL",
+                modality=modality,
+                affinity_scores=affinities,
+            )
+            if target_tower in CANONICAL_TOWERS:
+                routed_buckets[target_tower].append(prop)
+            else:
+                self._assign_proposition_to_towers(prop, routed_buckets)
+
+        return {
+            code: self._build_context_packet(code, routed_buckets[code])
+            for code in CANONICAL_TOWERS
+        }
 
     def _compute_body_affinities(self, body: str) -> dict[str, float]:
         """Calculates multi-label cosine affinity directly from normalized body text."""
@@ -391,9 +486,22 @@ class EpistemicGraphRouter:
         prop: SemanticProposition,
         buckets: dict[str, list[SemanticProposition]],
     ) -> None:
+        """Assigns proposition using Winner-Takes-Primary with strict secondary gating to prevent echo-chamber bleed."""
         scores = prop.affinity_scores or self.compute_affinities(prop.text)
+        if not scores:
+            return
+
+        # Winner-Takes-Primary: Identify dominant tower
+        best_tower, best_score = max(scores.items(), key=lambda item: item[1])
+        if best_score < self._affinity_threshold:
+            return  # Exclude sub-threshold noise
+
+        buckets[best_tower].append(prop)
+
+        # Multi-domain assignment: Admitted only if affinity is substantial (>= 50% of primary)
+        secondary_cutoff = max(self._affinity_threshold, best_score * 0.50)
         for code, score in scores.items():
-            if score >= self._affinity_threshold:
+            if code != best_tower and score >= secondary_cutoff:
                 buckets[code].append(prop)
 
     def _build_context_packet(

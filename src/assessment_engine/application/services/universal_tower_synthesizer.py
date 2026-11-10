@@ -8,15 +8,8 @@ from __future__ import annotations
 
 import copy
 from dataclasses import dataclass, field
-import json
 from typing import Any
 
-from assessment_engine.application.services.neurosymbolic_risk_synthesizer import (
-    NeurosymbolicLLMSynthesizer,
-)
-from assessment_engine.application.services.risk_synthesis_service import (
-    DeterministicFallbackSynthesizer,
-)
 from assessment_engine.application.services.semantic_epistemic_router import (
     EpistemicContextPacket,
 )
@@ -46,18 +39,24 @@ class ActuarialLossModel:
     @property
     def opex_hourly_burn_rate(self) -> float:
         """Baseline operational downtime loss rate per hour of catastrophic business halt."""
-        return max(50.0, round((self.annual_revenue / 8760.0) * self.hourly_burn_ratio, 2))
+        calibrated_burn = (self.annual_revenue / 8760.0) * self.hourly_burn_ratio
+        min_floor = max(0.01, self.annual_revenue * 0.000001)
+        return max(min_floor, round(calibrated_burn, 2))
 
     def project_loss_parameters(
         self,
         downtime_hours: float = 4.0,
-        emergency_capex_spend: float = 25_000.0,
+        emergency_capex_spend: float | None = None,
         threat_event_frequency: float = 2.0,
         vulnerability: float = 0.5,
     ) -> dict[str, float]:
         """Calculates Primary OpEx Loss, Secondary CapEx Spend, and FAIR Expected Loss parameters."""
         primary_opex_loss = round(downtime_hours * self.opex_hourly_burn_rate, 2)
-        secondary_capex = round(emergency_capex_spend, 2)
+        if emergency_capex_spend is not None and emergency_capex_spend >= 0.0:
+            secondary_capex = round(emergency_capex_spend, 2)
+        else:
+            min_capex_floor = max(0.01, self.annual_revenue * 0.00001)
+            secondary_capex = max(min_capex_floor, round(self.annual_revenue * 0.00025, 2))
         single_loss_expectancy = primary_opex_loss + secondary_capex
         fair_ale = round(threat_event_frequency * vulnerability * single_loss_expectancy, 2)
         fair_min = round(fair_ale * 0.25, 2)
@@ -78,22 +77,22 @@ _SECTOR_DIRECTIVE_REGISTRY: dict[str, str] = {
     "financial": (
         "SECTOR DIRECTIVE (FINANCIAL SERVICES & FINTECH):\n"
         "- Evaluate ledger durability, sub-second transaction consistency, and real-time payment settlement.\n"
-        "- Assess regulatory compliance under DORA, PCI-DSS Level 1, and regional banking mandates."
+        "- Assess regulatory compliance under applicable financial mandates, statutory resilience frameworks, and client policies."
     ),
     "healthcare": (
         "SECTOR DIRECTIVE (HEALTHCARE & LIFE SCIENCES):\n"
         "- Prioritize patient safety, clinical availability (99.999%), and electronic health record confidentiality.\n"
-        "- Ensure strict compliance with HIPAA, HITRUST, and medical device telemetry security standards."
+        "- Ensure strict compliance with applicable clinical privacy laws, patient safety regulations, and medical device standards."
     ),
     "critical_infrastructure": (
         "SECTOR DIRECTIVE (CRITICAL INFRASTRUCTURE & ENERGY):\n"
         "- Address OT/SCADA air-gap integrity, grid telemetry continuity, and black-start disaster recovery.\n"
-        "- Enforce NIS2, KRITIS, and NERC-CIP zero-trust operational mandates."
+        "- Enforce zero-trust operational mandates and applicable critical infrastructure protection directives."
     ),
     "manufacturing": (
         "SECTOR DIRECTIVE (DISCRETE & PROCESS MANUFACTURING):\n"
         "- Evaluate plant floor OT uptime, industrial network segmentation (Purdue model), SCADA/DCS reliability, PLC safety integrity levels (SIL), and ERP-MES integration.\n"
-        "- Assess predictive maintenance telemetry, production line scheduling latency, and ISA/IEC 62443 compliance."
+        "- Assess predictive maintenance telemetry, production line scheduling latency, and industrial cyber security standards."
     ),
     "retail": (
         "SECTOR DIRECTIVE (RETAIL, E-COMMERCE & SUPPLY CHAIN LOGISTICS):\n"
@@ -103,7 +102,7 @@ _SECTOR_DIRECTIVE_REGISTRY: dict[str, str] = {
     "technology": (
         "SECTOR DIRECTIVE (TECHNOLOGY, SAAS & TELECOMMUNICATIONS):\n"
         "- Mandate multi-region active-active topology, automated canary deployments, and strict tenant isolation.\n"
-        "- Enforce SOC2 Type II, ISO 27001, and sub-minute mean time to recovery (MTTR)."
+        "- Enforce continuous compliance, rigorous SLA governance, and sub-minute mean time to recovery (MTTR)."
     ),
 }
 
@@ -163,22 +162,22 @@ class UniversalTowerSynthesizer:
         frameworks_str = ", ".join(context.regulatory_frameworks) if context.regulatory_frameworks else "Industry Standard Frameworks"
         sector_directives = _resolve_sector_directive(context.industry_vertical)
 
+        # S2A Context Partitioning: Filter out future TO-BE aspirations from AS-IS diagnostic prompt context
+        asis_props = (
+            evidence_packet.get_asis_facts()
+            if hasattr(evidence_packet, "get_asis_facts")
+            else evidence_packet.propositions
+        )
         propositions_block = (
             "\n".join(
                 f"- [Turn {p.turn_index}] ({p.polarity}): {p.text}"
-                for p in evidence_packet.propositions
+                for p in asis_props
             )
-            if evidence_packet.propositions
-            else "No direct empirical propositions recorded for this domain."
+            if asis_props
+            else "No direct empirical production propositions recorded for this domain (CONFIRMED_ABSENCE_OF_PRODUCTION_CAPABILITY)."
         )
 
         pillars_desc, pillar_count = _format_pillars_description(tower_definition, tower_code)
-
-        actuarial = ActuarialLossModel(
-            annual_revenue=float(context.annual_revenue),
-            currency_code=context.currency_code,
-        )
-        sample_loss = actuarial.project_loss_parameters()
 
         prompt = f"""### SYSTEM ROLE & MISSION:
 You are an elite Principal Enterprise Systems Architect and Lead Forensic Auditor conducting an assessment for:
@@ -212,12 +211,11 @@ CANONICAL {pillar_count} PILLARS FOR {tower_code}:
 3. ANTI-BOILERPLATE MANDATE:
    - NEVER use generic fill-in-the-blank phrasing like "Deficit in [X] and requirement for technical control automation".
    - Every finding and business risk must be detailed, technical, concrete, and grounded in the client's infrastructure.
-   - Do NOT propose inappropriate technologies (e.g. do not prescribe cloud-bursting or Kubernetes for proprietary legacy industrial OT/SCADA; prescribe deterministic resource pools, cgroups, and workload tiering).
-4. STORAGE PROTOCOL & CONTAINER ARCHITECTURE INVARIANT:
-   - NEVER recommend Object Storage (S3/Swift) as a direct backing store for standard Kubernetes PersistentVolumeClaims (PVCs) or POSIX-dependent stateful workloads.
-   - When evaluating or recommending persistent storage for container orchestration (Kubernetes/OpenShift), mandate a compliant Container Storage Interface (CSI) driver provisioning native Block (iSCSI/NVMe-oF/FC) or File (NFS/SMB) protocols. Object storage (S3) may only be cited for cloud-native application-level API consumption, backup targets, or log archival.
+   - Ground every observation in observed operational metrics, resource contention, and workload isolation boundaries.
+4. STORAGE PROTOCOL ARCHITECTURAL INVARIANT:
+   - Accurately distinguish Block, File, and Object storage tiers based strictly on observed workload mechanics. Object storage may only be cited for asynchronous API consumption, backup targets, or log archival; do not assume POSIX consistency for unstructured object stores.
 5. EMPIRICAL REALITY OVER SURVEY CLAIMS:
-   - If an enterprise has zero containers or minimal adoption in production, score the container pillar strictly as Initial/Ad-hoc (1.00 to 1.50) regardless of future aspirations. Never award high maturity (Level 4 or 5) to a capability that is purely in planning, PoC, or hiring phase.
+   - If an enterprise has zero empirical deployment or minimal adoption in production for a capability or architectural layer, score that pillar strictly as Initial/Ad-hoc (1.00 to 1.50) regardless of future aspirations. Never award high maturity (Level 4 or 5) to a capability that is purely in planning, PoC, or roadmap phase.
 6. PURE AS-IS DIAGNOSTIC INVARIANT (ZERO PRESCRIPTION):
    - Your mandate is strictly diagnostic for Volume 1 (AS-IS Baseline). You evaluate what exists today, how it functions under load, where its structural fault lines lie, and the operational/commercial consequences of status-quo inertia.
    - ZERO PRESCRIPTION: Do NOT suggest fixes, target states, migrations, hardware purchases, hiring plans, or CAPEX/OPEX allocations. Ban all prescriptive verbs and modal imperatives ("must", "should", "needs to", "recommend", "require upgrading", "propose", "migrate").
@@ -264,10 +262,10 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
           "threat_event_frequency": 3,
           "vulnerability_level": 3,
           "loss_magnitude": 3,
-          "fair_ale_score": {sample_loss['fair_ale_score']},
-          "fair_p90_score": {sample_loss['fair_p90_score']},
-          "fair_min_score": {sample_loss['fair_min_score']},
-          "fair_max_score": {sample_loss['fair_max_score']}
+          "fair_ale_score": "<calibrated_annual_loss_numeric>",
+          "fair_p90_score": "<calibrated_p90_loss_numeric>",
+          "fair_min_score": "<calibrated_min_loss_numeric>",
+          "fair_max_score": "<calibrated_max_loss_numeric>"
         }}
       ]
     }}
@@ -304,14 +302,35 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                 if "severity" not in hc or not str(hc["severity"]).strip():
                     hc["severity"] = "MEDIUM"
 
-                # Enforce Open FAIR loss metrics
-                if "fair_ale_score" not in hc:
-                    hc["fair_ale_score"] = default_loss["fair_ale_score"]
+                def _parse_fair_num(raw_val: Any, fallback: float) -> float:
+                    if raw_val is None:
+                        return fallback
+                    if isinstance(raw_val, (int, float)):
+                        return float(raw_val)
+                    try:
+                        from assessment_engine.domain.actuarial_scale_calibrator import safe_float as actuarial_safe_float
+                        res = actuarial_safe_float(raw_val, allow_zero=True)
+                        if res is not None:
+                            return float(res)
+                    except Exception:
+                        pass
+                    try:
+                        import re
+                        raw_str = str(raw_val).strip()
+                        clean = re.sub(r"^[^\d\-+]+", "", raw_str)
+                        clean = re.sub(r"[^\d]+$", "", clean).strip()
+                        if "," in clean and "." in clean:
+                            clean = clean.replace(",", "") if clean.rfind(".") > clean.rfind(",") else clean.replace(".", "").replace(",", ".")
+                        elif "," in clean:
+                            clean = clean.replace(",", ".")
+                        return float(clean)
+                    except (ValueError, TypeError):
+                        return fallback
 
-                ale = float(hc.get("fair_ale_score", default_loss["fair_ale_score"]))
-                min_s = float(hc.get("fair_min_score", ale * 0.25))
-                p90_s = float(hc.get("fair_p90_score", ale * 2.30))
-                max_s = float(hc.get("fair_max_score", ale * 3.80))
+                ale = _parse_fair_num(hc.get("fair_ale_score"), default_loss["fair_ale_score"])
+                min_s = _parse_fair_num(hc.get("fair_min_score"), ale * 0.25)
+                p90_s = _parse_fair_num(hc.get("fair_p90_score"), ale * 2.30)
+                max_s = _parse_fair_num(hc.get("fair_max_score"), ale * 3.80)
 
                 # Enforce Open FAIR monotonicity invariant: min <= ale <= p90 <= max
                 min_s = min(min_s, ale)

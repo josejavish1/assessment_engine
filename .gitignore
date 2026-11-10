@@ -16,6 +16,8 @@ eggs/
 lib/
 !src/assessment_engine/scripts/lib/
 !src/assessment_engine/scripts/lib/**
+!web/src/lib/
+!web/src/lib/**
 lib64/
 parts/
 sdist/

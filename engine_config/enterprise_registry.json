@@ -1,0 +1,77 @@
+{
+  "$schema": "https://platform.internal/schemas/enterprise-registry-v1.json",
+  "version": "1.0.0",
+  "description": "Declarative global enterprise registry for autonomous tenant identification and profiling.",
+  "domains": {
+    "molins.com": {
+      "company_name": "Cementos Molins",
+      "country_code": "ES",
+      "country_name": "Spain",
+      "currency": "EUR",
+      "industry": "heavy_manufacturing",
+      "employees": 6500,
+      "revenue_m": 1250.0,
+      "default_deliverable_language": "es"
+    },
+    "cementosmolins.es": {
+      "company_name": "Cementos Molins",
+      "country_code": "ES",
+      "country_name": "Spain",
+      "currency": "EUR",
+      "industry": "heavy_manufacturing",
+      "employees": 6500,
+      "revenue_m": 1250.0,
+      "default_deliverable_language": "es"
+    },
+    "starlingbank.co.uk": {
+      "company_name": "Starling Bank",
+      "country_code": "GB",
+      "country_name": "United Kingdom",
+      "currency": "GBP",
+      "industry": "banking",
+      "employees": 3200,
+      "revenue_m": 680.0,
+      "default_deliverable_language": "en"
+    },
+    "rededor.com.br": {
+      "company_name": "Rede D'Or São Luiz",
+      "country_code": "BR",
+      "country_name": "Brazil",
+      "currency": "BRL",
+      "industry": "healthcare",
+      "employees": 75000,
+      "revenue_m": 25000.0,
+      "default_deliverable_language": "pt"
+    },
+    "santander.com": {
+      "company_name": "Banco Santander",
+      "country_code": "ES",
+      "country_name": "Spain",
+      "currency": "EUR",
+      "industry": "banking",
+      "employees": 160000,
+      "revenue_m": 55000.0,
+      "default_deliverable_language": "es"
+    },
+    "bbva.com": {
+      "company_name": "BBVA",
+      "country_code": "ES",
+      "country_name": "Spain",
+      "currency": "EUR",
+      "industry": "banking",
+      "employees": 115000,
+      "revenue_m": 28000.0,
+      "default_deliverable_language": "es"
+    },
+    "telefonica.com": {
+      "company_name": "Telefónica",
+      "country_code": "ES",
+      "country_name": "Spain",
+      "currency": "EUR",
+      "industry": "critical_infrastructure",
+      "employees": 104000,
+      "revenue_m": 40500.0,
+      "default_deliverable_language": "es"
+    }
+  }
+}

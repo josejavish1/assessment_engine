@@ -1,14 +1,27 @@
 #!/usr/bin/env python3
-"""Execute a comprehensive, adversarial codebase-wide anti-pattern audit using gemini-4-argon."""
+"""Argon Adversarial Code Audit: Comprehensive Review of Recent Implementation.
+
+Audits all files created or modified in the recent session:
+1. src/assessment_engine/domain/schemas/evidence_extraction.py
+2. src/assessment_engine/application/services/structured_evidence_extractor.py
+3. src/assessment_engine/domain/schemas/executive_summary_ast.py
+4. src/assessment_engine/application/services/semantic_epistemic_router.py
+5. src/assessment_engine/application/services/universal_tower_synthesizer.py
+6. src/assessment_engine/adapters/compilers/payload_to_ast.py
+
+Hunts for:
+- Bugs, logic flaws, runtime exceptions, type inconsistencies
+- Hardcoding, client bias, vertical bias, Anglo-Saxon/Euro-centric bias
+- Anti-patterns, code smells, leaky abstractions, clean architecture violations
+- Spanish words or non-English contamination in code, docstrings, or variables
+- Universal scalability: mid-market to Fortune 50, any vertical, any human language
+"""
 
 from __future__ import annotations
 
-import ast
 import json
-import re
-import sys
 from pathlib import Path
-from typing import Any, Dict, List
+import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -20,187 +33,64 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-SRC_DIR = REPO_ROOT / "src/assessment_engine"
+FILES_TO_AUDIT = [
+    "src/assessment_engine/domain/schemas/evidence_extraction.py",
+    "src/assessment_engine/application/services/structured_evidence_extractor.py",
+    "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+    "src/assessment_engine/application/services/semantic_epistemic_router.py",
+    "src/assessment_engine/application/services/universal_tower_synthesizer.py",
+    "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+]
 
-TENANT_TOKENS = (
-    "molins",
-    "secil",
-    "sant vicen",
-    "cemento",
-    "cement",
-    "sant vicenc",
-    "sant vicenç",
-)
+code_payload = {}
+for rel_path in FILES_TO_AUDIT:
+    file_path = REPO_ROOT / rel_path
+    if file_path.exists():
+        code_payload[rel_path] = file_path.read_text(encoding="utf-8")
+    else:
+        code_payload[rel_path] = f"FILE NOT FOUND: {rel_path}"
 
-SPANISH_DIACRITICS = re.compile(r"[áéíóúÁÉÍÓÚñÑüÜ]")
+client = create_genai_client()
+model_name = get_model(ModelTier.REASONING)
+print(f"Connecting to Reasoning model '{model_name}' for Ruthless Codebase Audit...")
 
-SUSPICIOUS_KEYWORD_PATTERNS = re.compile(
-    r"\b(in\s+text\.lower\(\)|in\s+finding_text|in\s+str\(hc\.get\(\"finding\"\)\))",
-    re.IGNORECASE,
-)
+prompt = f"""You are 'gemini-4-argon', Principal Staff Systems Architect, Lead Security & Compilers Auditor, and Fortune 500 Chief Risk Officer.
 
+THE USER'S MANDATE:
+"Before continuing, I want you to tell gemini-4-argon to do a complete review of what was just programmed and look for bugs, problems, or antipatterns. I do NOT want anything hardcoded. Remember the goal is that it serves ANY company in the world from mid-size to top tier 1 globally, of any vertical, in ANY language. And the code MUST be 100% in English, not a single Spanish word (Spanish is only for chat and deliverable output)."
 
-def run_static_codebase_scan() -> Dict[str, Any]:
-    """Scans all Python files in src/assessment_engine for anti-patterns."""
-    scan_results = {
-        "tenant_leakage": [],
-        "spanish_diacritics": [],
-        "keyword_scraping": [],
-        "hardcoded_tower_ids": [],
-        "suppressed_exceptions": [],
-        "total_files_scanned": 0,
-        "scanned_files": [],
-    }
+CODE TO AUDIT:
+{json.dumps(code_payload, indent=2)}
 
-    py_files = sorted(SRC_DIR.glob("**/*.py"))
-    scan_results["total_files_scanned"] = len(py_files)
+AUDIT CRITERIA (Be ruthless, adversarial, and uncompromising):
+1. BUGS & LOGIC ERRORS: Are there runtime exceptions, type mismatches, missing imports, unhandled None values, division by zero, or edge-case crashes?
+2. HARDCODING & BIAS: Are there ANY hardcoded company names, client assumptions, specific vendors (e.g. weighbridges, kilns, SimpliVity), or restricted country/language mappings?
+3. LANGUAGE DECOUPLING: Is the code 100% in Technical English? Are there ANY Spanish words, Spanish regexes, Spanish docstrings, or Spanish comments in production Python code?
+4. SCALE INVARIANCE & UNIVERSALITY: Does the code work equally well for:
+   - A $15M regional logistics firm in Germany (`de-DE`)
+   - A $50B money-center bank in Japan (`ja-JP`)
+   - An integrated hospital network in Brazil (`pt-BR`)
+   - A heavy manufacturing firm in Spain (`es-ES`)
+   - A cloud-native SaaS in the US (`en-US`)
+   - A public sector sovereign agency?
+5. ANTI-PATTERNS & CLEAN ARCHITECTURE: Are there leaky abstractions, violation of hexagonal boundaries (Domain importing Infrastructure), god objects, or code smells?
 
-    for py_file in py_files:
-        rel_path = str(py_file.relative_to(REPO_ROOT))
-        scan_results["scanned_files"].append(rel_path)
-        content = py_file.read_text(encoding="utf-8", errors="ignore")
-        lines = content.splitlines()
-
-        # 1. Tenant token search
-        for line_idx, line in enumerate(lines, 1):
-            line_lower = line.lower()
-            for tok in TENANT_TOKENS:
-                if tok in line_lower and "tenant_tokens" not in line_lower and "#" not in line[:line.find(tok) if tok in line else 0]:
-                    scan_results["tenant_leakage"].append({
-                        "file": rel_path,
-                        "line": line_idx,
-                        "token": tok,
-                        "snippet": line.strip()[:100],
-                    })
-
-            # 2. Spanish diacritics in python code (excluding comments)
-            stripped_line = line.split("#")[0]
-            if SPANISH_DIACRITICS.search(stripped_line):
-                scan_results["spanish_diacritics"].append({
-                    "file": rel_path,
-                    "line": line_idx,
-                    "snippet": line.strip()[:100],
-                })
-
-            # 3. Keyword scraping
-            if SUSPICIOUS_KEYWORD_PATTERNS.search(line):
-                scan_results["keyword_scraping"].append({
-                    "file": rel_path,
-                    "line": line_idx,
-                    "snippet": line.strip()[:100],
-                })
-
-            # 4. Hardcoded tower IDs in conditional logic (e.g. if code == "T1")
-            if re.search(r'\b(if|elif)\s+.*["\']T[1-9]|["\']T10["\']', line) and "DOMAIN_PHYSICAL_ARCHETYPES" not in line:
-                scan_results["hardcoded_tower_ids"].append({
-                    "file": rel_path,
-                    "line": line_idx,
-                    "snippet": line.strip()[:100],
-                })
-
-        # 5. AST scan for bare except / pass
-        try:
-            tree = ast.parse(content, filename=rel_path)
-            for node in ast.walk(tree):
-                if isinstance(node, ast.ExceptHandler):
-                    # Check if body is just 'pass'
-                    if len(node.body) == 1 and isinstance(node.body[0], ast.Pass):
-                        scan_results["suppressed_exceptions"].append({
-                            "file": rel_path,
-                            "line": node.lineno,
-                            "type": "bare_pass_exception",
-                        })
-        except SyntaxError:
-            pass
-
-    return scan_results
-
-
-def main() -> None:
-    print("=" * 80)
-    print("STARTING COMPREHENSIVE STATIC SCAN ACROSS SRC/ASSESSMENT_ENGINE...")
-    print("=" * 80)
-
-    scan = run_static_codebase_scan()
-    print(f"Total files scanned: {scan['total_files_scanned']}")
-    print(f"Tenant token leakages: {len(scan['tenant_leakage'])}")
-    print(f"Spanish diacritics occurrences: {len(scan['spanish_diacritics'])}")
-    print(f"Suspicious keyword scraping matches: {len(scan['keyword_scraping'])}")
-    print(f"Hardcoded tower ID conditionals: {len(scan['hardcoded_tower_ids'])}")
-    print(f"Suppressed pass exceptions: {len(scan['suppressed_exceptions'])}")
-
-    # Format prompt for gemini-4-argon
-    audit_summary_json = json.dumps(
-        {
-            "tenant_leakage": scan["tenant_leakage"][:20],
-            "spanish_diacritics": scan["spanish_diacritics"][:20],
-            "keyword_scraping": scan["keyword_scraping"][:20],
-            "hardcoded_tower_ids": scan["hardcoded_tower_ids"][:25],
-            "suppressed_exceptions": scan["suppressed_exceptions"][:20],
-        },
-        indent=2,
-    )
-
-    prompt = f"""You are gemini-4-argon, acting as the Distinguished Staff/Principal Distributed Systems Architect, Lead Enterprise Ontologist, and Chief Adversarial Quality Auditor.
-
-THE CONTEXT:
-The user is concerned about the architectural integrity of the entire Assessment Engine codebase (`src/assessment_engine/`).
-We just eradicated an anti-pattern where text-scraping was used to assign RTOs, but the user is demanding a full, deep adversarial review of ALL remaining anti-patterns in the codebase before proceeding to any new phase.
-
-USER MANDATES:
-1. Zero Hardcoding: The codebase must be 100% scale-agnostic ($20M SMB to $500B+ Global Tier-1) across ANY vertical. No client names, no fixed numbers, no hidden magic multipliers.
-2. 100% Technical English: Zero Spanish words, stems, or regex patterns in any `.py` file. Localization is strictly in `locales.json`.
-3. Architecture Purity: No split-brain states, no suppressed exceptions, no heuristic string scraping, and no arbitrary tower hardcoding.
-
-STATIC CODEBASE AUDIT TELEMETRY:
-Total files scanned in `src/assessment_engine`: {scan['total_files_scanned']}
-Telemetry findings:
-{audit_summary_json}
-
-YOUR TASK:
-Conduct an exhaustive, deep adversarial audit of the entire codebase based on this telemetry and architectural design.
-1. Categorize all detected anti-patterns into Severity Tiers (CRITICAL, HIGH, MEDIUM, LOW).
-2. For each anti-pattern:
-   - Identify the exact architectural smell / defect.
-   - Explain WHY it threatens multi-tenancy, scale invariance, or language decoupling.
-   - Provide the clean, idiomatic Tier-1 remediation plan.
-3. Formulate an Executive Roadmap of remediations to achieve 10.0/10 Global Production Certification.
-
-Provide the report in strictly 100% Technical English, formatted with YAML front matter for docs governance.
+OUTPUT FORMAT:
+- Executive Summary & Overall Grade (0 to 10)
+- Concrete Bugs & Flaws Found (File by File, Line by Line)
+- Hardcoding & Bias Findings
+- Actionable Surgical Fixes Required
+- Final Production Readiness Verdict (PASS / CONDITIONAL / FAIL)
 """
 
-    client = create_genai_client()
-    model = get_model(ModelTier.REASONING)
-    print("\nConsulting Argon for Comprehensive Codebase Audit...")
-    response = client.models.generate_content(model=model, contents=prompt)
+response = client.models.generate_content(
+    model=model_name,
+    contents=prompt,
+)
 
-    out_file = REPO_ROOT / "docs/audits/ARGON_COMPREHENSIVE_CODEBASE_ANTIPATTERN_AUDIT.md"
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    front_matter = (
-        "---\n"
-        "status: Verified\n"
-        "owner: docs-governance\n"
-        "source_of_truth:\n"
-        "- docs/README.md\n"
-        "last_verified_against: 2026-11-08\n"
-        "applies_to:\n"
-        "- gemini\n"
-        "- architecture\n"
-        "doc_type: operational\n"
-        "diataxis: reference\n"
-        "verification_mode: editorial\n"
-        "---\n"
-    )
-    out_file.write_text(front_matter + response.text, encoding="utf-8")
-
-    print("=" * 80)
-    lines = response.text.splitlines()
-    for line in lines[:80]:
-        print(line)
-    if len(lines) > 80:
-        print(f"... ({len(lines) - 80} more lines in {out_file.name})")
-    print("=" * 80)
-
-
-if __name__ == "__main__":
-    main()
+out_file = REPO_ROOT / "docs/audits/ARGON_RECENT_CODE_AUDIT.md"
+out_file.write_text(response.text, encoding="utf-8")
+print(f"\n✓ Saved adversarial audit report to {out_file.relative_to(REPO_ROOT)}")
+print("\n" + "=" * 80)
+print(response.text[:2500] + "\n... [TRUNCATED] ...")
+print("=" * 80)

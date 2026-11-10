@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T5",
   "tower_name": "Resilience & Continuity",
-  "purpose": "La torre Resilience & Continuity cubre todas las capacidades, procesos y evidencias necesarias para asegurar que los servicios TI del cliente pueden:",
+  "purpose": "The Resilience & Continuity domain governs enterprise business continuity (BC), disaster recovery (DR), cyber incident recovery, immutable backups, active-active high availability, and chaos engineering.",
   "scope_summary": [
     "Backup & Restore",
     "Disaster Recovery (DR)",
@@ -89,46 +89,46 @@
   "pillars": [
     {
       "pillar_id": "T5.P1",
-      "pillar_name": "Estrategia de Continuidad y Gobierno BC/DR (RTO/RPO)",
-      "weight_pct": 18,
+      "pillar_name": "BC/DR Governance & Continuity Strategy",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T5.P1.K1",
-          "kpi_name": "Definición y trazabilidad de RTO/RPO por servicio crítico",
+          "kpi_name": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
           "questions": [
             {
               "question_id": "T5.P1.K1.PR1",
-              "question_text": "Para garantizar la continuidad del negocio es necesario definir objetivos claros de recuperación de servicio y de pérdida de datos. ¿Cómo están definidos los RTO y RPO para los servicios críticos?"
+              "question_text": "How does the enterprise govern and measure Service RTO/RPO Definition & Business Impact Analysis (BIA) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P1.K2",
-          "kpi_name": "Alcance de continuidad y mapa de dependencias con terceros y proveedores",
+          "kpi_name": "Continuity Scope & Critical Third-Party Dependency Mapping",
           "questions": [
             {
               "question_id": "T5.P1.K2.PR1",
-              "question_text": "La continuidad depende de conocer las dependencias entre aplicaciones, infraestructuras y servicios. ¿Cómo se gestionan las dependencias y el alcance de continuidad entre sistemas?"
+              "question_text": "How does the enterprise govern and measure Continuity Scope & Critical Third-Party Dependency Mapping across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P1.K3",
-          "kpi_name": "Modelo de gobierno (roles, RACI, ownership y escalado de crisis)",
+          "kpi_name": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
           "questions": [
             {
               "question_id": "T5.P1.K3.PR1",
-              "question_text": "La ejecución de un plan de continuidad requiere que los roles y responsabilidades estén claramente definidos. ¿Cómo están definidos los roles y responsabilidades en los procesos de continuidad?"
+              "question_text": "How does the enterprise govern and measure Continuity Operating Model (RACI, Ownership & Crisis Escalation) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P1.K4",
-          "kpi_name": "Programa de pruebas y mejora continua (BC/DR/Cyber)",
+          "kpi_name": "Continuity Testing Program & Continuous Drills Verification",
           "questions": [
             {
               "question_id": "T5.P1.K4.PR1",
-              "question_text": "Las pruebas permiten validar que los planes de continuidad realmente funcionan. ¿Cómo se gestionan las pruebas de continuidad del negocio y recuperación?"
+              "question_text": "How does the enterprise govern and measure Continuity Testing Program & Continuous Drills Verification across the operational environment?"
             }
           ]
         }
@@ -136,46 +136,46 @@
     },
     {
       "pillar_id": "T5.P2",
-      "pillar_name": "Backup & Restore (Operabilidad real)",
-      "weight_pct": 22,
+      "pillar_name": "Backup & Restore Operational Readiness",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T5.P2.K1",
-          "kpi_name": "Cobertura de backup en sistemas críticos (por criticidad)",
+          "kpi_name": "Backup Coverage Across Mission-Critical Production Systems",
           "questions": [
             {
               "question_id": "T5.P2.K1.PR1",
-              "question_text": "Las copias de seguridad son la base de la recuperación ante fallos o pérdida de datos. ¿Cuál es la cobertura real de backup en los sistemas críticos?"
+              "question_text": "How does the enterprise govern and measure Backup Coverage Across Mission-Critical Production Systems across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P2.K2",
-          "kpi_name": "Tasa de éxito de jobs de backup y gestión de fallos",
+          "kpi_name": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
           "questions": [
             {
               "question_id": "T5.P2.K2.PR1",
-              "question_text": "La fiabilidad del sistema de backup depende de su tasa de éxito y de la gestión de errores. ¿Cómo se controlan los fallos y la tasa de éxito de los backups?"
+              "question_text": "How does the enterprise govern and measure Backup Job Success Rate, SLA Adherence & Failure Remediation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P2.K3",
-          "kpi_name": "Pruebas de restore (frecuencia, cobertura y evidencias)",
+          "kpi_name": "Scheduled Restore Drill Cadence & Data Verification Evidence",
           "questions": [
             {
               "question_id": "T5.P2.K3.PR1",
-              "question_text": "Las restauraciones deben probarse para asegurar que los datos se pueden recuperar correctamente. ¿Cómo se gestionan las pruebas de restauración de datos?"
+              "question_text": "How does the enterprise govern and measure Scheduled Restore Drill Cadence & Data Verification Evidence across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P2.K4",
-          "kpi_name": "Cumplimiento de RPO real (punto de recuperación alcanzable)",
+          "kpi_name": "Achievable Production Recovery Point Objective (RPO) Compliance",
           "questions": [
             {
               "question_id": "T5.P2.K4.PR1",
-              "question_text": "El RPO define la cantidad máxima de datos que se pueden perder tras un incidente. ¿Se cumple el RPO real definido para los servicios críticos?"
+              "question_text": "How does the enterprise govern and measure Achievable Production Recovery Point Objective (RPO) Compliance across the operational environment?"
             }
           ]
         }
@@ -183,46 +183,46 @@
     },
     {
       "pillar_id": "T5.P3",
-      "pillar_name": "Disaster Recovery (DR)",
-      "weight_pct": 22,
+      "pillar_name": "Disaster Recovery Architecture & Failover",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T5.P3.K1",
-          "kpi_name": "Cobertura de DR en servicios críticos (alcance y priorización)",
+          "kpi_name": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
           "questions": [
             {
               "question_id": "T5.P3.K1.PR1",
-              "question_text": "Un plan de Disaster Recovery debe cubrir los servicios críticos del negocio. ¿Cuál es el alcance real del DR en los servicios críticos?"
+              "question_text": "How does the enterprise govern and measure Disaster Recovery Scope, Tiering & Automated Workload Priority across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P3.K2",
-          "kpi_name": "Cumplimiento de RTO/RPO en pruebas de DR (medido)",
+          "kpi_name": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
           "questions": [
             {
               "question_id": "T5.P3.K2.PR1",
-              "question_text": "Las pruebas de DR permiten comprobar si se cumplen los objetivos de recuperación definidos. ¿Se miden y cumplen los RTO y RPO durante las pruebas de DR?"
+              "question_text": "How does the enterprise govern and measure Empirical DR Drill RTO/RPO Achievement (Measured Evidence) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P3.K3",
-          "kpi_name": "Runbooks y orquestación de recuperación (automatización y repetibilidad)",
+          "kpi_name": "Automated DR Orchestration, Runbooks & Repeatable Failover",
           "questions": [
             {
               "question_id": "T5.P3.K3.PR1",
-              "question_text": "La recuperación debe seguir procedimientos claros para evitar improvisaciones durante una crisis. ¿Cómo están definidos los runbooks y la orquestación del proceso de recuperación?"
+              "question_text": "How does the enterprise govern and measure Automated DR Orchestration, Runbooks & Repeatable Failover across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P3.K4",
-          "kpi_name": "Preparación del entorno de DR (capacidad, licencias y control de drift)",
+          "kpi_name": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
           "questions": [
             {
               "question_id": "T5.P3.K4.PR1",
-              "question_text": "El entorno de recuperación debe estar preparado y alineado con el entorno productivo. ¿Cómo se gestiona la preparación y validación del entorno de DR?"
+              "question_text": "How does the enterprise govern and measure Secondary DR Site Readiness (Capacity, Licensing & Drift Control) across the operational environment?"
             }
           ]
         }
@@ -230,46 +230,46 @@
     },
     {
       "pillar_id": "T5.P4",
-      "pillar_name": "Cyber Recovery & Inmutabilidad (Ransomware readiness)",
+      "pillar_name": "Cyber Recovery & Ransomware Immutability",
       "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T5.P4.K1",
-          "kpi_name": "Existencia y cobertura de copias inmutables (WORM/Object Lock u equivalente)",
+          "kpi_name": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
           "questions": [
             {
               "question_id": "T5.P4.K1.PR1",
-              "question_text": "Las copias inmutables protegen los datos frente a ataques de ransomware o borrado malicioso. ¿Existen copias inmutables para los servicios críticos?"
+              "question_text": "How does the enterprise govern and measure Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P4.K2",
-          "kpi_name": "Segregación/Air-Gap y control de acceso (vault operativo)",
+          "kpi_name": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
           "questions": [
             {
               "question_id": "T5.P4.K2.PR1",
-              "question_text": "La segregación del repositorio de backup evita que un ataque comprometa también las copias de seguridad. ¿Cómo se gestiona el aislamiento o air-gap del repositorio de backup?"
+              "question_text": "How does the enterprise govern and measure Decoupled Cyber Vault Security & Out-of-Band Administrative Access across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P4.K3",
-          "kpi_name": "Validación de integridad y capacidad de “clean restore”",
+          "kpi_name": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
           "questions": [
             {
               "question_id": "T5.P4.K3.PR1",
-              "question_text": "Antes de restaurar tras un ciberataque es necesario asegurar que los datos están libres de compromiso. ¿Cómo se valida la integridad de los datos antes de una restauración?"
+              "question_text": "How does the enterprise govern and measure Clean-Room Rebuild Capability & Isolated Integrity Validation across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P4.K4",
-          "kpi_name": "Pruebas específicas de ransomware (escenarios y tiempos medidos)",
+          "kpi_name": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
           "questions": [
             {
               "question_id": "T5.P4.K4.PR1",
-              "question_text": "Los ataques de ransomware deben probarse mediante simulaciones para validar la capacidad de recuperación. ¿Se realizan pruebas específicas frente a escenarios de ransomware?"
+              "question_text": "How does the enterprise govern and measure Ransomware Simulation Drills & Rapid Reconstruction Exercises across the operational environment?"
             }
           ]
         }
@@ -277,36 +277,36 @@
     },
     {
       "pillar_id": "T5.P5",
-      "pillar_name": "Alta Disponibilidad y Resiliencia Arquitectónica",
-      "weight_pct": 18,
+      "pillar_name": "High Availability & Architectural Resilience",
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T5.P5.K1",
-          "kpi_name": "Eliminación de SPOF en componentes críticos",
+          "kpi_name": "Single Points of Failure Elimination Across Critical Services",
           "questions": [
             {
               "question_id": "T5.P5.K1.PR1",
-              "question_text": "La eliminación de puntos únicos de fallo es clave para garantizar la continuidad de servicio. ¿Se han identificado y eliminado los SPOF en servicios críticos?"
+              "question_text": "How does the enterprise govern and measure Single Points of Failure Elimination Across Critical Services across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P5.K2",
-          "kpi_name": "Failover controlado y probado (HA real, no teórica)",
+          "kpi_name": "Controlled Active-Active Failover Verification (Production HA)",
           "questions": [
             {
               "question_id": "T5.P5.K2.PR1",
-              "question_text": "Los mecanismos de failover deben probarse para asegurar que funcionan correctamente. ¿Se prueban regularmente los procesos de failover?"
+              "question_text": "How does the enterprise govern and measure Controlled Active-Active Failover Verification (Production HA) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T5.P5.K3",
-          "kpi_name": "Automatización de recuperación y reducción de MTTR",
+          "kpi_name": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
           "questions": [
             {
               "question_id": "T5.P5.K3.PR1",
-              "question_text": "La automatización permite reducir el tiempo de recuperación tras incidentes. ¿Cuál es el nivel de automatización de la recuperación y reducción del MTTR? (MTTR = Mean Time To Repair (o Mean Time To Recover) Tiempo Medio de Recuperación)"
+              "question_text": "How does the enterprise govern and measure Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction across the operational environment?"
             }
           ]
         }
@@ -316,117 +316,136 @@
   "questions": [
     {
       "question_id": "T5.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Service RTO/RPO Definition & Business Impact Analysis (BIA) across the operational environment?",
       "pillar_id": "T5.P1",
       "kpi_id": "T5.P1.K1",
-      "question_text": "Para garantizar la continuidad del negocio es necesario definir objetivos claros de recuperación de servicio y de pérdida de datos. ¿Cómo están definidos los RTO y RPO para los servicios críticos?"
+      "kpi_name": "Service RTO/RPO Definition & Business Impact Analysis (BIA)"
     },
     {
       "question_id": "T5.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Continuity Scope & Critical Third-Party Dependency Mapping across the operational environment?",
       "pillar_id": "T5.P1",
       "kpi_id": "T5.P1.K2",
-      "question_text": "La continuidad depende de conocer las dependencias entre aplicaciones, infraestructuras y servicios. ¿Cómo se gestionan las dependencias y el alcance de continuidad entre sistemas?"
+      "kpi_name": "Continuity Scope & Critical Third-Party Dependency Mapping"
     },
     {
       "question_id": "T5.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Continuity Operating Model (RACI, Ownership & Crisis Escalation) across the operational environment?",
       "pillar_id": "T5.P1",
       "kpi_id": "T5.P1.K3",
-      "question_text": "La ejecución de un plan de continuidad requiere que los roles y responsabilidades estén claramente definidos. ¿Cómo están definidos los roles y responsabilidades en los procesos de continuidad?"
+      "kpi_name": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)"
     },
     {
       "question_id": "T5.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Continuity Testing Program & Continuous Drills Verification across the operational environment?",
       "pillar_id": "T5.P1",
       "kpi_id": "T5.P1.K4",
-      "question_text": "Las pruebas permiten validar que los planes de continuidad realmente funcionan. ¿Cómo se gestionan las pruebas de continuidad del negocio y recuperación?"
+      "kpi_name": "Continuity Testing Program & Continuous Drills Verification"
     },
     {
       "question_id": "T5.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Backup Coverage Across Mission-Critical Production Systems across the operational environment?",
       "pillar_id": "T5.P2",
       "kpi_id": "T5.P2.K1",
-      "question_text": "Las copias de seguridad son la base de la recuperación ante fallos o pérdida de datos. ¿Cuál es la cobertura real de backup en los sistemas críticos?"
+      "kpi_name": "Backup Coverage Across Mission-Critical Production Systems"
     },
     {
       "question_id": "T5.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Backup Job Success Rate, SLA Adherence & Failure Remediation across the operational environment?",
       "pillar_id": "T5.P2",
       "kpi_id": "T5.P2.K2",
-      "question_text": "La fiabilidad del sistema de backup depende de su tasa de éxito y de la gestión de errores. ¿Cómo se controlan los fallos y la tasa de éxito de los backups?"
+      "kpi_name": "Backup Job Success Rate, SLA Adherence & Failure Remediation"
     },
     {
       "question_id": "T5.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Scheduled Restore Drill Cadence & Data Verification Evidence across the operational environment?",
       "pillar_id": "T5.P2",
       "kpi_id": "T5.P2.K3",
-      "question_text": "Las restauraciones deben probarse para asegurar que los datos se pueden recuperar correctamente. ¿Cómo se gestionan las pruebas de restauración de datos?"
+      "kpi_name": "Scheduled Restore Drill Cadence & Data Verification Evidence"
     },
     {
       "question_id": "T5.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Achievable Production Recovery Point Objective (RPO) Compliance across the operational environment?",
       "pillar_id": "T5.P2",
       "kpi_id": "T5.P2.K4",
-      "question_text": "El RPO define la cantidad máxima de datos que se pueden perder tras un incidente. ¿Se cumple el RPO real definido para los servicios críticos?"
+      "kpi_name": "Achievable Production Recovery Point Objective (RPO) Compliance"
     },
     {
       "question_id": "T5.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Disaster Recovery Scope, Tiering & Automated Workload Priority across the operational environment?",
       "pillar_id": "T5.P3",
       "kpi_id": "T5.P3.K1",
-      "question_text": "Un plan de Disaster Recovery debe cubrir los servicios críticos del negocio. ¿Cuál es el alcance real del DR en los servicios críticos?"
+      "kpi_name": "Disaster Recovery Scope, Tiering & Automated Workload Priority"
     },
     {
       "question_id": "T5.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Empirical DR Drill RTO/RPO Achievement (Measured Evidence) across the operational environment?",
       "pillar_id": "T5.P3",
       "kpi_id": "T5.P3.K2",
-      "question_text": "Las pruebas de DR permiten comprobar si se cumplen los objetivos de recuperación definidos. ¿Se miden y cumplen los RTO y RPO durante las pruebas de DR?"
+      "kpi_name": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)"
     },
     {
       "question_id": "T5.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Automated DR Orchestration, Runbooks & Repeatable Failover across the operational environment?",
       "pillar_id": "T5.P3",
       "kpi_id": "T5.P3.K3",
-      "question_text": "La recuperación debe seguir procedimientos claros para evitar improvisaciones durante una crisis. ¿Cómo están definidos los runbooks y la orquestación del proceso de recuperación?"
+      "kpi_name": "Automated DR Orchestration, Runbooks & Repeatable Failover"
     },
     {
       "question_id": "T5.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Secondary DR Site Readiness (Capacity, Licensing & Drift Control) across the operational environment?",
       "pillar_id": "T5.P3",
       "kpi_id": "T5.P3.K4",
-      "question_text": "El entorno de recuperación debe estar preparado y alineado con el entorno productivo. ¿Cómo se gestiona la preparación y validación del entorno de DR?"
+      "kpi_name": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)"
     },
     {
       "question_id": "T5.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation) across the operational environment?",
       "pillar_id": "T5.P4",
       "kpi_id": "T5.P4.K1",
-      "question_text": "Las copias inmutables protegen los datos frente a ataques de ransomware o borrado malicioso. ¿Existen copias inmutables para los servicios críticos?"
+      "kpi_name": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)"
     },
     {
       "question_id": "T5.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Decoupled Cyber Vault Security & Out-of-Band Administrative Access across the operational environment?",
       "pillar_id": "T5.P4",
       "kpi_id": "T5.P4.K2",
-      "question_text": "La segregación del repositorio de backup evita que un ataque comprometa también las copias de seguridad. ¿Cómo se gestiona el aislamiento o air-gap del repositorio de backup?"
+      "kpi_name": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access"
     },
     {
       "question_id": "T5.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Clean-Room Rebuild Capability & Isolated Integrity Validation across the operational environment?",
       "pillar_id": "T5.P4",
       "kpi_id": "T5.P4.K3",
-      "question_text": "Antes de restaurar tras un ciberataque es necesario asegurar que los datos están libres de compromiso. ¿Cómo se valida la integridad de los datos antes de una restauración?"
+      "kpi_name": "Clean-Room Rebuild Capability & Isolated Integrity Validation"
     },
     {
       "question_id": "T5.P4.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Ransomware Simulation Drills & Rapid Reconstruction Exercises across the operational environment?",
       "pillar_id": "T5.P4",
       "kpi_id": "T5.P4.K4",
-      "question_text": "Los ataques de ransomware deben probarse mediante simulaciones para validar la capacidad de recuperación. ¿Se realizan pruebas específicas frente a escenarios de ransomware?"
+      "kpi_name": "Ransomware Simulation Drills & Rapid Reconstruction Exercises"
     },
     {
       "question_id": "T5.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Single Points of Failure Elimination Across Critical Services across the operational environment?",
       "pillar_id": "T5.P5",
       "kpi_id": "T5.P5.K1",
-      "question_text": "La eliminación de puntos únicos de fallo es clave para garantizar la continuidad de servicio. ¿Se han identificado y eliminado los SPOF en servicios críticos?"
+      "kpi_name": "Single Points of Failure Elimination Across Critical Services"
     },
     {
       "question_id": "T5.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Controlled Active-Active Failover Verification (Production HA) across the operational environment?",
       "pillar_id": "T5.P5",
       "kpi_id": "T5.P5.K2",
-      "question_text": "Los mecanismos de failover deben probarse para asegurar que funcionan correctamente. ¿Se prueban regularmente los procesos de failover?"
+      "kpi_name": "Controlled Active-Active Failover Verification (Production HA)"
     },
     {
       "question_id": "T5.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction across the operational environment?",
       "pillar_id": "T5.P5",
       "kpi_id": "T5.P5.K3",
-      "question_text": "La automatización permite reducir el tiempo de recuperación tras incidentes. ¿Cuál es el nivel de automatización de la recuperación y reducción del MTTR? (MTTR = Mean Time To Repair (o Mean Time To Recover) Tiempo Medio de Recuperación)"
+      "kpi_name": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction"
     }
   ]
 }

@@ -9,7 +9,9 @@ Eliminates static EUR/USD hardcoded thresholds in Open FAIR 5x5 Heatmaps:
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 import re
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from types import MappingProxyType
@@ -56,83 +58,12 @@ CANONICAL_LM_CRITICAL_THRESHOLDS: Final[Tuple[float, float, float, float]] = (25
 ERC_HIGH_THRESHOLD: Final[float] = 0.50
 ERC_MEDIUM_THRESHOLD: Final[float] = 0.20
 
-# Static baseline currency parity factors relative to 1.0 EUR/USD (macro purchasing power / unit scale)
-CURRENCY_SCALE_PARITY: Final[Mapping[str, float]] = MappingProxyType({
-    # Americas
-    "USD": 1.0,
-    "$": 1.0,
-    "CAD": 1.45,
-    "CA$": 1.45,
-    "BRL": 5.5,
-    "R$": 5.5,
-    "MXN": 18.0,
-    "ARS": 1000.0,
-    "CLP": 950.0,
-    "COP": 4000.0,
-    "PEN": 3.8,
-    # Europe
-    "EUR": 1.0,
-    "€": 1.0,
-    "GBP": 0.85,
-    "£": 0.85,
-    "CHF": 0.95,
-    "SFR": 0.95,
-    "FR.": 0.95,
-    "SFR.": 0.95,
-    "SEK": 11.0,
-    "KR": 11.0,
-    "KR.": 11.0,
-    "NOK": 11.0,
-    "DKK": 7.5,
-    "ISK": 140.0,
-    "PLN": 4.3,
-    "ZŁ": 4.3,
-    "HUF": 395.0,
-    "CZK": 25.0,
-    "TRY": 34.0,
-    # Asia-Pacific
-    "JPY": 160.0,
-    "¥": 160.0,
-    "CNY": 7.2,
-    "RMB": 7.2,
-    "CNH": 7.2,
-    "KRW": 1400.0,
-    "₩": 1400.0,
-    "AUD": 1.6,
-    "A$": 1.6,
-    "NZD": 1.65,
-    "NZ$": 1.65,
-    "SGD": 1.45,
-    "S$": 1.45,
-    "HKD": 8.0,
-    "HK$": 8.0,
-    "TWD": 32.0,
-    "NT$": 32.0,
-    "THB": 35.0,
-    "IDR": 16000.0,
-    "VND": 25000.0,
-    "₫": 25000.0,
-    "MYR": 4.5,
-    "PHP": 56.0,
-    "INR": 90.0,
-    "₹": 90.0,
-    "KZT": 500.0,
-    "PKR": 300.0,
-    # Middle East & Africa
-    "AED": 3.67,
-    "SAR": 3.75,
-    "QAR": 3.65,
-    "KWD": 0.33,
-    "BHD": 0.40,
-    "OMR": 0.42,
-    "JOD": 0.78,
-    "ILS": 3.7,
-    "₪": 3.7,
-    "EGP": 52.0,
-    "NGN": 1650.0,
-    "ZAR": 18.5,
-    "R": 18.5,
-})
+# Declarative Currency Catalog Loader (Vector 3 Decoupling & Hexagonal Domain Purity)
+from assessment_engine.domain.schemas.currency_contract import (
+    CURRENCY_SCALE_PARITY,
+    DEFAULT_BASE_NUMERAIRE,
+    _UNAMBIGUOUS_SYMBOL_TO_ISO,
+)
 
 _DOT_THOUSANDS_LOCALES: Final[frozenset[str]] = frozenset(
     {"es", "de", "pt", "it", "nl", "da", "tr", "id", "vi", "pl", "ro", "el"}
@@ -388,9 +319,9 @@ def _snap_to_clean_step(val: float) -> float:
         return float(max(units_f * step, step))
 
 
-def resolve_currency_parity(currency: str = "EUR", locale: str | None = None) -> float:
+def resolve_currency_parity(currency: str | None = None, locale: str | None = None) -> float:
     """Resolves the macro purchasing-power parity multiplier for any currency code or symbol."""
-    clean_currency = str(currency or "EUR").strip().upper()
+    clean_currency = str(currency or DEFAULT_BASE_NUMERAIRE).strip().upper()
     parity = float(CURRENCY_SCALE_PARITY.get(clean_currency, 1.0))
 
     norm_loc, lang_code, region_code = _extract_bcp47_lang_and_region(locale)
@@ -421,36 +352,9 @@ def resolve_currency_parity(currency: str = "EUR", locale: str | None = None) ->
     return parity
 
 
-_UNAMBIGUOUS_SYMBOL_TO_ISO: Final[Mapping[str, str]] = MappingProxyType({
-    "€": "EUR",
-    "$": "USD",
-    "£": "GBP",
-    "¥": "JPY",
-    "R$": "BRL",
-    "CA$": "CAD",
-    "A$": "AUD",
-    "NZ$": "NZD",
-    "S$": "SGD",
-    "HK$": "HKD",
-    "NT$": "TWD",
-    "₹": "INR",
-    "₩": "KRW",
-    "₫": "VND",
-    "₪": "ILS",
-    "ZŁ": "PLN",
-    "KR": "SEK",
-    "KR.": "DKK",
-    "R": "ZAR",
-    "CHF": "CHF",
-    "SFR": "CHF",
-    "FR.": "CHF",
-    "SFR.": "CHF",
-})
-
-
-def resolve_iso_currency_code(currency_token: str = "EUR", locale: str | None = None) -> str:
+def resolve_iso_currency_code(currency_token: str | None = None, locale: str | None = None) -> str:
     """Resolves a currency symbol or code into an authoritative ISO 4217 code respecting locale."""
-    clean_curr = str(currency_token or "EUR").strip()
+    clean_curr = str(currency_token or DEFAULT_BASE_NUMERAIRE).strip()
     clean_upper = clean_curr.upper()
     norm_loc, lang_code, region_code = _extract_bcp47_lang_and_region(locale)
 
@@ -480,7 +384,7 @@ def resolve_iso_currency_code(currency_token: str = "EUR", locale: str | None = 
 
 
 def compute_dynamic_lm_thresholds(
-    currency: str = "EUR",
+    currency: str | None = None,
     annual_revenue: float | None = None,
     hourly_downtime_cost: float | None = None,
     is_critical_tier: bool = False,
@@ -650,7 +554,7 @@ def _format_integer_with_separator(val: float, thousands_sep: str = ".") -> str:
 
 
 def compute_dynamic_lm_brackets(
-    currency: str = "EUR",
+    currency: str | None = None,
     locale: str = "en",
     annual_revenue: float | None = None,
     hourly_downtime_cost: float | None = None,
@@ -671,7 +575,7 @@ def compute_dynamic_lm_brackets(
             locale=locale,
         )
 
-    clean_currency = str(currency or "EUR").strip()
+    clean_currency = str(currency or DEFAULT_BASE_NUMERAIRE).strip()
 
     # Robust locale normalization supporting regional and script tags e.g. "es-ES", "es-MX", "zh-Hans-CN"
     raw_locale, lang_code, region_code = _extract_bcp47_lang_and_region(locale)

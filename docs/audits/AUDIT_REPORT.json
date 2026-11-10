@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1794193345,
-  "global_grade": "A+",
-  "global_score": 100.0,
+  "timestamp": 1794222324,
+  "global_grade": "A",
+  "global_score": 99.5,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 848,
-        "clean_files": 848,
+        "scanned_files": 870,
+        "clean_files": 870,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -32,20 +32,20 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 84.4,
+      "score_pct": 84.2,
       "passed": true,
       "metrics": {
-        "prod_sloc": 91690,
-        "test_sloc": 28297,
+        "prod_sloc": 94133,
+        "test_sloc": 28719,
         "test_to_code_ratio": 0.31,
         "maintainability_index_sei": 32.7,
-        "typed_functions_pct": 94.1,
-        "docstring_coverage_pct": 72.8,
-        "max_cognitive_complexity": 698,
-        "rango_d_functions_count": 84,
-        "god_modules_count": 30,
-        "high_cognitive_funcs_count": 219,
-        "deep_nesting_funcs_count": 126
+        "typed_functions_pct": 94.2,
+        "docstring_coverage_pct": 72.9,
+        "max_cognitive_complexity": 516,
+        "rango_d_functions_count": 87,
+        "god_modules_count": 31,
+        "high_cognitive_funcs_count": 223,
+        "deep_nesting_funcs_count": 131
       },
       "findings": [
         {
@@ -810,7 +810,7 @@
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Monolithic file detected: 'tomo_asis_ast_compiler.py' has 2295 SLOC (recommended threshold <= 600)",
+          "message": "Monolithic file detected: 'tomo_asis_ast_compiler.py' has 2298 SLOC (recommended threshold <= 600)",
           "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
         },
         {
@@ -871,7 +871,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
-          "line_number": 1354,
+          "line_number": 1357,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_chapter_3_actuarial_risk_register' exceeds critical cyclomatic limit: V(G) = 62 (Rank D > 35)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -880,7 +880,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
-          "line_number": 1354,
+          "line_number": 1357,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_chapter_3_actuarial_risk_register': CoC = 76 (cognitive limit <= 35)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -889,7 +889,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
-          "line_number": 1962,
+          "line_number": 1965,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_chapter_4_forensic_diagnostics' exceeds critical cyclomatic limit: V(G) = 128 (Rank D > 35)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -898,7 +898,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
-          "line_number": 1962,
+          "line_number": 1965,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_build_chapter_4_forensic_diagnostics': 6 depth levels (threshold <= 5)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -907,7 +907,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
-          "line_number": 1962,
+          "line_number": 1965,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_chapter_4_forensic_diagnostics': CoC = 201 (cognitive limit <= 35)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1278,14 +1278,14 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Monolithic file detected: 'payload_to_ast.py' has 3273 SLOC (recommended threshold <= 600)",
+          "message": "Monolithic file detected: 'payload_to_ast.py' has 3331 SLOC (recommended threshold <= 600)",
           "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 497,
+          "line_number": 556,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function 'resolve_domain_introduction' exceeds critical cyclomatic limit: V(G) = 41 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1294,7 +1294,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 497,
+          "line_number": 556,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'resolve_domain_introduction': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -1303,25 +1303,43 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 497,
+          "line_number": 556,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'resolve_domain_introduction': CoC = 43 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
+          "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 370,
+          "line_number": 389,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Function 'synthesize_chapter_one_paragraphs' exceeds critical cyclomatic limit: V(G) = 32 (Rank D > 20)",
+          "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+          "line_number": 389,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in 'synthesize_chapter_one_paragraphs': 4 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+          "line_number": 389,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'synthesize_chapter_one_paragraphs': CoC = 20 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'synthesize_chapter_one_paragraphs': CoC = 32 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 750,
+          "line_number": 809,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_extract_conversion_context' exceeds critical cyclomatic limit: V(G) = 46 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1330,7 +1348,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 750,
+          "line_number": 809,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_extract_conversion_context': CoC = 37 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1339,16 +1357,16 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1016,
+          "line_number": 1087,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function '_build_executive_summary_and_scope' exceeds critical cyclomatic limit: V(G) = 170 (Rank D > 20)",
+          "message": "Function '_build_executive_summary_and_scope' exceeds critical cyclomatic limit: V(G) = 164 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1016,
+          "line_number": 1087,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_build_executive_summary_and_scope': 5 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -1357,16 +1375,16 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1016,
+          "line_number": 1087,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in '_build_executive_summary_and_scope': CoC = 168 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in '_build_executive_summary_and_scope': CoC = 162 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1822,
+          "line_number": 1879,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_systemic_risk_section' exceeds critical cyclomatic limit: V(G) = 48 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1375,7 +1393,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1822,
+          "line_number": 1879,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_systemic_risk_section': CoC = 90 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1384,7 +1402,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2026,
+          "line_number": 2083,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_extract_dynamic_transversal_patterns' exceeds critical cyclomatic limit: V(G) = 27 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1393,7 +1411,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2026,
+          "line_number": 2083,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_extract_dynamic_transversal_patterns': 5 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -1402,7 +1420,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2026,
+          "line_number": 2083,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_extract_dynamic_transversal_patterns': CoC = 54 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1411,7 +1429,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2107,
+          "line_number": 2164,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_maturity_and_benchmarks' exceeds critical cyclomatic limit: V(G) = 88 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1420,7 +1438,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2107,
+          "line_number": 2164,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_build_maturity_and_benchmarks': 5 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -1429,7 +1447,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2107,
+          "line_number": 2164,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_maturity_and_benchmarks': CoC = 148 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1438,7 +1456,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2592,
+          "line_number": 2649,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_fair_risk_analysis' exceeds critical cyclomatic limit: V(G) = 42 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1447,7 +1465,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2592,
+          "line_number": 2649,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_fair_risk_analysis': CoC = 33 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1456,7 +1474,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2868,
+          "line_number": 2925,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_detailed_findings_log' exceeds critical cyclomatic limit: V(G) = 31 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1465,7 +1483,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 2868,
+          "line_number": 2925,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_detailed_findings_log': CoC = 28 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1474,7 +1492,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3007,
+          "line_number": 3064,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_risk_mini_infographic_card' exceeds critical cyclomatic limit: V(G) = 64 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1483,7 +1501,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3007,
+          "line_number": 3064,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_risk_mini_infographic_card': CoC = 57 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1492,7 +1510,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3416,
+          "line_number": 3473,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_conclusions_chapter' exceeds critical cyclomatic limit: V(G) = 30 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1501,7 +1519,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3416,
+          "line_number": 3473,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_conclusions_chapter': CoC = 24 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -2489,18 +2507,27 @@
         },
         {
           "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/services/structured_evidence_extractor.py",
+          "line_number": 64,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Cognitive complexity overload in 'extract_claims_from_text': CoC = 22 (cognitive limit <= 15)",
+          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Monolithic file detected: 'tower_payload_hydrator.py' has 1245 SLOC (recommended threshold <= 600)",
+          "message": "Monolithic file detected: 'tower_payload_hydrator.py' has 1263 SLOC (recommended threshold <= 600)",
           "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 72,
+          "line_number": 90,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_reconcile_finding_scores_half_up': CoC = 17 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -2509,7 +2536,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 172,
+          "line_number": 190,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_generate_canonical_kpi_finding': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -2518,7 +2545,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 172,
+          "line_number": 190,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_generate_canonical_kpi_finding': CoC = 17 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -2527,7 +2554,52 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 246,
+          "line_number": 264,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in '_hydrate_epistemic_ledger_evidence': 5 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+          "line_number": 264,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Cognitive complexity overload in '_hydrate_epistemic_ledger_evidence': CoC = 22 (cognitive limit <= 15)",
+          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+          "line_number": 307,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Function '_enforce_ontological_gatekeeping' exceeds critical cyclomatic limit: V(G) = 25 (Rank D > 20)",
+          "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+          "line_number": 307,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in '_enforce_ontological_gatekeeping': 6 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+          "line_number": 307,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Cognitive complexity overload in '_enforce_ontological_gatekeeping': CoC = 55 (cognitive limit <= 15)",
+          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
+          "line_number": 414,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'compute_canonical_score': 5 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -2536,25 +2608,25 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 246,
+          "line_number": 414,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'compute_canonical_score': CoC = 34 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'compute_canonical_score': CoC = 35 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 301,
+          "line_number": 475,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function 'load_and_hydrate_all_towers' exceeds critical cyclomatic limit: V(G) = 318 (Rank D > 20)",
+          "message": "Function 'load_and_hydrate_all_towers' exceeds critical cyclomatic limit: V(G) = 261 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 301,
+          "line_number": 475,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'load_and_hydrate_all_towers': 7 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -2563,10 +2635,19 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
-          "line_number": 301,
+          "line_number": 475,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'load_and_hydrate_all_towers': CoC = 698 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'load_and_hydrate_all_towers': CoC = 516 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/services/semantic_epistemic_router.py",
+          "line_number": 311,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in '_tokenize_and_stem': 4 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
         },
         {
           "category": "COMPLEXITY",
@@ -2930,6 +3011,24 @@
         },
         {
           "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 366,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in '_load_jurisdiction_regulators': 4 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 366,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Cognitive complexity overload in '_load_jurisdiction_regulators': CoC = 19 (cognitive limit <= 15)",
+          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/schemas/intelligence.py",
           "line_number": 430,
@@ -3236,6 +3335,15 @@
         },
         {
           "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/infrastructure/json_taxonomy_catalog_loader.py",
+          "line_number": 43,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Function 'load_leaf_kpis_index' exceeds critical cyclomatic limit: V(G) = 24 (Rank D > 20)",
+          "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/json_taxonomy_catalog_loader.py",
           "line_number": 43,
@@ -3249,7 +3357,7 @@
           "file_path": "src/assessment_engine/infrastructure/json_taxonomy_catalog_loader.py",
           "line_number": 43,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'load_leaf_kpis_index': CoC = 38 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'load_leaf_kpis_index': CoC = 59 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -3992,18 +4100,45 @@
         },
         {
           "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "scripts/remediate_argon_audit_findings.py",
+          "line_number": 20,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in 'remediate': 5 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "scripts/remediate_argon_audit_findings.py",
+          "line_number": 20,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Cognitive complexity overload in 'remediate': CoC = 41 (cognitive limit <= 15)",
+          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "scripts/build_client_delivery_suite.py",
+          "line_number": 1,
+          "rule_id": "ARCH-GOD-MODULE",
+          "message": "Monolithic file detected: 'build_client_delivery_suite.py' has 642 SLOC (recommended threshold <= 600)",
+          "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
+        },
+        {
+          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "scripts/build_client_delivery_suite.py",
-          "line_number": 110,
+          "line_number": 123,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function 'synthesize_tower_blueprints' exceeds critical cyclomatic limit: V(G) = 33 (Rank D > 20)",
+          "message": "Function 'synthesize_tower_blueprints' exceeds critical cyclomatic limit: V(G) = 56 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "scripts/build_client_delivery_suite.py",
-          "line_number": 110,
+          "line_number": 123,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'synthesize_tower_blueprints': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -4012,9 +4147,9 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "scripts/build_client_delivery_suite.py",
-          "line_number": 110,
+          "line_number": 123,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'synthesize_tower_blueprints': CoC = 63 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'synthesize_tower_blueprints': CoC = 110 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -4110,24 +4245,6 @@
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
-          "file_path": "scripts/argon_comprehensive_codebase_audit.py",
-          "line_number": 43,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Excessive nesting in 'run_static_codebase_scan': 5 depth levels (threshold <= 3)",
-          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "scripts/argon_comprehensive_codebase_audit.py",
-          "line_number": 43,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'run_static_codebase_scan': CoC = 38 (cognitive limit <= 15)",
-          "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
           "file_path": "scripts/sync_locales_symmetry.py",
           "line_number": 291,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
@@ -4196,17 +4313,180 @@
     },
     "supply_chain": {
       "probe_name": "Supply Chain, OSV.dev & SBOM (CycloneDX 1.6 / CRA)",
-      "score_pct": 100.0,
+      "score_pct": 95.6,
       "passed": true,
       "metrics": {
-        "total_dependencies": 180,
-        "pinned_dependencies": 180,
-        "pinning_ratio": 1.0,
+        "total_dependencies": 162,
+        "pinned_dependencies": 144,
+        "pinning_ratio": 0.89,
         "known_cves_detected": 0,
         "sbom_format": "CycloneDX v1.6",
         "sbom_path": "/home/jsanchhi/assessment_engine/docs/audits/SBOM_CYCLONEDX.json"
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm '@types/jszip' usa rango flotante '^3.4.0'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'axios' usa rango flotante '^1.7.7'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'class-variance-authority' usa rango flotante '^0.7.0'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'clsx' usa rango flotante '^2.1.1'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'jszip' usa rango flotante '^3.10.2'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'lucide-react' usa rango flotante '^0.460.0'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'react' usa rango flotante '^18.3.1'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'react-dom' usa rango flotante '^18.3.1'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'tailwind-merge' usa rango flotante '^2.5.4'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm '@types/node' usa rango flotante '^22.8.7'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm '@types/react' usa rango flotante '^18.3.12'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm '@types/react-dom' usa rango flotante '^18.3.1'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm '@vitejs/plugin-react' usa rango flotante '^4.3.3'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'autoprefixer' usa rango flotante '^10.4.20'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'postcss' usa rango flotante '^8.4.47'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'tailwindcss' usa rango flotante '^3.4.14'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'typescript' usa rango flotante '^5.6.3'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        },
+        {
+          "category": "SUPPLY_CHAIN",
+          "severity": "LOW",
+          "file_path": "web/package.json",
+          "line_number": null,
+          "rule_id": "SCA-LOOSE-SEMVER",
+          "message": "Dependencia npm 'vite' usa rango flotante '^5.4.10'",
+          "recommendation": "Use pnpm-lock.yaml or pin exact versions for reproducible builds."
+        }
+      ]
     },
     "legal_compliance": {
       "probe_name": "Legal Compliance & GDPR (SPDX / AEPD / CRA)",
@@ -4237,15 +4517,25 @@
     },
     "browser_accessibility": {
       "probe_name": "Accessibility & UI Standards (WCAG 2.2 AA / EAA)",
-      "score_pct": 100.0,
-      "passed": true,
+      "score_pct": 90.0,
+      "passed": false,
       "metrics": {
-        "ui_files_scanned": 95,
-        "findings_count": 0,
-        "high_severity_a11y_count": 0,
-        "wcag_compliance_level": "WCAG 2.2 AA Conforme"
+        "ui_files_scanned": 69,
+        "findings_count": 1,
+        "high_severity_a11y_count": 1,
+        "wcag_compliance_level": "No Conforme"
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "ACCESSIBILITY",
+          "severity": "HIGH",
+          "file_path": "web/src/components/ui/dialog.tsx",
+          "line_number": 21,
+          "rule_id": "A11Y-BUTTON-NO-NAME",
+          "message": "Interactive <button> lacks accessible text or 'aria-label' attribute",
+          "recommendation": "Add visible text or 'aria-label=\"Action\"' attribute for screen readers."
+        }
+      ]
     },
     "contract_drift": {
       "probe_name": "Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)",
@@ -4253,7 +4543,7 @@
       "passed": true,
       "metrics": {
         "ddl_tables_indexed": 7,
-        "pydantic_models_audited": 201,
+        "pydantic_models_audited": 213,
         "drift_violations_count": 0,
         "has_versioned_contract": true
       },
@@ -4278,7 +4568,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "llm_calls_audited": 166,
+        "llm_calls_audited": 178,
         "has_bwrap_sandbox": true,
         "has_execution_guard": true,
         "has_finops_budget": true,
@@ -4291,7 +4581,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 692,
+        "scanned_files": 711,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -4305,7 +4595,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 692,
+        "scanned_files": 711,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 5,
         "god_classes_count": 0,
@@ -4316,7 +4606,7 @@
           "category": "STRUCTURAL_SMELL",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 370,
+          "line_number": 389,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Public function 'synthesize_chapter_one_paragraphs' declares 14 required parameters without default (recommended threshold <= 5)",
           "recommendation": "Apply 'Introduce Parameter Object' (Martin Fowler): encapsulate parameters in a typed Pydantic model."
@@ -4370,38 +4660,84 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.52,
-        "p95_latency_ms": 105.14,
-        "p99_latency_ms": 183.05,
-        "tail_amplification_ratio": 120.43,
+        "p50_latency_ms": 1.49,
+        "p95_latency_ms": 130.28,
+        "p99_latency_ms": 237.41,
+        "tail_amplification_ratio": 159.34,
         "concurrency_status": "Resilient and Scalable"
       },
       "findings": []
     },
     "documentation_quality": {
       "probe_name": "Documentation Quality & Architectural Traceability (ISO 26514 / Google)",
-      "score_pct": 100.0,
+      "score_pct": 92.5,
       "passed": true,
       "metrics": {
-        "markdown_files_scanned": 211,
-        "internal_links_evaluated": 575,
+        "markdown_files_scanned": 222,
+        "internal_links_evaluated": 574,
         "dead_links_count": 0,
         "architectural_references_evaluated": 0,
         "architectural_drift_count": 0,
-        "bare_code_fences_count": 0,
+        "bare_code_fences_count": 5,
         "openapi_endpoints_evaluated": 0,
         "openapi_documented_endpoints": 0,
         "openapi_documentation_coverage_pct": 0.0,
         "documentation_status": "Certificada y Sincronizada"
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "DOCUMENTATION",
+          "severity": "LOW",
+          "file_path": "docs/architecture/ARGON_ANTIPATTERN_REMEDIATION_MASTER_PLAN.md",
+          "line_number": 38,
+          "rule_id": "DOC-BARE-CODE-FENCE",
+          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
+          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
+        },
+        {
+          "category": "DOCUMENTATION",
+          "severity": "LOW",
+          "file_path": "docs/architecture/ARGON_UNIVERSAL_10_OUT_OF_10_MASTER_PLAN.md",
+          "line_number": 92,
+          "rule_id": "DOC-BARE-CODE-FENCE",
+          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
+          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
+        },
+        {
+          "category": "DOCUMENTATION",
+          "severity": "LOW",
+          "file_path": "docs/architecture/ZERO_HALLUCINATION_EPISTEMIC_GROUNDING_ARCHITECTURE.md",
+          "line_number": 106,
+          "rule_id": "DOC-BARE-CODE-FENCE",
+          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
+          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
+        },
+        {
+          "category": "DOCUMENTATION",
+          "severity": "LOW",
+          "file_path": "docs/architecture/ZERO_HALLUCINATION_EPISTEMIC_GROUNDING_ARCHITECTURE.md",
+          "line_number": 237,
+          "rule_id": "DOC-BARE-CODE-FENCE",
+          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
+          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
+        },
+        {
+          "category": "DOCUMENTATION",
+          "severity": "LOW",
+          "file_path": "docs/architecture/ROBUST_UNIVERSAL_EPISTEMIC_MODALITY_ARCHITECTURE.md",
+          "line_number": 18,
+          "rule_id": "DOC-BARE-CODE-FENCE",
+          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
+          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
+        }
+      ]
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 247,
+        "files_scanned": 250,
         "total_findings": 0,
         "critical_violations": 0,
         "high_violations": 0,
@@ -4414,27 +4750,91 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 754,
+        "scanned_files": 736,
         "hardcoded_issues": 0
       },
       "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 100.0,
+      "score_pct": 99.9,
       "passed": true,
       "metrics": {
-        "files_scanned": 749,
-        "inline_rationale_score": 100.0,
+        "files_scanned": 730,
+        "inline_rationale_score": 99.8,
         "contract_coverage_score": 100.0,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 0,
+        "comment_smells_count": 9,
         "missing_docstrings_count": 0,
-        "cqi_score": 100.0,
+        "cqi_score": 99.9,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "tests/unit/test_executive_summary_ast.py",
+          "line_number": 89,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'Tier-1'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "tests/unit/test_executive_summary_ast.py",
+          "line_number": 100,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'Tier-1'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "tests/unit/test_executive_summary_ast.py",
+          "line_number": 111,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'Tier-1'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 82,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Non-English comment detected in production source code",
+          "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "LOW",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 99,
+          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
+          "message": "Unnecessary cosmetic section separator in comments",
+          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "LOW",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 218,
+          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
+          "message": "Unnecessary cosmetic section separator in comments",
+          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/domain/schemas/executive_summary_ast.py",
+          "line_number": 380,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Non-English comment detected in production source code",
+          "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        }
+      ]
     },
     "test_coverage": {
       "probe_name": "Test Coverage & Code Path Invariants (ISO 29119)",
@@ -4451,14 +4851,14 @@
     },
     "assertion_quality": {
       "probe_name": "Assertion Quality & Rigor (Anti-Vanity / GEMA 54)",
-      "score_pct": 93.1,
+      "score_pct": 93.2,
       "passed": true,
       "metrics": {
-        "total_tests": 708,
-        "total_assertions": 2693,
-        "strong_assertions": 2508,
-        "weak_assertions": 185,
-        "strong_ratio_pct": 93.1
+        "total_tests": 720,
+        "total_assertions": 2761,
+        "strong_assertions": 2574,
+        "weak_assertions": 187,
+        "strong_ratio_pct": 93.2
       },
       "findings": []
     },
@@ -4467,9 +4867,9 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "total_modules": 253,
+        "total_modules": 256,
         "production_roots_count": 29,
-        "reachable_modules_count": 253,
+        "reachable_modules_count": 256,
         "dead_islands_count": 0,
         "reachability_pct": 100.0
       },
@@ -4488,5 +4888,5 @@
       "findings": []
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (100.0%). Sondas pasadas: 22/22."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (99.5%). Sondas pasadas: 21/22."
 }

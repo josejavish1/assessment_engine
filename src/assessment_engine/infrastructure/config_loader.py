@@ -569,3 +569,33 @@ def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
                 return pid
 
     return None
+
+
+@functools.lru_cache(maxsize=1)
+def load_currency_rates() -> dict[str, float]:
+    """Loads and caches standard ISO-4217 FX normalization factors from engine_config/currency_rates.json."""
+    path = ENGINE_CONFIG_DIR / "currency_rates.json"
+    if not path.is_file():
+        return {"USD": 1.0, "EUR": 0.92, "GBP": 0.80, "JPY": 150.0}
+    try:
+        data = _load_json(path)
+        if isinstance(data, dict):
+            return {k.upper(): float(v) for k, v in data.items()}
+    except Exception as ex:
+        logger.warning("Failed to load currency rates catalog: %s", ex)
+    return {"USD": 1.0}
+
+
+@functools.lru_cache(maxsize=1)
+def load_regulatory_jurisdictions() -> dict[str, dict[str, list[str]]]:
+    """Loads and caches jurisdiction regulatory catalogs from engine_config/frameworks/regulatory_jurisdictions.json."""
+    path = ENGINE_CONFIG_DIR / "frameworks" / "regulatory_jurisdictions.json"
+    if not path.is_file():
+        return {}
+    try:
+        data = _load_json(path)
+        if isinstance(data, dict):
+            return data
+    except Exception as ex:
+        logger.warning("Failed to load regulatory jurisdictions catalog: %s", ex)
+    return {}

@@ -540,10 +540,12 @@ class ActuarialDowntimeCalibrator:
     @staticmethod
     def _extract_currency(organization_profile: Mapping[str, Any]) -> str:
         """Extracts ISO 4217 currency code from profile telemetry."""
+        from assessment_engine.domain.actuarial_scale_calibrator import DEFAULT_BASE_NUMERAIRE
+
         currency = (
             organization_profile.get("currency_code")
             or organization_profile.get("financial_metrics", {}).get("currency_code")
-            or "EUR"
+            or DEFAULT_BASE_NUMERAIRE
         )
         return str(currency).upper().strip()
 

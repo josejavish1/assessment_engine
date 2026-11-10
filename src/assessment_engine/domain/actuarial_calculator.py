@@ -119,3 +119,32 @@ class ActuarialEngine:
         if ale >= thresholds.get("ELEVATED", Decimal("3000.00")):
             return "ELEVATED"
         return "MODERATE"
+
+
+def calculate_severity_weighted_sle(
+    rto_hours: float,
+    effective_rate: float,
+    severity: str,
+    is_spof: bool = False,
+) -> tuple[float, float, float, float]:
+    """Calculates Single Loss Expectancy (SLE) decomposed into operational, replacement, and secondary components.
+
+    Scale-invariant, pure function mapping recovery time and hourly downtime burn into:
+    (sle_total, alpha_blast_radius, replacement_cost, secondary_cost).
+    """
+    is_crit = is_spof or severity == "CRITICAL"
+    if is_crit:
+        alpha = 0.85
+        repl = effective_rate * 2.0
+        sec = effective_rate * 3.5
+    elif severity == "HIGH":
+        alpha = 0.55
+        repl = effective_rate * 0.75
+        sec = effective_rate * 1.5
+    else:
+        alpha = 0.25
+        repl = 0.0
+        sec = effective_rate * 0.5
+
+    sle = (rto_hours * alpha * effective_rate) + repl + sec
+    return sle, alpha, repl, sec

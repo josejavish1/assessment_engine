@@ -1,0 +1,786 @@
+{
+  "T1.P1.K1.PR1": {
+    "en": "What is the certified autonomous runtime of critical facility loads under complete utility power loss?",
+    "es": "¿Cuál es la autonomía certificada de las cargas críticas del centro de datos ante una pérdida total de suministro eléctrico?"
+  },
+  "T1.P1.K2.PR1": {
+    "en": "How frequently and under what operational methodology are automated transfer switches (ATS) and emergency generators tested under full load?",
+    "es": "¿Con qué frecuencia y bajo qué metodología operativa se prueban los interruptores de transferencia automática (ATS) y generadores bajo carga real?"
+  },
+  "T1.P1.K3.PR1": {
+    "en": "How are single points of failure (SPOFs) in dual-cord electrical distribution paths identified and mitigated across server racks?",
+    "es": "¿Cómo se identifican y mitigan los puntos únicos de fallo (SPOF) en las líneas de distribución eléctrica de doble acometida hacia los racks?"
+  },
+  "T1.P1.K4.PR1": {
+    "en": "How is electrical load capacity monitored against provisioned thresholds to prevent circuit overload and manage expansion headroom?",
+    "es": "¿Cómo se monitoriza la capacidad eléctrica frente a umbrales para prevenir sobrecargas y gestionar el margen de crecimiento?"
+  },
+  "T1.P2.K1.PR1": {
+    "en": "How are ambient temperature and relative humidity monitored and controlled in accordance with ASHRAE TC 9.9 standards?",
+    "es": "¿Cómo se monitorizan y controlan la temperatura ambiente y la humedad relativa de acuerdo con los estándares ASHRAE TC 9.9?"
+  },
+  "T1.P2.K2.PR1": {
+    "en": "How are airflow containment, cold/hot aisle layouts, and thermal hotspots managed across high-density server enclosures?",
+    "es": "¿Cómo se gestiona el confinamiento de pasillos fríos/calientes y los puntos calientes térmicos en racks de alta densidad?"
+  },
+  "T1.P2.K3.PR1": {
+    "en": "What level of cooling redundancy (N+1 or 2N) is maintained, and can chillers/CRAC units be serviced concurrently without thermal degradation?",
+    "es": "¿Qué nivel de redundancia de climatización (N+1 o 2N) se mantiene, y pueden mantenerse las unidades CRAC/enfriadoras sin degradación térmica?"
+  },
+  "T1.P3.K1.PR1": {
+    "en": "What multi-layered physical security controls and biometric validation mechanisms govern ingress to critical whitespace and caged suites?",
+    "es": "¿Qué controles de seguridad física multicapa y autenticación biométrica gobiernan el acceso a salas técnicas y jaulas críticas?"
+  },
+  "T1.P3.K2.PR1": {
+    "en": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?",
+    "es": "¿Cómo se gestionan y auditan las visitas de proveedores externos, registros de acceso y permisos de trabajo para cambios en instalaciones?"
+  },
+  "T1.P3.K3.PR1": {
+    "en": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?",
+    "es": "¿Cuál es la cobertura, período de retención e inalterabilidad de los registros de videovigilancia CCTV y accesos físicos biométricos?"
+  },
+  "T1.P4.K1.PR1": {
+    "en": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?",
+    "es": "¿Cómo se despliegan y prueban los sistemas de detección precoz de humos por aspiración (VESDA) y barreras cortafuegos?"
+  },
+  "T1.P4.K2.PR1": {
+    "en": "What gaseous clean-agent suppression systems (e.g. FM-200, Novec 1230, Inergen) protectWhitespace, and how frequently are room integrity tests conducted?",
+    "es": "¿Qué sistemas de extinción por gas limpio (FM-200, Novec 1230, Inergen) protegen las salas, y con qué frecuencia se prueba la estanqueidad?"
+  },
+  "T1.P4.K3.PR1": {
+    "en": "What water-detection rope telemetry, flood mitigation barriers, and particulate contaminant controls protect technical rooms?",
+    "es": "¿Qué telemetría de detección de fugas de agua y barreras contra inundaciones protegen las salas técnicas?"
+  },
+  "T1.P5.K1.PR1": {
+    "en": "How does the building management system (BMS) and DCIM platform monitor facility sensors and alert on anomalous conditions 24/7?",
+    "es": "¿Cómo monitoriza el sistema de gestión de edificios (BMS/DCIM) los sensores de las instalaciones y genera alertas anómalas 24/7?"
+  },
+  "T1.P5.K2.PR1": {
+    "en": "What preventive maintenance cadences, vendor response SLAs, and on-site spare part inventories protect critical power and cooling gear?",
+    "es": "¿Qué programas de mantenimiento preventivo, SLAs de respuesta de proveedores y stock de repuestos in situ protegen los equipos críticos?"
+  },
+  "T1.P5.K3.PR1": {
+    "en": "How is long-term capacity utilization across floor space, power circuits, and cooling loops modeled to anticipate equipment end-of-life?",
+    "es": "¿Cómo se modela la capacidad a largo plazo de espacio, potencia y climatización para anticipar el fin de vida del equipamiento?"
+  },
+  "T10.P1.K1.PR1": {
+    "en": "How are standard operating procedures (SOPs) and runbooks governed and validated across core processing platforms?",
+    "es": "How are standard operating procedures (SOPs) and runbooks governed and validated across core processing platforms?"
+  },
+  "T10.P1.K2.PR1": {
+    "en": "What is the historical MTTR for critical production outages, and how are escalation paths structured?",
+    "es": "What is the historical MTTR for critical production outages, and how are escalation paths structured?"
+  },
+  "T10.P1.K3.PR1": {
+    "en": "How are recurring transaction processing incidents tracked, root-caused, and permanently mitigated?",
+    "es": "How are recurring transaction processing incidents tracked, root-caused, and permanently mitigated?"
+  },
+  "T10.P1.K4.PR1": {
+    "en": "How is single-engineer dependency (key-person risk) mitigated through cross-training and documented architecture?",
+    "es": "How is single-engineer dependency (key-person risk) mitigated through cross-training and documented architecture?"
+  },
+  "T10.P2.K1.PR1": {
+    "en": "How are change requests, impact models, and peer approvals audited prior to deployment in core environments?",
+    "es": "How are change requests, impact models, and peer approvals audited prior to deployment in core environments?"
+  },
+  "T10.P2.K2.PR1": {
+    "en": "What is the production change success rate, and what percentage of incidents trace back to deployment failures?",
+    "es": "What is the production change success rate, and what percentage of incidents trace back to deployment failures?"
+  },
+  "T10.P2.K3.PR1": {
+    "en": "How are automated rollbacks and version regression plans tested and executed during failed release windows?",
+    "es": "How are automated rollbacks and version regression plans tested and executed during failed release windows?"
+  },
+  "T10.P2.K4.PR1": {
+    "en": "How is configuration drift prevented between staging, pre-production, and production core environments?",
+    "es": "How is configuration drift prevented between staging, pre-production, and production core environments?"
+  },
+  "T10.P3.K1.PR1": {
+    "en": "How are nightly batch processing windows, settlement deadlines, and dependency graphs monitored against SLA breaches?",
+    "es": "How are nightly batch processing windows, settlement deadlines, and dependency graphs monitored against SLA breaches?"
+  },
+  "T10.P3.K2.PR1": {
+    "en": "How are compute, memory, and database headroom forecasted to absorb peak transaction surges?",
+    "es": "How are compute, memory, and database headroom forecasted to absorb peak transaction surges?"
+  },
+  "T10.P3.K3.PR1": {
+    "en": "What real-time monitoring and profiling tools detect query latency, lock contention, and message queue bottlenecks?",
+    "es": "What real-time monitoring and profiling tools detect query latency, lock contention, and message queue bottlenecks?"
+  },
+  "T10.P3.K4.PR1": {
+    "en": "How are transaction unit costs, database licensing, and compute consumption optimized to prevent financial waste?",
+    "es": "How are transaction unit costs, database licensing, and compute consumption optimized to prevent financial waste?"
+  },
+  "T10.P4.K1.PR1": {
+    "en": "How are integration contracts, REST/gRPC/event schemas, and backward-compatibility versioning enforced?",
+    "es": "How are integration contracts, REST/gRPC/event schemas, and backward-compatibility versioning enforced?"
+  },
+  "T10.P4.K2.PR1": {
+    "en": "What dead-letter queues, idempotent consumers, and circuit breakers protect core systems from downstream partner failures?",
+    "es": "What dead-letter queues, idempotent consumers, and circuit breakers protect core systems from downstream partner failures?"
+  },
+  "T10.P4.K3.PR1": {
+    "en": "How are end-to-end transaction traces correlated across modern microservices and legacy transactional engines?",
+    "es": "How are end-to-end transaction traces correlated across modern microservices and legacy transactional engines?"
+  },
+  "T10.P4.K4.PR1": {
+    "en": "How are modern identity protocols (OAuth 2.0/OIDC) and privileged credential rotation integrated into core platforms?",
+    "es": "How are modern identity protocols (OAuth 2.0/OIDC) and privileged credential rotation integrated into core platforms?"
+  },
+  "T10.P5.K1.PR1": {
+    "en": "How are third-party software end-of-support deadlines, unsupported operating systems, and technical debt backlogs tracked?",
+    "es": "How are third-party software end-of-support deadlines, unsupported operating systems, and technical debt backlogs tracked?"
+  },
+  "T10.P5.K2.PR1": {
+    "en": "What structured architecture roadmap governs the modular modernization or replacement of monolithic core services?",
+    "es": "What structured architecture roadmap governs the modular modernization or replacement of monolithic core services?"
+  },
+  "T10.P5.K3.PR1": {
+    "en": "How are talent scarcity, specialized legacy language competencies, and knowledge succession managed?",
+    "es": "How are talent scarcity, specialized legacy language competencies, and knowledge succession managed?"
+  },
+  "T10.P5.K4.PR1": {
+    "en": "How are core enterprise software licenses, core-based pricing models, and maintenance contracts audited and optimized?",
+    "es": "How are core enterprise software licenses, core-based pricing models, and maintenance contracts audited and optimized?"
+  },
+  "T2.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Compute Estate Standardization (Clusters, Hosts & Hardware Baselines) across the operational environment?",
+    "es": "How does the enterprise govern and measure Compute Estate Standardization (Clusters, Hosts & Hardware Baselines) across the operational environment?"
+  },
+  "T2.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Compute Lifecycle Management (Patching, Firmware & OS Upgrades) across the operational environment?",
+    "es": "How does the enterprise govern and measure Compute Lifecycle Management (Patching, Firmware & OS Upgrades) across the operational environment?"
+  },
+  "T2.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Capacity & Performance Management (CPU/RAM Overcommit & Saturation) across the operational environment?",
+    "es": "How does the enterprise govern and measure Capacity & Performance Management (CPU/RAM Overcommit & Saturation) across the operational environment?"
+  },
+  "T2.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Compute Platform Availability (Host HA & Concurrent Maintainability) across the operational environment?",
+    "es": "How does the enterprise govern and measure Compute Platform Availability (Host HA & Concurrent Maintainability) across the operational environment?"
+  },
+  "T2.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes) across the operational environment?",
+    "es": "How does the enterprise govern and measure Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes) across the operational environment?"
+  },
+  "T2.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Cluster Lifecycle Management (Version Upgrades & Deprecations) across the operational environment?",
+    "es": "How does the enterprise govern and measure Cluster Lifecycle Management (Version Upgrades & Deprecations) across the operational environment?"
+  },
+  "T2.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies) across the operational environment?",
+    "es": "How does the enterprise govern and measure Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies) across the operational environment?"
+  },
+  "T2.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage) across the operational environment?",
+    "es": "How does the enterprise govern and measure Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage) across the operational environment?"
+  },
+  "T2.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Cloud Landing Zone Architecture & Multi-Account Structure across the operational environment?",
+    "es": "How does the enterprise govern and measure Cloud Landing Zone Architecture & Multi-Account Structure across the operational environment?"
+  },
+  "T2.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code) across the operational environment?",
+    "es": "How does the enterprise govern and measure Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code) across the operational environment?"
+  },
+  "T2.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Hybrid Deployment Patterns & Cross-Cloud Interoperability across the operational environment?",
+    "es": "How does the enterprise govern and measure Hybrid Deployment Patterns & Cross-Cloud Interoperability across the operational environment?"
+  },
+  "T2.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Cloud Consumption Governance (Tagging, Showback & Budget Guardrails) across the operational environment?",
+    "es": "How does the enterprise govern and measure Cloud Consumption Governance (Tagging, Showback & Budget Guardrails) across the operational environment?"
+  },
+  "T2.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Infrastructure as Code (IaC) Provisioning Coverage across the operational environment?",
+    "es": "How does the enterprise govern and measure Infrastructure as Code (IaC) Provisioning Coverage across the operational environment?"
+  },
+  "T2.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Service Catalog Maturity & Self-Service Provisioning Lead Time across the operational environment?",
+    "es": "How does the enterprise govern and measure Service Catalog Maturity & Self-Service Provisioning Lead Time across the operational environment?"
+  },
+  "T2.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Golden Image Pipeline & Standard Baseline Configuration across the operational environment?",
+    "es": "How does the enterprise govern and measure Golden Image Pipeline & Standard Baseline Configuration across the operational environment?"
+  },
+  "T2.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Platform Engineering Operating Model (Platform as a Product) across the operational environment?",
+    "es": "How does the enterprise govern and measure Platform Engineering Operating Model (Platform as a Product) across the operational environment?"
+  },
+  "T2.P4.K5.PR1": {
+    "en": "How does the enterprise govern and measure Developer Experience (DevEx) & Internal Platform Adoption across the operational environment?",
+    "es": "How does the enterprise govern and measure Developer Experience (DevEx) & Internal Platform Adoption across the operational environment?"
+  },
+  "T2.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Platform Observability Coverage (Metrics, Logs, Traces & Alerts) across the operational environment?",
+    "es": "How does the enterprise govern and measure Platform Observability Coverage (Metrics, Logs, Traces & Alerts) across the operational environment?"
+  },
+  "T2.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Platform Service Level Objectives (SLOs) & Error Budget Tracking across the operational environment?",
+    "es": "How does the enterprise govern and measure Platform Service Level Objectives (SLOs) & Error Budget Tracking across the operational environment?"
+  },
+  "T2.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Platform Incident Response, Blameless Post-Mortems & Runbooks across the operational environment?",
+    "es": "How does the enterprise govern and measure Platform Incident Response, Blameless Post-Mortems & Runbooks across the operational environment?"
+  },
+  "T2.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure Predictive Capacity Forecasting & Proactive Anomaly Prevention across the operational environment?",
+    "es": "How does the enterprise govern and measure Predictive Capacity Forecasting & Proactive Anomaly Prevention across the operational environment?"
+  },
+  "T3.P1.K1.PR1": {
+    "en": "How are core switching fabrics and distribution layers designed to eliminate single points of failure across primary facilities?",
+    "es": "How are core switching fabrics and distribution layers designed to eliminate single points of failure across primary facilities?"
+  },
+  "T3.P1.K2.PR1": {
+    "en": "What level of macro and micro-segmentation isolates workloads and traffic zones across local switching fabrics?",
+    "es": "What level of macro and micro-segmentation isolates workloads and traffic zones across local switching fabrics?"
+  },
+  "T3.P1.K3.PR1": {
+    "en": "How are switch configurations, firmware baselines, and configuration drift managed across network hardware?",
+    "es": "How are switch configurations, firmware baselines, and configuration drift managed across network hardware?"
+  },
+  "T3.P1.K4.PR1": {
+    "en": "How are port capacity, oversubscription ratios, and packet buffer latency monitored across core switches?",
+    "es": "How are port capacity, oversubscription ratios, and packet buffer latency monitored across core switches?"
+  },
+  "T3.P2.K1.PR1": {
+    "en": "What carrier diversity, dual-homing, and automated failover mechanisms protect regional branch and facility connections?",
+    "es": "What carrier diversity, dual-homing, and automated failover mechanisms protect regional branch and facility connections?"
+  },
+  "T3.P2.K2.PR1": {
+    "en": "How is network latency, packet loss, and jitter measured and enforced for critical application transport?",
+    "es": "How is network latency, packet loss, and jitter measured and enforced for critical application transport?"
+  },
+  "T3.P2.K3.PR1": {
+    "en": "How does SD-WAN dynamic path selection prioritize mission-critical business transactions over bulk traffic?",
+    "es": "How does SD-WAN dynamic path selection prioritize mission-critical business transactions over bulk traffic?"
+  },
+  "T3.P2.K4.PR1": {
+    "en": "How are telecommunication provider SLAs, MTTR commitments, and credit penalties monitored and audited?",
+    "es": "How are telecommunication provider SLAs, MTTR commitments, and credit penalties monitored and audited?"
+  },
+  "T3.P3.K1.PR1": {
+    "en": "What physical conduit separation, fiber path diversity, and right-of-way independence protect critical DCI circuits?",
+    "es": "What physical conduit separation, fiber path diversity, and right-of-way independence protect critical DCI circuits?"
+  },
+  "T3.P3.K2.PR1": {
+    "en": "How are sub-millisecond round-trip times and optical signal levels monitored across high-speed interconnect links?",
+    "es": "How are sub-millisecond round-trip times and optical signal levels monitored across high-speed interconnect links?"
+  },
+  "T3.P3.K3.PR1": {
+    "en": "How frequently are unannounced optical link cuts and BGP route convergence drills executed under production load?",
+    "es": "How frequently are unannounced optical link cuts and BGP route convergence drills executed under production load?"
+  },
+  "T3.P4.K1.PR1": {
+    "en": "How are AWS Direct Connect, Azure ExpressRoute, or Transit Gateways segmented between production and non-production?",
+    "es": "How are AWS Direct Connect, Azure ExpressRoute, or Transit Gateways segmented between production and non-production?"
+  },
+  "T3.P4.K2.PR1": {
+    "en": "What automated BFD-backed route failover protects dedicated cloud interconnects from cross-region outages?",
+    "es": "What automated BFD-backed route failover protects dedicated cloud interconnects from cross-region outages?"
+  },
+  "T3.P4.K3.PR1": {
+    "en": "How do perimeter ingress load balancers, DDoS mitigation, and API gateways protect public endpoints?",
+    "es": "How do perimeter ingress load balancers, DDoS mitigation, and API gateways protect public endpoints?"
+  },
+  "T3.P5.K1.PR1": {
+    "en": "What unified observability platform aggregates flow telemetry, interface drops, and synthetic network latency probes 24/7?",
+    "es": "What unified observability platform aggregates flow telemetry, interface drops, and synthetic network latency probes 24/7?"
+  },
+  "T3.P5.K2.PR1": {
+    "en": "How are network configuration changes governed through version control, CI/CD pipelines, and automated rollback triggers?",
+    "es": "How are network configuration changes governed through version control, CI/CD pipelines, and automated rollback triggers?"
+  },
+  "T3.P5.K3.PR1": {
+    "en": "How does a single source of truth (e.g. NetBox) drive automated configuration generation and device provisioning?",
+    "es": "How does a single source of truth (e.g. NetBox) drive automated configuration generation and device provisioning?"
+  },
+  "T3.P5.K4.PR1": {
+    "en": "What automated triage runbooks, root-cause post-mortems, and mean-time-to-repair (MTTR) metrics govern network incidents?",
+    "es": "What automated triage runbooks, root-cause post-mortems, and mean-time-to-repair (MTTR) metrics govern network incidents?"
+  },
+  "T4.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Storage Service Catalog & Tiered Service Level Agreements (SLAs) across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Service Catalog & Tiered Service Level Agreements (SLAs) across the operational environment?"
+  },
+  "T4.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Storage Protocol Governance (Block, File & Object Alignment) across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Protocol Governance (Block, File & Object Alignment) across the operational environment?"
+  },
+  "T4.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Storage Fabric Resiliency & High-Availability Architecture across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Fabric Resiliency & High-Availability Architecture across the operational environment?"
+  },
+  "T4.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Provisioning Standardization (Naming, Quotas & Allocation Templates) across the operational environment?",
+    "es": "How does the enterprise govern and measure Provisioning Standardization (Naming, Quotas & Allocation Templates) across the operational environment?"
+  },
+  "T4.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Storage Performance SLA Compliance (IOPS, Latency & Throughput) across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Performance SLA Compliance (IOPS, Latency & Throughput) across the operational environment?"
+  },
+  "T4.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Capacity Utilization Governance (Allocated vs Usable Headroom) across the operational environment?",
+    "es": "How does the enterprise govern and measure Capacity Utilization Governance (Allocated vs Usable Headroom) across the operational environment?"
+  },
+  "T4.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Storage Capacity Forecasting & Proactive Growth Modeling across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Capacity Forecasting & Proactive Growth Modeling across the operational environment?"
+  },
+  "T4.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh) across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh) across the operational environment?"
+  },
+  "T4.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Snapshot Policy Governance & Application Consistency Verification across the operational environment?",
+    "es": "How does the enterprise govern and measure Snapshot Policy Governance & Application Consistency Verification across the operational environment?"
+  },
+  "T4.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Storage Replication Management (RPO, Sync/Async SLA Testing) across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Replication Management (RPO, Sync/Async SLA Testing) across the operational environment?"
+  },
+  "T4.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Data Efficiency Optimization (Deduplication, Compression & Tiering) across the operational environment?",
+    "es": "How does the enterprise govern and measure Data Efficiency Optimization (Deduplication, Compression & Tiering) across the operational environment?"
+  },
+  "T4.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation across the operational environment?"
+  },
+  "T4.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Storage Access Control & Multi-Tenancy Isolation across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Access Control & Multi-Tenancy Isolation across the operational environment?"
+  },
+  "T4.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Data Encryption at Rest & Key Management Integration across the operational environment?",
+    "es": "How does the enterprise govern and measure Data Encryption at Rest & Key Management Integration across the operational environment?"
+  },
+  "T4.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Storage Audit Logging, Tamper-Resistance & Access Tracking across the operational environment?",
+    "es": "How does the enterprise govern and measure Storage Audit Logging, Tamper-Resistance & Access Tracking across the operational environment?"
+  },
+  "T4.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Hypervisor Storage Integration (Datastores, Multipathing & VAAI) across the operational environment?",
+    "es": "How does the enterprise govern and measure Hypervisor Storage Integration (Datastores, Multipathing & VAAI) across the operational environment?"
+  },
+  "T4.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning) across the operational environment?",
+    "es": "How does the enterprise govern and measure Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning) across the operational environment?"
+  },
+  "T4.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Automated Storage Provisioning & Self-Service Workflows across the operational environment?",
+    "es": "How does the enterprise govern and measure Automated Storage Provisioning & Self-Service Workflows across the operational environment?"
+  },
+  "T4.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure Cross-Domain Storage Operations & Cross-Functional Runbooks across the operational environment?",
+    "es": "How does the enterprise govern and measure Cross-Domain Storage Operations & Cross-Functional Runbooks across the operational environment?"
+  },
+  "T5.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Service RTO/RPO Definition & Business Impact Analysis (BIA) across the operational environment?",
+    "es": "How does the enterprise govern and measure Service RTO/RPO Definition & Business Impact Analysis (BIA) across the operational environment?"
+  },
+  "T5.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Continuity Scope & Critical Third-Party Dependency Mapping across the operational environment?",
+    "es": "How does the enterprise govern and measure Continuity Scope & Critical Third-Party Dependency Mapping across the operational environment?"
+  },
+  "T5.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Continuity Operating Model (RACI, Ownership & Crisis Escalation) across the operational environment?",
+    "es": "How does the enterprise govern and measure Continuity Operating Model (RACI, Ownership & Crisis Escalation) across the operational environment?"
+  },
+  "T5.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Continuity Testing Program & Continuous Drills Verification across the operational environment?",
+    "es": "How does the enterprise govern and measure Continuity Testing Program & Continuous Drills Verification across the operational environment?"
+  },
+  "T5.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Backup Coverage Across Mission-Critical Production Systems across the operational environment?",
+    "es": "How does the enterprise govern and measure Backup Coverage Across Mission-Critical Production Systems across the operational environment?"
+  },
+  "T5.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Backup Job Success Rate, SLA Adherence & Failure Remediation across the operational environment?",
+    "es": "How does the enterprise govern and measure Backup Job Success Rate, SLA Adherence & Failure Remediation across the operational environment?"
+  },
+  "T5.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Scheduled Restore Drill Cadence & Data Verification Evidence across the operational environment?",
+    "es": "How does the enterprise govern and measure Scheduled Restore Drill Cadence & Data Verification Evidence across the operational environment?"
+  },
+  "T5.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure Achievable Production Recovery Point Objective (RPO) Compliance across the operational environment?",
+    "es": "How does the enterprise govern and measure Achievable Production Recovery Point Objective (RPO) Compliance across the operational environment?"
+  },
+  "T5.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Disaster Recovery Scope, Tiering & Automated Workload Priority across the operational environment?",
+    "es": "How does the enterprise govern and measure Disaster Recovery Scope, Tiering & Automated Workload Priority across the operational environment?"
+  },
+  "T5.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Empirical DR Drill RTO/RPO Achievement (Measured Evidence) across the operational environment?",
+    "es": "How does the enterprise govern and measure Empirical DR Drill RTO/RPO Achievement (Measured Evidence) across the operational environment?"
+  },
+  "T5.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Automated DR Orchestration, Runbooks & Repeatable Failover across the operational environment?",
+    "es": "How does the enterprise govern and measure Automated DR Orchestration, Runbooks & Repeatable Failover across the operational environment?"
+  },
+  "T5.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Secondary DR Site Readiness (Capacity, Licensing & Drift Control) across the operational environment?",
+    "es": "How does the enterprise govern and measure Secondary DR Site Readiness (Capacity, Licensing & Drift Control) across the operational environment?"
+  },
+  "T5.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation) across the operational environment?",
+    "es": "How does the enterprise govern and measure Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation) across the operational environment?"
+  },
+  "T5.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Decoupled Cyber Vault Security & Out-of-Band Administrative Access across the operational environment?",
+    "es": "How does the enterprise govern and measure Decoupled Cyber Vault Security & Out-of-Band Administrative Access across the operational environment?"
+  },
+  "T5.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Clean-Room Rebuild Capability & Isolated Integrity Validation across the operational environment?",
+    "es": "How does the enterprise govern and measure Clean-Room Rebuild Capability & Isolated Integrity Validation across the operational environment?"
+  },
+  "T5.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Ransomware Simulation Drills & Rapid Reconstruction Exercises across the operational environment?",
+    "es": "How does the enterprise govern and measure Ransomware Simulation Drills & Rapid Reconstruction Exercises across the operational environment?"
+  },
+  "T5.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Single Points of Failure Elimination Across Critical Services across the operational environment?",
+    "es": "How does the enterprise govern and measure Single Points of Failure Elimination Across Critical Services across the operational environment?"
+  },
+  "T5.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Controlled Active-Active Failover Verification (Production HA) across the operational environment?",
+    "es": "How does the enterprise govern and measure Controlled Active-Active Failover Verification (Production HA) across the operational environment?"
+  },
+  "T5.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction across the operational environment?",
+    "es": "How does the enterprise govern and measure Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction across the operational environment?"
+  },
+  "T6.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Phishing-Resistant MFA Coverage Across Critical Infrastructure across the operational environment?",
+    "es": "How does the enterprise govern and measure Phishing-Resistant MFA Coverage Across Critical Infrastructure across the operational environment?"
+  },
+  "T6.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance across the operational environment?"
+  },
+  "T6.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal across the operational environment?",
+    "es": "How does the enterprise govern and measure Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal across the operational environment?"
+  },
+  "T6.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access) across the operational environment?",
+    "es": "How does the enterprise govern and measure Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access) across the operational environment?"
+  },
+  "T6.P1.K5.PR1": {
+    "en": "How does the enterprise govern and measure Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation) across the operational environment?",
+    "es": "How does the enterprise govern and measure Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation) across the operational environment?"
+  },
+  "T6.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure PAM Enclosure Coverage Across Administrative Accounts across the operational environment?",
+    "es": "How does the enterprise govern and measure PAM Enclosure Coverage Across Administrative Accounts across the operational environment?"
+  },
+  "T6.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Automated Secrets Vaulting, Dynamic Credential Generation & Rotation across the operational environment?",
+    "es": "How does the enterprise govern and measure Automated Secrets Vaulting, Dynamic Credential Generation & Rotation across the operational environment?"
+  },
+  "T6.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Privileged Session Recording, Keystroke Logging & Audit Traceability across the operational environment?",
+    "es": "How does the enterprise govern and measure Privileged Session Recording, Keystroke Logging & Audit Traceability across the operational environment?"
+  },
+  "T6.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures across the operational environment?",
+    "es": "How does the enterprise govern and measure Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures across the operational environment?"
+  },
+  "T6.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure CIS Benchmark Hardening Baselines Deployment by Asset Class across the operational environment?",
+    "es": "How does the enterprise govern and measure CIS Benchmark Hardening Baselines Deployment by Asset Class across the operational environment?"
+  },
+  "T6.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Continuous Compliance Index & Automated Baseline Auditing across the operational environment?",
+    "es": "How does the enterprise govern and measure Continuous Compliance Index & Automated Baseline Auditing across the operational environment?"
+  },
+  "T6.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Unauthorized Configuration Drift Detection & Automated Remediation across the operational environment?",
+    "es": "How does the enterprise govern and measure Unauthorized Configuration Drift Detection & Automated Remediation across the operational environment?"
+  },
+  "T6.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals) across the operational environment?",
+    "es": "How does the enterprise govern and measure Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals) across the operational environment?"
+  },
+  "T6.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Comprehensive Asset Inventory & Automated Vulnerability Scanning across the operational environment?",
+    "es": "How does the enterprise govern and measure Comprehensive Asset Inventory & Automated Vulnerability Scanning across the operational environment?"
+  },
+  "T6.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure) across the operational environment?",
+    "es": "How does the enterprise govern and measure Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure) across the operational environment?"
+  },
+  "T6.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Vulnerability Backlog Remediation Rate & Aging Metrics across the operational environment?",
+    "es": "How does the enterprise govern and measure Vulnerability Backlog Remediation Rate & Aging Metrics across the operational environment?"
+  },
+  "T6.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Compensating Control Governance & Virtual Patching SLAs across the operational environment?",
+    "es": "How does the enterprise govern and measure Compensating Control Governance & Virtual Patching SLAs across the operational environment?"
+  },
+  "T6.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Workload Microsegmentation & East-West Traffic Filtering across the operational environment?",
+    "es": "How does the enterprise govern and measure Workload Microsegmentation & East-West Traffic Filtering across the operational environment?"
+  },
+  "T6.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes) across the operational environment?",
+    "es": "How does the enterprise govern and measure Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes) across the operational environment?"
+  },
+  "T6.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Centralized Security Telemetry Ingestion (SIEM / SOC Integration) across the operational environment?",
+    "es": "How does the enterprise govern and measure Centralized Security Telemetry Ingestion (SIEM / SOC Integration) across the operational environment?"
+  },
+  "T6.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure Audit Trail Retention, Immutability & Forensic Integrity Verification across the operational environment?",
+    "es": "How does the enterprise govern and measure Audit Trail Retention, Immutability & Forensic Integrity Verification across the operational environment?"
+  },
+  "T7.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Service Catalog Completeness, Classification & Service Ownership across the operational environment?",
+    "es": "How does the enterprise govern and measure Service Catalog Completeness, Classification & Service Ownership across the operational environment?"
+  },
+  "T7.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Service Level Agreement (SLA/SLO) Adherence & Response Metrics across the operational environment?",
+    "es": "How does the enterprise govern and measure Service Level Agreement (SLA/SLO) Adherence & Response Metrics across the operational environment?"
+  },
+  "T7.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Structured Service Review Cadence & Executive Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure Structured Service Review Cadence & Executive Governance across the operational environment?"
+  },
+  "T7.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Operating Model Accountability & Operational RACI Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure Operating Model Accountability & Operational RACI Governance across the operational environment?"
+  },
+  "T7.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Mean Time to Restore (MTTR) by Service Criticality Tier across the operational environment?",
+    "es": "How does the enterprise govern and measure Mean Time to Restore (MTTR) by Service Criticality Tier across the operational environment?"
+  },
+  "T7.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation across the operational environment?",
+    "es": "How does the enterprise govern and measure First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation across the operational environment?"
+  },
+  "T7.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews across the operational environment?",
+    "es": "How does the enterprise govern and measure Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews across the operational environment?"
+  },
+  "T7.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure Incident Backlog Burndown Rate & Aging Ticket Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure Incident Backlog Burndown Rate & Aging Ticket Governance across the operational environment?"
+  },
+  "T7.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Change Success Rate (CSR) & Incident Induction Rate across the operational environment?",
+    "es": "How does the enterprise govern and measure Change Success Rate (CSR) & Incident Induction Rate across the operational environment?"
+  },
+  "T7.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Change Risk Assessment Automation (Standard vs Emergency Approval) across the operational environment?",
+    "es": "How does the enterprise govern and measure Change Risk Assessment Automation (Standard vs Emergency Approval) across the operational environment?"
+  },
+  "T7.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure CMDB Accuracy, Automated Discovery & Service Dependency Mapping across the operational environment?",
+    "es": "How does the enterprise govern and measure CMDB Accuracy, Automated Discovery & Service Dependency Mapping across the operational environment?"
+  },
+  "T7.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Emergency Change Control Governance & Post-Change Justification across the operational environment?",
+    "es": "How does the enterprise govern and measure Emergency Change Control Governance & Post-Change Justification across the operational environment?"
+  },
+  "T7.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Repeat Incident Suppression Rate & Incident Recurrence Trends across the operational environment?",
+    "es": "How does the enterprise govern and measure Repeat Incident Suppression Rate & Incident Recurrence Trends across the operational environment?"
+  },
+  "T7.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems across the operational environment?",
+    "es": "How does the enterprise govern and measure Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems across the operational environment?"
+  },
+  "T7.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Problem Backlog Execution Rate & Corrective Action Closure across the operational environment?",
+    "es": "How does the enterprise govern and measure Problem Backlog Execution Rate & Corrective Action Closure across the operational environment?"
+  },
+  "T7.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction across the operational environment?",
+    "es": "How does the enterprise govern and measure Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction across the operational environment?"
+  },
+  "T7.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces) across the operational environment?",
+    "es": "How does the enterprise govern and measure Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces) across the operational environment?"
+  },
+  "T7.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Event Noise Reduction, Alert De-Duplication & Fatigue Prevention across the operational environment?",
+    "es": "How does the enterprise govern and measure Event Noise Reduction, Alert De-Duplication & Fatigue Prevention across the operational environment?"
+  },
+  "T7.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Automated Operational Runbooks & Self-Healing Remediation across the operational environment?",
+    "es": "How does the enterprise govern and measure Automated Operational Runbooks & Self-Healing Remediation across the operational environment?"
+  },
+  "T7.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure Proactive Incident Detection Prior to End-User Impact across the operational environment?",
+    "es": "How does the enterprise govern and measure Proactive Incident Detection Prior to End-User Impact across the operational environment?"
+  },
+  "T7.P5.K5.PR1": {
+    "en": "How does the enterprise govern and measure End-to-End Event Correlation Across Infrastructure & Business Services across the operational environment?",
+    "es": "How does the enterprise govern and measure End-to-End Event Correlation Across Infrastructure & Business Services across the operational environment?"
+  },
+  "T8.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Target Architecture (To-Be) Roadmap Governance & Budget Allocation across the operational environment?",
+    "es": "How does the enterprise govern and measure Target Architecture (To-Be) Roadmap Governance & Budget Allocation across the operational environment?"
+  },
+  "T8.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives) across the operational environment?",
+    "es": "How does the enterprise govern and measure IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives) across the operational environment?"
+  },
+  "T8.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Technology Obsolescence & Proactive Lifecycle Refresh Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure Technology Obsolescence & Proactive Lifecycle Refresh Governance across the operational environment?"
+  },
+  "T8.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Architecture Review Board (ARB) & Engineering Guardrails Enforcement across the operational environment?",
+    "es": "How does the enterprise govern and measure Architecture Review Board (ARB) & Engineering Guardrails Enforcement across the operational environment?"
+  },
+  "T8.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Adaptive Portfolio Governance (Value-Driven Investment Prioritization) across the operational environment?",
+    "es": "How does the enterprise govern and measure Adaptive Portfolio Governance (Value-Driven Investment Prioritization) across the operational environment?"
+  },
+  "T8.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?",
+    "es": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?"
+  },
+  "T8.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk) across the operational environment?",
+    "es": "How does the enterprise govern and measure Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk) across the operational environment?"
+  },
+  "T8.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure IT Demand Management, Sizing & Capacity Allocation Governance across the operational environment?",
+    "es": "How does the enterprise govern and measure IT Demand Management, Sizing & Capacity Allocation Governance across the operational environment?"
+  },
+  "T8.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Enterprise Technology Risk Register (Service-Tiered Risk Scoring) across the operational environment?",
+    "es": "How does the enterprise govern and measure Enterprise Technology Risk Register (Service-Tiered Risk Scoring) across the operational environment?"
+  },
+  "T8.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Risk Mitigation Program Execution, Tracking & Verified Closure across the operational environment?",
+    "es": "How does the enterprise govern and measure Risk Mitigation Program Execution, Tracking & Verified Closure across the operational environment?"
+  },
+  "T8.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Continuous Regulatory Compliance & Internal Control Attestation across the operational environment?",
+    "es": "How does the enterprise govern and measure Continuous Regulatory Compliance & Internal Control Attestation across the operational environment?"
+  },
+  "T8.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Critical Dependency Management (Concentration Risk & Single Points of Dependency) across the operational environment?",
+    "es": "How does the enterprise govern and measure Critical Dependency Management (Concentration Risk & Single Points of Dependency) across the operational environment?"
+  },
+  "T8.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics across the operational environment?",
+    "es": "How does the enterprise govern and measure Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics across the operational environment?"
+  },
+  "T8.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Cloud Resource Optimization (Rightsizing & Idle Asset Elimination) across the operational environment?",
+    "es": "How does the enterprise govern and measure Cloud Resource Optimization (Rightsizing & Idle Asset Elimination) across the operational environment?"
+  },
+  "T8.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Rate Optimization & Commitment Management (Savings Plans, Reserved Instances) across the operational environment?",
+    "es": "How does the enterprise govern and measure Rate Optimization & Commitment Management (Savings Plans, Reserved Instances) across the operational environment?"
+  },
+  "T8.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Cloud Financial Forecasting, Budgeting & Anomaly Detection across the operational environment?",
+    "es": "How does the enterprise govern and measure Cloud Financial Forecasting, Budgeting & Anomaly Detection across the operational environment?"
+  },
+  "T8.P4.K5.PR1": {
+    "en": "How does the enterprise govern and measure FinOps Cultural Adoption & Engineering Unit-Economics Accountability across the operational environment?",
+    "es": "How does the enterprise govern and measure FinOps Cultural Adoption & Engineering Unit-Economics Accountability across the operational environment?"
+  },
+  "T8.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics) across the operational environment?",
+    "es": "How does the enterprise govern and measure Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics) across the operational environment?"
+  },
+  "T8.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Objective and Key Results (OKRs) Measurement & Alignment across the operational environment?",
+    "es": "How does the enterprise govern and measure Objective and Key Results (OKRs) Measurement & Alignment across the operational environment?"
+  },
+  "T8.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure Post-Implementation Value Realization & Business Case Attainment across the operational environment?",
+    "es": "How does the enterprise govern and measure Post-Implementation Value Realization & Business Case Attainment across the operational environment?"
+  },
+  "T8.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure Structured Continuous Improvement Lifecycle & Operational Excellence Backlog across the operational environment?",
+    "es": "How does the enterprise govern and measure Structured Continuous Improvement Lifecycle & Operational Excellence Backlog across the operational environment?"
+  },
+  "T9.P1.K1.PR1": {
+    "en": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?",
+    "es": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?"
+  },
+  "T9.P1.K2.PR1": {
+    "en": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?",
+    "es": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?"
+  },
+  "T9.P1.K3.PR1": {
+    "en": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?",
+    "es": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?"
+  },
+  "T9.P1.K4.PR1": {
+    "en": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?",
+    "es": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?"
+  },
+  "T9.P2.K1.PR1": {
+    "en": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?",
+    "es": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?"
+  },
+  "T9.P2.K2.PR1": {
+    "en": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?",
+    "es": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?"
+  },
+  "T9.P2.K3.PR1": {
+    "en": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?",
+    "es": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?"
+  },
+  "T9.P2.K4.PR1": {
+    "en": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?",
+    "es": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?"
+  },
+  "T9.P3.K1.PR1": {
+    "en": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?",
+    "es": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?"
+  },
+  "T9.P3.K2.PR1": {
+    "en": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?",
+    "es": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?"
+  },
+  "T9.P3.K3.PR1": {
+    "en": "How does the enterprise govern and measure Unified Communications Quality of Service (QoS for Voice & Video) across the operational environment?",
+    "es": "How does the enterprise govern and measure Unified Communications Quality of Service (QoS for Voice & Video) across the operational environment?"
+  },
+  "T9.P3.K4.PR1": {
+    "en": "How does the enterprise govern and measure Digital Workplace Platform Utilization & Feature Adoption Depth across the operational environment?",
+    "es": "How does the enterprise govern and measure Digital Workplace Platform Utilization & Feature Adoption Depth across the operational environment?"
+  },
+  "T9.P4.K1.PR1": {
+    "en": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?",
+    "es": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?"
+  },
+  "T9.P4.K2.PR1": {
+    "en": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?",
+    "es": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?"
+  },
+  "T9.P4.K3.PR1": {
+    "en": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?",
+    "es": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?"
+  },
+  "T9.P4.K4.PR1": {
+    "en": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?",
+    "es": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?"
+  },
+  "T9.P5.K1.PR1": {
+    "en": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?",
+    "es": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?"
+  },
+  "T9.P5.K2.PR1": {
+    "en": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?",
+    "es": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?"
+  },
+  "T9.P5.K3.PR1": {
+    "en": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?",
+    "es": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?"
+  },
+  "T9.P5.K4.PR1": {
+    "en": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?",
+    "es": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?"
+  }
+}

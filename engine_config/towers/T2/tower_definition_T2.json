@@ -5,55 +5,55 @@
   "maturity_scale": [
     {
       "level": 1,
-      "label": "Inicial",
-      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+      "label": "Initial",
+      "operational_reading": "Capability is ad-hoc, unmeasured, or heavily dependent on heroic individual efforts."
     },
     {
       "level": 2,
-      "label": "Básico",
-      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+      "label": "Managed",
+      "operational_reading": "Capability exists with baseline operational controls but lacks automated validation."
     },
     {
       "level": 3,
-      "label": "Estandarizado",
-      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
+      "label": "Defined",
+      "operational_reading": "Capability is formalized, standardized, and consistently enforced enterprise-wide."
     },
     {
       "level": 4,
-      "label": "Optimizado",
-      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+      "label": "Quantitatively Managed",
+      "operational_reading": "Capability is industrialised, governed with continuous telemetry, and statistically controlled."
     },
     {
       "level": 5,
-      "label": "Avanzado",
-      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+      "label": "Optimizing",
+      "operational_reading": "Capability demonstrates predictive continuous improvement and autonomous self-healing."
     }
   ],
   "score_bands": [
     {
       "min": 1.0,
-      "max": 1.79,
-      "label": "Nivel 1 - Inicial"
+      "max": 1.59,
+      "label": "Level 1 - Initial"
     },
     {
-      "min": 1.8,
+      "min": 1.6,
       "max": 2.59,
-      "label": "Nivel 2 - Básico"
+      "label": "Level 2 - Managed"
     },
     {
       "min": 2.6,
-      "max": 3.39,
-      "label": "Nivel 3 - Estandarizado"
+      "max": 3.59,
+      "label": "Level 3 - Defined"
     },
     {
-      "min": 3.4,
-      "max": 4.19,
-      "label": "Nivel 4 - Optimizado"
+      "min": 3.6,
+      "max": 4.59,
+      "label": "Level 4 - Quantitatively Managed"
     },
     {
-      "min": 4.2,
+      "min": 4.6,
       "max": 5.0,
-      "label": "Nivel 5 - Avanzado"
+      "label": "Level 5 - Optimized"
     }
   ],
   "validation_states": [
@@ -72,7 +72,7 @@
   },
   "tower_id": "T2",
   "tower_name": "Hybrid Compute & Platforms",
-  "purpose": "La torre Hybrid Compute & Platforms cubre los componentes y prácticas que permiten disponer de una capacidad de cómputo gestionada como servicio y de plataformas que habilitan el despliegue y operación de aplicaciones de manera estandarizada.",
+  "purpose": "The Hybrid Compute & Platforms domain covers on-premise hypervisors, server hardware, container orchestration (Kubernetes), hybrid cloud landing zones, infrastructure-as-code automation, and platform reliability engineering.",
   "scope_summary": [
     "Cómputo on-premise",
     "Cómputo en cloud pública",
@@ -92,45 +92,45 @@
     {
       "pillar_id": "T2.P1",
       "pillar_name": "Compute Foundation & Virtualization",
-      "weight_pct": 22,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T2.P1.K1",
-          "kpi_name": "Estandarización del estate de cómputo (clusters/hosts/configuración)",
+          "kpi_name": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
           "questions": [
             {
               "question_id": "T2.P1.K1.PR1",
-              "question_text": "La consistencia en la configuración de clusters y hosts es clave para evitar desviaciones operativas y facilitar la gestión de la plataforma. ¿Cómo describiría el nivel de estandarización de los clusters y configuraciones de cómputo?"
+              "question_text": "How does the enterprise govern and measure Compute Estate Standardization (Clusters, Hosts & Hardware Baselines) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P1.K2",
-          "kpi_name": "Gestión del ciclo de vida del compute (patching/upgrades/firmware)",
+          "kpi_name": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
           "questions": [
             {
               "question_id": "T2.P1.K2.PR1",
-              "question_text": "La gestión del ciclo de vida del compute garantiza que la plataforma se mantenga segura, soportada y estable. ¿Cómo se gestiona el ciclo de vida del compute (patching, upgrades, firmware)?"
+              "question_text": "How does the enterprise govern and measure Compute Lifecycle Management (Patching, Firmware & OS Upgrades) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P1.K3",
-          "kpi_name": "Capacity & Performance Management (CPU/RAM/overcommit, saturación)",
+          "kpi_name": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
           "questions": [
             {
               "question_id": "T2.P1.K3.PR1",
-              "question_text": "La planificación de capacidad permite evitar saturaciones y garantizar el rendimiento de las cargas. ¿Cómo se gestiona la capacidad y el rendimiento del entorno de cómputo?"
+              "question_text": "How does the enterprise govern and measure Capacity & Performance Management (CPU/RAM Overcommit & Saturation) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P1.K4",
-          "kpi_name": "Disponibilidad de la plataforma de compute (HA operable y mantenibilidad)",
+          "kpi_name": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
           "questions": [
             {
               "question_id": "T2.P1.K4.PR1",
-              "question_text": "La alta disponibilidad es fundamental para garantizar la continuidad del servicio ante fallos de infraestructura. ¿Qué nivel de disponibilidad ofrece la plataforma de virtualización?"
+              "question_text": "How does the enterprise govern and measure Compute Platform Availability (Host HA & Concurrent Maintainability) across the operational environment?"
             }
           ]
         }
@@ -139,45 +139,45 @@
     {
       "pillar_id": "T2.P2",
       "pillar_name": "Container Platform & Kubernetes Operations",
-      "weight_pct": 19,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T2.P2.K1",
-          "kpi_name": "Estandarización de servicios base (ingress, registry, certificados, storage classes)",
+          "kpi_name": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
           "questions": [
             {
               "question_id": "T2.P2.K1.PR1",
-              "question_text": "La estandarización de los servicios base permite operar Kubernetes de forma estable y segura. ¿Cómo están definidos y gestionados los servicios base de la plataforma Kubernetes?"
+              "question_text": "How does the enterprise govern and measure Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P2.K2",
-          "kpi_name": "Gestión del ciclo de vida de clusters (upgrades, compatibilidad, deprecations)",
+          "kpi_name": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
           "questions": [
             {
               "question_id": "T2.P2.K2.PR1",
-              "question_text": "El ciclo de vida de los clusters Kubernetes debe gestionarse para evitar obsolescencia y riesgo operativo. ¿Cómo se gestiona el ciclo de vida de los clusters Kubernetes?"
+              "question_text": "How does the enterprise govern and measure Cluster Lifecycle Management (Version Upgrades & Deprecations) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P2.K3",
-          "kpi_name": "Seguridad base y aislamiento (RBAC, namespaces, separación de roles)",
+          "kpi_name": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
           "questions": [
             {
               "question_id": "T2.P2.K3.PR1",
-              "question_text": "La seguridad base de Kubernetes depende de una correcta gestión de accesos y aislamiento de cargas. ¿Cómo se gestiona la seguridad base (RBAC y aislamiento) en Kubernetes?"
+              "question_text": "How does the enterprise govern and measure Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P2.K4",
-          "kpi_name": "Operación y soporte del clúster (runbooks, incidentes, capacidad de nodos)",
+          "kpi_name": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
           "questions": [
             {
               "question_id": "T2.P2.K4.PR1",
-              "question_text": "La operación de Kubernetes requiere procesos claros para soporte, incidencias y mantenimiento. ¿Cómo se opera y soporta la plataforma Kubernetes?"
+              "question_text": "How does the enterprise govern and measure Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage) across the operational environment?"
             }
           ]
         }
@@ -186,45 +186,45 @@
     {
       "pillar_id": "T2.P3",
       "pillar_name": "Hybrid Cloud Enablement & Landing Zones",
-      "weight_pct": 21,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T2.P3.K1",
-          "kpi_name": "Existencia y cobertura de Landing Zone (estructura base cloud)",
+          "kpi_name": "Cloud Landing Zone Architecture & Multi-Account Structure",
           "questions": [
             {
               "question_id": "T2.P3.K1.PR1",
-              "question_text": "Una Landing Zone define la arquitectura base para desplegar entornos cloud de forma segura y consistente. ¿Existe una Landing Zone estructurada para los entornos cloud?"
+              "question_text": "How does the enterprise govern and measure Cloud Landing Zone Architecture & Multi-Account Structure across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P3.K2",
-          "kpi_name": "Guardrails y políticas de gobierno técnico (policy-as-code / estándares)",
+          "kpi_name": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
           "questions": [
             {
               "question_id": "T2.P3.K2.PR1",
-              "question_text": "Las políticas técnicas permiten garantizar seguridad y consistencia en entornos cloud. ¿Cómo se aplican guardrails y políticas técnicas en cloud?"
+              "question_text": "How does the enterprise govern and measure Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P3.K3",
-          "kpi_name": "Estandarización de patrones de despliegue híbridos (IaaS/PaaS)",
+          "kpi_name": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
           "questions": [
             {
               "question_id": "T2.P3.K3.PR1",
-              "question_text": "Los patrones estándar permiten desplegar entornos híbridos de forma repetible y segura. ¿Existen patrones estándar para despliegues híbridos (IaaS/PaaS)?"
+              "question_text": "How does the enterprise govern and measure Hybrid Deployment Patterns & Cross-Cloud Interoperability across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P3.K4",
-          "kpi_name": "Control de consumo y costes (tagging, showback, límites)",
+          "kpi_name": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
           "questions": [
             {
               "question_id": "T2.P3.K4.PR1",
-              "question_text": "La gestión del coste cloud es clave para controlar el consumo y optimizar el gasto. ¿Cómo se controla el consumo y coste en entornos cloud?"
+              "question_text": "How does the enterprise govern and measure Cloud Consumption Governance (Tagging, Showback & Budget Guardrails) across the operational environment?"
             }
           ]
         }
@@ -233,47 +233,57 @@
     {
       "pillar_id": "T2.P4",
       "pillar_name": "Automation, Provisioning & Platform Self-Service",
-      "weight_pct": 18,
+      "weight_pct": 20,
       "kpis": [
         {
           "kpi_id": "T2.P4.K1",
-          "kpi_name": "Cobertura de Infraestructura como Código (IaC) en el provisioning",
+          "kpi_name": "Infrastructure as Code (IaC) Provisioning Coverage",
           "questions": [
             {
               "question_id": "T2.P4.K1.PR1",
-              "question_text": "La Infraestructura como Código permite desplegar plataformas de forma reproducible y controlada. ¿Qué nivel de uso tiene la Infraestructura como Código en el provisioning?"
+              "question_text": "How does the enterprise govern and measure Infrastructure as Code (IaC) Provisioning Coverage across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P4.K2",
-          "kpi_name": "Madurez del catálogo y self-service (tiempo de provisión y control)",
+          "kpi_name": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
           "questions": [
             {
               "question_id": "T2.P4.K2.PR1",
-              "question_text": "El autoservicio de plataforma permite acelerar la provisión de recursos y reducir dependencias operativas. ¿Qué nivel de madurez tiene el catálogo de servicios y autoservicio de plataforma?"
+              "question_text": "How does the enterprise govern and measure Service Catalog Maturity & Self-Service Provisioning Lead Time across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P4.K3",
-          "kpi_name": "Gestión de golden images y configuración estándar (baseline)",
+          "kpi_name": "Golden Image Pipeline & Standard Baseline Configuration",
           "questions": [
             {
               "question_id": "T2.P4.K3.PR1",
-              "question_text": "Las golden images permiten mantener consistencia en los sistemas desplegados. ¿Cómo se gestionan las golden images y los baseline de configuración?"
+              "question_text": "How does the enterprise govern and measure Golden Image Pipeline & Standard Baseline Configuration across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P4.K4",
-          "kpi_name": "Modelo operativo y gestión de la plataforma como producto",
-          "questions": []
+          "kpi_name": "Platform Engineering Operating Model (Platform as a Product)",
+          "questions": [
+            {
+              "question_id": "T2.P4.K4.PR1",
+              "question_text": "How does the enterprise govern and measure Platform Engineering Operating Model (Platform as a Product) across the operational environment?"
+            }
+          ]
         },
         {
           "kpi_id": "T2.P4.K5",
-          "kpi_name": "Experiencia de consumo y adopción de la plataforma",
-          "questions": []
+          "kpi_name": "Developer Experience (DevEx) & Internal Platform Adoption",
+          "questions": [
+            {
+              "question_id": "T2.P4.K5.PR1",
+              "question_text": "How does the enterprise govern and measure Developer Experience (DevEx) & Internal Platform Adoption across the operational environment?"
+            }
+          ]
         }
       ]
     },
@@ -284,41 +294,41 @@
       "kpis": [
         {
           "kpi_id": "T2.P5.K1",
-          "kpi_name": "Cobertura de observabilidad de compute y plataforma (métricas/logs/alertas)",
+          "kpi_name": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
           "questions": [
             {
               "question_id": "T2.P5.K1.PR1",
-              "question_text": "La observabilidad es clave para entender el comportamiento de la plataforma y detectar incidencias rápidamente. ¿Qué nivel de observabilidad existe sobre el compute y la plataforma?"
+              "question_text": "How does the enterprise govern and measure Platform Observability Coverage (Metrics, Logs, Traces & Alerts) across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P5.K2",
-          "kpi_name": "Definición y seguimiento de SLO/SLAs de plataforma",
+          "kpi_name": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
           "questions": [
             {
               "question_id": "T2.P5.K2.PR1",
-              "question_text": "Definir objetivos de servicio permite medir la fiabilidad de la plataforma. ¿Existen SLO o SLA definidos para la plataforma?"
+              "question_text": "How does the enterprise govern and measure Platform Service Level Objectives (SLOs) & Error Budget Tracking across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P5.K3",
-          "kpi_name": "Gestión de incidentes y mejora continua (postmortems, runbooks)",
+          "kpi_name": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
           "questions": [
             {
               "question_id": "T2.P5.K3.PR1",
-              "question_text": "La gestión de incidentes y el aprendizaje operativo permiten mejorar la estabilidad de la plataforma. ¿Cómo se gestionan los incidentes y la mejora continua?"
+              "question_text": "How does the enterprise govern and measure Platform Incident Response, Blameless Post-Mortems & Runbooks across the operational environment?"
             }
           ]
         },
         {
           "kpi_id": "T2.P5.K4",
-          "kpi_name": "Capacity forecasting y prevención de degradaciones (plataforma)",
+          "kpi_name": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
           "questions": [
             {
               "question_id": "T2.P5.K4.PR1",
-              "question_text": "La planificación de capacidad evita degradaciones del servicio ante el crecimiento de la demanda. ¿Cómo se gestiona la previsión de capacidad de la plataforma?"
+              "question_text": "How does the enterprise govern and measure Predictive Capacity Forecasting & Proactive Anomaly Prevention across the operational environment?"
             }
           ]
         }
@@ -328,117 +338,150 @@
   "questions": [
     {
       "question_id": "T2.P1.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Compute Estate Standardization (Clusters, Hosts & Hardware Baselines) across the operational environment?",
       "pillar_id": "T2.P1",
       "kpi_id": "T2.P1.K1",
-      "question_text": "La consistencia en la configuración de clusters y hosts es clave para evitar desviaciones operativas y facilitar la gestión de la plataforma. ¿Cómo describiría el nivel de estandarización de los clusters y configuraciones de cómputo?"
+      "kpi_name": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)"
     },
     {
       "question_id": "T2.P1.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Compute Lifecycle Management (Patching, Firmware & OS Upgrades) across the operational environment?",
       "pillar_id": "T2.P1",
       "kpi_id": "T2.P1.K2",
-      "question_text": "La gestión del ciclo de vida del compute garantiza que la plataforma se mantenga segura, soportada y estable. ¿Cómo se gestiona el ciclo de vida del compute (patching, upgrades, firmware)?"
+      "kpi_name": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)"
     },
     {
       "question_id": "T2.P1.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Capacity & Performance Management (CPU/RAM Overcommit & Saturation) across the operational environment?",
       "pillar_id": "T2.P1",
       "kpi_id": "T2.P1.K3",
-      "question_text": "La planificación de capacidad permite evitar saturaciones y garantizar el rendimiento de las cargas. ¿Cómo se gestiona la capacidad y el rendimiento del entorno de cómputo?"
+      "kpi_name": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)"
     },
     {
       "question_id": "T2.P1.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Compute Platform Availability (Host HA & Concurrent Maintainability) across the operational environment?",
       "pillar_id": "T2.P1",
       "kpi_id": "T2.P1.K4",
-      "question_text": "La alta disponibilidad es fundamental para garantizar la continuidad del servicio ante fallos de infraestructura. ¿Qué nivel de disponibilidad ofrece la plataforma de virtualización?"
+      "kpi_name": "Compute Platform Availability (Host HA & Concurrent Maintainability)"
     },
     {
       "question_id": "T2.P2.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes) across the operational environment?",
       "pillar_id": "T2.P2",
       "kpi_id": "T2.P2.K1",
-      "question_text": "La estandarización de los servicios base permite operar Kubernetes de forma estable y segura. ¿Cómo están definidos y gestionados los servicios base de la plataforma Kubernetes?"
+      "kpi_name": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)"
     },
     {
       "question_id": "T2.P2.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Cluster Lifecycle Management (Version Upgrades & Deprecations) across the operational environment?",
       "pillar_id": "T2.P2",
       "kpi_id": "T2.P2.K2",
-      "question_text": "El ciclo de vida de los clusters Kubernetes debe gestionarse para evitar obsolescencia y riesgo operativo. ¿Cómo se gestiona el ciclo de vida de los clusters Kubernetes?"
+      "kpi_name": "Cluster Lifecycle Management (Version Upgrades & Deprecations)"
     },
     {
       "question_id": "T2.P2.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies) across the operational environment?",
       "pillar_id": "T2.P2",
       "kpi_id": "T2.P2.K3",
-      "question_text": "La seguridad base de Kubernetes depende de una correcta gestión de accesos y aislamiento de cargas. ¿Cómo se gestiona la seguridad base (RBAC y aislamiento) en Kubernetes?"
+      "kpi_name": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)"
     },
     {
       "question_id": "T2.P2.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage) across the operational environment?",
       "pillar_id": "T2.P2",
       "kpi_id": "T2.P2.K4",
-      "question_text": "La operación de Kubernetes requiere procesos claros para soporte, incidencias y mantenimiento. ¿Cómo se opera y soporta la plataforma Kubernetes?"
+      "kpi_name": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)"
     },
     {
       "question_id": "T2.P3.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Cloud Landing Zone Architecture & Multi-Account Structure across the operational environment?",
       "pillar_id": "T2.P3",
       "kpi_id": "T2.P3.K1",
-      "question_text": "Una Landing Zone define la arquitectura base para desplegar entornos cloud de forma segura y consistente. ¿Existe una Landing Zone estructurada para los entornos cloud?"
+      "kpi_name": "Cloud Landing Zone Architecture & Multi-Account Structure"
     },
     {
       "question_id": "T2.P3.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code) across the operational environment?",
       "pillar_id": "T2.P3",
       "kpi_id": "T2.P3.K2",
-      "question_text": "Las políticas técnicas permiten garantizar seguridad y consistencia en entornos cloud. ¿Cómo se aplican guardrails y políticas técnicas en cloud?"
+      "kpi_name": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)"
     },
     {
       "question_id": "T2.P3.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Hybrid Deployment Patterns & Cross-Cloud Interoperability across the operational environment?",
       "pillar_id": "T2.P3",
       "kpi_id": "T2.P3.K3",
-      "question_text": "Los patrones estándar permiten desplegar entornos híbridos de forma repetible y segura. ¿Existen patrones estándar para despliegues híbridos (IaaS/PaaS)?"
+      "kpi_name": "Hybrid Deployment Patterns & Cross-Cloud Interoperability"
     },
     {
       "question_id": "T2.P3.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Cloud Consumption Governance (Tagging, Showback & Budget Guardrails) across the operational environment?",
       "pillar_id": "T2.P3",
       "kpi_id": "T2.P3.K4",
-      "question_text": "La gestión del coste cloud es clave para controlar el consumo y optimizar el gasto. ¿Cómo se controla el consumo y coste en entornos cloud?"
+      "kpi_name": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)"
     },
     {
       "question_id": "T2.P4.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Infrastructure as Code (IaC) Provisioning Coverage across the operational environment?",
       "pillar_id": "T2.P4",
       "kpi_id": "T2.P4.K1",
-      "question_text": "La Infraestructura como Código permite desplegar plataformas de forma reproducible y controlada. ¿Qué nivel de uso tiene la Infraestructura como Código en el provisioning?"
+      "kpi_name": "Infrastructure as Code (IaC) Provisioning Coverage"
     },
     {
       "question_id": "T2.P4.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Service Catalog Maturity & Self-Service Provisioning Lead Time across the operational environment?",
       "pillar_id": "T2.P4",
       "kpi_id": "T2.P4.K2",
-      "question_text": "El autoservicio de plataforma permite acelerar la provisión de recursos y reducir dependencias operativas. ¿Qué nivel de madurez tiene el catálogo de servicios y autoservicio de plataforma?"
+      "kpi_name": "Service Catalog Maturity & Self-Service Provisioning Lead Time"
     },
     {
       "question_id": "T2.P4.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Golden Image Pipeline & Standard Baseline Configuration across the operational environment?",
       "pillar_id": "T2.P4",
       "kpi_id": "T2.P4.K3",
-      "question_text": "Las golden images permiten mantener consistencia en los sistemas desplegados. ¿Cómo se gestionan las golden images y los baseline de configuración?"
+      "kpi_name": "Golden Image Pipeline & Standard Baseline Configuration"
+    },
+    {
+      "question_id": "T2.P4.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Platform Engineering Operating Model (Platform as a Product) across the operational environment?",
+      "pillar_id": "T2.P4",
+      "kpi_id": "T2.P4.K4",
+      "kpi_name": "Platform Engineering Operating Model (Platform as a Product)"
+    },
+    {
+      "question_id": "T2.P4.K5.PR1",
+      "question_text": "How does the enterprise govern and measure Developer Experience (DevEx) & Internal Platform Adoption across the operational environment?",
+      "pillar_id": "T2.P4",
+      "kpi_id": "T2.P4.K5",
+      "kpi_name": "Developer Experience (DevEx) & Internal Platform Adoption"
     },
     {
       "question_id": "T2.P5.K1.PR1",
+      "question_text": "How does the enterprise govern and measure Platform Observability Coverage (Metrics, Logs, Traces & Alerts) across the operational environment?",
       "pillar_id": "T2.P5",
       "kpi_id": "T2.P5.K1",
-      "question_text": "La observabilidad es clave para entender el comportamiento de la plataforma y detectar incidencias rápidamente. ¿Qué nivel de observabilidad existe sobre el compute y la plataforma?"
+      "kpi_name": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)"
     },
     {
       "question_id": "T2.P5.K2.PR1",
+      "question_text": "How does the enterprise govern and measure Platform Service Level Objectives (SLOs) & Error Budget Tracking across the operational environment?",
       "pillar_id": "T2.P5",
       "kpi_id": "T2.P5.K2",
-      "question_text": "Definir objetivos de servicio permite medir la fiabilidad de la plataforma. ¿Existen SLO o SLA definidos para la plataforma?"
+      "kpi_name": "Platform Service Level Objectives (SLOs) & Error Budget Tracking"
     },
     {
       "question_id": "T2.P5.K3.PR1",
+      "question_text": "How does the enterprise govern and measure Platform Incident Response, Blameless Post-Mortems & Runbooks across the operational environment?",
       "pillar_id": "T2.P5",
       "kpi_id": "T2.P5.K3",
-      "question_text": "La gestión de incidentes y el aprendizaje operativo permiten mejorar la estabilidad de la plataforma. ¿Cómo se gestionan los incidentes y la mejora continua?"
+      "kpi_name": "Platform Incident Response, Blameless Post-Mortems & Runbooks"
     },
     {
       "question_id": "T2.P5.K4.PR1",
+      "question_text": "How does the enterprise govern and measure Predictive Capacity Forecasting & Proactive Anomaly Prevention across the operational environment?",
       "pillar_id": "T2.P5",
       "kpi_id": "T2.P5.K4",
-      "question_text": "La planificación de capacidad evita degradaciones del servicio ante el crecimiento de la demanda. ¿Cómo se gestiona la previsión de capacidad de la plataforma?"
+      "kpi_name": "Predictive Capacity Forecasting & Proactive Anomaly Prevention"
     }
   ]
 }

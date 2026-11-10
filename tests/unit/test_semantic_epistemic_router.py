@@ -248,6 +248,92 @@ def test_compute_affinities_empty_text() -> None:
     assert all(score == 0.0 for score in affinities.values())
 
 
+def test_route_verified_claims_model_driven_modality() -> None:
+    """Verifies that route_verified_claims maps typed epistemic status directly without keyword lists."""
+    from assessment_engine.application.services.semantic_epistemic_router import (
+        EpistemicGraphRouter,
+        EpistemicModality,
+    )
+    from assessment_engine.domain.schemas.evidence_extraction import (
+        ClaimStatus,
+        ExtractionLedger,
+        VerifiedEpistemicClaim,
+    )
+
+    ledger = ExtractionLedger(
+        tenant_id="test_tenant",
+        claims=[
+            VerifiedEpistemicClaim.create(
+                tower_code="T2",
+                canonical_entity="NetApp",
+                claim_statement="Storage array for corporate files",
+                status=ClaimStatus.ACTIVE_PRODUCTION,
+                verbatim_evidence_quote="La NetApp la hemos comprado para ficheros",
+            ),
+            VerifiedEpistemicClaim.create(
+                tower_code="T2",
+                canonical_entity="Kubernetes",
+                claim_statement="Aspirational target to migrate to containers",
+                status=ClaimStatus.FUTURE_PLAN,
+                verbatim_evidence_quote="A mí me gustaría irnos más a modelo contenedor Kubernetes",
+            ),
+            VerifiedEpistemicClaim.create(
+                tower_code="T2",
+                canonical_entity="Infrastructure as Code",
+                claim_statement="Zero automation tools in vCenter",
+                status=ClaimStatus.CONFIRMED_ABSENCE,
+                verbatim_evidence_quote="Carecemos de herramientas de automatización",
+            ),
+        ],
+    )
+
+    router = EpistemicGraphRouter()
+    packets = router.route_verified_claims(ledger)
+    t2_packet = packets["T2"]
+
+    assert len(t2_packet.propositions) == 3
+    asis_facts = t2_packet.get_asis_facts()
+    assert len(asis_facts) == 2
+    assert asis_facts[0].modality == EpistemicModality.FACT_PRODUCTION_ASIS
+    assert asis_facts[1].modality == EpistemicModality.TECHNICAL_ABSENCE_GAP
+
+    tobe_wishes = t2_packet.get_tobe_aspirations()
+    assert len(tobe_wishes) == 1
+    assert tobe_wishes[0].modality == EpistemicModality.ASPIRATIONAL_TOBE
+
+
+def test_epistemic_context_packet_get_asis_facts_omits_wishes() -> None:
+    """Verifies that get_asis_facts strictly omits future TO-BE wishes from AS-IS context."""
+    from assessment_engine.application.services.semantic_epistemic_router import (
+        EpistemicContextPacket,
+        EpistemicModality,
+        SemanticProposition,
+    )
+
+    packet = EpistemicContextPacket(
+        tower_code="T2",
+        propositions=[
+            SemanticProposition(text="6 nodos HPE SimpliVity con VMware", turn_index=1, modality=EpistemicModality.FACT_PRODUCTION_ASIS),
+            SemanticProposition(text="queríamos empezar a usar contenedores", turn_index=2, modality=EpistemicModality.ASPIRATIONAL_TOBE),
+            SemanticProposition(text="me gustaría ir a Kubernetes", turn_index=3, modality=EpistemicModality.ASPIRATIONAL_TOBE),
+            SemanticProposition(text="sin herramientas de automatización", turn_index=4, modality=EpistemicModality.TECHNICAL_ABSENCE_GAP),
+        ],
+        semantic_density_score=0.85,
+        epistemic_state="OBSERVED_EXPLICIT",
+    )
+
+    asis_facts = packet.get_asis_facts()
+    assert len(asis_facts) == 2
+    assert all(p.modality != EpistemicModality.ASPIRATIONAL_TOBE for p in asis_facts)
+    assert asis_facts[0].text == "6 nodos HPE SimpliVity con VMware"
+    assert asis_facts[1].text == "sin herramientas de automatización"
+
+    tobe_wishes = packet.get_tobe_aspirations()
+    assert len(tobe_wishes) == 2
+    assert all(p.modality == EpistemicModality.ASPIRATIONAL_TOBE for p in tobe_wishes)
+
+
+
 def test_context_packet_density_scaling() -> None:
     """Kills arithmetic operator mutations (* vs //) in density calculation."""
     router = EpistemicGraphRouter()

@@ -157,6 +157,14 @@ def _compute_script_block_ratio(text: str, base_loc: str) -> tuple[float, int]:
     return matching_letters / total_letters, total_letters
 
 
+# Declarative mandatory script inflection ranges required for composite scripts (e.g. Hiragana in Japanese)
+_MANDATORY_SCRIPT_INFLECTION_RANGES: dict[str, tuple[tuple[int, int], ...]] = {
+    "ja": (
+        (0x3040, 0x309F),  # Hiragana grammatical particles/inflections
+    ),
+}
+
+
 def _evaluate_bound_morpheme_signature(text: str, base_loc: str) -> tuple[bool, float]:
     """Evaluate bound-morpheme and particle frequency signatures for segmented/unsegmented scripts."""
     signatures = _BOUND_MORPHEME_SIGNATURES.get(base_loc)
@@ -170,10 +178,13 @@ def _evaluate_bound_morpheme_signature(text: str, base_loc: str) -> tuple[bool, 
 
     density = hits / letter_count
 
-    # Japanese text must contain Hiragana grammatical particles/inflections, not pure Kanji/Latin
-    if base_loc == "ja":
-        hiragana_count = sum(1 for ch in text if 0x3040 <= ord(ch) <= 0x309F)
-        if hiragana_count == 0 or hits == 0:
+    # Verify mandatory inflection or particle script ranges if required for the script
+    inflection_ranges = _MANDATORY_SCRIPT_INFLECTION_RANGES.get(base_loc)
+    if inflection_ranges:
+        inflection_count = sum(
+            1 for ch in text if any(start <= ord(ch) <= end for start, end in inflection_ranges)
+        )
+        if inflection_count == 0 or hits == 0:
             return False, density
 
     return hits > 0 and density >= 0.02, density

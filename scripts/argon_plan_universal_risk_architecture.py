@@ -1,53 +1,58 @@
 #!/usr/bin/env python3
-"""Argon Strategic Rearchitecture Plan for Universal Open FAIR Actuarial Realism.
+"""Argon Strategic Consultation: Master Plan for Universal 10/10 Quality.
 
-Consults gemini-4-argon to design a deterministic, multi-tenant architectural plan
-to eradicate actuarial hallucinations (e.g., $10 ALE for HIGH risks, MEDIUM costing
-4x more than CRITICAL) and synthesize universally coherent, mutually exclusive
-risk taxonomy across any global vertical.
+Consults gemini-4-argon to formulate a phased, foolproof architectural plan to achieve
+a guaranteed 10/10 deliverable quality for ANY company worldwide (mid-size to Top-Tier),
+in any vertical, and any language.
+Mandates: Zero bugs, zero antipatterns, zero hardcoding, 100% Technical English codebase.
 """
 
-from assessment_engine.infrastructure.genai_client import ModelTier, create_genai_client, get_model
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from assessment_engine.infrastructure.genai_client import (
+    ModelTier,
+    create_genai_client,
+    get_model,
+)
 
 client = create_genai_client()
 model_name = get_model(ModelTier.REASONING)
+print(f"Connecting to Reasoning model '{model_name}' for Universal Master Plan...")
 
-prompt = """You are 'gemini-4-argon', the Principal Staff Systems Architect, Chief Information Security Officer (CISO), and Actuarial Fellow.
+prompt = """You are 'gemini-4-argon', the Principal Staff Systems Architect, Lead Actuary, and Fortune 500 Chief Risk Officer.
 
-CONTEXT:
-Our AI pipeline dynamically evaluates and generates Open FAIR quantitative IT risks for enterprises worldwide ($10M SMBs to $500B Tier-1 globals) across 10 architectural domains (Towers T1 to T10).
-We have detected severe systemic flaws in our risk generation and financial calibration engine.
+THE USER'S MANDATE:
+"Before we start programming, we need to think deeply about how to approach this and in how many phases to guarantee it is bug-free and that we will be #1 in the world, for any vertical, in any language. The code MUST be 100% in English, not a single Spanish word (Spanish is only for chat and the deliverable output). Increase deliverable quality to 100%. I want gemini-4-argon to design a master plan with zero bugs, zero problems, and zero antipatterns. Zero hardcoding. The goal is to serve any company in the world, from mid-size to Top-Tier."
 
-EMPIRICAL SYMPTOMS (The 'Molins' test case exposed these global bugs):
-1. The Absurdity of $10 Risks: Tower 9 (Digital Workplace) evaluated HIGH severity risks but assigned them an Annualized Loss Expectancy (ALE) of 10.02 Euros. No HIGH risk in a $1.1B company costs $10.
-2. Inverted Severity Proportionality: In Tower 7 (ITSM), a synthetic MEDIUM risk was assigned an ALE of €31,000, while a verified CRITICAL risk was assigned only €7,600.
-3. Decoupling of Asset Gravity: Tower 4 (Storage) assigned an ALE of €5,000 for the lack of redundancy in the primary NetApp SAN. If a central SAN fails, the entire factory stops (costing €13,000 PER HOUR). The model failed to correlate the risk finding to the systemic hourly downtime burn rate.
-4. Taxonomic Hallucination & Duplication: The LLM invents duplicate risks across towers (e.g., a corporate M&A integration issue appears in T5, T7, and T8) instead of constraining risks to a canonical, mutually exclusive taxonomy.
+YOUR MISSION:
+Design the ultimate, phased architectural roadmap to elevate this Assessment Engine to a guaranteed, universal 10/10 quality standard.
+You must eradicate the remaining bottlenecks (like the 0.055 router broadcast threshold, missing niche taxonomies, and GIGO variance) without introducing new antipatterns.
 
-MISSION:
-Formulate a strictly universal, multi-tenant re-architecture plan (in 3 to 4 distinct phases) to solve the root causes.
-The solution MUST NOT contain any hardcoded logic for specific clients (like Molins) or verticals. It must mathematically scale based on Corporate Annual Revenue, Hourly OpEx Burn, and precise industry archetypes (e.g., Healthcare, FinTech, Manufacturing).
+CONSTRAINTS & RULES:
+1. 100% Technical English Codebase: Every entity, variable, log, prompt, and test must be in English. Localization happens strictly at the edge (JSON locale files).
+2. Zero Hardcoding: No client names, no specific vendors in hardcoded arrays. Everything must be declarative or ontologically driven.
+3. Universal Scaling: Must work identically for a €20M regional trucking company and a $50B global investment bank.
+4. Bug-Free Delivery: Propose strict, automated CI/CD gating and architectural invariants to prevent regressions.
 
-CONSTRAINTS & 100% TECHNICAL ENGLISH LAW:
-- Zero Spanish words allowed in code, architecture, schemas, or LLM prompts.
-- All code logic, variables, exception names, and logging must be 100% Technical English.
-- Target language translation occurs strictly via late-binding dictionaries (`locales.json`).
-- Adhere to Hexagonal Architecture (Domain vs Application layers) and Domain-Driven Design (DDD).
+STRUCTURE THE MASTER PLAN INTO SPECIFIC PHASES:
+- Phase 1: Epistemic Router & Evidence Purity (Fixing the 0.055 bleed and enforcing Winner-Takes-Primary).
+- Phase 2: Autonomous Ontological Expansion (Handling unknown verticals like Aerospace or Nuclear without code changes).
+- Phase 3: Deliverable Synthesis & Semantic Firewalls (Validating LLM output against cross-tower contamination before saving).
+- Phase 4: CI/CD Quality Gates & Invariants (How to mathematically prove the 10/10 standard on every commit).
 
-OUTPUT REQUIREMENTS:
-Design a precise, concrete architecture plan addressing:
-1. PHASE 1: Actuarial Gravity Anchoring (How to mathematically force the LLM or Python domain logic to bind ALE floors/ceilings to the 'Hourly Downtime Burn' and 'Severity Tier').
-2. PHASE 2: Cross-Tower Risk Orthogonality (How to implement a deduplication engine or taxonomy restrictor to prevent the LLM from inventing overlapping risks across T1-T10).
-3. PHASE 3: Missing Systemic Risks Injection (How to ensure critical blindspots—like OT Ransomware lateral movement or Identity Hijacking—are deterministically evaluated if the LLM forgets them).
-
-Be forensic, mathematically rigorous, and highly technical.
+Provide a highly authoritative, technical, and concrete engineering blueprint in Markdown. Do not include pleasantries.
 """
 
 response = client.models.generate_content(
     model=model_name,
-    contents=prompt
+    contents=prompt,
 )
-out_path = "docs/architecture/ARGON_UNIVERSAL_RISK_REARCHITECTURE_PLAN.md"
-with open(out_path, "w", encoding="utf-8") as f:
-    f.write(response.text)
-print(f"Plan saved to {out_path}")
+
+out_file = REPO_ROOT / "docs/architecture/ARGON_UNIVERSAL_10_OUT_OF_10_MASTER_PLAN.md"
+out_file.write_text(response.text, encoding="utf-8")
+print(f"\n✓ Saved strategic master plan to {out_file.relative_to(REPO_ROOT)}")

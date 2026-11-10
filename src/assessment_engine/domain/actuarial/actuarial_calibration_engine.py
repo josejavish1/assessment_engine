@@ -184,19 +184,34 @@ class ActuarialCalibrationEngine:
         maturity_score: float,
         industry: Any = None,
     ) -> float:
-        """Dynamically computes the Monte Carlo P90/ALE VaR ratio from industry tail risk and maturity."""
+        """Dynamically computes the Monte Carlo P90/ALE VaR ratio from industry tail risk and maturity.
+
+        Covers all 11 GICS sectors via the 6 Universal Operational Archetypes with zero bias.
+        """
         m_clamped = max(1.0, min(5.0, maturity_score))
         # Base ratio: High maturity has tight distributions (2.1x); low maturity has fat tails (3.8x)
         base_ratio = 3.80 - ((m_clamped - 1.0) / 4.0) * 1.70  # [2.10, 3.80]
 
-        ind_str = str(industry or "").upper()
-        if "MANUFACTUR" in ind_str or "OT" in ind_str or "PROCESS" in ind_str:
-            base_ratio += 0.45
-        elif "HEALTH" in ind_str or "SAFETY" in ind_str:
-            base_ratio += 0.35
-        elif "FINTECH" in ind_str or "DIGITAL" in ind_str or "BANK" in ind_str:
-            base_ratio += 0.25
+        from assessment_engine.domain.actuarial.financial_profile import IndustryArchetype
 
+        archetype = (
+            industry
+            if isinstance(industry, IndustryArchetype)
+            else IndustryArchetype.from_str(str(industry or ""))
+        )
+
+        tail_loading: dict[IndustryArchetype, float] = {
+            IndustryArchetype.PROCESS_MANUFACTURING_OT: 0.45,   # Thermal/chemical/mechanical inertia step-functions
+            IndustryArchetype.LIFE_SAFETY_CRITICAL: 0.35,       # Clinical liability, medical privacy, patient safety
+            IndustryArchetype.CONTINUOUS_DIGITAL_FINTECH: 0.25, # Direct contractual SLA breach and user churn
+            IndustryArchetype.PUBLIC_SECTOR_CIVIC_MISSION: 0.25, # Statutory citizen service disruption and regulatory scrutiny
+            IndustryArchetype.HIGH_TEMPO_COMMERCIAL: 0.20,      # Active trading window inventory and cart spoilage
+            IndustryArchetype.DEFERRED_NETWORK_LOGISTICS: 0.15, # Freight rerouting, warehousing demurrage
+            IndustryArchetype.STANDARD_ENTERPRISE_B2B: 0.00,    # Standard corporate baseline
+            IndustryArchetype.DYNAMIC_EMPIRICAL_AUTONOMOUS: round(0.10 + 0.15 * max(0.0, (3.5 - m_clamped) / 2.5), 2), # Pure mathematical CMMI entropy
+        }
+
+        base_ratio += tail_loading.get(archetype, 0.00)
         return round(base_ratio, 2)
 
     @staticmethod

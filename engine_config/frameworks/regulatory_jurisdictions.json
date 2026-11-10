@@ -1,0 +1,54 @@
+{
+  "INTERNATIONAL_NEUTRAL": {
+    "FINANCIAL_SERVICES": ["Basel III / PCI-DSS", "ISO/IEC 27001", "DORA Principles"],
+    "HEALTHCARE_LIFE_SCIENCES": ["ISO 27799 (Health Informatics)", "ISO/IEC 27001", "GAMP 5"],
+    "MANUFACTURING_LOGISTICS": ["IEC 62443 (Industrial Cyber Security)", "ISO/IEC 27001", "ISO 9001"],
+    "DIGITAL_NATIVE_SAAS": ["SOC 2 Type II", "ISO/IEC 27001", "ISO/IEC 27017"],
+    "COMMERCIAL_RETAIL": ["PCI-DSS", "ISO/IEC 27001", "Consumer Data Privacy Standards"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["National Cybersecurity Baseline", "ISO/IEC 27001", "Government Cloud Mandate"],
+    "STANDARD_ENTERPRISE_B2B": ["ISO/IEC 27001", "SOC 2", "Corporate Governance Code"],
+    "DYNAMIC_AUTONOMOUS": ["ISO/IEC 27001", "Applicable Industry Standards"]
+  },
+  "es-ES": {
+    "FINANCIAL_SERVICES": ["Banco de España", "CNMV", "DORA (EU)", "RGPD"],
+    "HEALTHCARE_LIFE_SCIENCES": ["AEMPS", "ENS (Categoría Alta)", "RGPD"],
+    "MANUFACTURING_LOGISTICS": ["Directiva NIS2", "Directiva CER", "RGPD"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["ENS (Categoría Alta)", "Directiva NIS2", "RGPD"]
+  },
+  "en-US": {
+    "FINANCIAL_SERVICES": ["SEC", "OCC / Federal Reserve", "SOX", "PCI-DSS"],
+    "HEALTHCARE_LIFE_SCIENCES": ["HIPAA / HITECH", "FDA 21 CFR Part 11", "HITRUST"],
+    "MANUFACTURING_LOGISTICS": ["CISA Cybersecurity Performance Goals", "NIST CSF", "OSHA"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["FedRAMP (High)", "NIST SP 800-53", "FISMA"]
+  },
+  "en-GB": {
+    "FINANCIAL_SERVICES": ["PRA Operational Resilience", "FCA", "DORA (UK Scope)"],
+    "HEALTHCARE_LIFE_SCIENCES": ["CQC", "NHS Data Security and Protection Toolkit", "UK GDPR"],
+    "MANUFACTURING_LOGISTICS": ["NIS Regulations 2018", "HSE", "UK GDPR"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["National Cyber Security Centre (NCSC) CAF", "UK GDPR"]
+  },
+  "de-DE": {
+    "FINANCIAL_SERVICES": ["BaFin (BAIT)", "Deutsche Bundesbank", "DORA (EU)", "DSGVO"],
+    "HEALTHCARE_LIFE_SCIENCES": ["BfArM", "BSI IT-Grundschutz (Krankenhäuser)", "DSGVO"],
+    "MANUFACTURING_LOGISTICS": ["BSI IT-Grundschutz (KRITIS)", "NIS2-Umsetzungsgesetz", "DSGVO"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["BSI IT-Grundschutz", "Onlinezugangsgesetz (OZG)", "DSGVO"]
+  },
+  "ja-JP": {
+    "FINANCIAL_SERVICES": ["FSA (Financial Services Agency)", "Bank of Japan (BOJ)", "FISC Security Guidelines"],
+    "HEALTHCARE_LIFE_SCIENCES": ["MHLW (Ministry of Health, Labour and Welfare)", "PMDA", "APPI"],
+    "MANUFACTURING_LOGISTICS": ["METI Cybersecurity Guidelines", "APPI"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["NISC (National center of Incident readiness and Strategy for Cybersecurity)", "ISMAP"]
+  },
+  "pt-BR": {
+    "FINANCIAL_SERVICES": ["Banco Central do Brasil (BACEN Res. 4.893)", "CVM", "LGPD"],
+    "HEALTHCARE_LIFE_SCIENCES": ["ANVISA", "ANS", "LGPD"],
+    "MANUFACTURING_LOGISTICS": ["ANVISA (Industrial)", "LGPD"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["GSI/PR (Norma Complementar)", "LGPD"]
+  },
+  "fr-FR": {
+    "FINANCIAL_SERVICES": ["ACPR / Banque de France", "AMF", "DORA (EU)", "RGPD"],
+    "HEALTHCARE_LIFE_SCIENCES": ["ANSM", "HDS (Hébergeur de Données de Santé)", "RGPD"],
+    "MANUFACTURING_LOGISTICS": ["ANSSI (Opérateurs d'Importance Vitale - OIV)", "NIS2", "RGPD"],
+    "PUBLIC_SECTOR_INFRASTRUCTURE": ["ANSSI SecNumCloud", "RGS (Référentiel Général de Sécurité)", "RGPD"]
+  }
+}

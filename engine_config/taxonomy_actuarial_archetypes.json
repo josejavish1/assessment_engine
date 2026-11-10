@@ -1,0 +1,252 @@
+{
+  "version": "2.0.0",
+  "doctrine": "Polymorphic Open FAIR Decoupling: Zero Hardcoding, Distinct Economic Loss Vectors",
+  "mappings": {
+    "T1": {
+      "tower_id": "T1",
+      "canonical_tower_name": "Physical Data Center & Facilities",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "CAPITAL_INEFFICIENCY",
+      "default_vulnerability_baseline": 0.2,
+      "narrative_semantic_key": "DATA_CENTER_FACILITIES",
+      "primary_metric_label": "Colocation Ingress Outage Rate",
+      "primary_metric_unit": "/hr",
+      "prohibited_narrative_terms": [
+        "weighbridge",
+        "truck scale",
+        "factory floor",
+        "scada",
+        "cement kiln"
+      ],
+      "llm_framing_directive": "Frame financial impact as physical facility failure, carrier cross-connect disruption, or cryptographic HSM hardware availability, attenuated by colocation contract coverage."
+    },
+    "T2": {
+      "tower_id": "T2",
+      "canonical_tower_name": "Hybrid Compute & Platforms",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "CAPITAL_INEFFICIENCY",
+      "default_vulnerability_baseline": 0.22,
+      "narrative_semantic_key": "HYBRID_COMPUTE_PLATFORMS",
+      "primary_metric_label": "Compute Platform Availability Outage Rate",
+      "primary_metric_unit": "/hr",
+      "prohibited_narrative_terms": [
+        "weighbridge",
+        "truck scale",
+        "factory floor"
+      ],
+      "llm_framing_directive": "Frame financial impact as hypervisor node failure, Kubernetes control plane partition, or cluster compute capacity exhaustion."
+    },
+    "T3": {
+      "tower_id": "T3",
+      "canonical_tower_name": "Network & Connectivity",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "CAPITAL_INEFFICIENCY",
+      "default_vulnerability_baseline": 0.25,
+      "narrative_semantic_key": "NETWORK_CONNECTIVITY",
+      "primary_metric_label": "Network Transit & Routing Outage Rate",
+      "primary_metric_unit": "/hr",
+      "prohibited_narrative_terms": [
+        "weighbridge",
+        "truck scale",
+        "factory floor"
+      ],
+      "llm_framing_directive": "Frame financial impact as Direct Connect link failure, BGP convergence delays, or packet drop during peak clearing volumes."
+    },
+    "T4": {
+      "tower_id": "T4",
+      "canonical_tower_name": "Data Services & Storage",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "AVAILABILITY_OUTAGE",
+      "default_vulnerability_baseline": 0.24,
+      "narrative_semantic_key": "DATA_SERVICES_STORAGE",
+      "primary_metric_label": "Storage Capacity Waste & Unaligned Tiering",
+      "primary_metric_unit": "/year",
+      "prohibited_narrative_terms": [
+        "clearing halt",
+        "transactional outage"
+      ],
+      "llm_framing_directive": "Frame financial impact primarily as unoptimized storage tiering, uncompressed snapshot bloat, and orphaned block volume waste, alongside data availability risks."
+    },
+    "T5": {
+      "tower_id": "T5",
+      "canonical_tower_name": "Resilience & Continuity",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "REGULATORY_AND_BREACH",
+      "default_vulnerability_baseline": 0.18,
+      "narrative_semantic_key": "RESILIENCE_CONTINUITY",
+      "primary_metric_label": "Severe Contingency Outage Rate",
+      "primary_metric_unit": "/hr",
+      "prohibited_narrative_terms": [
+        "weighbridge",
+        "truck scale"
+      ],
+      "llm_framing_directive": "Frame financial impact as catastrophic multi-region disaster recovery failure, prolonged RTO breach, or unverified backup recovery delay."
+    },
+    "T6": {
+      "tower_id": "T6",
+      "canonical_tower_name": "Infrastructure Security & Identity",
+      "primary_archetype": "REGULATORY_AND_BREACH",
+      "secondary_archetype": "AVAILABILITY_OUTAGE",
+      "default_vulnerability_baseline": 0.2,
+      "narrative_semantic_key": "INFRASTRUCTURE_SECURITY_IDENTITY",
+      "primary_metric_label": "Statutory Sanction & Forensic Recovery Exposure",
+      "primary_metric_unit": "/event",
+      "prohibited_narrative_terms": [
+        "downtime per hour",
+        "hourly burn rate",
+        "clearing halt"
+      ],
+      "llm_framing_directive": "FORBIDDEN: Do not frame security as operational downtime per hour. Frame financial exposure strictly as regulatory non-compliance fines (DORA/GDPR/PRA), forensic recovery costs, and breach response liabilities."
+    },
+    "T7": {
+      "tower_id": "T7",
+      "canonical_tower_name": "ITSM & Digital Operations",
+      "primary_archetype": "PRODUCTIVITY_TOIL",
+      "secondary_archetype": "AVAILABILITY_OUTAGE",
+      "default_vulnerability_baseline": 0.26,
+      "narrative_semantic_key": "ITSM_DIGITAL_OPERATIONS",
+      "primary_metric_label": "Operational Friction & Incident Handling Toil",
+      "primary_metric_unit": "hours/year",
+      "prohibited_narrative_terms": [
+        "clearing halt",
+        "payment outage",
+        "downtime per hour"
+      ],
+      "llm_framing_directive": "FORBIDDEN: Do not frame ITSM gaps as transactional clearing downtime. Frame financial exposure as engineering toil hours wasted on repetitive tickets, MTTR coordination latency, and developer productivity drag."
+    },
+    "T8": {
+      "tower_id": "T8",
+      "canonical_tower_name": "Strategy, Governance & FinOps",
+      "primary_archetype": "CAPITAL_INEFFICIENCY",
+      "secondary_archetype": "REGULATORY_AND_BREACH",
+      "default_vulnerability_baseline": 0.28,
+      "narrative_semantic_key": "STRATEGY_GOVERNANCE_FINOPS",
+      "primary_metric_label": "Cloud Cost Inefficiency & Licensing Liability Drift",
+      "primary_metric_unit": "/year",
+      "prohibited_narrative_terms": [
+        "clearing halt",
+        "transactional outage",
+        "downtime per hour",
+        "/hr"
+      ],
+      "llm_framing_directive": "FORBIDDEN: Do not mention payment clearing halts or hourly transactional downtime. Frame financial exposure strictly as unoptimized cloud infrastructure spend, unreserved compute drift, orphaned resources, and vendor licensing liability."
+    },
+    "T9": {
+      "tower_id": "T9",
+      "canonical_tower_name": "Digital Workplace & User Services",
+      "primary_archetype": "PRODUCTIVITY_TOIL",
+      "secondary_archetype": "CAPITAL_INEFFICIENCY",
+      "default_vulnerability_baseline": 0.25,
+      "narrative_semantic_key": "DIGITAL_WORKPLACE_USER_SERVICES",
+      "primary_metric_label": "Workforce Cognitive Friction & Device Latency",
+      "primary_metric_unit": "hours/year",
+      "prohibited_narrative_terms": [
+        "clearing halt",
+        "payment outage",
+        "downtime per hour",
+        "/hr"
+      ],
+      "llm_framing_directive": "FORBIDDEN: Do not frame workplace or laptop issues as transactional payment clearing halts. Frame financial exposure as aggregate employee hours lost to slow boot times, ticket wait latency, and productivity drag."
+    },
+    "T10": {
+      "tower_id": "T10",
+      "canonical_tower_name": "Core Transactional & Mission-Critical Systems",
+      "primary_archetype": "AVAILABILITY_OUTAGE",
+      "secondary_archetype": "REGULATORY_AND_BREACH",
+      "default_vulnerability_baseline": 0.15,
+      "narrative_semantic_key": "CORE_TRANSACTIONAL_SYSTEMS",
+      "primary_metric_label": "Core Transactional Clearing Stoppage Rate",
+      "primary_metric_unit": "/hr",
+      "prohibited_narrative_terms": [
+        "weighbridge",
+        "truck scale",
+        "factory floor"
+      ],
+      "llm_framing_directive": "Frame financial impact as direct transactional clearing stoppage, payment settlement delay penalties, and regulatory breach of core banking SLAs."
+    }
+  },
+  "operational_archetypes": {
+    "CONTINUOUS_DIGITAL_FINTECH": {
+      "description": "Neobanks, high-frequency trading, payment gateways, cloud-native SaaS platforms.",
+      "it_spend_intensity_ratio": 0.082,
+      "default_perimeter_ratio": 0.95,
+      "buffering_elasticity_beta": 0.95,
+      "cloud_intensity_gamma": 0.85,
+      "regulatory_statutory_cap_pct": 0.04,
+      "base_enforcement_discretion_theta": 0.28,
+      "cyber_frequency_lambda_base": 0.42
+    },
+    "PROCESS_MANUFACTURING_OT": {
+      "description": "Heavy industry, cement, chemicals, metallurgy, utilities with physical silo/inventory buffers.",
+      "it_spend_intensity_ratio": 0.016,
+      "default_perimeter_ratio": 0.62,
+      "buffering_elasticity_beta": 0.35,
+      "cloud_intensity_gamma": 0.22,
+      "regulatory_statutory_cap_pct": 0.02,
+      "base_enforcement_discretion_theta": 0.12,
+      "cyber_frequency_lambda_base": 0.24
+    },
+    "LIFE_SAFETY_CRITICAL": {
+      "description": "Hospital networks, clinical diagnostics, pharmaceutical cold-chain, emergency services.",
+      "it_spend_intensity_ratio": 0.034,
+      "default_perimeter_ratio": 0.88,
+      "buffering_elasticity_beta": 0.78,
+      "cloud_intensity_gamma": 0.45,
+      "regulatory_statutory_cap_pct": 0.02,
+      "base_enforcement_discretion_theta": 0.22,
+      "cyber_frequency_lambda_base": 0.38
+    },
+    "HIGH_TEMPO_COMMERCIAL": {
+      "description": "Omnichannel retail, supermarkets, fast-moving consumer goods (FMCG), e-commerce.",
+      "it_spend_intensity_ratio": 0.022,
+      "default_perimeter_ratio": 0.85,
+      "buffering_elasticity_beta": 0.82,
+      "cloud_intensity_gamma": 0.55,
+      "regulatory_statutory_cap_pct": 0.02,
+      "base_enforcement_discretion_theta": 0.15,
+      "cyber_frequency_lambda_base": 0.35
+    },
+    "DEFERRED_NETWORK_LOGISTICS": {
+      "description": "Maritime shipping, freight forwarding, warehousing, B2B supply chain networks.",
+      "it_spend_intensity_ratio": 0.025,
+      "default_perimeter_ratio": 0.75,
+      "buffering_elasticity_beta": 0.5,
+      "cloud_intensity_gamma": 0.48,
+      "regulatory_statutory_cap_pct": 0.02,
+      "base_enforcement_discretion_theta": 0.14,
+      "cyber_frequency_lambda_base": 0.3
+    },
+    "STANDARD_ENTERPRISE_B2B": {
+      "description": "Professional services, corporate real estate, construction, general B2B holdings.",
+      "it_spend_intensity_ratio": 0.028,
+      "default_perimeter_ratio": 0.8,
+      "buffering_elasticity_beta": 0.45,
+      "cloud_intensity_gamma": 0.6,
+      "regulatory_statutory_cap_pct": 0.02,
+      "base_enforcement_discretion_theta": 0.1,
+      "cyber_frequency_lambda_base": 0.22
+    }
+  },
+  "receptor_weights": {
+    "AVAILABILITY_OUTAGE": {
+      "vector_alpha_weight": 0.435,
+      "vector_beta_weight": 0.342,
+      "vector_gamma_weight": 0.223
+    },
+    "CAPITAL_INEFFICIENCY": {
+      "vector_alpha_weight": 0.485,
+      "vector_beta_weight": 0.312,
+      "vector_gamma_weight": 0.203
+    },
+    "PRODUCTIVITY_TOIL": {
+      "vector_alpha_weight": 0.448,
+      "vector_beta_weight": 0.334,
+      "vector_gamma_weight": 0.218
+    },
+    "REGULATORY_AND_BREACH": {
+      "vector_alpha_weight": 0.536,
+      "vector_beta_weight": 0.268,
+      "vector_gamma_weight": 0.196
+    }
+  }
+}

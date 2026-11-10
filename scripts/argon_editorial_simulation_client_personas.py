@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
-"""Argon Editorial Simulation: Battle-Hardened Client Persona Evaluation of Pillar Generation Strategies."""
+"""Simulation of Molins CTO, CIO, and Super-Specialist Forensic Auditor.
+
+Audits the actual Executive Snapshot of all 10 Molins towers currently generated on disk:
+1. CTO of Molins (Pragmatic plant engineer, knows every switch, SimpliVity node, kiln, and truck scale)
+2. CIO of Molins (Strategic IT executive, board defensibility, budget, Broadcom, team structure)
+3. Super-Specialist Forensic Auditor (Hyper-critical nitpicker searching for contradictions, bugs, hallucinations)
+
+Rates each of the 10 towers out of 10 and delivers their exact, unvarnished dialogue and verdict.
+"""
+
+from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -15,57 +25,54 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-# Load sample evidence
-samples = []
-for t_code, p_id in [("T1", "T1.P2"), ("T2", "T2.P2"), ("T5", "T5.P3"), ("T6", "T6.P2"), ("T9", "T9.P1")]:
-    payload_path = REPO_ROOT / f"working/molins/{t_code}/blueprint_{t_code.lower()}_payload.json"
-    if payload_path.exists():
-        with open(payload_path) as f:
-            data = json.load(f)
-        p_data = [p for p in data["pillars_analysis"] if p["pillar_id"] == p_id]
-        if p_data:
-            samples.append(p_data[0])
+towers_data = {}
+for i in range(1, 11):
+    p = REPO_ROOT / f"working/molins/T{i}/blueprint_t{i}_payload.json"
+    if p.exists():
+        d = json.load(open(p, encoding="utf-8"))
+        towers_data[f"T{i}"] = {
+            "name": d.get("tower_name"),
+            "score": d.get("score") or d.get("maturity_score"),
+            "ale": d.get("total_fair_ale"),
+            "executive_snapshot": d.get("executive_snapshot", {}),
+        }
 
 client = create_genai_client()
 model_name = get_model(ModelTier.REASONING)
+print(f"Connecting to Reasoning model '{model_name}' for 3-Persona Client Simulation...")
 
-PROMPT_SIMULATION = f"""You are 'gemini-4-argon', the supreme arbiter of executive consulting quality.
-You are now adopting the persona of a battle-hardened, cynical, Tier-1 Client (CIO/CFO of a €1B manufacturing company). You have read thousands of consulting reports from Big 4, Gartner, and McKinsey. You hate template-driven reports, you hate robotic structures where every section looks exactly the same, and you hate when consultants drop names (like "According to Gartner...") just to sound smart when it doesn't add value.
+prompt = f"""You are simulating an intensive, adversarial review meeting with 3 key figures at Molins evaluating the 10 Specialist Annex Executive Snapshots:
 
-We are trying to design the ultimate prompt logic for our AI engine to write the 3.2 section (the 50 pillars).
+THE 3 REVIEWERS:
+1. The CTO of Molins: Pragmatic industrial engineering veteran. Knows the Sant Vicenç plant inside out, knows the SimpliVity nodes, knows the quarry, knows the truck scales (básculas), hates consultant fluff, respects brutal physical accuracy.
+2. The CIO of Molins: Corporate IT leader. Reports to the Executive Committee / Board. Cares about budgets, Broadcom renewal cliff, SECIL Portugal debt, team bandwidth (5 internal staff), and board defensibility.
+3. The Super-Specialist Forensic Auditor (Tier-1 Nitpicker): World-class auditor hunting for logical contradictions, cross-tower repetition, hallucinations, and ungrounded claims.
 
-Currently, we are debating how to inject 'SOTA Frameworks' (like ISO 22301, DORA, ASHRAE, CIS Controls) into the text.
-Option A: Force an explicit citation in every pillar (Robotic, feels like an academic paper).
-Option B: Weave the framework's wisdom *implicitly* without naming it (Elegant, but maybe lacks punch when we really need to prove the client wrong).
-Option C: Dynamic, context-aware synthesis. The AI decides *when* to drop the hammer explicitly (e.g., when the client is delusional and there is a huge gap between declared and calibrated scores, or a massive catastrophic blind spot) and *when* to use implicit wisdom for standard/mature pillars.
+THE ACTUAL DATA OF THE 10 TOWERS UNDER REVIEW:
+{json.dumps(towers_data, indent=2, ensure_ascii=False)}
 
-YOUR TASK:
-1. Analyze this debate from the perspective of the battle-hardened CIO. Tell us exactly what makes you throw a report in the trash, and what makes you say "These guys are brilliant."
-2. Define the definitive "Dynamic Generative Ruleset" that the AI engine should follow for every pillar so that NO TWO PILLARS FEEL LIKE A TEMPLATE, but all of them are 100% senior and pericial.
-3. Apply your ruleset to write the perfect 2-paragraph narrative for these three distinct cases, demonstrating the shifting tone and strategy:
-   - CASE 1 (The Delusional Gap): T2.P2 (Containers). Client declared 4.25, reality is 1.00. 300 VMs, no containers. Needs the hammer.
-   - CASE 2 (The Hidden Catastrophe): T5.P3 (Disaster Recovery). Client thinks 2 CPDs at 500m is a DR. They share the same power grid. Needs implicit architectural wisdom.
-   - CASE 3 (The Mature/Stable Routine): T9.P1 (Endpoint Lifecycle). Client renews laptops every 4 years. Score 4.00. Needs empathy, business logic, zero name-dropping.
+TASK:
+For EACH of the 10 Towers (T1 to T10):
+1. CTO's Reaction: What does the CTO say? Does he believe it?
+2. CIO's Reaction: What does the CIO say? Does he find it actionable for the Board?
+3. Forensic Auditor's Critique: What flaw, contradiction, or strength does the auditor detect?
+4. Numerical Score (0 to 10) awarded to that tower's executive snapshot.
 
-Output a highly critical, authoritative markdown report.
+FINALLY:
+- Overall Scorecard across all 10 towers.
+- Final Verdict: Would the CTO and CIO sign off on these executive summaries to be delivered to the Board of Directors tomorrow morning?
+
+Format the response in authoritative, realistic, high-impact Markdown.
 """
 
-def main() -> None:
-    print("Running Argon Editorial Simulation with Client Personas...")
-    response = client.models.generate_content(
-        model=model_name,
-        contents=PROMPT_SIMULATION,
-    )
+response = client.models.generate_content(
+    model=model_name,
+    contents=prompt,
+)
 
-    out_file = REPO_ROOT / "docs/audits/ARGON_EDITORIAL_PERSONA_SIMULATION.md"
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(response.text, encoding="utf-8")
-
-    print("=" * 80)
-    print("SIMULATION COMPLETE. VERDICT:")
-    print("=" * 80)
-    print(response.text[:2000] + "...\n[Output truncated, see full file]")
-    print(f"\nFull report written to {out_file}")
-
-if __name__ == "__main__":
-    main()
+out_file = REPO_ROOT / "docs/audits/MOLINS_CTO_CIO_AUDITOR_SIMULATION.md"
+out_file.write_text(response.text, encoding="utf-8")
+print(f"\n✓ Saved 3-Persona Client Simulation report to {out_file.relative_to(REPO_ROOT)}")
+print("\n" + "=" * 80)
+print(response.text[:2500] + "\n... [TRUNCATED] ...")
+print("=" * 80)
