@@ -315,18 +315,35 @@ def run_single_evolution_cycle(target_file: Optional[str] = None) -> Tuple[bool,
         run_cmd(["git", "checkout", "--", selected_target], "Revert failed mutation")
         return False, baseline_avg
 
-    new_avg, _ = extract_tribunal_grades()
+    new_avg, new_failing = extract_tribunal_grades()
     logger.info(f"Post-Mutation Tribunal Average: {new_avg:.2f} / 10.0 (Baseline: {baseline_avg:.2f})")
 
+    # Enforce Strict Pareto Rule:
+    # 1. Global average must strictly improve.
+    # 2. Zero tower regressions: no individual tower can drop below its baseline grade.
+    new_grades_map = {item["tower"]: item["grade"] for item in new_failing}
+    base_grades_map = {item["tower"]: item["grade"] for item in failing_towers}
+    has_regression = any(new_grades_map.get(t, 0.0) < base_grades_map.get(t, 0.0) - 0.05 for t in base_grades_map)
+
     # 7. Monotonic Ratchet Decision
-    if new_avg > baseline_avg:
-        logger.info(f"✓ SCORE IMPROVED: {baseline_avg:.2f} -> {new_avg:.2f}. Committing mutation to git.")
+    if new_avg > baseline_avg and not has_regression:
+        logger.info(f"✓ STRICT PARETO IMPROVEMENT: {baseline_avg:.2f} -> {new_avg:.2f} with zero regressions. Committing mutation to git.")
         commit_msg = f"feat(evolution): tier-1 optimization in {Path(selected_target).name} (avg: {new_avg:.2f}/10)"
         run_cmd(["git", "add", selected_target], "Stage improved target")
         run_cmd(["git", "commit", "-m", commit_msg], "Commit improved target")
         return True, new_avg
     else:
-        logger.warning(f"⚠️ Score did not improve ({new_avg:.2f} <= {baseline_avg:.2f}). Reverting mutation...")
+        reasons = []
+        if new_avg <= baseline_avg:
+            reasons.append(f"average {new_avg:.2f} <= {baseline_avg:.2f}")
+        if has_regression:
+            dropped = [
+                f"{t} ({base_grades_map[t]:.1f}->{new_grades_map.get(t, 0.0):.1f})"
+                for t in base_grades_map
+                if new_grades_map.get(t, 0.0) < base_grades_map.get(t, 0.0) - 0.05
+            ]
+            reasons.append(f"towers regressed: {', '.join(dropped)}")
+        logger.warning(f"⚠️ Mutation rejected ({'; '.join(reasons)}). Reverting mutation...")
         run_cmd(["git", "checkout", "--", selected_target], "Rollback non-improving mutation")
         return False, baseline_avg
 

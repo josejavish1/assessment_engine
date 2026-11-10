@@ -816,7 +816,8 @@ _ENGLISH_KPI_MARKER_RE: Final[re.Pattern[str]] = re.compile(
     r"Physical\s+Access|Surveillance|Cabling|Rack|UPS|Generator|Substation|"
     r"Enclosure|Benchmark|Alignment|Target|Strategic|Cultural|FinOps|Experience|"
     r"Workspace|Workplace|Collaboration|Productivity|Directory|Identity|Federation|"
-    r"Single\s+Sign-On|Zero\s+Trust|Microsegmentation|Bastion|Vault|Rotation)\b",
+    r"Site\s+Reliability|Reliability|Engineering|SRE|Maturity|Budget|Budgets|Toil|"
+    r"Backlog|Burndown|Aging|Queue|Ticket|Single\s+Sign-On|Zero\s+Trust|Microsegmentation|Bastion|Vault|Rotation)\b",
     re.IGNORECASE,
 )
 
@@ -827,7 +828,7 @@ _CAMELCASE_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
 _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
     r"\[\s*(?:INSERT\s+)?(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
     r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name|"
-    r"Control\s*Name|Framework\s*Reference|[^\]]{1,45}\s*Name)\s*\]",
+    r"Control\s*Name|Framework\s*Reference|[^\]]{1,45}?\s*(?:Name|Topic|Field))(?:\s+Here)?\s*\]",
     re.IGNORECASE,
 )
 
@@ -3284,9 +3285,15 @@ class PayloadToASTBridge:
 
             if "TOIL" in raw_arch:
                 r_rate = 65.0
-                r_eff_sle = r_ale / r_lef if (r_ale > 0.0 and r_lef > 0.0) else (r_lm * 5000.0)
-                r_hours = max(round(r_eff_sle / r_rate, 1), 0.1)
-                r_item["sle"] = round(r_hours * r_rate)
+                r_hours = min(12.0, max(2.0, float(r_item.get("downtime_hours") or (r_lm * 2.0))))
+                r_sle = round(r_hours * r_rate)
+                r_item["sle"] = r_sle
+                if r_ale > 0 and r_sle > 0:
+                    est_annual = max(1, int(round(r_ale / float(r_sle))))
+                else:
+                    est_annual = max(1, int(round(r_tef * 6.0)))
+                r_item["lef"] = float(est_annual)
+                r_item["tef_annual"] = float(est_annual)
             else:
                 r_rate = max(round(hourly_burn * 0.70, 2), 1.0) if hourly_burn > 0 else 5000.0
                 r_eff_sle = r_ale / r_lef if (r_ale > 0.0 and r_lef > 0.0) else (r_lm * 5000.0)
@@ -3800,7 +3807,9 @@ class PayloadToASTBridge:
         # Single Invariant Domain Hourly Downtime Rate across all cards (RFC 054)
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
             domain_hourly_rate = 65.0  # Fully burdened engineering labour rate (eliminates 9,142 EUR/h fallacy)
-            eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
+            # Bound single-event toil duration to realistic operational bounds (2.0 to 12.0 hours per incident)
+            # preventing absurd claims of 974h or 1,700h of engineering effort for a single server failure
+            eff_recovery_hours = min(12.0, max(2.0, float(hc.get("downtime_hours") or (raw_lm * 2.0))))
             reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
         else:
             domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
@@ -3930,7 +3939,18 @@ class PayloadToASTBridge:
             sev_badge_bg = severity_bg_hex
 
         # Calculate human-readable return period / frequency (RFC 053)
-        if lef <= 0:
+        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+            # Chronic operational toil is recurring across multiple incidents per year
+            ale_num = float(metrics.annualized_loss_expectancy)
+            if ale_num > 0 and reconciled_sle > 0:
+                est_annual_events = max(1, int(round(ale_num / float(reconciled_sle))))
+            else:
+                est_annual_events = max(1, int(round(raw_tef * 6.0)))
+            ev_str = format_number(float(est_annual_events), locale=meta_lang, decimals=0)
+            freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
+            days_int = max(1, int(round(365.0 / est_annual_events)))
+            return_period_str = f"~{days_int} {t('days_unit', locale=meta_lang, default='días')}"
+        elif lef <= 0:
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=format_number(0.1, locale=meta_lang, decimals=1))
         elif lef < 1.0:
             rec_years = round(1.0 / lef, 1)
@@ -4168,6 +4188,8 @@ class PayloadToASTBridge:
         if ":" in causal_title and len(causal_title.split(":", 1)[0]) <= 40:
             causal_title = causal_title.split(":", 1)[1].strip()
         display_title = causal_title if len(causal_title) > 10 else loss_event.title
+        if display_title.count("(") > display_title.count(")"):
+            display_title += ")"
         display_title = _dedup_clauses(display_title)
         display_title = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
             fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
