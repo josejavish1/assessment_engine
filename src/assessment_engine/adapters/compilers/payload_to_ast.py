@@ -3757,6 +3757,33 @@ class PayloadToASTBridge:
         vuln_txt = _repair_broken_template_grammar(vuln_txt, meta_lang, fallback_pillar_ref)
         impact_txt = _repair_broken_template_grammar(impact_txt, meta_lang, fallback_pillar_ref)
         actuarial_box_text = _repair_broken_template_grammar(actuarial_box_text, meta_lang, fallback_pillar_ref)
+        fallback_prose_label = fallback_pillar_ref or t(
+            "domain_control_standard_fallback",
+            locale=meta_lang,
+            default="Gobernanza Operativa",
+        )
+        for _prose_val in (vuln_txt, impact_txt):
+            pass
+        vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_prose_label, vuln_txt)
+        vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(
+            lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), vuln_txt
+        )
+        vuln_txt = _sanitize_localized_kpi_leaks(
+            vuln_txt, meta_lang, fallback_pillar=fallback_prose_label
+        )
+        impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_prose_label, impact_txt)
+        impact_txt = _CAMELCASE_ARTIFACT_RE.sub(
+            lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), impact_txt
+        )
+        impact_txt = _sanitize_localized_kpi_leaks(
+            impact_txt, meta_lang, fallback_pillar=fallback_prose_label
+        )
+        if not str(meta_lang).lower().startswith("en"):
+            vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_prose_label, vuln_txt)
+            vuln_txt = _repair_broken_template_grammar(vuln_txt, meta_lang, fallback_prose_label)
+            impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_prose_label, impact_txt)
+            impact_txt = _repair_broken_template_grammar(impact_txt, meta_lang, fallback_prose_label)
+
         vuln_txt = _deduplicate_prose_sentences(vuln_txt)
         impact_txt = _deduplicate_prose_sentences(impact_txt)
 
