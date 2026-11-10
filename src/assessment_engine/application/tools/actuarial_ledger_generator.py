@@ -1,6 +1,4 @@
-import json
 import logging
-from pathlib import Path
 from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
@@ -12,24 +10,26 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
     script compliant with the Federal Reserve SR 11-7 model risk management guidance.
     """
     client_name = blueprint_payload.get("document_meta", {}).get("client_name", "UNKNOWN")
+    currency_code = str(
+        blueprint_payload.get("currency_code")
+        or blueprint_payload.get("currency")
+        or "EUR"
+    ).strip().upper()
+
     from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
     base_dir = resolve_case_dir(client_name, tower_id)
     base_dir.mkdir(parents=True, exist_ok=True)
         
-    dossier_path = base_dir / f"Expediente_Auditoria_Riesgos_{tower_id}.md"
+    dossier_path = base_dir / f"Actuarial_Risk_Audit_Dossier_{tower_id}.md"
     
     lines = []
-    lines.append(f"# Actuarial Validation Dossier (SR 11-7) - Tower {tower_id}")
-    lines.append("This document constitutes the **Whitebox Audit Trail** for financial risk evaluation. It contains complete methodological rationale (SME Elicitation Rationale) and exact stochastic distribution parameters for each vulnerability, enabling third-party auditors to empirically reproduce the Monte Carlo simulation.\n")
+    lines.append(f"# Actuarial Diagnostic Dossier - Tower {tower_id}")
+    lines.append("This document constitutes the **Audit Trail** for quantitative risk evaluation. It details methodological rationale, parameter sources, and simulation outputs. Results represent quantitative diagnostic estimates derived from structured evidence, explicit assumptions, and benchmark priors.\n")
     
     lines.append("## 0. Executive Briefing: Risk Calculation Methodology")
-    lines.append("- **What do these figures represent?** They do not represent invoiced cash losses or levied statutory fines. They represent a prudent actuarial estimation of expected losses from service degradation, outage toil, or incident response if identified vulnerabilities trigger failures.")
-    lines.append("- **Differentiation by operational scope:** The model distinguishes three functional impact tiers:")
-    lines.append("  - *Tier 1 - Mission-Critical Operations & Data Center:* Direct production environments, essential service delivery, or core data center infrastructure (weighted at 60% of corporate hourly downtime cost).")
-    lines.append("  - *Tier 2 - Enterprise Core Platforms & Transactional Systems:* Core business systems (ERP, enterprise databases, primary storage, and billing, weighted at 35% of hourly cost).")
-    lines.append("  - *Tier 3 - Administrative Networks & Internal Support:* Office networks, workstations, and collaboration tools (weighted at 15% of hourly cost for employee productivity drag, without customer outage).")
-    lines.append("- **Executive Decision Use Case:** Provides a defensible baseline for the Board and Executive Committee to evaluate whether infrastructure modernization investments (CapEx/OpEx) are accretive against the cost of inaction (COI).")
-    lines.append("- **Precision and Confidence Margin:** Given rapid diagnostic constraints based on structured interviews rather than 12-month forensic telemetry, figures represent defensive orders of magnitude and statistical reference intervals (±30%).\n")
+    lines.append("- **Nature of Figures:** Estimates represent actuarial loss expectancies from potential service degradation, operational toil, or incident response if identified vulnerabilities trigger failures. They do not constitute accounting provisions or legal guarantees.")
+    lines.append("- **Operational Differentiation:** The model distinguishes functional impact tiers across mission-critical, core platforms, and administrative/support systems.")
+    lines.append("- **Evidential Boundaries:** Metrics reflect point-in-time diagnostic evaluations; unconfirmed assumptions are explicitly recorded in the parameter provenance ledger.\n")
     
     for pillar in blueprint_payload.get("pillars_analysis", []):
         for finding in pillar.get("health_check_asis", []):
@@ -45,56 +45,73 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
             slef_mod = finding.get("_consensus_slef_mod", 1.0)
             rationale = finding.get("_consensus_justification", "No deviation recorded.")
             
-            ale = finding.get("fair_ale_score", 0.0)
-            var_90 = finding.get("fair_p90_score", 0.0)
-            cvar = finding.get("fair_cvar_score") or (var_90 * 1.15 if var_90 > 0 else 0.0)
-            max_p99 = finding.get("fair_max_score", 0.0)
+            ale = float(finding.get("fair_ale_score", 0.0))
+            var_90 = float(finding.get("fair_p90_score", 0.0))
+            cvar = float(finding.get("fair_cvar_score") or 0.0)
+            max_p99 = float(finding.get("fair_max_score", 0.0))
             
             lines.append("---")
             lines.append(f"## 🧮 Audit Record: {risk_id} - {cap}\n")
             
             lines.append("### 1. Modeling Rationale (SME Elicitation)")
             lines.append(f"**Analyzed Vulnerability:** {finding.get('finding', 'N/A')}\n")
-            lines.append("**Bayesian Update Rationale (Prior Update Rationale):**")
+            lines.append("**Prior Update Rationale:**")
             lines.append(f"> {rationale}\n")
             
             lines.append("### 2. Bayesian & Copula Stochastic Parameters")
             vec = finding.get("actuarial_input_vector") or {}
-            if vec:
+            finding_currency = str(vec.get("currency_code") or currency_code).strip().upper()
+            inputs_data = vec.get("inputs") or {}
+            if inputs_data:
+                lines.append("| Parameter | Estimated | Effective | Unit | Source Type | Confidence | Validation Status | Override |")
+                lines.append("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |")
+                for param_name, p_rec in inputs_data.items():
+                    if isinstance(p_rec, dict) and "effective_value" in p_rec:
+                        lines.append(
+                            f"| `{param_name}` | `{p_rec.get('estimated_value')}` | `{p_rec.get('effective_value')}` | "
+                            f"{p_rec.get('unit', '-')} | `{p_rec.get('source_type', 'UNSPECIFIED')}` | "
+                            f"{p_rec.get('confidence', 'UNASSESSED')} | {p_rec.get('validation_status', 'UNCONFIRMED')} | "
+                            f"{'YES' if p_rec.get('client_override') else 'NO'} |"
+                        )
+                lines.append("")
+            elif vec:
                 lines.append(f"- **Vulnerability Posterior Mean (Beta-Binomial):** `{vec.get('mean_vuln', 0.25):.4f}`")
                 lines.append(f"- **Audit Evidence Ratio:** `{vec.get('audit_k_failures', 0)} deficiencies / {vec.get('audit_n_trials', 0)} evaluated controls`")
                 lines.append(f"- **Threat Event Frequency Mean (LEF):** `{vec.get('mean_lef', 0.10):.4f} events/year`")
-                lines.append(f"- **Single Loss Expectancy Mean (SLE):** `{vec.get('mean_sle', 0.0):,.2f} €`")
-                lines.append(f"- **Euler Sub-additive Allocated ALE:** `{vec.get('portfolio_allocated_ale', ale):,.2f} €`\n")
+                lines.append(f"- **Single Loss Expectancy Mean (SLE):** `{vec.get('mean_sle', 0.0):,.2f} {finding_currency}`")
+                lines.append(f"- **Euler Sub-additive Allocated ALE:** `{vec.get('portfolio_allocated_ale', ale):,.2f} {finding_currency}`\n")
             else:
-                lines.append(f"- **Distribution Type:** Discrete Compound Poisson with Lognormal Severity.")
+                lines.append("- **Distribution Type:** Discrete Compound Poisson with Lognormal Severity.")
                 lines.append(f"- **Baseline Metrics:** Ordinal Frequency = {tef}/5 | Ordinal Severity = {lm}/5.")
-                lines.append(f"- **Applied Attenuation Factors (Post-Consensus):** TEF=`{tef_mod}x`, LM=`{lm_mod}x`, SLEF=`{slef_mod}x`\n")
+                lines.append(f"- **Applied Attenuation Factors:** TEF=`{tef_mod}x`, LM=`{lm_mod}x`, SLEF=`{slef_mod}x`\n")
             
-            lines.append("### 3. Certified Financial Exposure")
-            lines.append(f"- **Annual Loss Exposure (ALE - Mean):** {ale:,.2f} €")
-            lines.append(f"- **Value-at-Risk (VaR - P90):** {var_90:,.2f} €")
-            lines.append(f"- **Conditional Value-at-Risk (CVaR - Expected Shortfall):** {cvar:,.2f} €")
-            lines.append(f"- **Maximum Plausible Bound (P99):** {max_p99:,.2f} €\n")
+            lines.append("### 3. Quantitative Risk Exposure")
+            lines.append(f"- **Annual Loss Exposure (ALE - Mean):** {ale:,.2f} {finding_currency}")
+            lines.append(f"- **Value-at-Risk (VaR - P90):** {var_90:,.2f} {finding_currency}")
+            lines.append(f"- **Conditional Value-at-Risk (CVaR - Expected Shortfall):** {cvar:,.2f} {finding_currency}")
+            lines.append(f"- **Value-at-Risk (VaR - P99):** {max_p99:,.2f} {finding_currency}\n")
             
             lines.append("### 4. Auditor Replication Script (Python/NumPy)")
-            lines.append("The following code is 100% self-contained and reproducible. You can execute it in any standard Python environment to verify that the mathematical model converges identically against the persisted deterministic PRNG seed:\n")
+            lines.append("The portfolio simulation is reproducible via the deterministic reproduction manifest:\n")
             
-            code_block = f"""```python
+            code_block = """```python
 import json
-import numpy as np
-from assessment_engine.domain.bayesian_fair_copula_engine import BayesianFairCopulaEngine, FindingTelemetry, OperationalZone
+import sys
+from pathlib import Path
+from assessment_engine.domain.bayesian_fair_copula_engine import replay_portfolio_simulation
 
-def reproduce_risk_{risk_id.replace('-', '_')}():
-    engine = BayesianFairCopulaEngine()
-    # In production, empirical parameters are loaded from taxonomy_actuarial_archetypes.json
-    # and deterministic seeds are derived via SHA-256 hash of the topological node footprint.
-    # The true copula executes sub-additive Euler integration.
-    print("SR 11-7 Model Risk validation requires execution of the full Bayesian Copula pipeline.")
-    print(f"Target CVaR for this node is exactly: {cvar:,.2f} EUR")
+def verify_reproduction(manifest_file: str = "portfolio_reproduction_manifest.json") -> None:
+    manifest_path = Path(manifest_file)
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"Reproduction manifest not found at: {manifest_path.resolve()}")
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    result = replay_portfolio_simulation(manifest_data, currency_tolerance=0.01)
+    print(f"Replay verified successfully: {result}")
 
 if __name__ == "__main__":
-    reproduce_risk_{risk_id.replace('-', '_')}()
+    target_path = sys.argv[1] if len(sys.argv) > 1 else "portfolio_reproduction_manifest.json"
+    verify_reproduction(target_path)
 ```\n"""
             lines.append(code_block)
             
@@ -105,14 +122,17 @@ if __name__ == "__main__":
         tower_p90 = float(blueprint_payload.get("total_fair_p90", 0.0))
         tower_cvar = float(blueprint_payload.get("total_fair_cvar_90", 0.0))
         finding_ale_sum = sum(float(f.get("fair_ale_score", 0.0)) for p in blueprint_payload.get("pillars_analysis", []) for f in p.get("health_check_asis", []))
+        closure_tol = max(1.0, 0.02 * max(1, len(blueprint_payload.get("pillars_analysis", []))))
         if tower_ale > 0.0 and finding_ale_sum > 0.0:
             import math
-            assert math.isclose(tower_ale, finding_ale_sum, abs_tol=1.0), (
-                f"SSOT Non-Closure: Tower ALE ({tower_ale}) != Sum of Findings ({finding_ale_sum})"
-            )
-            assert tower_cvar >= tower_p90, (
-                f"Sub-additivity / Tail Violation: CVaR90 ({tower_cvar}) < VaR90 ({tower_p90})"
-            )
+            if not math.isclose(tower_ale, finding_ale_sum, abs_tol=closure_tol):
+                raise AssertionError(
+                    f"SSOT Non-Closure: Tower ALE ({tower_ale}) != Sum of Findings ({finding_ale_sum}) within tolerance {closure_tol}"
+                )
+            if tower_cvar < tower_p90 - 0.01:
+                raise AssertionError(
+                    f"Sub-additivity / Tail Violation: CVaR90 ({tower_cvar}) < VaR90 ({tower_p90})"
+                )
     except Exception as e:
         logger.error(f"SR 11-7 Governance Gate Failed: {e}")
         raise e
@@ -120,6 +140,7 @@ if __name__ == "__main__":
     try:
         with open(dossier_path, "w", encoding="utf-8-sig") as f:
             f.write("\n".join(lines))
-        logger.info(f"✅ Audit Dossier MD generated at: {dossier_path}")
+        logger.info(f"Audit Dossier MD generated at: {dossier_path}")
     except Exception as e:
         logger.error(f"Failed to write actuarial dossier: {e}")
+        raise e

@@ -7,7 +7,7 @@ import re
 import threading
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -26,7 +26,11 @@ class TowerActuarialMapping(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    tower_id: str = Field(..., pattern=r"^T\d{1,2}$", description="Normalized tower code (e.g. T1, T10)")
+    tower_id: str = Field(
+        ...,
+        pattern=r"^(?:T\d{1,2}|D_[A-Z0-9_]+|[A-Z][A-Z0-9_]{1,31})$",
+        description="Normalized canonical or supported dynamic/custom tower code (e.g. T1, D_FAC, EDGE_01)",
+    )
     canonical_tower_name: str = Field(..., min_length=3)
     primary_archetype: LossArchetypeType
     secondary_archetype: Optional[LossArchetypeType] = None
@@ -68,19 +72,24 @@ class ActuarialTaxonomyRegistry(BaseModel):
 
     def get_mapping_for_tower(self, raw_tower_id: str) -> TowerActuarialMapping:
         """Retrieves the actuarial mapping for any tower code, normalizing representations."""
-        if not raw_tower_id:
+        if not raw_tower_id or not isinstance(raw_tower_id, str) or not raw_tower_id.strip():
             raise ValueError("Tower ID cannot be empty.")
 
         cleaned = raw_tower_id.strip().upper()
-        # Normalize T01 -> T1, T08 -> T8
-        match = re.search(r"T0?(\d+)", cleaned)
-        normalized_key = f"T{match.group(1)}" if match else cleaned
 
-        if normalized_key in self.mappings:
-            return self.mappings[normalized_key]
+        # 1. Canonical tower normalization: T01 -> T1, T08 -> T8
+        match = re.search(r"^T0?(\d+)$", cleaned)
+        if match:
+            normalized_key = f"T{match.group(1)}"
+            if normalized_key in self.mappings:
+                return self.mappings[normalized_key]
+            # Canonical IDs not in registry (e.g. T99, T00, T11) MUST raise KeyError
+            raise KeyError(
+                f"Forensic Taxonomy Error: Canonical tower ID '{raw_tower_id}' (normalized: '{normalized_key}') "
+                f"is not mapped in ActuarialTaxonomyRegistry. Available towers: {list(self.mappings.keys())}"
+            )
 
-        # Dynamic / custom enterprise domain fallback (e.g. D_FAC, D_OT, D_AI, D_SEC, EDGE_01)
-        # Sourced from standard enterprise infrastructure baseline (RFC 088 / SR 11-7 Section II)
+        # 2. Known dynamic domain aliases (RFC 088 / SR 11-7 Section II)
         dynamic_defaults: Dict[str, str] = {
             "D_FAC": "T1",
             "D_OT": "T1",
@@ -89,35 +98,59 @@ class ActuarialTaxonomyRegistry(BaseModel):
             "D_FIN": "T8",
             "D_EUC": "T9",
         }
-        if normalized_key in dynamic_defaults and dynamic_defaults[normalized_key] in self.mappings:
-            target_map = self.mappings[dynamic_defaults[normalized_key]]
+        if cleaned in dynamic_defaults and dynamic_defaults[cleaned] in self.mappings:
+            target_map = self.mappings[dynamic_defaults[cleaned]]
             return TowerActuarialMapping(
                 tower_id=cleaned,
-                domain_name=f"Dynamic Domain ({cleaned})",
+                canonical_tower_name=f"Dynamic Domain ({cleaned} -> {target_map.canonical_tower_name})",
                 primary_archetype=target_map.primary_archetype,
                 secondary_archetype=target_map.secondary_archetype,
-                default_cmmi_benchmark=target_map.default_cmmi_benchmark,
-                vector_alpha_weight=target_map.vector_alpha_weight,
-                vector_beta_weight=target_map.vector_beta_weight,
-                vector_gamma_weight=target_map.vector_gamma_weight,
+                default_vulnerability_baseline=target_map.default_vulnerability_baseline,
+                narrative_semantic_key=target_map.narrative_semantic_key,
+                primary_metric_label=target_map.primary_metric_label,
+                primary_metric_unit=target_map.primary_metric_unit,
+                prohibited_narrative_terms=list(target_map.prohibited_narrative_terms),
+                llm_framing_directive=target_map.llm_framing_directive,
             )
 
-        # Generic enterprise fallback for arbitrary dynamic towers
+        # 3. Arbitrary dynamic D_* towers inherit T1 infrastructure baseline
         t1_map = self.mappings.get("T1")
-        if t1_map:
+        if cleaned.startswith("D_") and t1_map:
             return TowerActuarialMapping(
                 tower_id=cleaned,
-                domain_name=f"Enterprise Operational Tower ({cleaned})",
-                primary_archetype=LossArchetypeType.AVAILABILITY_OUTAGE,
-                secondary_archetype=LossArchetypeType.PRODUCTIVITY_TOIL,
-                default_cmmi_benchmark=2.5,
-                vector_alpha_weight=t1_map.vector_alpha_weight,
-                vector_beta_weight=t1_map.vector_beta_weight,
-                vector_gamma_weight=t1_map.vector_gamma_weight,
+                canonical_tower_name=f"Dynamic Operational Domain ({cleaned})",
+                primary_archetype=t1_map.primary_archetype,
+                secondary_archetype=t1_map.secondary_archetype,
+                default_vulnerability_baseline=t1_map.default_vulnerability_baseline,
+                narrative_semantic_key=t1_map.narrative_semantic_key,
+                primary_metric_label=t1_map.primary_metric_label,
+                primary_metric_unit=t1_map.primary_metric_unit,
+                prohibited_narrative_terms=list(t1_map.prohibited_narrative_terms),
+                llm_framing_directive=t1_map.llm_framing_directive,
+            )
+
+        # 4. Arbitrary custom domain identifiers (e.g. EDGE_01) inherit T1 infrastructure baseline
+        prohibited_custom_ids = {"UNKNOWN", "NONE", "NULL", "UNDEFINED", "N_A", "NA", "DEFAULT"}
+        if (
+            cleaned not in prohibited_custom_ids
+            and re.match(r"^[A-Z][A-Z0-9_]{1,31}$", cleaned)
+            and t1_map is not None
+        ):
+            return TowerActuarialMapping(
+                tower_id=cleaned,
+                canonical_tower_name=f"Custom Assessment Domain ({cleaned})",
+                primary_archetype=t1_map.primary_archetype,
+                secondary_archetype=t1_map.secondary_archetype,
+                default_vulnerability_baseline=t1_map.default_vulnerability_baseline,
+                narrative_semantic_key=t1_map.narrative_semantic_key,
+                primary_metric_label=t1_map.primary_metric_label,
+                primary_metric_unit=t1_map.primary_metric_unit,
+                prohibited_narrative_terms=list(t1_map.prohibited_narrative_terms),
+                llm_framing_directive=t1_map.llm_framing_directive,
             )
 
         raise KeyError(
-            f"Forensic Taxonomy Error: Tower ID '{raw_tower_id}' (normalized: '{normalized_key}') "
+            f"Forensic Taxonomy Error: Tower ID '{raw_tower_id}' (normalized: '{cleaned}') "
             f"is not mapped in ActuarialTaxonomyRegistry. Available towers: {list(self.mappings.keys())}"
         )
 

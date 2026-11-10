@@ -1,8 +1,14 @@
-"""Empirical Actuarial Prior Fitting & Lineage Script (SR 11-7 Section III Compliance).
+"""Analytic Quantile-Matching Prior Calibration Script (SR 11-7 Section III Lineage).
 
-Demonstrates the closed-form mathematical calibration of parameters declared in
-taxonomy_actuarial_archetypes.json from peer-reviewed empirical benchmarks (Verizon DBIR,
-NetDiligence, Dragos, ECB Cyber Stress Test).
+Demonstrates the algebraic quantile-matching derivation of distribution parameters
+(mu, sigma) for lognormal loss severities from target median (P50) and tail (P90) points.
+
+NOTE ON METHODOLOGICAL LIMITATIONS:
+This script performs algebraic quantile matching against target reference points.
+It does NOT execute empirical maximum likelihood estimation (MLE) on raw loss microdata,
+nor does it compute empirical goodness-of-fit statistics (e.g., Kolmogorov-Smirnov).
+External benchmark sources are recorded as baseline citations marked NEEDS_REVIEW
+until backed by primary organizational data extracts.
 """
 
 from __future__ import annotations
@@ -10,20 +16,21 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict
+
 import numpy as np
-from scipy import optimize, stats
+from scipy import stats
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def solve_lognormal_parameters(
+def match_lognormal_from_quantiles(
     median_p50: float,
     tail_p90: float,
 ) -> tuple[float, float]:
-    """Solves for Lognormal (mu, sigma) given empirical median (P50) and tail (P90).
+    """Computes exact Lognormal (mu, sigma) parameters matching target P50 and P90 quantiles.
 
     P50 = exp(mu) => mu = ln(P50)
-    P90 = exp(mu + sigma * z_0.90) => sigma = (ln(P90) - mu) / 1.28155
+    P90 = exp(mu + sigma * z_0.90) => sigma = (ln(P90) - mu) / z_90
     """
     if median_p50 <= 0 or tail_p90 <= median_p50:
         raise ValueError("median_p50 must be > 0 and tail_p90 must be > median_p50")
@@ -34,15 +41,11 @@ def solve_lognormal_parameters(
     return round(mu, 4), round(sigma, 4)
 
 
-def solve_beta_parameters(
+def match_beta_from_prior(
     mean_vuln: float,
-    kappa_concentration: float = 20.0,
+    kappa_concentration: float = 24.0,
 ) -> tuple[float, float]:
-    """Solves for Beta (alpha, beta) parameters given expected vulnerability and concentration.
-
-    alpha = mean * kappa
-    beta = (1 - mean) * kappa
-    """
+    """Computes Beta (alpha, beta) parameters from prior mean and concentration kappa."""
     if not (0.0 < mean_vuln < 1.0):
         raise ValueError("mean_vuln must be in (0, 1)")
     alpha = mean_vuln * kappa_concentration
@@ -50,27 +53,36 @@ def solve_beta_parameters(
     return round(alpha, 4), round(beta, 4)
 
 
-def calibrate_archetype_lineage(
+def calibrate_archetype_priors(
     archetype_key: str,
-    empirical_p50: float,
-    empirical_p90: float,
+    target_p50: float,
+    target_p90: float,
     target_lambda: float,
+    source_reference: str | None = None,
 ) -> Dict[str, Any]:
-    """Calibrates and validates mathematical parameters for an operational archetype."""
-    mu, sigma = solve_lognormal_parameters(empirical_p50, empirical_p90)
-    alpha, beta = solve_beta_parameters(mean_vuln=0.25, kappa_concentration=20.0)
-
-    # Theoretical expected value of lognormal
+    """Derives and verifies quantile-matched prior parameters for an operational archetype."""
+    mu, sigma = match_lognormal_from_quantiles(target_p50, target_p90)
+    alpha, beta = match_beta_from_prior(mean_vuln=0.25, kappa_concentration=24.0)
     theoretical_mean = float(np.exp(mu + 0.5 * (sigma ** 2)))
+
+    # Evaluate reconstruction accuracy against target points
+    reconstructed_p50 = float(stats.lognorm.ppf(0.50, s=sigma, scale=np.exp(mu)))
+    reconstructed_p90 = float(stats.lognorm.ppf(0.90, s=sigma, scale=np.exp(mu)))
 
     return {
         "archetype": archetype_key,
-        "empirical_inputs": {
-            "p50_median": empirical_p50,
-            "p90_tail": empirical_p90,
+        "calibration_mode": "ANALYTIC_QUANTILE_MATCHING",
+        "validation_status": "UNCONFIRMED",
+        "source_verification_status": "NEEDS_REVIEW",
+        "source_reference": source_reference,
+        "empirical_sample_size": None,
+        "goodness_of_fit_statistic": None,
+        "fitting_target_quantiles": {
+            "p50_median": target_p50,
+            "p90_tail": target_p90,
             "target_lambda": target_lambda,
         },
-        "fitted_distribution_parameters": {
+        "derived_distribution_parameters": {
             "lognormal_mu": mu,
             "lognormal_sigma": sigma,
             "lognormal_theoretical_mean": round(theoretical_mean, 2),
@@ -78,40 +90,59 @@ def calibrate_archetype_lineage(
             "beta_vulnerability_beta": beta,
             "poisson_lambda_rate": round(target_lambda, 4),
         },
-        "goodness_of_fit_checks": {
-            "p50_relative_error": abs(float(stats.lognorm.ppf(0.50, s=sigma, scale=np.exp(mu))) - empirical_p50) / empirical_p50,
-            "p90_relative_error": abs(float(stats.lognorm.ppf(0.90, s=sigma, scale=np.exp(mu))) - empirical_p90) / empirical_p90,
-            "mathematical_convergence_certified": True,
+        "quantile_reconstruction_checks": {
+            "p50_relative_error": abs(reconstructed_p50 - target_p50) / target_p50,
+            "p90_relative_error": abs(reconstructed_p90 - target_p90) / target_p90,
+            "reconstruction_convergence_verified": True,
         },
+        "epistemic_limitations": (
+            "Parameters algebraically derived from two target quantiles (P50, P90). "
+            "Raw empirical loss datasets are not bundled in repository. "
+            "External benchmark citations require organizational verification before capital allocation."
+        ),
     }
 
 
 def main() -> None:
     print("=" * 80)
-    print("EMPIRICAL ACTUARIAL CALIBRATION LINEAGE SOLVER (SR 11-7 SECTION III)")
+    print("QUANTILE-MATCHED ACTUARIAL PRIOR CALIBRATION (SR 11-7 LINEAGE)")
     print("=" * 80)
 
-    # Calibration targets sourced from NetDiligence & Verizon DBIR sector benchmarks
-    calibration_cases = [
-        ("CONTINUOUS_DIGITAL_FINTECH", 85000.0, 320000.0, 0.42),
-        ("PROCESS_MANUFACTURING_OT", 65000.0, 240000.0, 0.24),
-        ("LIFE_SAFETY_CRITICAL", 75000.0, 310000.0, 0.38),
-        ("STANDARD_ENTERPRISE_B2B", 50000.0, 185000.0, 0.22),
+    calibration_targets = [
+        ("CONTINUOUS_DIGITAL_FINTECH", 85000.0, 320000.0, 0.42, "Verizon DBIR / NetDiligence (Reference Citation: NEEDS_REVIEW)"),
+        ("PROCESS_MANUFACTURING_OT", 65000.0, 240000.0, 0.24, "Dragos ICS / Cefic Benchmarks (Reference Citation: NEEDS_REVIEW)"),
+        ("LIFE_SAFETY_CRITICAL", 75000.0, 310000.0, 0.38, "HHS OCR HIPAA / Ponemon (Reference Citation: NEEDS_REVIEW)"),
+        ("STANDARD_ENTERPRISE_B2B", 50000.0, 185000.0, 0.22, "Gartner IT Key Metrics / NetDiligence (Reference Citation: NEEDS_REVIEW)"),
     ]
 
     results = []
-    for arch, p50, p90, lam in calibration_cases:
-        fitted = calibrate_archetype_lineage(arch, p50, p90, lam)
+    for arch, p50, p90, lam, src in calibration_targets:
+        fitted = calibrate_archetype_priors(arch, p50, p90, lam, src)
         results.append(fitted)
         print(f"  ✓ Calibrated {arch}:")
-        print(f"      LogNormal(mu={fitted['fitted_distribution_parameters']['lognormal_mu']}, sigma={fitted['fitted_distribution_parameters']['lognormal_sigma']})")
-        print(f"      Poisson(lambda={fitted['fitted_distribution_parameters']['poisson_lambda_rate']})")
-        print(f"      Fit Errors: P50={fitted['goodness_of_fit_checks']['p50_relative_error']:.2e}, P90={fitted['goodness_of_fit_checks']['p90_relative_error']:.2e}")
+        print(f"      LogNormal(mu={fitted['derived_distribution_parameters']['lognormal_mu']}, sigma={fitted['derived_distribution_parameters']['lognormal_sigma']})")
+        print(f"      Poisson(lambda={fitted['derived_distribution_parameters']['poisson_lambda_rate']})")
+        print(f"      Reconstruction Error: P50={fitted['quantile_reconstruction_checks']['p50_relative_error']:.2e}, P90={fitted['quantile_reconstruction_checks']['p90_relative_error']:.2e}")
 
     out_path = REPO_ROOT / "docs" / "audits" / "CALIBRATION_FITTING_LINEAGE.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
+        json.dump(
+            {
+                "schema_version": "2.0.0",
+                "calibration_mode": "ANALYTIC_QUANTILE_MATCHING",
+                "external_validation_status": "UNCONFIRMED",
+                "regulatory_certification": None,
+                "global_epistemic_notice": (
+                    "Priors in this artifact are derived via algebraic quantile matching against target percentiles. "
+                    "Raw empirical loss microdata is not present in repository. "
+                    "All external benchmark references are marked NEEDS_REVIEW until verified against primary records."
+                ),
+                "archetypes": results,
+            },
+            f,
+            indent=2,
+        )
 
     print(f"\nAudit Lineage Artifact written to: {out_path}\n")
 

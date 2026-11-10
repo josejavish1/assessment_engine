@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
 import numpy as np
+from pydantic import BaseModel, ConfigDict, Field
 from scipy import stats
-
 
 # 1. DOMAIN LAYER: ENTITIES & VALUE OBJECTS (INDUSTRY & CURRENCY AGNOSTIC)
 
@@ -232,12 +232,23 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         self.rto_spof_multiplier = float(rto_spof_multiplier)
         self.catastrophic_tail_quantile = float(catastrophic_tail_quantile)
 
-    def _compute_deterministic_seed(self, findings: List[FindingTelemetry]) -> tuple[int, str]:
-        """Generates a deterministic 32-bit integer seed from the complete parameter vector."""
-        canonical_parts: List[str] = []
+    def _compute_deterministic_seed(
+        self, findings: List[FindingTelemetry], currency_code: str = "EUR"
+    ) -> tuple[int, str]:
+        """Generates a deterministic integer seed from the complete parameter vector and engine config."""
+        config_header = (
+            f"CFG:{currency_code}:{self.n_sims}:{self.vuln_min:.4f}:{self.vuln_max:.4f}:"
+            f"{self.gamma:.4f}:{self.kappa:.4f}:{self.copula_df}:{self.intra_tower_boost:.4f}:"
+            f"{self.secondary_loss_cv:.4f}:{self.spof_cmmi_penalty:.4f}:"
+            f"{self.max_dependence_loading:.4f}:{self.max_copula_correlation:.4f}:"
+            f"{self.rto_cmmi_degradation_slope:.4f}:{self.rto_spof_multiplier:.4f}:"
+            f"{self.catastrophic_tail_quantile:.4f}"
+        )
+        canonical_parts: List[str] = [config_header]
         for f in sorted(findings, key=lambda x: (x.tower_id, x.finding_id)):
             diss_token = (
-                f"{f.dissonance.record_id}:{f.dissonance.claimed_maturity:.4f}:"
+                f"{f.dissonance.record_id}:{f.dissonance.finding_id}:"
+                f"{f.dissonance.claimed_maturity:.4f}:"
                 f"{f.dissonance.empirical_reality_maturity:.4f}:"
                 f"{f.dissonance.dissonance_weight:.4f}:{f.dissonance.impact_vector}"
                 if f.dissonance
@@ -423,7 +434,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             raise ValueError("A valid ISO currency_code must be provided.")
 
         normalized_currency = currency_code.strip().upper()
-        seed_int, seed_hash = self._compute_deterministic_seed(findings)
+        seed_int, seed_hash = self._compute_deterministic_seed(findings, currency_code=normalized_currency)
         rng = np.random.default_rng(seed_int)
         n_f = len(findings)
 
@@ -434,6 +445,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
         finding_raw_losses = np.zeros((self.n_sims, n_f), dtype=np.float64)
         finding_equivalent_zone_hours = np.zeros((self.n_sims, n_f), dtype=np.float64)
+        finding_replacement_losses = np.zeros((self.n_sims, n_f), dtype=np.float64)
         finding_secondary_losses = np.zeros((self.n_sims, n_f), dtype=np.float64)
         finding_crisis_events = np.zeros(n_f, dtype=np.float64)
         finding_crisis_hours = np.zeros(n_f, dtype=np.float64)
@@ -512,6 +524,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
             # Equivalent full-zone outage hours preserve blast_radius_alpha during zone convolution
             finding_equivalent_zone_hours[:, idx] = annual_downtime_s * alpha_effective
+            finding_replacement_losses[:, idx] = replacement_loss_s
             finding_secondary_losses[:, idx] = secondary_loss_s
             finding_raw_losses[:, idx] = primary_loss_s + secondary_loss_s
 
@@ -568,8 +581,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             h_max = max(1e-6, zone.max_annual_outage_hours)
             effective_zone_hours = h_max * (1.0 - np.exp(-raw_zone_eq_hours / h_max))
             zone_primary_loss = effective_zone_hours * zone.hourly_burn_rate
-            portfolio_primary_losses += zone_primary_loss
-            portfolio_convolved_losses += zone_primary_loss
+            zone_repl_loss = np.sum(finding_replacement_losses[:, zone_indices], axis=1)
+
+            portfolio_primary_losses += zone_primary_loss + zone_repl_loss
+            portfolio_convolved_losses += zone_primary_loss + zone_repl_loss
 
             safe_denom = np.where(raw_zone_eq_hours > 1e-12, raw_zone_eq_hours, 1.0)
             for i in zone_indices:
@@ -578,7 +593,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                     finding_equivalent_zone_hours[:, i] / safe_denom,
                     0.0,
                 )
-                allocated_finding_sim_primary[:, i] += zone_primary_loss * share_s
+                allocated_finding_sim_primary[:, i] += (zone_primary_loss * share_s) + finding_replacement_losses[:, i]
 
         # Convolve retained secondary losses into portfolio total
         retained_secondary_losses = np.zeros(self.n_sims, dtype=np.float64)
@@ -700,3 +715,290 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             ),
             towers=towers_dict,
         )
+
+
+class SerializedFindingTelemetry(BaseModel):
+    """Immutable serialization contract for finding telemetry inputs."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    finding_id: str
+    tower_id: str
+    title: str
+    cmmi_maturity: float
+    zone_id: str
+    hourly_burn_rate: float
+    max_annual_outage_hours: float
+    secondary_loss_retention_factor: float
+    catastrophic_recovery_ceiling_hours: float
+    emergency_replacement_ratio: float
+    tef_pert_min: float
+    tef_pert_mode: float
+    tef_pert_max: float
+    rto_hours_min: float
+    rto_hours_mode: float
+    rto_hours_max: float
+    secondary_loss_mean: float
+    is_spof: bool
+    shared_dependence_factor: float
+    blast_radius_alpha: float
+    catastrophic_rto_hours: float
+    direct_replacement_cost: float
+    audit_k_failures: int
+    audit_n_trials: int
+    dissonance: Optional[Dict[str, Any]] = None
+
+
+class PortfolioReproductionManifest(BaseModel):
+    """Immutable, bit-for-bit audit manifest enabling deterministic replay of portfolio simulation (SR 11-7)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    manifest_schema_version: str = Field(default="1.0.0")
+    actuarial_model_version: str = Field(default="2026.Q1.v1")
+    engine_config: Dict[str, Any]
+    currency_code: str
+    deterministic_seed_hash: str
+    findings_telemetry: List[SerializedFindingTelemetry]
+    expected_portfolio_outputs: Dict[str, float]
+    expected_tower_outputs: Dict[str, Dict[str, float]]
+    expected_finding_outputs: Dict[str, Dict[str, float]]
+
+
+def create_reproduction_manifest(
+    engine: BayesianFairCopulaEngine,
+    findings: List[FindingTelemetry],
+    summary: PortfolioRiskSummary,
+    currency_code: str,
+) -> PortfolioReproductionManifest:
+    """Serializes the exact configuration, input telemetry, and simulation outputs into a reproduction manifest."""
+    serialized_findings = []
+    for f in findings:
+        serialized_findings.append(
+            SerializedFindingTelemetry(
+                finding_id=f.finding_id,
+                tower_id=f.tower_id,
+                title=f.title,
+                cmmi_maturity=f.cmmi_maturity,
+                zone_id=f.zone.zone_id,
+                hourly_burn_rate=f.zone.hourly_burn_rate,
+                max_annual_outage_hours=f.zone.max_annual_outage_hours,
+                secondary_loss_retention_factor=f.zone.secondary_loss_retention_factor,
+                catastrophic_recovery_ceiling_hours=f.zone.catastrophic_recovery_ceiling_hours,
+                emergency_replacement_ratio=f.zone.emergency_replacement_ratio,
+                tef_pert_min=f.tef_pert_min,
+                tef_pert_mode=f.tef_pert_mode,
+                tef_pert_max=f.tef_pert_max,
+                rto_hours_min=f.rto_hours_min,
+                rto_hours_mode=f.rto_hours_mode,
+                rto_hours_max=f.rto_hours_max,
+                secondary_loss_mean=f.secondary_loss_mean,
+                is_spof=f.is_spof,
+                shared_dependence_factor=f.shared_dependence_factor,
+                blast_radius_alpha=f.blast_radius_alpha,
+                catastrophic_rto_hours=f.catastrophic_rto_hours,
+                direct_replacement_cost=f.direct_replacement_cost,
+                audit_k_failures=f.audit_k_failures,
+                audit_n_trials=f.audit_n_trials,
+                dissonance=(
+                    {
+                        "record_id": f.dissonance.record_id,
+                        "finding_id": f.dissonance.finding_id,
+                        "claimed_maturity": f.dissonance.claimed_maturity,
+                        "empirical_reality_maturity": f.dissonance.empirical_reality_maturity,
+                        "dissonance_weight": f.dissonance.dissonance_weight,
+                        "transcript_evidence_quote": f.dissonance.transcript_evidence_quote,
+                        "impact_vector": f.dissonance.impact_vector,
+                    }
+                    if f.dissonance
+                    else None
+                ),
+            )
+        )
+
+    engine_config = {
+        "num_simulations": engine.n_sims,
+        "vuln_min": engine.vuln_min,
+        "vuln_max": engine.vuln_max,
+        "vuln_convexity_gamma": engine.gamma,
+        "beta_concentration_kappa": engine.kappa,
+        "copula_df": engine.copula_df,
+        "intra_tower_correlation_boost": engine.intra_tower_boost,
+        "secondary_loss_cv": engine.secondary_loss_cv,
+        "inaction_horizon_years": engine.inaction_horizon_years,
+        "spof_cmmi_penalty": engine.spof_cmmi_penalty,
+        "max_dependence_loading": engine.max_dependence_loading,
+        "max_copula_correlation": engine.max_copula_correlation,
+        "rto_cmmi_degradation_slope": engine.rto_cmmi_degradation_slope,
+        "rto_spof_multiplier": engine.rto_spof_multiplier,
+        "catastrophic_tail_quantile": engine.catastrophic_tail_quantile,
+    }
+
+    expected_portfolio = {
+        "total_portfolio_ale": summary.total_portfolio_ale,
+        "portfolio_var_90": summary.portfolio_var_90,
+        "portfolio_cvar_90": summary.portfolio_cvar_90,
+        "portfolio_var_95": summary.portfolio_var_95,
+        "portfolio_var_99": summary.portfolio_var_99,
+        "portfolio_cvar_99": summary.portfolio_cvar_99,
+        "total_standalone_sum": summary.total_standalone_sum,
+        "diversification_ratio": summary.diversification_ratio,
+    }
+
+    expected_towers = {}
+    expected_findings = {}
+    for t_id, t_res in summary.towers.items():
+        expected_towers[t_id] = {
+            "standalone_ale": t_res.standalone_ale,
+            "portfolio_allocated_ale": t_res.portfolio_allocated_ale,
+            "var_90": t_res.var_90,
+            "cvar_90": t_res.cvar_90,
+            "var_99": t_res.var_99,
+            "cvar_99": t_res.cvar_99,
+            "worst_crisis_event": t_res.worst_crisis_event,
+        }
+        for f in t_res.findings:
+            key = f"{t_id}:{f.finding_id}"
+            expected_findings[key] = {
+                "standalone_ale": f.standalone_ale,
+                "portfolio_allocated_ale": f.portfolio_allocated_ale,
+                "var_90": f.var_90,
+                "cvar_90": f.cvar_90,
+                "var_99": f.var_99,
+                "cvar_99": f.cvar_99,
+                "mean_vuln": f.mean_vuln,
+                "mean_lef": f.mean_lef,
+                "mean_sle": f.mean_sle,
+            }
+
+    return PortfolioReproductionManifest(
+        engine_config=engine_config,
+        currency_code=currency_code,
+        deterministic_seed_hash=summary.deterministic_seed_hash,
+        findings_telemetry=serialized_findings,
+        expected_portfolio_outputs=expected_portfolio,
+        expected_tower_outputs=expected_towers,
+        expected_finding_outputs=expected_findings,
+    )
+
+
+def replay_portfolio_simulation(
+    manifest: PortfolioReproductionManifest | Dict[str, Any],
+    currency_tolerance: float = 0.01,
+) -> Dict[str, Any]:
+    """Replays the portfolio simulation from a reproduction manifest, strictly asserting parity."""
+    if isinstance(manifest, dict):
+        manifest_obj = PortfolioReproductionManifest.model_validate(manifest)
+    else:
+        manifest_obj = manifest
+
+    # 1. Reconstruct engine
+    engine = BayesianFairCopulaEngine(**manifest_obj.engine_config)
+
+    # 2. Reconstruct FindingTelemetry
+    findings = []
+    zone_cache: Dict[str, OperationalZone] = {}
+
+    for sf in manifest_obj.findings_telemetry:
+        if sf.zone_id not in zone_cache:
+            zone_cache[sf.zone_id] = OperationalZone(
+                zone_id=sf.zone_id,
+                hourly_burn_rate=sf.hourly_burn_rate,
+                max_annual_outage_hours=sf.max_annual_outage_hours,
+                secondary_loss_retention_factor=sf.secondary_loss_retention_factor,
+                catastrophic_recovery_ceiling_hours=sf.catastrophic_recovery_ceiling_hours,
+                emergency_replacement_ratio=sf.emergency_replacement_ratio,
+            )
+        zone = zone_cache[sf.zone_id]
+
+        diss = (
+            EpistemicDissonanceRecord(
+                record_id=sf.dissonance.get("record_id", f"DISS_{sf.finding_id}"),
+                finding_id=sf.dissonance.get("finding_id", sf.finding_id),
+                claimed_maturity=sf.dissonance["claimed_maturity"],
+                empirical_reality_maturity=sf.dissonance["empirical_reality_maturity"],
+                dissonance_weight=sf.dissonance["dissonance_weight"],
+                transcript_evidence_quote=sf.dissonance.get("transcript_evidence_quote", ""),
+                impact_vector=sf.dissonance.get("impact_vector", "BOTH"),
+            )
+            if sf.dissonance
+            else None
+        )
+
+        findings.append(
+            FindingTelemetry(
+                finding_id=sf.finding_id,
+                tower_id=sf.tower_id,
+                title=sf.title,
+                cmmi_maturity=sf.cmmi_maturity,
+                zone=zone,
+                tef_pert_min=sf.tef_pert_min,
+                tef_pert_mode=sf.tef_pert_mode,
+                tef_pert_max=sf.tef_pert_max,
+                rto_hours_min=sf.rto_hours_min,
+                rto_hours_mode=sf.rto_hours_mode,
+                rto_hours_max=sf.rto_hours_max,
+                secondary_loss_mean=sf.secondary_loss_mean,
+                is_spof=sf.is_spof,
+                shared_dependence_factor=sf.shared_dependence_factor,
+                blast_radius_alpha=sf.blast_radius_alpha,
+                catastrophic_rto_hours=sf.catastrophic_rto_hours,
+                direct_replacement_cost=sf.direct_replacement_cost,
+                audit_k_failures=sf.audit_k_failures,
+                audit_n_trials=sf.audit_n_trials,
+                dissonance=diss,
+            )
+        )
+
+    # 3. Execute replay
+    replayed = engine.evaluate_portfolio(findings, currency_code=manifest_obj.currency_code)
+
+    # 4. Assert deterministic seed equality
+    if replayed.deterministic_seed_hash != manifest_obj.deterministic_seed_hash:
+        raise AssertionError(
+            f"Seed hash divergence: expected {manifest_obj.deterministic_seed_hash}, got {replayed.deterministic_seed_hash}"
+        )
+
+    # 5. Assert portfolio parity
+    for metric, expected_val in manifest_obj.expected_portfolio_outputs.items():
+        replayed_val = getattr(replayed, metric)
+        delta = abs(replayed_val - expected_val)
+        if delta > currency_tolerance:
+            raise AssertionError(
+                f"Portfolio metric '{metric}' diverged: expected {expected_val}, got {replayed_val} (delta {delta:.4f} > {currency_tolerance})"
+            )
+
+    # 6. Assert tower parity
+    for t_id, exp_t in manifest_obj.expected_tower_outputs.items():
+        if t_id not in replayed.towers:
+            raise AssertionError(f"Missing tower '{t_id}' in replayed summary")
+        act_t = replayed.towers[t_id]
+        for metric, expected_val in exp_t.items():
+            replayed_val = getattr(act_t, metric)
+            delta = abs(replayed_val - expected_val)
+            if delta > currency_tolerance:
+                raise AssertionError(
+                    f"Tower '{t_id}' metric '{metric}' diverged: expected {expected_val}, got {replayed_val} (delta {delta:.4f} > {currency_tolerance})"
+                )
+
+    # 7. Assert finding parity
+    for key, exp_f in manifest_obj.expected_finding_outputs.items():
+        t_id, f_id = key.split(":", 1)
+        act_f = next((f for f in replayed.towers[t_id].findings if f.finding_id == f_id), None)
+        if not act_f:
+            raise AssertionError(f"Missing finding '{f_id}' in replayed tower '{t_id}'")
+        for metric, expected_val in exp_f.items():
+            replayed_val = getattr(act_f, metric)
+            delta = abs(replayed_val - expected_val)
+            if delta > currency_tolerance:
+                raise AssertionError(
+                    f"Finding '{key}' metric '{metric}' diverged: expected {expected_val}, got {replayed_val} (delta {delta:.4f} > {currency_tolerance})"
+                )
+
+    return {
+        "verified": True,
+        "seed_hash": replayed.deterministic_seed_hash,
+        "total_portfolio_ale": replayed.total_portfolio_ale,
+        "portfolio_var_90": replayed.portfolio_var_90,
+        "portfolio_cvar_90": replayed.portfolio_cvar_90,
+    }
