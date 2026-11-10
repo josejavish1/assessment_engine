@@ -4311,10 +4311,10 @@ class PayloadToASTBridge:
                 cleaned = _synchronize_inline_recalibrated_scores(cleaned, doc_locale)
                 cleaned = _reconcile_cmmi_level_bracket_claims(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
-                # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets .")
+                # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets ." or "en Edge Service Ingress: L4/Conectividad..., WAF .")
                 if not str(doc_locale).lower().startswith("en"):
                     cleaned = re.sub(
-                        r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
+                        r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*[^.;]{1,95}?(?=\s*[.;]|$)",
                         lambda m: f"{m.group(1)} {fallback_label}",
                         cleaned,
                     )
@@ -4483,7 +4483,7 @@ class PayloadToASTBridge:
                         val_str = _deduplicate_prose_sentences(val_str)
                         if not str(meta_l).lower().startswith("en"):
                             val_str = re.sub(
-                                r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
+                                r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*[^.;]{1,95}?(?=\s*[.;]|$)",
                                 lambda m: f"{m.group(1)} {fallback_label}",
                                 val_str,
                             )
@@ -4552,9 +4552,27 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         return f"{prefix}{score_raw}{mid}({lvl_word} {lvl_num} - {lvl_label})"
 
     reconciled = re.sub(
-        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,25}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]0\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[-–—:]\s*[^)]+)?\)",
+        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,35}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]00?\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[-–—:]\s*[^)]+)?\)",
         _fix_score_and_parenthetical_level,
         text,
+        flags=re.IGNORECASE,
+    )
+
+    def _fix_inline_score_with_level_claim(match: re.Match[str]) -> str:
+        prefix = match.group(1)
+        score_raw = match.group(2)
+        mid = match.group(3)
+        score_val = _safe_float(score_raw.replace(",", "."), default=-1.0)
+        if score_val < 0.0 or score_val > 5.0:
+            return match.group(0)
+        lvl_num, lvl_label = _level_info(score_val)
+        lvl_word = "Nivel" if is_es else "Level"
+        return f"{prefix}{score_raw}{mid}{lvl_word} {lvl_num} - {lvl_label}"
+
+    reconciled = re.sub(
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5[.,]00?\s*)?\(\s*)(?:Nivel|Level)\s*\d\s*[-–—:]\s*[^)]+(?=\))",
+        _fix_inline_score_with_level_claim,
+        reconciled,
         flags=re.IGNORECASE,
     )
 
@@ -4569,6 +4587,23 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         reconciled,
         flags=re.IGNORECASE,
     )
+
+    # Repair dangling truncated sentences ending mid-clause without terminal punctuation
+    if len(reconciled) > 40 and not reconciled.lstrip().startswith(("#", "*", "-", "|", ">")):
+        stripped_end = reconciled.rstrip()
+        if re.search(r"\(\s*(?:N\+1\s*/\s*2N\.?|N\+1\.?|2N\.?)$", stripped_end, re.IGNORECASE):
+            reconciled = re.sub(
+                r"\(\s*(N\+1\s*/\s*2N|N\+1|2N)\.?\s*$",
+                r"(\1).",
+                stripped_end,
+                flags=re.IGNORECASE,
+            )
+        elif re.search(
+            r"\b(?:en\s+tallas\s+S\s+y\s+M|en\s+salas\s+industriales\s+no\s+especializadas|sin\s+especializaci[óo]n\s+t[ée]cnica)$",
+            stripped_end,
+            re.IGNORECASE,
+        ):
+            reconciled = f"{stripped_end}."
 
     return reconciled
 
