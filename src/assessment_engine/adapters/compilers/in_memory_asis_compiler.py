@@ -1340,6 +1340,38 @@ def _synthesize_empirical_narrative_from_findings(
     return " ".join(p for p in parts if p).strip()
 
 
+_KPI_EXPORT_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:procesos\s+operativos\s+estructurados\s+seg[úu]n\s+|structured\s+operational\s+processes\s+according\s+to\s+|processos\s+operacionais\s+estruturados\s+segundo\s+)([^.]+)\.\s*",
+    re.IGNORECASE,
+)
+
+_ABSENCE_OF_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:lack\s+of|absence\s+of|no\s+telemetry|zero\s+telemetry|carencia\s+de|falta\s+de|ausencia\s+de|sin\s+herramientas\s+de|inexistencia\s+de)\b.*\b(?:dex|telemetr[íi]a|telemetry|monitoring|monitorizaci[óo]n|observability|observabilidad|tooling|herramientas|dcim|bms)\b",
+    re.IGNORECASE,
+)
+
+
+def _reconcile_telemetry_tool_contradictions(
+    score: float,
+    clean_state: str,
+    clean_gap: str,
+    fallback_neg: str,
+    doc_lang: str,
+) -> tuple[float, str]:
+    """Enforces CMMI Level 1.00 floor and scrubs synthetic KPI export headers when empirical findings admit zero tooling."""
+    combined_gap = f"{clean_gap} {fallback_neg}"
+    scrubbed_state = _KPI_EXPORT_ARTIFACT_RE.sub("", clean_state).strip()
+
+    if _ABSENCE_OF_TELEMETRY_RE.search(combined_gap) or _ABSENCE_OF_TELEMETRY_RE.search(clean_state):
+        calibrated_score = min(score, 1.25) if score >= 2.0 else score
+        if scrubbed_state != clean_state or _KPI_EXPORT_ARTIFACT_RE.match(clean_state):
+            calibrated_score = 1.00
+            scrubbed_state = ""
+        return calibrated_score, scrubbed_state
+
+    return score, scrubbed_state or clean_state
+
+
 def _sanitize_architectural_narrative(
     pillar: dict[str, Any],
     doc_lang: str,
@@ -1350,6 +1382,7 @@ def _sanitize_architectural_narrative(
 ) -> list[str]:
     """Extracts the authentic architectural narrative, dynamically formatting paragraphs to eliminate cognitive fatigue."""
     desc = str(pillar.get("asis_architecture_description") or "").strip()
+    desc = _KPI_EXPORT_ARTIFACT_RE.sub("", desc).strip()
     if _is_placeholder_boilerplate(desc) or _estimate_lexical_units(desc) < 22:
         synthesized = _synthesize_empirical_narrative_from_findings(
             pillar, canonical_pillar_id, fallback_pos, fallback_neg, doc_lang
@@ -1374,6 +1407,7 @@ def _sanitize_architectural_narrative(
     cleaned_paras: list[str] = []
     for para in raw_paras:
         p_clean = _scrub_template_glitches_and_token_leaks(para.strip(), doc_lang)
+        p_clean = _KPI_EXPORT_ARTIFACT_RE.sub("", p_clean).strip()
         # Eliminate unedited mail-merge double-preposition artifacts across Romance and English locales
         p_clean = re.sub(
             r"\b(?:por|en|de|con|para|a|by|in|of|with|for)\s+(?=en\s+|por\s+|de\s+|con\s+|para\s+|in\s+|by\s+|of\s+|with\s+|for\s+)",
@@ -1387,6 +1421,12 @@ def _sanitize_architectural_narrative(
             p_clean,
             flags=re.IGNORECASE,
         )
+        # Strip leaked English KPI title-case tokens preceded by Romance prepositions
+        p_clean = re.sub(
+            r"\b(?:seg[úu]n|en|de|por|con)\s+(?:[A-Z][a-z0-9\-]+\s+){2,6}[A-Z][a-z0-9\-]+\.?",
+            "",
+            p_clean,
+        ).strip()
         words = p_clean.split(None, 1)
         if words:
             first_w = f"{words[0].lower().rstrip(' ,;:.')} "
@@ -1560,6 +1600,9 @@ def derive_in_memory_maturity_matrix(
 
         clean_state = _scrub_template_glitches_and_token_leaks(clean_state, doc_lang)
         exact_score = _calibrate_empirical_maturity_score(exact_score, pillar, clean_state, clean_f)
+        exact_score, clean_state = _reconcile_telemetry_tool_contradictions(
+            exact_score, clean_state, clean_f, fallback_neg, doc_lang
+        )
         band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         band_label = band_info.get("label", "")
 
