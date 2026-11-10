@@ -203,11 +203,14 @@ def build_heatmap_mosaic(
         r_tef, r_lm = resolve_risk_matrix_coordinates(
             r, effective_bounds, locale=locale
         )
+        r_tef = max(1, min(5, int(r_tef)))
+        r_lm = max(1, min(5, int(r_lm)))
         r["tef_scale_level"] = r_tef
         r["lm_scale_level"] = r_lm
         r["tef_level"] = r_tef
         r["lm_level"] = r_lm
         r["risk_matrix_coordinates"] = f"(TEF {r_tef}, LM {r_lm})"
+        r["coordinates"] = f"(TEF {r_tef}, LM {r_lm})"
         risk_id = str(r.get("id") or r.get("risk_id") or "").strip()
         if risk_id and risk_id not in matrix_cells[r_tef][r_lm]:
             matrix_cells[r_tef][r_lm].append(risk_id)
