@@ -1462,6 +1462,58 @@ def _sanitize_architectural_narrative(
     return cleaned_paras if cleaned_paras else [_scrub_template_glitches_and_token_leaks(desc, doc_lang)]
 
 
+_BROKEN_KPI_BOILERPLATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Procesos\s+operativos\s+estructurados\s+conforme\s+a\s+[^.?!]*(?:\.\s*of\s+[A-Z][^.?!]*)?|"
+    r"Structured\s+operational\s+processes\s+conforming\s+to\s+[^.?!]*|"
+    r"ante\s+incidencias\s+no\s+contenidas\s+en\s+[A-Za-z0-9\s/&(),\-]+(?:\.\s*\([^)]+\))?|"
+    r"analizando\s+cr[ií]ticamente\s+factores\s+clave\s+como\s+[a-z][A-Za-z0-9\s/&(),\-]+)",
+    re.IGNORECASE,
+)
+
+_CAMELCASE_PROMPT_LEAK_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:target\s+Architecture\s*\(To-Be\)\s*Roadmap\s+Governance|"
+    r"iT\s*&\s*Business\s+Strategic\s+Alignment|"
+    r"of\s+Failure\s+Elimination|"
+    r"Oversubscription\s*&\s*Latency)\b",
+    re.IGNORECASE,
+)
+
+_EUC_FOREIGN_DOMAIN_SENTENCE_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:RODCs?|Read-Only\s+Domain\s+Controllers?|tendido\s+de\s+fibra|pulling\s+fiber|"
+    r"c[aá]maras?\s+CCTV|CCTV\s+cameras?|Kubernetes|K8s|DBA|bases?\s+de\s+datos|"
+    r"database\s+administration|plantillas?\s+de\s+VM|VM\s+templates?|SimpliVity|vSphere|ESXi|"
+    r"conduit\s+DCI|fibra\s+oscura|dark\s+fiber|BGP|OSPF|DMVPN|core\s+switch)\b",
+    re.IGNORECASE,
+)
+
+
+def _scrub_broken_kpi_boilerplate_clauses(text: str, fallback: str, doc_lang: str) -> str:
+    """Removes corrupted English-to-Spanish mail-merge KPI fragments and camelCase framework prompt leaks."""
+    if not text:
+        return fallback
+    cleaned = _BROKEN_KPI_BOILERPLATE_RE.sub("", text)
+    cleaned = _CAMELCASE_PROMPT_LEAK_RE.sub("", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" .,;:-")
+    if len(cleaned.split()) < 5:
+        return fallback
+    return cleaned[0].upper() + cleaned[1:] if cleaned else fallback
+
+
+def _scrub_foreign_domain_bleed_for_tower(text: str, tower_id: str, fallback: str) -> str:
+    """Filters out sentences containing out-of-scope infrastructure/OT/DB bleed in specialized towers."""
+    if not text:
+        return fallback
+    norm_tower = str(tower_id or "").strip().upper()
+    if norm_tower in {"T9", "EUC"} or "EUC" in norm_tower or "WORKPLACE" in norm_tower:
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        kept = [s for s in sentences if not _EUC_FOREIGN_DOMAIN_SENTENCE_RE.search(s)]
+        rejoined = " ".join(kept).strip()
+        if len(rejoined.split()) >= 5:
+            return rejoined
+        return fallback
+    return text
+
+
 def _extract_safe_score(val: Any, default: float = DEFAULT_PILLAR_ASSESSMENT_SCORE) -> float:
     """Defensively parses any numeric string, int, float or None, clamping to valid [1.0, 5.0] CMMI range."""
     if val is None:
@@ -1609,7 +1661,23 @@ def derive_in_memory_maturity_matrix(
         else:
             clean_f = _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
 
-        clean_state = _scrub_template_glitches_and_token_leaks(clean_state, doc_lang)
+        clean_state = _scrub_broken_kpi_boilerplate_clauses(
+            _scrub_template_glitches_and_token_leaks(clean_state, doc_lang),
+            _scrub_template_glitches_and_token_leaks(fallback_pos, doc_lang),
+            doc_lang,
+        )
+        clean_f = _scrub_broken_kpi_boilerplate_clauses(
+            _scrub_template_glitches_and_token_leaks(clean_f, doc_lang),
+            _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang),
+            doc_lang,
+        )
+        clean_state = _scrub_foreign_domain_bleed_for_tower(
+            clean_state, current_tower_id, _scrub_template_glitches_and_token_leaks(fallback_pos, doc_lang)
+        )
+        clean_f = _scrub_foreign_domain_bleed_for_tower(
+            clean_f, current_tower_id, _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
+        )
+
         full_pillar_ctx = f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}"
         reconciled_states = _reconcile_contradictory_replication_claims([clean_state], full_pillar_ctx, doc_lang)
         if reconciled_states:
@@ -1623,26 +1691,29 @@ def derive_in_memory_maturity_matrix(
             exact_score, clean_state, clean_f, fallback_neg, doc_lang
         )
         # Prevent contradictory lifecycle praise in DEX/EUC pillars when hardware refresh or telemetry gaps exist
-        if canonical_p_id.endswith(("P4", "P6")) or "DEX" in canonical_p_id or "EUC" in current_tower_id:
+        if canonical_p_id.endswith(("P4", "P6")) or "DEX" in canonical_p_id or "EUC" in current_tower_id or current_tower_id == "T9":
             if re.search(
-                r"\b(?:ausencia\s+de\s+telemetr[ií]a|sin\s+telemetr[ií]a|absence\s+of\s+.*telemetry|no\s+.*telemetry|sin\s+ciclo\s+formal\s+de\s+renovaci[oó]n|absence\s+of\s+a\s+formal\s+.*refresh)\b",
-                f"{clean_f} {pillar.get('literal_evidence', '')}",
+                r"\b(?:ausencia\s+de\s+telemetr[ií]a|sin\s+telemetr[ií]a|falta\s+de\s+herramientas\s+de\s+experiencia\s+digital|absence\s+of\s+.*telemetry|no\s+.*telemetry|lack\s+of\s+.*dex\s+tools|sin\s+ciclo\s+formal\s+de\s+renovaci[oó]n|absence\s+of\s+a\s+formal\s+.*refresh)\b",
+                f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}",
                 re.IGNORECASE,
             ):
-                exact_score = min(exact_score, 1.75)
+                exact_score = min(exact_score, 1.50)
                 clean_state = re.sub(
                     r"\b(?:disciplina\s+ejemplar|exemplary\s+discipline|alta\s+madurez|high\s+maturity)\b",
-                    "gestión operativa parcial" if doc_lang.startswith("es") else "partial operational management",
+                    "gestión operativa reactiva" if doc_lang.startswith("es") else "reactive operational management",
                     clean_state,
                     flags=re.IGNORECASE,
                 )
-        # Synchronize calibrated score back into the source pillar payload so Executive Summary,
+        # Synchronize calibrated score and CMMI band label back into the source pillar payload so Executive Summary,
         # Table 4, and global averages remain 100% mathematically consistent with Table 5/6.
         pillar["score"] = exact_score
+        pillar["calibrated_score"] = exact_score
         if raw_declared is None:
             pillar["declared_score"] = declared_score
         band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         band_label = band_info.get("label", "")
+        pillar["maturity_level"] = band_label
+        pillar["band_label"] = band_label
 
         if exact_score < LOW_MATURITY_CALIBRATION_THRESHOLD:
             lbl_pos = t("calib_label_observed_state", locale=doc_lang)
@@ -1682,13 +1753,22 @@ def derive_in_memory_maturity_matrix(
                     quarantined_count += 1
                     pillar_for_narrative["literal_evidence"] = ""
 
-        arch_paras = _sanitize_architectural_narrative(
+        raw_arch_paras = _sanitize_architectural_narrative(
             pillar_for_narrative,
             doc_lang,
             canonical_pillar_id=canonical_p_id,
             fallback_pos=clean_state,
             fallback_neg=clean_f,
         )
+        arch_paras = [
+            _scrub_foreign_domain_bleed_for_tower(
+                _scrub_broken_kpi_boilerplate_clauses(p, clean_state or clean_f, doc_lang),
+                current_tower_id,
+                clean_state or clean_f,
+            )
+            for p in raw_arch_paras
+            if p
+        ]
         op_reality = arch_paras[0] if arch_paras else ""
 
         # TRI-MODAL ENROUTER LOGIC (Argon Persona Mandate)
@@ -1740,18 +1820,44 @@ def derive_in_memory_maturity_matrix(
         )
 
     if rows:
-        calibrated_avg = round(sum(float(r["score"]) for r in rows) / len(rows), 2)
+        total_weight = 0.0
+        weighted_sum = 0.0
+        for idx, r in enumerate(rows):
+            src_pillar = pillars_list[idx] if idx < len(pillars_list) and isinstance(pillars_list[idx], dict) else {}
+            raw_w = src_pillar.get("weight") or src_pillar.get("weighting") or src_pillar.get("pillar_weight")
+            try:
+                w = float(str(raw_w).replace("%", "").strip()) if raw_w is not None else 0.0
+            except (ValueError, TypeError):
+                w = 0.0
+            if w > 0.0:
+                total_weight += w
+                weighted_sum += float(r["score"]) * w
+
+        if total_weight > 0.0:
+            calibrated_avg = round(weighted_sum / total_weight, 2)
+        else:
+            calibrated_avg = round(sum(float(r["score"]) for r in rows) / len(rows), 2)
+
+        global_band_info = resolve_maturity_band(calibrated_avg, ANNEX_MATURITY_BANDS, locale=doc_lang)
+        global_band_label = global_band_info.get("label", "")
+
         b_data["calibrated_global_score"] = calibrated_avg
         b_data["overall_maturity_score"] = calibrated_avg
         b_data["global_score"] = calibrated_avg
+        b_data["global_maturity_band"] = global_band_label
         if isinstance(b_data.get("executive_summary"), dict):
             b_data["executive_summary"]["global_maturity_score"] = calibrated_avg
             b_data["executive_summary"]["overall_score"] = calibrated_avg
+            b_data["executive_summary"]["maturity_level"] = global_band_label
+            b_data["executive_summary"]["global_maturity_band"] = global_band_label
         if isinstance(b_data.get("maturity_summary"), dict):
             b_data["maturity_summary"]["global_score"] = calibrated_avg
             b_data["maturity_summary"]["average_score"] = calibrated_avg
+            b_data["maturity_summary"]["maturity_level"] = global_band_label
+            b_data["maturity_summary"]["band_label"] = global_band_label
         if isinstance(b_data.get("document_meta"), dict):
             b_data["document_meta"]["global_maturity_score"] = calibrated_avg
             b_data["document_meta"]["overall_score"] = calibrated_avg
+            b_data["document_meta"]["maturity_level"] = global_band_label
 
     return rows
