@@ -331,16 +331,68 @@ def run_single_evolution_cycle(target_file: Optional[str] = None) -> Tuple[bool,
         return False, baseline_avg
 
 
+# Mapping of specific tower defects to the exact real target files
+TOWER_DEFECT_TARGET_MAPPING: Dict[str, List[str]] = {
+    "T7": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "engine_config/locales.json",
+    ],
+    "T9": [
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+    ],
+    "T8": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/domain/actuarial/financial_profile.py",
+    ],
+    "T4": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+    ],
+    "T6": [
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+    ],
+    "T1": [
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+    ],
+    "T10": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+    ],
+    "T5": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+    ],
+    "T3": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/ast_table_builders.py",
+    ],
+    "T2": [
+        "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+        "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
+    ],
+}
+
+
 def run_continuous_evolution():
-    logger.info("🚀 INITIALIZING AUTONOMOUS DETERMINISTIC EVOLUTION LOOP")
-    target_idx = 0
+    logger.info("🚀 INITIALIZING AUTONOMOUS DETERMINISTIC EVOLUTION LOOP (METHODOLOGY LOCKED)")
+    attempt = 1
     while True:
-        target_path = PHYSICAL_TARGET_REGISTRY[target_idx % len(PHYSICAL_TARGET_REGISTRY)]
-        improved, current_avg = run_single_evolution_cycle(target_path)
-        if current_avg >= TARGET_SCORE_THRESHOLD:
+        baseline_avg, failing_towers = extract_tribunal_grades()
+        logger.info(f"\n[Iteration {attempt}] Baseline Average: {baseline_avg:.2f}/10.0 | Lowest: {failing_towers[0]['tower']} ({failing_towers[0]['grade']:.1f}/10)")
+
+        if baseline_avg >= TARGET_SCORE_THRESHOLD:
             logger.info("🎯 GLOBAL MISSION CERTIFIED: All 10 towers scored >= 9.5 / 10.")
             break
-        target_idx += 1
+
+        lowest_tower = failing_towers[0]["tower"]
+        candidate_targets = TOWER_DEFECT_TARGET_MAPPING.get(lowest_tower, PHYSICAL_TARGET_REGISTRY)
+        target_path = candidate_targets[(attempt - 1) % len(candidate_targets)]
+
+        improved, current_avg = run_single_evolution_cycle(target_path)
+        attempt += 1
         time.sleep(10)
 
 
