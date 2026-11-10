@@ -11,13 +11,15 @@ from __future__ import annotations
 import json
 import logging
 import math
-from enum import StrEnum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from assessment_engine.domain.actuarial.input_resolver import (
+    ActuarialInputResolver,
+    QuantificationStatus,
+)
 from assessment_engine.domain.bayesian_fair_copula_engine import (
     BayesianFairCopulaEngine,
-    EpistemicDissonanceRecord,
     FindingTelemetry,
     OperationalZone,
     PortfolioReproductionManifest,
@@ -25,30 +27,14 @@ from assessment_engine.domain.bayesian_fair_copula_engine import (
     create_reproduction_manifest,
 )
 from assessment_engine.domain.models.parameter_lineage import (
-    ActuarialFindingInputs,
     ActuarialFindingOutputs,
     ActuarialInputVector,
-    DissonanceLineageRecord,
-    ParameterConfidenceLevel,
-    ParameterProvenanceRecord,
-    ParameterSourceType,
-    ParameterValidationStatus,
 )
 from assessment_engine.domain.taxonomy.archetype_registry import (
-    LossArchetypeType,
     get_actuarial_archetype_registry,
 )
 
 logger = logging.getLogger(__name__)
-
-
-class QuantificationStatus(StrEnum):
-    """Explicit status documenting whether financial metrics could be defensibly quantified."""
-
-    QUANTIFIED = "QUANTIFIED"
-    NOT_QUANTIFIED = "NOT_QUANTIFIED"
-    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
-    UNSUPPORTED_CONTEXT = "UNSUPPORTED_CONTEXT"
 
 
 def _safe_float(val: Any, default: Optional[float] = None) -> Optional[float]:
@@ -71,34 +57,68 @@ class CanonicalRiskOrchestrator:
     def quantify_payloads(
         cls,
         payloads_by_tower: Dict[str, Dict[str, Any]],
-        global_context: Optional[Dict[str, Any]] = None,
+        global_context: Optional[Any] = None,
         persist_to_disk: bool = False,
         client_id: Optional[str] = None,
         doc_lang: str = "en",
     ) -> Tuple[Dict[str, Dict[str, Any]], Optional[PortfolioReproductionManifest]]:
         """Executes canonical Bayesian FAIR Copula quantification across any number of towers (1 to N)."""
-        ctx = global_context or {}
-        fin_tel = ctx.get("financial_telemetry") or {}
-        eval_currency = str(
-            fin_tel.get("currency")
-            or fin_tel.get("currency_code")
-            or ctx.get("currency")
-            or "EUR"
-        ).strip().upper()
+        from assessment_engine.domain.models.global_context import (
+            VALID_ISO_CURRENCIES,
+            GlobalAssessmentContext,
+        )
 
-        if not eval_currency or len(eval_currency) > 4:
-            eval_currency = "EUR"
+        valid_ctx: Optional[GlobalAssessmentContext] = None
+        if isinstance(global_context, GlobalAssessmentContext):
+            valid_ctx = global_context
+        elif isinstance(global_context, dict) and global_context:
+            try:
+                valid_ctx = GlobalAssessmentContext.model_validate(global_context)
+            except Exception:
+                fin_tel = global_context.get("financial_telemetry") or {}
+                raw_c = str(
+                    fin_tel.get("currency")
+                    or fin_tel.get("currency_code")
+                    or global_context.get("currency")
+                    or "EUR"
+                ).strip().upper()
+                if raw_c not in VALID_ISO_CURRENCIES:
+                    valid_ctx = None
+                else:
+                    valid_ctx = GlobalAssessmentContext.create_legacy_generic_context(
+                        tenant_id=str(global_context.get("tenant_id") or "DEFAULT_TENANT"),
+                        business_entity_id=str(global_context.get("business_entity_id") or "DEFAULT_ENTITY"),
+                        operating_site_id=str(global_context.get("operating_site_id") or "DEFAULT_SITE"),
+                        currency=raw_c,
+                        annual_revenue=_safe_float(fin_tel.get("annual_revenue")),
+                        hourly_downtime_cost=_safe_float(fin_tel.get("authoritative_hourly_downtime_cost")),
+                    )
+        else:
+            valid_ctx = GlobalAssessmentContext.create_legacy_generic_context()
 
-        actuarial_cfg = fin_tel.get("actuarial_calibration") or {}
+        if valid_ctx is None:
+            # Mark unsupported context and abort simulation safely
+            for payload in payloads_by_tower.values():
+                payload["quantification_status"] = QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                payload["total_fair_ale"] = None
+                payload["total_fair_p90"] = None
+                payload["total_fair_cvar_90"] = None
+                for p in payload.get("pillars_analysis", []):
+                    for f in p.get("health_check_asis", []):
+                        f["quantification_status"] = QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                        f["fair_ale_score"] = None
+                        f["fair_p90_score"] = None
+            return payloads_by_tower, None
+
+        eval_currency = valid_ctx.reporting_currency
+
+        actuarial_cfg = {}
+        if isinstance(global_context, dict):
+            actuarial_cfg = (global_context.get("financial_telemetry") or {}).get("actuarial_calibration") or {}
         num_sims = int(actuarial_cfg.get("simulation_iterations") or 8192)
         copula_df = int(actuarial_cfg.get("copula_df") or 4)
 
-        base_burn_rate = _safe_float(
-            fin_tel.get("authoritative_hourly_downtime_cost")
-            or fin_tel.get("hourly_downtime_rate")
-            or fin_tel.get("hourly_burn_rate"),
-            default=5000.0,
-        ) or 5000.0
+        base_burn_rate = valid_ctx.authoritative_hourly_downtime_cost or 5000.0
 
         zone_configs = {
             "TIER_1_MISSION_CRITICAL": {
@@ -131,6 +151,19 @@ class CanonicalRiskOrchestrator:
 
         for t_code, payload in payloads_by_tower.items():
             t_mapping = registry.get_mapping_for_tower(t_code)
+            if not t_mapping.quantifiable:
+                payload["quantification_status"] = QuantificationStatus.NOT_QUANTIFIED.value
+                payload["total_fair_ale"] = None
+                payload["total_fair_p90"] = None
+                payload["total_fair_cvar_90"] = None
+                for p in payload.get("pillars_analysis", []):
+                    for f in p.get("health_check_asis", []):
+                        f["quantification_status"] = QuantificationStatus.NOT_QUANTIFIED.value
+                        f["fair_ale_score"] = None
+                        f["fair_p90_score"] = None
+                        f["fair_cvar_score"] = None
+                continue
+
             t_arch = t_mapping.primary_archetype
 
             # Determine operational zone for the tower
@@ -151,10 +184,14 @@ class CanonicalRiskOrchestrator:
                 secondary_loss_retention_factor=z_spec["retention"],
                 catastrophic_recovery_ceiling_hours=z_spec["ceil_hours"],
                 emergency_replacement_ratio=z_spec["repl_ratio"],
+                tenant_id=valid_ctx.tenant_id,
+                legal_entity_id=valid_ctx.business_entity_id,
+                operating_site_id=valid_ctx.operating_site_id,
             )
 
             pillars = payload.get("pillars_analysis") or []
             finding_seq = 0
+
 
             for pillar in pillars:
                 if not isinstance(pillar, dict):
@@ -170,99 +207,20 @@ class CanonicalRiskOrchestrator:
                     finding_seq += 1
                     f_id = str(hc.get("node_id") or f"{t_code}_F{finding_seq:03d}")
                     hc["node_id"] = f_id
-                    title = str(hc.get("capability") or hc.get("title") or f"Finding {f_id}")
 
-                    raw_sev = str(hc.get("severity") or hc.get("impact_severity") or "MEDIUM").upper()
-                    raw_lm = _safe_float(hc.get("loss_magnitude"))
-                    raw_tef = _safe_float(hc.get("threat_event_frequency"))
-
-                    is_spof = bool(hc.get("is_spof") or raw_sev == "CRITICAL")
-                    tef_mode = raw_tef if (raw_tef and 0.0 < raw_tef <= 10.0) else 0.30
-                    tef_min = _safe_float(hc.get("tef_pert_min"), default=tef_mode * 0.45) or (tef_mode * 0.45)
-                    tef_max = _safe_float(hc.get("tef_pert_max"), default=tef_mode * 2.20) or (tef_mode * 2.20)
-                    if not (tef_min <= tef_mode <= tef_max):
-                        tef_min = min(tef_min, tef_mode)
-                        tef_max = max(tef_max, tef_mode)
-
-                    rto_mode = _safe_float(hc.get("recovery_time_hours") or hc.get("rto_hours_mode"), default=4.0) or 4.0
-                    rto_min = _safe_float(hc.get("rto_hours_min"), default=rto_mode * 0.45) or (rto_mode * 0.45)
-                    rto_max = _safe_float(hc.get("rto_hours_max"), default=rto_mode * 2.50) or (rto_mode * 2.50)
-                    if not (rto_min <= rto_mode <= rto_max):
-                        rto_min = min(rto_min, rto_mode)
-                        rto_max = max(rto_max, rto_mode)
-
-                    lm_factor = (raw_lm / 5.0) if (raw_lm and 0.0 < raw_lm <= 5.0) else 0.50
-
-                    # Polymorphic secondary loss calculation (Vector 5)
-                    explicit_sec = _safe_float(hc.get("secondary_loss_mean"))
-                    if explicit_sec is not None:
-                        sec_mean = explicit_sec
-                    elif t_arch == LossArchetypeType.REGULATORY_AND_BREACH:
-                        ann_rev = _safe_float(fin_tel.get("annual_revenue") or fin_tel.get("global_annual_revenue"), default=100_000_000.0) or 100_000_000.0
-                        max_fine = max(20_000_000.0, ann_rev * 0.04)
-                        b2b_damp = _safe_float(fin_tel.get("b2b_exposure_dampener"), default=0.25) or 0.25
-                        sec_mean = max_fine * (0.01 + 0.03 * lm_factor) * b2b_damp
-                    elif t_arch == LossArchetypeType.CAPITAL_INEFFICIENCY:
-                        opex = _safe_float(fin_tel.get("annual_it_opex"), default=5_000_000.0) or 5_000_000.0
-                        sec_mean = opex * (0.02 + 0.04 * lm_factor)
-                    elif t_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
-                        wage = _safe_float(fin_tel.get("fully_burdened_hourly_rate"), default=65.0) or 65.0
-                        sec_mean = wage * (20.0 + 30.0 * lm_factor)
-                    else:
-                        sec_mean = derived_hourly_rate * (1.5 + 2.0 * lm_factor)
-
-                    if is_spof and t_arch == LossArchetypeType.AVAILABILITY_OUTAGE:
-                        sec_mean = max(sec_mean, derived_hourly_rate * 2.65)
-
-                    repl_cost = _safe_float(hc.get("direct_replacement_cost"), default=0.0) or 0.0
-                    alpha_rad = _safe_float(hc.get("blast_radius_alpha"), default=0.60) or 0.60
-                    alpha_rad = max(0.05, min(1.0, alpha_rad))
-                    rho_dep = _safe_float(hc.get("shared_dependence_factor"), default=0.30) or 0.30
-
-                    k_failures = int(hc.get("audit_k_failures") or 0)
-                    n_trials = int(hc.get("audit_n_trials") or 0)
-
-                    dissonance_obj: Optional[EpistemicDissonanceRecord] = None
-                    if hc.get("epistemic_dissonance"):
-                        d_dict = hc["epistemic_dissonance"]
-                        dissonance_obj = EpistemicDissonanceRecord(
-                            record_id=str(d_dict.get("record_id") or f"DISS_{f_id}"),
-                            finding_id=f_id,
-                            claimed_maturity=float(d_dict.get("claimed_maturity") or cmmi_pillar),
-                            empirical_reality_maturity=float(d_dict.get("empirical_reality_maturity") or cmmi_pillar),
-                            dissonance_weight=float(d_dict.get("dissonance_weight") or 0.5),
-                            transcript_evidence_quote=str(d_dict.get("transcript_evidence_quote") or ""),
-                            impact_vector=str(d_dict.get("impact_vector") or "BOTH"),
-                        )
-
-                    ft = FindingTelemetry(
-                        finding_id=f_id,
+                    inputs_obj, ft, f_status = ActuarialInputResolver.resolve_finding_inputs(
+                        hc=hc,
                         tower_id=t_code,
-                        title=title,
-                        cmmi_maturity=cmmi_pillar,
+                        pillar_cmmi=cmmi_pillar,
                         zone=zone,
-                        tef_pert_min=tef_min,
-                        tef_pert_mode=tef_mode,
-                        tef_pert_max=tef_max,
-                        rto_hours_min=rto_min,
-                        rto_hours_mode=rto_mode,
-                        rto_hours_max=rto_max,
-                        secondary_loss_mean=sec_mean,
-                        is_spof=is_spof,
-                        shared_dependence_factor=rho_dep,
-                        blast_radius_alpha=alpha_rad,
-                        catastrophic_rto_hours=zone.catastrophic_recovery_ceiling_hours,
-                        direct_replacement_cost=repl_cost,
-                        audit_k_failures=k_failures,
-                        audit_n_trials=n_trials,
-                        dissonance=dissonance_obj,
+                        archetype=t_arch,
+                        currency_code=eval_currency,
+                        annual_revenue=valid_ctx.annual_revenue,
+                        annual_it_opex=valid_ctx.annual_it_opex,
+                        hourly_wage=valid_ctx.fully_burdened_hourly_rate,
                     )
                     all_telemetry.append(ft)
-                    telemetry_meta[(t_code, f_id)] = (ft, hc, {
-                        "derived_hourly_rate": derived_hourly_rate,
-                        "raw_tef": raw_tef,
-                        "raw_lm": raw_lm,
-                    })
+                    telemetry_meta[(t_code, f_id)] = (ft, hc, inputs_obj, f_status)
 
         if not all_telemetry:
             for payload in payloads_by_tower.values():
@@ -285,12 +243,29 @@ class CanonicalRiskOrchestrator:
         )
         summary: PortfolioRiskSummary = engine.evaluate_portfolio(all_telemetry, currency_code=eval_currency)
 
-        # 3. Build reproduction manifest
+        # 3. Build reproduction manifest with explicit risk scope
+        from assessment_engine.domain.bayesian_fair_copula_engine import (
+            RiskScopeContext,
+        )
+
+        risk_scope = RiskScopeContext(
+            tenant_id=valid_ctx.tenant_id,
+            legal_entity_id=valid_ctx.business_entity_id,
+            operating_site_id=valid_ctx.operating_site_id,
+            country_code=valid_ctx.country_code,
+            jurisdiction_code=valid_ctx.jurisdiction_code,
+            source_currency_code=valid_ctx.source_currency,
+            reporting_currency_code=valid_ctx.reporting_currency,
+            sector_code=valid_ctx.sector_code,
+            subsector_code=valid_ctx.subsector_code,
+        )
         manifest = create_reproduction_manifest(
             engine=engine,
             findings=all_telemetry,
             summary=summary,
             currency_code=eval_currency,
+            risk_scope=risk_scope,
+            assessment_period=valid_ctx.assessment_period,
         )
 
         # 4. Populate canonical outputs into payloads
@@ -298,19 +273,8 @@ class CanonicalRiskOrchestrator:
             if t_code not in summary.towers:
                 continue
             t_res = summary.towers[t_code]
-            payload["quantification_status"] = QuantificationStatus.QUANTIFIED.value
-            payload["total_fair_ale"] = t_res.portfolio_allocated_ale
-            payload["standalone_fair_ale"] = t_res.standalone_ale
-            payload["total_fair_p90"] = t_res.var_90
-            payload["total_fair_cvar_90"] = t_res.cvar_90
-            payload["total_fair_max"] = t_res.var_99
-            payload["total_fair_cvar_99"] = t_res.cvar_99
-            payload["primary_fair_ale"] = t_res.primary_ale
-            payload["secondary_fair_ale"] = t_res.secondary_ale
-            payload["worst_crisis_event"] = t_res.worst_crisis_event
-            payload["worst_crisis_rto_hours"] = t_res.worst_crisis_rto_hours
-
             finding_results = {f.finding_id: f for f in t_res.findings}
+            tower_has_low_conf = False
 
             for pillar in payload.get("pillars_analysis", []):
                 if not isinstance(pillar, dict):
@@ -321,7 +285,6 @@ class CanonicalRiskOrchestrator:
                     f_id = hc.get("node_id")
                     if f_id in finding_results:
                         f_res = finding_results[f_id]
-                        hc["quantification_status"] = QuantificationStatus.QUANTIFIED.value
                         hc["fair_ale_score"] = f_res.portfolio_allocated_ale
                         hc["fair_p90_score"] = f_res.var_90
                         hc["fair_cvar_score"] = f_res.cvar_90
@@ -334,211 +297,10 @@ class CanonicalRiskOrchestrator:
                         # Build and attach verified ActuarialInputVector
                         meta_tuple = telemetry_meta.get((t_code, f_id))
                         if meta_tuple:
-                            ft_obj, _, _ = meta_tuple
-                            diss_record = None
-                            if ft_obj.dissonance:
-                                diss_record = DissonanceLineageRecord(
-                                    record_id=ft_obj.dissonance.record_id,
-                                    finding_id=ft_obj.dissonance.finding_id,
-                                    claimed_maturity=ft_obj.dissonance.claimed_maturity,
-                                    empirical_reality_maturity=ft_obj.dissonance.empirical_reality_maturity,
-                                    dissonance_weight=ft_obj.dissonance.dissonance_weight,
-                                    transcript_evidence_quote=ft_obj.dissonance.transcript_evidence_quote,
-                                    impact_vector=ft_obj.dissonance.impact_vector,
-                                )
-
-                            inputs_obj = ActuarialFindingInputs(
-                                cmmi_maturity=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.cmmi_maturity,
-                                    effective_value=ft_obj.cmmi_maturity,
-                                    unit="cmmi_index",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD,
-                                    estimation_method="Pillar questionnaire evaluation",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                zone_id=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.zone_id,
-                                    effective_value=ft_obj.zone.zone_id,
-                                    unit="zone_id",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="Operational tier criticality mapping",
-                                    confidence=ParameterConfidenceLevel.HIGH,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                hourly_burn_rate=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.hourly_burn_rate,
-                                    effective_value=ft_obj.zone.hourly_burn_rate,
-                                    unit=f"{eval_currency}/hour",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="Turnover / 8760 * tier ratio",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                max_annual_outage_hours=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.max_annual_outage_hours,
-                                    effective_value=ft_obj.zone.max_annual_outage_hours,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Tier SLA ceiling",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                secondary_loss_retention_factor=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.secondary_loss_retention_factor,
-                                    effective_value=ft_obj.zone.secondary_loss_retention_factor,
-                                    unit="ratio",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Zone response retention",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                catastrophic_recovery_ceiling_hours=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.catastrophic_recovery_ceiling_hours,
-                                    effective_value=ft_obj.zone.catastrophic_recovery_ceiling_hours,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Disaster recovery boundary",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                emergency_replacement_ratio=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.zone.emergency_replacement_ratio,
-                                    effective_value=ft_obj.zone.emergency_replacement_ratio,
-                                    unit="ratio",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="SPOF emergency buffer",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                tef_pert_min=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.tef_pert_min,
-                                    effective_value=ft_obj.tef_pert_min,
-                                    unit="events/year",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="PERT min from mode * 0.45",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                tef_pert_mode=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.tef_pert_mode,
-                                    effective_value=ft_obj.tef_pert_mode,
-                                    unit="events/year",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD if hc.get("threat_event_frequency") else ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Ordinal frequency mapping",
-                                    confidence=ParameterConfidenceLevel.MEDIUM if hc.get("threat_event_frequency") else ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                tef_pert_max=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.tef_pert_max,
-                                    effective_value=ft_obj.tef_pert_max,
-                                    unit="events/year",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="PERT max from mode * 2.20",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                rto_hours_min=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.rto_hours_min,
-                                    effective_value=ft_obj.rto_hours_min,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="PERT min from RTO mode * 0.45",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                rto_hours_mode=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.rto_hours_mode,
-                                    effective_value=ft_obj.rto_hours_mode,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD if hc.get("recovery_time_hours") else ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Explicit recovery time or prior mode",
-                                    confidence=ParameterConfidenceLevel.MEDIUM if hc.get("recovery_time_hours") else ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                rto_hours_max=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.rto_hours_max,
-                                    effective_value=ft_obj.rto_hours_max,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="PERT max from RTO mode * 2.50",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                secondary_loss_mean=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.secondary_loss_mean,
-                                    effective_value=ft_obj.secondary_loss_mean,
-                                    unit=eval_currency,
-                                    source_type=ParameterSourceType.DERIVED,
-                                    estimation_method="Polymorphic secondary domain calculation",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                is_spof=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.is_spof,
-                                    effective_value=ft_obj.is_spof,
-                                    unit="boolean",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD if hc.get("is_spof") is not None else ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Severity and explicit finding metadata",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                shared_dependence_factor=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.shared_dependence_factor,
-                                    effective_value=ft_obj.shared_dependence_factor,
-                                    unit="ratio",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Sector intra-tower baseline",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                blast_radius_alpha=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.blast_radius_alpha,
-                                    effective_value=ft_obj.blast_radius_alpha,
-                                    unit="ratio",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Domain operational scope factor",
-                                    confidence=ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                catastrophic_rto_hours=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.catastrophic_rto_hours,
-                                    effective_value=ft_obj.catastrophic_rto_hours,
-                                    unit="hours",
-                                    source_type=ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Zone catastrophic ceiling",
-                                    confidence=ParameterConfidenceLevel.MEDIUM,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                direct_replacement_cost=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.direct_replacement_cost,
-                                    effective_value=ft_obj.direct_replacement_cost,
-                                    unit=eval_currency,
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD if hc.get("direct_replacement_cost") else ParameterSourceType.MODEL_DEFAULT,
-                                    estimation_method="Explicit hardware inventory cost",
-                                    confidence=ParameterConfidenceLevel.MEDIUM if hc.get("direct_replacement_cost") else ParameterConfidenceLevel.LOW,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                audit_k_failures=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.audit_k_failures,
-                                    effective_value=ft_obj.audit_k_failures,
-                                    unit="count",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD,
-                                    estimation_method="Audit identified control gaps",
-                                    confidence=ParameterConfidenceLevel.HIGH,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                audit_n_trials=ParameterProvenanceRecord(
-                                    estimated_value=ft_obj.audit_n_trials,
-                                    effective_value=ft_obj.audit_n_trials,
-                                    unit="count",
-                                    source_type=ParameterSourceType.ASSESSMENT_PAYLOAD,
-                                    estimation_method="Evaluated audit control count",
-                                    confidence=ParameterConfidenceLevel.HIGH,
-                                    validation_status=ParameterValidationStatus.UNCONFIRMED,
-                                ),
-                                dissonance_record=diss_record,
-                            )
+                            ft_obj, _, resolved_inputs, f_status = meta_tuple
+                            hc["quantification_status"] = f_status.value
+                            if f_status == QuantificationStatus.ESTIMATED_LOW_CONFIDENCE:
+                                tower_has_low_conf = True
 
                             outputs_obj = ActuarialFindingOutputs(
                                 mean_vuln=f_res.mean_vuln,
@@ -559,14 +321,35 @@ class CanonicalRiskOrchestrator:
                                 finding_id=f_id,
                                 tower_id=t_code,
                                 currency_code=eval_currency,
-                                inputs=inputs_obj,
+                                inputs=resolved_inputs,
                                 outputs=outputs_obj,
                             )
                             hc["actuarial_input_vector"] = input_vector.model_dump(mode="json")
 
+            payload["quantification_status"] = (
+                QuantificationStatus.ESTIMATED_LOW_CONFIDENCE.value
+                if tower_has_low_conf
+                else QuantificationStatus.QUANTIFIED.value
+            )
+            payload["total_fair_ale"] = t_res.portfolio_allocated_ale
+            payload["standalone_fair_ale"] = t_res.standalone_ale
+            payload["total_fair_p90"] = t_res.var_90
+            payload["total_fair_cvar_90"] = t_res.cvar_90
+            payload["total_fair_max"] = t_res.var_99
+            payload["total_fair_cvar_99"] = t_res.cvar_99
+            payload["primary_fair_ale"] = t_res.primary_ale
+            payload["secondary_fair_ale"] = t_res.secondary_ale
+            payload["worst_crisis_event"] = t_res.worst_crisis_event
+            payload["worst_crisis_rto_hours"] = t_res.worst_crisis_rto_hours
+
             if persist_to_disk:
+                if not client_id or not str(client_id).strip():
+                    raise ValueError(
+                        "Multi-Tenant Governance Violation: client_id is mandatory when persist_to_disk is True. "
+                        "Silent fallback to 'molins' is strictly prohibited."
+                    )
+                client_norm = str(client_id).strip()
                 code_lower = t_code.lower()
-                client_norm = client_id.strip() if client_id else "molins"
                 repo_root = Path(__file__).resolve().parents[4]
                 local_dir = repo_root / "working" / client_norm / t_code
                 local_path = local_dir / f"blueprint_{code_lower}_payload.json"
@@ -575,7 +358,8 @@ class CanonicalRiskOrchestrator:
                         with open(local_path, "w", encoding="utf-8") as pf:
                             json.dump(payload, pf, indent=2, ensure_ascii=False)
                     except Exception as p_err:
-                        logger.warning("Could not persist payload for tower %s: %s", t_code, p_err)
+                        logger.error("Could not persist payload for tower %s: %s", t_code, p_err)
+                        raise p_err
 
                 try:
                     from assessment_engine.application.tools.actuarial_ledger_generator import (
@@ -583,7 +367,8 @@ class CanonicalRiskOrchestrator:
                     )
                     generate_actuarial_ledger(t_code, payload)
                 except Exception as ledger_err:
-                    logger.warning("Could not flush actuarial ledger for tower %s: %s", t_code, ledger_err)
+                    logger.error("Could not flush actuarial ledger for tower %s: %s", t_code, ledger_err)
+                    raise ledger_err
 
         return payloads_by_tower, manifest
 

@@ -142,7 +142,7 @@ class ActuarialTaxonomyRegistry(BaseModel):
                 classification_confidence="UNCONFIRMED",
                 classification_method="PROVISIONAL_DYNAMIC_SUGGESTION",
                 review_required=True,
-                quantifiable=True,
+                quantifiable=False,
             )
 
         # 4. Arbitrary custom domain identifiers (e.g. EDGE_01) receive provisional suggestions marked UNCONFIRMED
@@ -174,7 +174,7 @@ class ActuarialTaxonomyRegistry(BaseModel):
                 classification_confidence="UNCONFIRMED",
                 classification_method="PROVISIONAL_CUSTOM_SUGGESTION",
                 review_required=True,
-                quantifiable=True,
+                quantifiable=False,
             )
 
         raise KeyError(

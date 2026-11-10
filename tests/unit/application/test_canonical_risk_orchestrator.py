@@ -126,6 +126,9 @@ def test_presentation_modules_do_not_calculate_financial_metrics_ast() -> None:
         "evaluate_portfolio",
         "sample_severity_distribution",
         "calculate_dynamic_p90_ratio",
+        "ActuarialEngine",
+        "BayesianFairCopulaEngine",
+        "ActuarialEngine.evaluate",
     }
 
     for cf in compiler_files:
@@ -140,6 +143,8 @@ def test_presentation_modules_do_not_calculate_financial_metrics_ast() -> None:
                     func_id = func.id
                 elif isinstance(func, ast.Attribute):
                     func_id = func.attr
+                    if isinstance(func.value, ast.Name) and func.value.id in ("ActuarialEngine", "BayesianFairCopulaEngine"):
+                        func_id = f"{func.value.id}.{func.attr}"
                 assert func_id not in prohibited_call_patterns, (
                     f"Presentation layer violation in {cf.name}: called prohibited actuarial calculation '{func_id}'"
                 )

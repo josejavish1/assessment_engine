@@ -13,9 +13,6 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, Mapping
 
-from assessment_engine.application.services.cross_tower_nexus import (
-    CrossTowerNexusEngine,
-)
 from assessment_engine.domain.actuarial_scale_calibrator import (
     resolve_iso_currency_code,
     safe_float,
@@ -533,14 +530,16 @@ def _build_stratified_financial_case(
     layer_2_display = format_currency(layer_2_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
 
     # Layer 3: Dynamic Actuarial Tail Risk (P90 FAIR value: calibrated ratio of total FAIR exposure)
-    if total_fair_ale <= 0.0:
-        total_fair_ale = annual_revenue * MIN_EXECUTIVE_ALE_REVENUE_RATIO
-        
-    layer_3_min = _round_half_up(total_fair_ale * tail_risk_min_ratio, 0)
-    layer_3_max = _round_half_up(total_fair_ale * tail_risk_max_ratio, 0)
-    l3_min_fmt = format_currency(layer_3_min, currency_code=currency_code, locale=doc_lang, decimals=0)
-    l3_max_fmt = format_currency(layer_3_max, currency_code=currency_code, locale=doc_lang, decimals=0)
-    layer_3_display = f"{l3_min_fmt} - {l3_max_fmt}"
+    if total_fair_ale > 0.0:
+        layer_3_min = _round_half_up(total_fair_ale * tail_risk_min_ratio, 0)
+        layer_3_max = _round_half_up(total_fair_ale * tail_risk_max_ratio, 0)
+        l3_min_fmt = format_currency(layer_3_min, currency_code=currency_code, locale=doc_lang, decimals=0)
+        l3_max_fmt = format_currency(layer_3_max, currency_code=currency_code, locale=doc_lang, decimals=0)
+        layer_3_display = f"{l3_min_fmt} - {l3_max_fmt}"
+    else:
+        layer_3_min = 0.0
+        layer_3_max = 0.0
+        layer_3_display = "NOT_QUANTIFIED"
 
     # Payback & ROI (TCO = OpEx + CapEx vs Total Financial Exposure Mitigated over 3 years)
     total_inv = year_1_opex + total_capex_inv

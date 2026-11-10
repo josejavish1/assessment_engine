@@ -243,7 +243,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
     def _compute_deterministic_seed(
         self, findings: List[FindingTelemetry], currency_code: str = "EUR"
     ) -> tuple[int, str]:
-        """Generates a deterministic integer seed from the complete parameter vector and engine config."""
+        """Generates a deterministic 128-bit integer seed from the complete parameter vector and engine config."""
         config_header = (
             f"CFG:{currency_code}:{self.n_sims}:{self.vuln_min:.4f}:{self.vuln_max:.4f}:"
             f"{self.gamma:.4f}:{self.kappa:.4f}:{self.copula_df}:{self.intra_tower_boost:.4f}:"
@@ -253,7 +253,18 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             f"{self.catastrophic_tail_quantile:.4f}"
         )
         canonical_parts: List[str] = [config_header]
-        for f in sorted(findings, key=lambda x: (x.tower_id, x.finding_id)):
+        sorted_findings = sorted(
+            findings,
+            key=lambda x: (
+                x.zone.tenant_id,
+                x.zone.legal_entity_id,
+                x.zone.operating_site_id,
+                x.zone.zone_id,
+                x.tower_id,
+                x.finding_id,
+            ),
+        )
+        for f in sorted_findings:
             diss_token = (
                 f"{f.dissonance.record_id}:{f.dissonance.finding_id}:"
                 f"{f.dissonance.claimed_maturity:.4f}:"
@@ -275,7 +286,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             )
         canonical_str = "|".join(canonical_parts)
         sha_hex = hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
-        seed_int = int(sha_hex[:8], 16)
+        seed_int = int(sha_hex[:32], 16)
         return seed_int, sha_hex[:16]
 
     def _resolve_posterior_cmmi(
@@ -442,11 +453,25 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             raise ValueError("A valid ISO currency_code must be provided.")
 
         normalized_currency = currency_code.strip().upper()
-        seed_int, seed_hash = self._compute_deterministic_seed(findings, currency_code=normalized_currency)
-        rng = np.random.default_rng(seed_int)
-        n_f = len(findings)
 
-        u_copula = self._generate_student_t_copula_uniforms(findings, rng)
+        # Invariant 1: Canonicalize findings to guarantee complete permutation invariance
+        canonical_findings = sorted(
+            findings,
+            key=lambda x: (
+                x.zone.tenant_id,
+                x.zone.legal_entity_id,
+                x.zone.operating_site_id,
+                x.zone.zone_id,
+                x.tower_id,
+                x.finding_id,
+            ),
+        )
+
+        seed_int, seed_hash = self._compute_deterministic_seed(canonical_findings, currency_code=normalized_currency)
+        rng = np.random.default_rng(seed_int)
+        n_f = len(canonical_findings)
+
+        u_copula = self._generate_student_t_copula_uniforms(canonical_findings, rng)
         u_aux_vuln = rng.uniform(1e-5, 1.0 - 1e-5, size=(self.n_sims, n_f))
         u_aux_rto = rng.uniform(1e-5, 1.0 - 1e-5, size=(self.n_sims, n_f))
         u_aux_sec = rng.uniform(1e-5, 1.0 - 1e-5, size=(self.n_sims, n_f))
@@ -466,7 +491,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         sigma_sec = float(np.sqrt(np.log(1.0 + self.secondary_loss_cv ** 2)))
 
         # 1. Marginal Evaluation per Finding
-        for idx, f in enumerate(findings):
+        for idx, f in enumerate(canonical_findings):
             tef_samples = self._sample_pert(
                 f.tef_pert_min, f.tef_pert_mode, f.tef_pert_max, u_copula[:, idx]
             )
@@ -579,9 +604,31 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         allocated_finding_sim_primary = np.zeros((self.n_sims, n_f), dtype=np.float64)
         allocated_finding_sim_secondary = np.zeros((self.n_sims, n_f), dtype=np.float64)
 
-        unique_zones = {f.zone.zone_id: f.zone for f in findings}
-        for z_id, zone in unique_zones.items():
-            zone_indices = [i for i, f in enumerate(findings) if f.zone.zone_id == z_id]
+        # Invariant 2: Scoped zone grouping prevents silent collisions between sites
+        unique_zones: Dict[str, OperationalZone] = {}
+        for f in canonical_findings:
+            scoped_k = f.zone.canonical_scoped_key
+            if scoped_k not in unique_zones:
+                unique_zones[scoped_k] = f.zone
+            else:
+                cached_z = unique_zones[scoped_k]
+                if (
+                    cached_z.hourly_burn_rate != f.zone.hourly_burn_rate
+                    or cached_z.max_annual_outage_hours != f.zone.max_annual_outage_hours
+                    or cached_z.secondary_loss_retention_factor != f.zone.secondary_loss_retention_factor
+                    or cached_z.catastrophic_recovery_ceiling_hours != f.zone.catastrophic_recovery_ceiling_hours
+                    or cached_z.emergency_replacement_ratio != f.zone.emergency_replacement_ratio
+                ):
+                    raise ValueError(
+                        f"Domain Validation Error: Conflicting parameters detected for scoped zone '{scoped_k}'. "
+                        f"Cached: burn={cached_z.hourly_burn_rate}, h_max={cached_z.max_annual_outage_hours}; "
+                        f"Attempted: burn={f.zone.hourly_burn_rate}, h_max={f.zone.max_annual_outage_hours}."
+                    )
+
+        for scoped_k, zone in unique_zones.items():
+            zone_indices = [
+                i for i, f in enumerate(canonical_findings) if f.zone.canonical_scoped_key == scoped_k
+            ]
             raw_zone_eq_hours = np.sum(
                 finding_equivalent_zone_hours[:, zone_indices], axis=1
             )
@@ -607,7 +654,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         retained_secondary_losses = np.zeros(self.n_sims, dtype=np.float64)
         for i in range(n_f):
             retained_i = (
-                finding_secondary_losses[:, i] * findings[i].zone.secondary_loss_retention_factor
+                finding_secondary_losses[:, i] * canonical_findings[i].zone.secondary_loss_retention_factor
             )
             allocated_finding_sim_secondary[:, i] = retained_i
             retained_secondary_losses += retained_i
@@ -627,10 +674,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         total_standalone_sum = float(np.sum(standalone_finding_ales))
 
         towers_dict: Dict[str, TowerRiskResult] = {}
-        unique_towers = sorted({f.tower_id for f in findings})
+        unique_towers = sorted({f.tower_id for f in canonical_findings})
 
         for t_id in unique_towers:
-            t_indices = [i for i, f in enumerate(findings) if f.tower_id == t_id]
+            t_indices = [i for i, f in enumerate(canonical_findings) if f.tower_id == t_id]
             t_alloc_sim_sum = np.sum(allocated_finding_sim_losses[:, t_indices], axis=1)
 
             t_standalone_ale = float(np.sum(standalone_finding_ales[t_indices]))
@@ -654,7 +701,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             t_var_99 = float(np.percentile(t_alloc_sim_sum, 99))
             t_cvar_99 = self._cvar(t_alloc_sim_sum, 99.0)
 
-            cmmi_vec = np.array([findings[i].cmmi_maturity for i in t_indices], dtype=np.float64)
+            cmmi_vec = np.array([canonical_findings[i].cmmi_maturity for i in t_indices], dtype=np.float64)
             weights_vec = standalone_finding_ales[t_indices]
             if np.sum(weights_vec) > 1e-9:
                 t_cmmi = float(np.average(cmmi_vec, weights=weights_vec))
@@ -663,9 +710,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
             f_results = [
                 FindingRiskResult(
-                    finding_id=findings[i].finding_id,
-                    title=findings[i].title,
-                    cmmi_maturity=findings[i].cmmi_maturity,
+                    finding_id=canonical_findings[i].finding_id,
+                    title=canonical_findings[i].title,
+                    cmmi_maturity=canonical_findings[i].cmmi_maturity,
                     mean_vuln=round(float(mean_vulns[i]), 4),
                     mean_lef=round(float(mean_lefs[i]), 3),
                     mean_sle=round(float(mean_sles[i]), 2),
@@ -768,12 +815,12 @@ class RiskScopeContext(BaseModel):
     tenant_id: str = "DEFAULT_TENANT"
     legal_entity_id: str = "DEFAULT_ENTITY"
     operating_site_id: str = "DEFAULT_SITE"
-    country_code: str = "ES"
-    jurisdiction_code: str = "EU_GDPR_NIS2"
+    country_code: str = "XX"
+    jurisdiction_code: str = "GENERAL_STATUTORY"
     source_currency_code: str = "EUR"
     reporting_currency_code: str = "EUR"
-    sector_code: str = "PROCESS_MANUFACTURING"
-    subsector_code: str = "CEMENT_HEAVY_BUILDING_MATERIALS"
+    sector_code: str = "GENERAL"
+    subsector_code: str = "CROSS_SECTOR"
 
 
 class PortfolioReproductionManifest(BaseModel):
@@ -799,10 +846,24 @@ def create_reproduction_manifest(
     findings: List[FindingTelemetry],
     summary: PortfolioRiskSummary,
     currency_code: str,
+    risk_scope: Optional[RiskScopeContext] = None,
+    assessment_period: str = "2026.Q4",
 ) -> PortfolioReproductionManifest:
     """Serializes the exact configuration, input telemetry, and simulation outputs into a reproduction manifest."""
     serialized_findings = []
-    for f in findings:
+    # Ensure findings are serialized in canonical order
+    canonical_findings = sorted(
+        findings,
+        key=lambda x: (
+            x.zone.tenant_id,
+            x.zone.legal_entity_id,
+            x.zone.operating_site_id,
+            x.zone.zone_id,
+            x.tower_id,
+            x.finding_id,
+        ),
+    )
+    for f in canonical_findings:
         serialized_findings.append(
             SerializedFindingTelemetry(
                 finding_id=f.finding_id,
@@ -907,6 +968,8 @@ def create_reproduction_manifest(
         engine_config=engine_config,
         currency_code=currency_code,
         deterministic_seed_hash=summary.deterministic_seed_hash,
+        risk_scope=risk_scope or RiskScopeContext(),
+        assessment_period=assessment_period,
         findings_telemetry=serialized_findings,
         expected_portfolio_outputs=expected_portfolio,
         expected_tower_outputs=expected_towers,

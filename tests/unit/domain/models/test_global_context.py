@@ -10,11 +10,19 @@ from assessment_engine.domain.models.global_context import (
 )
 
 
-def test_global_context_currency_normalization_with_fx() -> None:
-    """Verifies that currency normalization succeeds when a valid FX snapshot is present."""
-    ctx = GlobalAssessmentContext(
-        reporting_currency="EUR",
-        fx_snapshots={
+def _make_valid_context(**overrides) -> GlobalAssessmentContext:
+    defaults = {
+        "tenant_id": "TENANT_ACME",
+        "business_entity_id": "ACME_HOLDINGS_LLC",
+        "operating_site_id": "SITE_CHICAGO",
+        "country_code": "US",
+        "jurisdiction_code": "US_SEC_CYBER",
+        "source_currency": "USD",
+        "reporting_currency": "EUR",
+        "assessment_period": "2026.Q4",
+        "sector_code": "FINANCIAL_SERVICES",
+        "subsector_code": "PAYMENT_PROCESSORS",
+        "fx_snapshots": {
             "USD_EUR": FXRateSnapshot(
                 source_currency="USD",
                 reporting_currency="EUR",
@@ -24,8 +32,14 @@ def test_global_context_currency_normalization_with_fx() -> None:
                 provenance_reference="ECB_FX_20261101",
             )
         },
-    )
+    }
+    defaults.update(overrides)
+    return GlobalAssessmentContext(**defaults)
 
+
+def test_global_context_currency_normalization_with_fx() -> None:
+    """Verifies that currency normalization succeeds when a valid FX snapshot is present."""
+    ctx = _make_valid_context()
     converted = ctx.normalize_monetary_amount(10000.0, "USD")
     assert converted == 9200.0
 
@@ -35,24 +49,32 @@ def test_global_context_currency_normalization_with_fx() -> None:
 
 def test_global_context_currency_normalization_fails_without_fx() -> None:
     """Verifies that raw multi-currency consolidation without FX evidence raises ValueError."""
-    ctx = GlobalAssessmentContext(reporting_currency="EUR", fx_snapshots={})
+    ctx = _make_valid_context(fx_snapshots={})
 
     with pytest.raises(ValueError, match="Unsupported Context Error: No verified FX snapshot found"):
         ctx.normalize_monetary_amount(10000.0, "USD")
 
 
-def test_jurisdiction_pack_bounds() -> None:
-    """Verifies that jurisdiction parameter packs enforce statutory percentage bounds."""
-    pack = JurisdictionParameterPack(
-        jurisdiction_code="EU_GDPR",
-        statutory_fine_cap_percentage=0.04,
-        statutory_fine_ceiling_amount=20000000.0,
-        legal_framework_references=["GDPR Art. 83(5)", "NIS2 Art. 34"],
-    )
-    assert pack.statutory_fine_cap_percentage == 0.04
+def test_global_context_rejects_unsupported_currency_xyz() -> None:
+    """Verifies that unsupported non-ISO currencies like XYZ fail validation explicitly."""
+    with pytest.raises(ValidationError, match="not supported in the active ISO 4217 catalog"):
+        _make_valid_context(reporting_currency="XYZ")
 
+    with pytest.raises(ValidationError, match="not supported in the active ISO 4217 catalog"):
+        _make_valid_context(source_currency="XYZ")
+
+
+def test_global_context_requires_mandatory_fields() -> None:
+    """Verifies that missing context fields fail validation (no silent defaults)."""
     with pytest.raises(ValidationError):
+        GlobalAssessmentContext()
+
+
+def test_jurisdiction_pack_model_default_cannot_be_confirmed() -> None:
+    """Invariant: MODEL_DEFAULT cannot have confidence CONFIRMED."""
+    with pytest.raises(ValidationError, match="MODEL_DEFAULT cannot have confidence CONFIRMED"):
         JurisdictionParameterPack(
-            jurisdiction_code="INVALID",
-            statutory_fine_cap_percentage=1.50,  # Invalid: > 1.0 (100%)
+            jurisdiction_code="EU_GDPR",
+            provenance="MODEL_DEFAULT",
+            confidence="CONFIRMED",
         )

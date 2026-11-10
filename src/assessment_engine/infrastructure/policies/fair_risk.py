@@ -807,43 +807,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
             consolidated_losses = np.maximum(all_primary_lms, all_sec_losses) + (all_primary_lms * 0.1)
 
             loss_per_run = np.bincount(event_run_ids, weights=consolidated_losses, minlength=size)
-        else:
-            loss_per_run = np.zeros(size)
-
-        # Standard Open FAIR™ & Solvency II Quantitative Standards
-        # Micro-economic safety bound: limit individual trial overflow at Enterprise Ruin Limit (500M EUR)
-        empirical_losses = np.minimum(loss_per_run, 500_000_000.0)
-
-        # Calculate statistical exposures preserving the true extreme right tail
-        mean_ale = float(np.mean(empirical_losses))
-        
-        # Strict 90th Percentile Value-at-Risk (VaR 90)
-        p90_val = float(np.percentile(empirical_losses, 90.0)) if len(empirical_losses) > 0 else 0.0
-
-        # Maximum Plausible Loss bound: 99th Percentile Value-at-Risk (VaR 99)
-        p99_limit = float(np.percentile(empirical_losses, 99.0)) if len(empirical_losses) > 0 else 0.0
-
-        # Coherent Risk Measure: Expected Shortfall (CVaR at 97.5%)
-        sorted_losses = np.sort(empirical_losses)
-        tail_index = int(len(sorted_losses) * 0.975)
-        tail_losses = sorted_losses[tail_index:]
-        cvar_ale = float(np.mean(tail_losses)) if len(tail_losses) > 0 else 0.0
-        p90_ale = p90_val
-        
-        min_ale = float(np.min(empirical_losses))
-        max_ale = float(np.max(empirical_losses))
-
-        # Round final computed metrics to a fixed precision for presentation clarity.
-        ale_euros = round(mean_ale, 2)
-
         finding["threat_event_frequency"] = tef
         finding["vulnerability_level"] = vuln
         finding["loss_magnitude"] = lm
-        finding["fair_ale_score"] = ale_euros
-        finding["fair_p90_score"] = round(p90_ale, 2)
-        finding["fair_cvar_score"] = round(cvar_ale, 2)
-        finding["fair_min_score"] = round(min_ale, 2)
-        finding["fair_max_score"] = round(max_ale, 2)
 
         # standard Enterprise Actuarial Auditing: Attach Physical Accounting Breakdown to finding
         hourly_val = float(hourly_cost) if hourly_cost is not None else 500.0

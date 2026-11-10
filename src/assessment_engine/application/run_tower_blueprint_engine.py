@@ -1278,7 +1278,6 @@ async def run_tower_blueprint(
 
     # Phase 8: Scrubbing & Serialization
     blueprint_payload = _scrub_client_placeholders(blueprint_payload, client_name)
-    blueprint_payload["total_fair_ale"] = _calculate_total_fair_ale(blueprint_payload)
 
     # Phase 8.1: Quantitative SSOT Reconciler Gatekeeper
     try:

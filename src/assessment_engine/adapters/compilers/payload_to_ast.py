@@ -3,9 +3,8 @@ import html
 import json
 import logging
 import re
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from pathlib import Path
-from types import MappingProxyType
 from typing import Any, Dict, Final, List, Mapping, Optional, Sequence, Tuple
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,9 @@ def _safe_float(val: Any, default: float = 0.0, locale: str | None = None) -> fl
     if isinstance(val, (int, float)):
         return float(val)
     try:
-        from assessment_engine.domain.actuarial_scale_calibrator import safe_float as actuarial_safe_float
+        from assessment_engine.domain.actuarial_scale_calibrator import (
+            safe_float as actuarial_safe_float,
+        )
         res = actuarial_safe_float(val, locale=locale, allow_zero=True)
         if res is not None:
             return float(res)
@@ -323,6 +324,27 @@ def resolve_domain_archetype(
 
     return DEFAULT_DOMAIN_ARCHETYPE
 
+from assessment_engine.domain.actuarial.downtime_calibrator import (
+    ActuarialDowntimeCalibrator,
+)
+from assessment_engine.domain.schemas import (
+    CellNode,
+    DocumentAST,
+    HeadingNode,
+    PageBreakNode,
+    ParagraphNode,
+    SpacerNode,
+    TableNode,
+    TableRowNode,
+    TOCEntryNode,
+    TOCNode,
+)
+from assessment_engine.domain.schemas.risk_ontology import (
+    CausalBowTie,
+    ConditionalLossEvent,
+    CouplingRegime,
+    FairActuarialInput,
+)
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
     format_currency,
@@ -331,32 +353,6 @@ from assessment_engine.infrastructure.localization import (
     get_localized_list,
     load_locales_catalog,
     t,
-)
-
-from assessment_engine.domain.schemas.risk_ontology import (
-    CausalBowTie,
-    ConditionalLossEvent,
-    CouplingRegime,
-    FairActuarialInput,
-)
-from assessment_engine.domain.actuarial_calculator import ActuarialEngine
-from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
-from assessment_engine.domain.exceptions import PayloadIntegrityError
-from assessment_engine.domain.schemas import (
-    CellNode,
-    DocNode,
-    DocumentAST,
-    HeadingNode,
-    PageBreakNode,
-    ParagraphNode,
-    PictureNode,
-    ScaleArchetype,
-    SpacerNode,
-    TableNode,
-    TableRowNode,
-    TOCEntryNode,
-    TOCNode,
-    VerticalArchetype,
 )
 
 
@@ -381,21 +377,36 @@ def clean_client_name(client_name: str, locale: Optional[str] = None) -> str:
 
 
 from assessment_engine.adapters.compilers.ast_appendices_builder import (
-    build_cmmi_methodology_and_capabilities as _build_cmmi_methodology_and_capabilities_fn,
-    build_appendix_a_custody as _build_appendix_a_custody_fn,
-    build_appendix_b_fair_methodology as _build_appendix_b_fair_methodology_fn,
     build_appendix_c_glossary_and_disclaimer as _build_appendix_c_glossary_and_disclaimer_fn,
 )
+from assessment_engine.adapters.compilers.ast_appendices_builder import (
+    build_cmmi_methodology_and_capabilities as _build_cmmi_methodology_and_capabilities_fn,
+)
 from assessment_engine.adapters.compilers.ast_table_builders import (
-    TEF_SCALE_DEFINITIONS,
     build_criticality_bullet as _build_criticality_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_dii_bullet as _build_dii_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_erc_bullet as _build_erc_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_feasibility_bullet as _build_feasibility_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_heatmap_mosaic as _build_heatmap_mosaic,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_lm_scale_table as _build_lm_scale_table,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_regulatory_bullet as _build_regulatory_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_spof_bullet as _build_spof_bullet,
+)
+from assessment_engine.adapters.compilers.ast_table_builders import (
     build_tef_scale_table as _build_tef_scale_table,
 )
 from assessment_engine.domain.actuarial_scale_calibrator import (
@@ -403,7 +414,6 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
     compute_dynamic_lm_thresholds,
     safe_float,
 )
-
 
 _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling|error\s+budgets|cmdb)|"
@@ -1209,8 +1219,9 @@ def resolve_domain_introduction(
 
     using a robust 4-tier fallback hierarchy (zero blank sections or error fallbacks).
     """
-    from assessment_engine.infrastructure.runtime_paths import ROOT
     import json
+
+    from assessment_engine.infrastructure.runtime_paths import ROOT
 
     # Tier 1: Explicit annex override
     annex_intro = (annex_data or {}).get("domain_introduction")
@@ -1561,7 +1572,10 @@ class PayloadToASTBridge:
         gs_val = float(exact_score)
         global_score = f"{gs_val:.2f}"
 
-        from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
+        from assessment_engine.domain.maturity_band import (
+            ANNEX_MATURITY_BANDS,
+            resolve_maturity_band,
+        )
         band_info = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=meta_lang)
         localized_band_label = band_info.get("label", "Defined")
         level_prefix = t("level_prefix", locale=meta_lang)
@@ -1710,7 +1724,6 @@ class PayloadToASTBridge:
         nodes.append(PageBreakNode())
 
     def _build_executive_summary_and_scope(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
-        import re
         modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
         loc_branch = self.loc_branch
@@ -1815,7 +1828,9 @@ class PayloadToASTBridge:
             "authoritative_hourly_downtime_cost"
         ]
         if not all(k in fin_telemetry for k in req_keys):
-            from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
+            from assessment_engine.domain.actuarial.downtime_calibrator import (
+                ActuarialDowntimeCalibrator,
+            )
             calibrator = ActuarialDowntimeCalibrator()
             try:
                 metrics = calibrator.calibrate(blueprint_data)
@@ -1934,8 +1949,11 @@ class PayloadToASTBridge:
             rosi_percentage = format_number(rosi, locale=meta_lang, decimals=1)
 
         # Deduplicate downtime hours via Joint Probability (Inclusion-Exclusion Principle)
-        from assessment_engine.domain.actuarial.risk_aggregator import BlastRadiusDeduplicator
         from decimal import Decimal
+
+        from assessment_engine.domain.actuarial.risk_aggregator import (
+            BlastRadiusDeduplicator,
+        )
         raw_hours = [
             Decimal(str(r.get("ale_hours")))
             for r in risks_list
@@ -2007,7 +2025,9 @@ class PayloadToASTBridge:
         primary_pillar_resolved = resolver.resolve_pillar_by_any_reference(primary_pillar, default=primary_pillar, locale=meta_lang)
         remediation_horizon = t("default_remediation_horizon", locale=meta_lang)
 
-        from assessment_engine.domain.actuarial.downtime_calibrator import OperationalTailRiskEngine
+        from assessment_engine.domain.actuarial.downtime_calibrator import (
+            OperationalTailRiskEngine,
+        )
         fin_telemetry = blueprint_data.get("financial_telemetry") or {}
         # Domain-scoped local P90 VaR for Tower Annex (aligning exactly with Section 4.3 P108)
         total_p90 = float(
@@ -2096,7 +2116,9 @@ class PayloadToASTBridge:
             )
 
         # 1. Paragraph 1: Authentic Domain Diagnostic (Priority to bespoke executive_snapshot.bottom_line)
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
         bespoke_bottom_line = str(
             blueprint_data.get("executive_snapshot", {}).get("bottom_line") or ""
         ).strip()
@@ -2111,7 +2133,9 @@ class PayloadToASTBridge:
         # 2. Paragraph 2: Lead-in + Structured List Bullets
         nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=4, keep_with_next=True))
         active_findings = findings_briefs[:3] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
         for f_idx, fb in enumerate(active_findings):
             is_last = (f_idx == len(active_findings) - 1)
             b_text = fb.strip().rstrip(".")
@@ -2144,7 +2168,9 @@ class PayloadToASTBridge:
         )
 
         # Resolve domain introduction with 4-Tier Coalescing Resolution Pipeline (RFC 099)
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
 
         intro = resolve_domain_introduction(
             blueprint_data=blueprint_data,
@@ -2196,8 +2222,9 @@ class PayloadToASTBridge:
 
         # 2.2 Regulatory and Methodological Framework Table (Auto-fit to window and contents)
         tower_id = str(ctx.get("tower_id") or "T1").upper()
-        from assessment_engine.infrastructure.runtime_paths import ROOT
         import json
+
+        from assessment_engine.infrastructure.runtime_paths import ROOT
 
         tower_cat_file = ROOT / "engine_config" / "towers" / "tower_catalog.json"
         tower_cat: dict[str, Any] = {}
@@ -2493,7 +2520,9 @@ class PayloadToASTBridge:
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
             
             # Map score to status and color via localized keys
-            from assessment_engine.domain.actuarial.maturity_band import resolve_maturity_interval
+            from assessment_engine.domain.actuarial.maturity_band import (
+                resolve_maturity_interval,
+            )
             interval = resolve_maturity_interval(p_score)
             status_map = {
                 5: (t("status_excellent", locale=meta_lang), "D9F2D9"),
@@ -3135,18 +3164,24 @@ class PayloadToASTBridge:
             ActuarialReceptorContext,
             ActuarialReceptorFactory,
         )
-        from assessment_engine.domain.taxonomy.archetype_registry import get_actuarial_archetype_registry
+        from assessment_engine.domain.taxonomy.archetype_registry import (
+            get_actuarial_archetype_registry,
+        )
 
         canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
         try:
             arch_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(canonical_t_id)
             primary_arch = arch_mapping.primary_archetype
         except (KeyError, ValueError):
-            from assessment_engine.domain.taxonomy.archetype_registry import LossArchetypeType
+            from assessment_engine.domain.taxonomy.archetype_registry import (
+                LossArchetypeType,
+            )
             primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
 
         # Resolve canonical operational archetype from domain financial profile
-        from assessment_engine.domain.actuarial.financial_profile import IndustryArchetype
+        from assessment_engine.domain.actuarial.financial_profile import (
+            IndustryArchetype,
+        )
 
         raw_sector = str(
             blueprint_data.get("operational_archetype")
@@ -3484,7 +3519,9 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=10))
 
         # 4.3.1 P90 Tail Risk Disaster Scenario Callout (RFC 058)
-        from assessment_engine.domain.actuarial.downtime_calibrator import OperationalTailRiskEngine
+        from assessment_engine.domain.actuarial.downtime_calibrator import (
+            OperationalTailRiskEngine,
+        )
         blueprint_data = ctx.get("blueprint_data") or {}
         fin_telemetry = blueprint_data.get("financial_telemetry") or {}
         canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
@@ -3578,7 +3615,9 @@ class PayloadToASTBridge:
             p2_text = t("p90_callout_p2", locale=meta_lang, **fmt_kwargs)
             p3_text = t("p90_callout_p3", locale=meta_lang, **fmt_kwargs)
 
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
         nodes.append(ParagraphNode(text=restore_locale_diacritics(p1_text, meta_lang), font_size=10.0, space_after=6))
         nodes.append(ParagraphNode(text=restore_locale_diacritics(p2_text, meta_lang), font_size=10.0, space_after=6))
         nodes.append(ParagraphNode(text=restore_locale_diacritics(p3_text, meta_lang), font_size=10.0, space_after=14))
@@ -3761,68 +3800,63 @@ class PayloadToASTBridge:
             coupling_factor = 1.0
             alpha = 0.20
 
-        # Preserve empirical monetary SLE from source data if already scaled (> 5.0)
-        if raw_lm > 5.0:
-            effective_sle_num = raw_lm
-            effective_sle_dec = Decimal(str(round(raw_lm, 2)))
-            lef = round(authoritative_ale / effective_sle_num, 6) if (authoritative_ale > 0.0 and effective_sle_num > 0.0) else (raw_tef if raw_tef <= 10.0 else 0.20)
-            mttr_hours = min(8.0, max(1.0, float(hc.get("downtime_hours") or 3.5)))
-        else:
-            # Calibrate from ordinal Likert (1-5 scale)
-            if raw_tef >= 1.0:
-                lef = min(0.50, max(0.08, raw_tef * 0.09))
-            else:
-                lef = max(0.05, raw_tef)
+        vec = hc.get("actuarial_input_vector") or {}
+        vec_outputs = vec.get("outputs") or {}
+        vec_inputs = vec.get("inputs") or {}
 
-            mttr_hours = min(8.0, max(1.0, raw_lm * 0.85))
-            effective_hourly = hourly_rate * alpha
-            if authoritative_ale > 0.0 and lef > 0.0:
-                effective_sle_dec = Decimal(str(authoritative_ale)) / Decimal(str(lef))
-            else:
-                effective_sle_dec = Decimal(str(round(mttr_hours * effective_hourly, 2)))
+        canonical_ale = float(vec_outputs.get("portfolio_allocated_ale") or hc.get("fair_ale_score") or 0.0)
+        canonical_sle = float(vec_outputs.get("mean_sle") or 0.0)
+        canonical_lef = float(vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
 
-        base_sle_dec = (effective_sle_dec / Decimal(str(coupling_factor))).quantize(
-            Decimal("0.0001"), rounding=ROUND_HALF_UP
+        eff_recovery_hours = float(
+            (vec_inputs.get("rto_hours_mode") or {}).get("effective_value")
+            or hc.get("recovery_time_hours")
+            or (raw_lm * 0.85)
+            or 3.5
         )
-        sle_val = max(Decimal("0.00"), base_sle_dec)
+
+        domain_hourly_rate = (
+            65.0
+            if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL
+            else max(round(hourly_rate * alpha, 2), 1.0)
+        )
+
+        if canonical_sle > 0.0:
+            reconciled_sle = round(canonical_sle)
+        else:
+            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+
+        sle_val = max(Decimal("0.00"), Decimal(str(reconciled_sle)))
 
         actuarial_input = FairActuarialInput(
-            loss_event_frequency_annual=round(max(0.0001, lef), 6),
+            loss_event_frequency_annual=round(max(0.0001, canonical_lef), 6),
             single_loss_magnitude_base=sle_val,
             operational_coupling_factor=coupling_factor,
             coupling_regime=coupling_regime,
-            downtime_hours_mean=round(mttr_hours, 1),
-            hourly_operational_impact=Decimal(str(round(hourly_rate * alpha, 2))),
+            downtime_hours_mean=round(eff_recovery_hours, 1),
+            hourly_operational_impact=Decimal(str(round(domain_hourly_rate, 2))),
         )
 
         ownership_type = str(hc.get("ownership_type") or "PRIMARY_CUSTODIAN")
         primary_risk_ref = hc.get("primary_risk_ref")
         contributing_towers = hc.get("contributing_towers") or []
 
-        # Scale severity bounds dynamically relative to organizational exposure:
-        portfolio_ale_dec = Decimal(str(round(total_fair_ale, 2))) if total_fair_ale > 0 else None
-        metrics = ActuarialEngine.evaluate(
-            actuarial_input,
-            portfolio_total_ale=portfolio_ale_dec,
-            ownership_type=ownership_type,
-            primary_risk_ref=primary_risk_ref,
-            contributing_towers=contributing_towers,
-        )
+        class RenderMetrics:
+            def __init__(self, ale: float, sle: float, lef: float, sev: str, is_dedup: bool = False):
+                self.annualized_loss_expectancy = ale
+                self.effective_sle = sle
+                self.loss_event_frequency = lef
+                self.severity_tier = sev
+                self.is_deduplicated = is_dedup
+                self.return_period_years = round(1.0 / max(0.0001, lef), 1) if lef > 0 else 10.0
 
-        # Single Invariant Domain Hourly Downtime Rate across all cards (RFC 054)
-        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
-            domain_hourly_rate = 65.0  # Fully burdened engineering labour rate (eliminates 9,142 EUR/h fallacy)
-            # Bound single-event toil duration to realistic operational bounds (2.0 to 12.0 hours per incident)
-            # preventing absurd claims of 974h or 1,700h of engineering effort for a single server failure
-            eff_recovery_hours = min(12.0, max(2.0, float(hc.get("downtime_hours") or (raw_lm * 2.0))))
-            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
-        else:
-            domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
-            raw_eff_hours = round(float(metrics.effective_sle) / domain_hourly_rate, 1)
-            # Physical component repair cap: no single component outage exceeds 12.0h
-            # strictly preventing single cards from claiming 58h, 77h, or 81h while P90 catastrophe is 21h
-            eff_recovery_hours = min(12.0, max(0.5, raw_eff_hours))
-            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+        metrics = RenderMetrics(
+            ale=canonical_ale,
+            sle=float(reconciled_sle),
+            lef=canonical_lef,
+            sev=str(hc.get("severity") or "MEDIUM").upper(),
+            is_dedup=bool(primary_risk_ref and ownership_type == "CONTRIBUTING_FACTOR"),
+        )
 
         formatted_ale = format_currency(
             float(metrics.annualized_loss_expectancy),
@@ -3900,7 +3934,9 @@ class PayloadToASTBridge:
         evidence_txt = str(hc.get("evidence") or "").strip()
 
         # Restore official grammatical diacritics for target locale (RFC 055)
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
         r_cap = restore_locale_diacritics(r_cap, meta_lang)
         threat_txt = restore_locale_diacritics(threat_txt, meta_lang)
         vuln_txt = restore_locale_diacritics(vuln_txt, meta_lang)
@@ -3946,12 +3982,9 @@ class PayloadToASTBridge:
             header_text = [255, 255, 255]
             sev_badge_bg = severity_bg_hex
 
-        # Calibrated LEF using the printed reconciled_sle to ensure ALE == SLE * LEF identity
+        # Canonical LEF from simulation outputs (no artificial mutation in presentation)
         ale_num = float(metrics.annualized_loss_expectancy)
-        if reconciled_sle > 0 and ale_num > 0:
-            calibrated_lef = ale_num / float(reconciled_sle)
-        else:
-            calibrated_lef = lef
+        calibrated_lef = canonical_lef
 
         # Calculate human-readable return period / frequency (RFC 053)
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
@@ -4468,7 +4501,9 @@ class PayloadToASTBridge:
                 cells = []
                 row_pillar_label = ""
                 if len(row_data) > 0 and str(row_data[0]).strip():
-                    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                    from assessment_engine.domain.taxonomy_resolver import (
+                        get_taxonomy_resolver,
+                    )
                     resolver = get_taxonomy_resolver()
                     row_pillar_label = resolver.resolve_pillar_by_any_reference(
                         str(row_data[0]).strip(),
@@ -4686,7 +4721,9 @@ def compile_asis_docx_via_ast(
     compiler.compile(ast, str(out_p))
 
     # Synchronize physical page numbers into the TOC SDT to eliminate split-brain
-    from assessment_engine.adapters.compilers.toc_page_resolver import DeterministicTocPageResolver
+    from assessment_engine.adapters.compilers.toc_page_resolver import (
+        DeterministicTocPageResolver,
+    )
 
     DeterministicTocPageResolver.synchronize_docx_toc(out_p)
 

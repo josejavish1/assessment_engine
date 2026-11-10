@@ -40,14 +40,20 @@ def test_legacy_payload_migration_to_canonical_contract() -> None:
         },
     )
 
-    assert upgraded["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    assert (
+        upgraded["quantification_status"]
+        == QuantificationStatus.ESTIMATED_LOW_CONFIDENCE.value
+    )
     assert upgraded["total_fair_ale"] > 0.0
     assert upgraded["total_fair_p90"] >= upgraded["total_fair_ale"]
     assert upgraded["total_fair_cvar_90"] >= upgraded["total_fair_p90"]
 
     # Verify finding contract was upgraded
     finding = upgraded["pillars_analysis"][0]["health_check_asis"][0]
-    assert finding["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    assert (
+        finding["quantification_status"]
+        == QuantificationStatus.ESTIMATED_LOW_CONFIDENCE.value
+    )
     assert finding["fair_ale_score"] > 0.0
     assert "actuarial_input_vector" in finding
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 CANONICAL_TAXONOMY_KEYS: Tuple[str, ...] = (
@@ -132,8 +132,24 @@ class ActuarialTaxonomyClusterer:
             key=lambda k: (scores[k], -CANONICAL_TAXONOMY_KEYS.index(k)),
         )
         if scores[best_key] == 0:
-            # Deterministic round-robin fallback when non-ASCII/unmatched text lacks explicit taxonomy_id
-            return CANONICAL_TAXONOMY_KEYS[fallback_index % len(CANONICAL_TAXONOMY_KEYS)]
+            # Deterministic mapping using canonical tower code if present (eliminating round-robin position bias)
+            tokens = set(normalized.upper().split())
+            tower_fallbacks = {
+                "T1": "TAXONOMY_OPERATIONAL_CONTINUITY_EDGE",
+                "T2": "TAXONOMY_DATA_INTEGRITY_ANALYTICS",
+                "T3": "TAXONOMY_OPERATIONAL_CONTINUITY_EDGE",
+                "T4": "TAXONOMY_OPERATIONAL_CONTINUITY_EDGE",
+                "T5": "TAXONOMY_CYBER_IDENTITY_GOVERNANCE",
+                "T6": "TAXONOMY_PROCESS_AUTOMATION_FRICTION",
+                "T7": "TAXONOMY_PROCESS_AUTOMATION_FRICTION",
+                "T8": "TAXONOMY_STRUCTURAL_OBSOLESCENCE",
+                "T9": "TAXONOMY_VENDOR_ECOSYSTEM_CONCENTRATION",
+                "T10": "TAXONOMY_OPERATIONAL_CONTINUITY_EDGE",
+            }
+            for t_code, target_key in tower_fallbacks.items():
+                if t_code in tokens:
+                    return target_key
+            return "TAXONOMY_STRUCTURAL_OBSOLESCENCE"
         return best_key
 
     @classmethod
