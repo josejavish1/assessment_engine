@@ -203,15 +203,41 @@ def build_heatmap_mosaic(
         r_tef, r_lm = resolve_risk_matrix_coordinates(
             r, effective_bounds, locale=locale
         )
+        sle_candidate = None
+        for sle_key in ("sle", "single_loss_expectancy", "sle_expected", "sle_mean", "lm_expected"):
+            if r.get(sle_key) is not None:
+                parsed_sle = safe_float(r.get(sle_key), locale=locale)
+                if parsed_sle is not None and parsed_sle > 0:
+                    sle_candidate = parsed_sle
+                    break
+        if sle_candidate is None:
+            ale_val = safe_float(
+                r.get("ale") or r.get("ale_expected") or r.get("annualized_loss_expectancy"),
+                locale=locale,
+            )
+            lef_val = safe_float(
+                r.get("lef") or r.get("tef") or r.get("event_frequency_annual") or r.get("annual_frequency"),
+                locale=locale,
+            )
+            if ale_val is not None and ale_val > 0 and lef_val is not None and lef_val > 0:
+                sle_candidate = ale_val / lef_val
+
+        if sle_candidate is not None and sle_candidate > 0:
+            r_lm = resolve_dynamic_lm_scale_level(
+                sle_candidate, effective_bounds, locale=locale
+            )
+
         r_tef = max(1, min(5, int(r_tef)))
         r_lm = max(1, min(5, int(r_lm)))
         r["tef_scale_level"] = r_tef
         r["lm_scale_level"] = r_lm
         r["tef_level"] = r_tef
         r["lm_level"] = r_lm
-        r["risk_matrix_coordinates"] = f"(TEF {r_tef}, LM {r_lm})"
-        r["fair_coordinates"] = f"(TEF {r_tef}, LM {r_lm})"
-        r["coordinates"] = f"(TEF {r_tef}, LM {r_lm})"
+        coord_str = f"(TEF {r_tef}, LM {r_lm})"
+        r["risk_matrix_coordinates"] = coord_str
+        r["fair_coordinates"] = coord_str
+        r["coordinates"] = coord_str
+        r["matrix_position"] = coord_str
         risk_id = str(r.get("id") or r.get("risk_id") or "").strip()
         if risk_id and risk_id not in matrix_cells[r_tef][r_lm]:
             matrix_cells[r_tef][r_lm].append(risk_id)
