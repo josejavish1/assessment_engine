@@ -85,8 +85,50 @@ def test_immutability_enforced() -> None:
 def test_unknown_tower_raises_key_error() -> None:
     registry = get_actuarial_archetype_registry()
 
-    with pytest.raises(KeyError, match="Unmapped Tower ID|not mapped in ActuarialTaxonomyRegistry"):
+    with pytest.raises(KeyError, match="Canonical tower ID 'T99'|Unmapped Tower ID|not mapped in ActuarialTaxonomyRegistry"):
         registry.get_mapping_for_tower("T99")
 
     with pytest.raises(ValueError, match="Tower ID cannot be empty"):
         registry.get_mapping_for_tower("")
+
+
+def test_dynamic_tower_dfac_inheritance() -> None:
+    registry = get_actuarial_archetype_registry()
+    mapping = registry.get_mapping_for_tower("D_FAC")
+    t1_map = registry.get_mapping_for_tower("T1")
+
+    assert mapping.tower_id == "D_FAC"
+    assert mapping.primary_archetype == t1_map.primary_archetype
+    assert mapping.default_vulnerability_baseline == t1_map.default_vulnerability_baseline
+    assert "D_FAC" in mapping.canonical_tower_name
+    # Must survive roundtrip serialization and model validation
+    validated = TowerActuarialMapping.model_validate(mapping.model_dump())
+    assert validated.tower_id == "D_FAC"
+
+
+def test_custom_domain_generic_fallback() -> None:
+    registry = get_actuarial_archetype_registry()
+    mapping = registry.get_mapping_for_tower("EDGE_01")
+    t1_map = registry.get_mapping_for_tower("T1")
+
+    assert mapping.tower_id == "EDGE_01"
+    assert mapping.primary_archetype == t1_map.primary_archetype
+    assert mapping.classification_confidence == "UNCONFIRMED"
+    assert mapping.review_required is True
+    # Must survive roundtrip serialization and model validation
+    validated = TowerActuarialMapping.model_validate(mapping.model_dump())
+    assert validated.tower_id == "EDGE_01"
+
+
+def test_canonical_unregistered_t99_raises_key_error() -> None:
+    registry = get_actuarial_archetype_registry()
+
+    with pytest.raises(KeyError, match="Canonical tower ID 'T99'.*is not mapped"):
+        registry.get_mapping_for_tower("T99")
+
+
+def test_prohibited_sentinels_raise_key_error() -> None:
+    registry = get_actuarial_archetype_registry()
+    for sentinel in ["UNKNOWN", "NONE", "NULL", "UNDEFINED", "DEFAULT"]:
+        with pytest.raises(KeyError):
+            registry.get_mapping_for_tower(sentinel)

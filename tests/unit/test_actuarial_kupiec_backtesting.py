@@ -1,14 +1,18 @@
-"""Actuarial Backtesting & Coverage Oracle (SR 11-7 / Solvency II / Basel III Standards).
+"""Actuarial Synthetic Quantile Coverage Consistency Test (Kupiec POF Likelihood-Ratio).
 
-Implements the Kupiec POF (Proportion of Failures) Likelihood-Ratio Test to empirically
-verify that simulated Value-at-Risk (VaR) quantiles achieve exact nominal coverage.
+Verifies that the Monte Carlo copula simulation kernel achieves nominal quantile coverage
+under synthetic pseudo-random sampling.
+
+Note: In accordance with model risk governance (SR 11-7), this test validates the statistical
+consistency and implementation coverage of the simulation engine. It does not constitute
+historical backtesting against observed real-world loss microdata.
 """
 
 from __future__ import annotations
 
 import math
+
 import numpy as np
-import pytest
 from scipy import stats
 
 from assessment_engine.domain.bayesian_fair_copula_engine import (
