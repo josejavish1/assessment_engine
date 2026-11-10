@@ -451,10 +451,57 @@ _CAMELCASE_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
 )
 
 _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
-    r"\[\s*(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
+    r"\[\s*(?:INSERT\s+)?(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
     r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name)\s*\]",
     re.IGNORECASE,
 )
+
+_ORPHAN_AMPERSAND_ENGLISH_TAIL_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:\)\s*)?(?:&|\band\b)\s+[A-Z][A-Za-z0-9/\-\s]+(?=[.,;:]|$)"
+)
+
+_DANGLING_PREPOSITION_AMPERSAND_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(en|de|por|para|con|ante|sobre|hacia|según)\s*(?:\)\s*)?(?:&|\band\b)\s*[A-Za-z0-9/\-\s]*",
+    re.IGNORECASE,
+)
+
+
+def _repair_broken_template_grammar(text: str, locale: str, fallback_label: str = "") -> str:
+    """Repairs broken template syntax, dangling prepositions, and orphan English KPI tails."""
+    if not text or not isinstance(text, str):
+        return text
+    if str(locale).lower().startswith("en"):
+        return text
+
+    fb = fallback_label or t(
+        "domain_control_standard_fallback",
+        locale=locale,
+        default="la gobernanza operativa del dominio",
+    )
+
+    cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fb, text)
+    cleaned = _DANGLING_PREPOSITION_AMPERSAND_RE.sub(rf"\1 {fb}", cleaned)
+    cleaned = _ORPHAN_AMPERSAND_ENGLISH_TAIL_RE.sub("", cleaned)
+
+    # Fix double prepositions caused by empty placeholder interpolation (e.g., 'condicionada por en la mayoría')
+    cleaned = re.sub(
+        r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
+        r"\1 deficiencias operativas \2",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    cleaned = re.sub(
+        r"\b(incidencias\s+no\s+contenidas\s+en)\s*(?:[.,;:]|$)",
+        rf"\1 {fb}.",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    # Remove unmatched closing parentheses left by half-stripped bilingual KPI labels
+    if cleaned.count(")") > cleaned.count("("):
+        cleaned = re.sub(r"([^\(]*)\)", r"\1", cleaned, count=cleaned.count(")") - cleaned.count("("))
+
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
+    return cleaned
 
 _RAW_ENGLISH_COMPOUND_KPI_RE: Final[re.Pattern[str]] = re.compile(
     r"\b(?:[A-Z][a-z0-9/+\-]+(?:\s+(?:&|and|or|of|for|in|to|vs\.?|with|by)\s+|\s+)){2,}"
@@ -3665,10 +3712,13 @@ class PayloadToASTBridge:
             vuln_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", vuln_txt)
             impact_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", impact_txt)
 
-        # Normalize corrupted camelCase prefixes (e.g. 'pAM Enclosure' -> 'PAM Enclosure', 'iT &' -> 'IT &')
+        # Normalize corrupted camelCase prefixes and repair broken template grammar
         vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
         impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), impact_txt)
         actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), actuarial_box_text)
+        vuln_txt = _repair_broken_template_grammar(vuln_txt, meta_lang, fallback_pillar_ref)
+        impact_txt = _repair_broken_template_grammar(impact_txt, meta_lang, fallback_pillar_ref)
+        actuarial_box_text = _repair_broken_template_grammar(actuarial_box_text, meta_lang, fallback_pillar_ref)
 
         # Prioritize stack-grounded causal threat title over generic taxonomy labels
         causal_title = str(
@@ -3799,14 +3849,8 @@ class PayloadToASTBridge:
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
                 if not str(doc_locale).lower().startswith("en"):
                     fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
-                    cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_label, cleaned)
                     cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
-                    cleaned = re.sub(
-                        r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
-                        r"\1 deficiencias críticas \2",
-                        cleaned,
-                        flags=re.IGNORECASE,
-                    )
+                    cleaned = _repair_broken_template_grammar(cleaned, doc_locale, fallback_label)
                 cleaned = _deduplicate_prose_sentences(cleaned)
 
             # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
@@ -3936,17 +3980,11 @@ class PayloadToASTBridge:
                                 locale=meta_l,
                                 default="la gobernanza operativa del dominio",
                             )
-                            val_str = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
-                                fallback_label, val_str
-                            )
                             val_str = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
                                 fallback_label, val_str
                             )
-                            val_str = re.sub(
-                                r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
-                                r"\1 deficiencias críticas \2",
-                                val_str,
-                                flags=re.IGNORECASE,
+                            val_str = _repair_broken_template_grammar(
+                                val_str, meta_l, fallback_label
                             )
 
                     if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
