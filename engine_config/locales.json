@@ -1,7 +1,8 @@
 {
   "es": {
     "scale_out_of_five": "sobre 5,00",
-    "asis_architecture_description_fallback": "Arquitectura y procesos operativos estructurados conforme a los estándares de {pillar_name}.",
+    "asis_architecture_description_fallback": "La operativa de este dominio se sustenta sobre los procedimientos técnicos de {pillar_name} vigentes en la plataforma.",
+    "asis_kpi_lead_in_fallback": "En el ámbito de control evaluado:",
     "control_documental_title": "Control Documental e Histórico de Cambios",
     "intro_metodologia_title": "Introducción y Metodología de Diagnóstico",
     "objetivo_alcance_title": "Objetivo y Alcance",
@@ -202,7 +203,10 @@
       "móltiples": "múltiples",
       "enfrenta sanciones administrativas potenciales e inhabilitaciones de continuidad": "eleva la exposición a contingencias administrativas o requerimientos de no conformidad en materia de continuidad",
       "enfrenta sanciones administrativas potenciales": "eleva la exposición a requerimientos de no conformidad regulatoria",
-      "enfrenta sanciones": "podría enfrentar contingencias"
+      "enfrenta sanciones": "podría enfrentar contingencias",
+      "Procesos operativos estructurados conforme a Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces).": "Evaluación técnica de los mecanismos de monitorización, gestión de logs y trazabilidad operativa desplegados en la plataforma.",
+      "Procesos operativos estructurados conforme a Digital Employee Experience (DEX) Real-Time Telemetry Coverage.": "Evaluación de las herramientas de telemetría de puesto de trabajo y experiencia digital del empleado (DEX).",
+      "La operativa se ve severamente condicionada por el departamento que gestiona": "La operativa se ve condicionada por la capacidad del equipo que gestiona"
     },
     "priority_high": "Alta",
     "priority_medium": "Media",
