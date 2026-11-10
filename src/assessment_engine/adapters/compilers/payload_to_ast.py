@@ -406,21 +406,27 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 
 
 _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
-    r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling)|"
-    r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning|drp)|"
-    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal|monitoring|tracing|apm|clean\s+agent)|"
-    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry|observability|ashrae)|"
+    r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling|error\s+budgets|cmdb)|"
+    r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning|drp|cmdb|error\s+budgets|slis|slos)|"
+    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal|monitoring|tracing|apm|clean\s+agent|cmdb|error\s+budgets)|"
+    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry|observability|ashrae|cmdb|error\s+budgets)|"
     r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|observabilidad)|"
-    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n|correlaci[óo]n\s+de\s+eventos|drp)|"
-    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex|trazabilidad)|"
-    r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n|observabilidad)|"
-    r"ausencia\s+de\s+(?:un\s+ciclo\s+formal\s+de\s+renovaci[óo]n|herramientas\s+dex|telemetr[íi]a|control\s+de\s+obsolescencia)|"
-    r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex|ciclo\s+formal)|"
+    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n|correlaci[óo]n\s+de\s+eventos|drp|cmdb|error\s+budgets)|"
+    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex|trazabilidad|cmdb)|"
+    r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n|observabilidad|cmdb)|"
+    r"ausencia\s+de\s+(?:un\s+ciclo\s+formal\s+de\s+renovaci[óo]n|herramientas\s+dex|telemetr[íi]a|control\s+de\s+obsolescencia|cmdb|error\s+budgets)|"
+    r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex|ciclo\s+formal|cmdb)|"
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
     r"artisanal\s+preparation|static\s+images|"
     r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones|"
     r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual|ca[íi]da\s+por\s+llenado\s+de\s+disco|"
     r"acometida\s+el[ée]ctrica\s+[úu]nica|single\s+municipal\s+medium-voltage\s+feed)\b",
+    re.IGNORECASE,
+)
+
+_BROKEN_MAIL_MERGE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Exposici[óo]n\s+operativa\s+y\s+riesgo\s+de\s+interrupci[óo]n\s+del\s+servicio(?:\s+ante\s+incidencias\s+no\s+contenidas(?:\s+en\s+[^.;]+?)?)?\s*\.\s*|"
+    r"Operational\s+exposure\s+and\s+service\s+disruption\s+risk(?:\s+from\s+uncontained\s+incidents(?:\s+in\s+[^.;]+?)?)?\s*\.\s*)",
     re.IGNORECASE,
 )
 
@@ -4298,6 +4304,7 @@ class PayloadToASTBridge:
                     lambda m: f"{m.group(1)}{m.group(2)}" if m.group(2) == "ç" else f"{m.group(1)} {m.group(2)}",
                     cleaned,
                 )
+                cleaned = _BROKEN_MAIL_MERGE_RE.sub("", cleaned)
                 cleaned = _sanitize_dangling_discourse_openers(cleaned, doc_locale)
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
@@ -4306,9 +4313,15 @@ class PayloadToASTBridge:
                 # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets .")
                 if not str(doc_locale).lower().startswith("en"):
                     cleaned = re.sub(
-                        r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
+                        r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
                         lambda m: f"{m.group(1)} {fallback_label}",
                         cleaned,
+                    )
+                    cleaned = re.sub(
+                        r"\b(factores\s+clave\s+como)\s+[^.;]+?(?=\s*[.;]|$)",
+                        lambda m: f"{m.group(1)} {fallback_label}",
+                        cleaned,
+                        flags=re.IGNORECASE,
                     )
                     cleaned = re.sub(r"\s+([.,;:])", r"\1", cleaned)
 
@@ -4460,6 +4473,7 @@ class PayloadToASTBridge:
                             val_str = _repair_broken_template_grammar(
                                 val_str, meta_l, fallback_label
                             )
+                        val_str = _BROKEN_MAIL_MERGE_RE.sub("", val_str)
                         val_str = _sanitize_dangling_discourse_openers(val_str, meta_l)
                         val_str = _reconcile_replication_topology_prose(val_str, meta_l)
                         val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
@@ -4467,9 +4481,15 @@ class PayloadToASTBridge:
                         val_str = _deduplicate_prose_sentences(val_str)
                         if not str(meta_l).lower().startswith("en"):
                             val_str = re.sub(
-                                r"\b(en|de|para|sobre|hacia)\s+(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
+                                r"\b(en|de|para|sobre|hacia|como)\s+(?:[a-zA-Z][A-Za-z0-9/&()-]+\s*){1,6}:\s*(?:[A-Z][A-Za-z0-9/&()-]+\s*){1,6}(?=\s*[.,;:]|$)",
                                 lambda m: f"{m.group(1)} {fallback_label}",
                                 val_str,
+                            )
+                            val_str = re.sub(
+                                r"\b(factores\s+clave\s+como)\s+[^.;]+?(?=\s*[.;]|$)",
+                                lambda m: f"{m.group(1)} {fallback_label}",
+                                val_str,
+                                flags=re.IGNORECASE,
                             )
                             val_str = re.sub(r"\s+([.,;:])", r"\1", val_str)
 
