@@ -447,13 +447,13 @@ _ENGLISH_KPI_MARKER_RE: Final[re.Pattern[str]] = re.compile(
 )
 
 _CAMELCASE_ARTIFACT_RE: Final[re.Pattern[str]] = re.compile(
-    r"\b([a-z])([A-Z]{2,}[a-z0-9]*|[A-Z][a-z0-9]+)\b"
+    r"\b([a-z])([A-Z]{2,}[a-z0-9]*|[A-Z][a-z0-9]+)(-[A-Z][a-z0-9]+)?\b"
 )
 
 _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
     r"\[\s*(?:INSERT\s+)?(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
     r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio|English\s*KPI\s*Name|"
-    r"Control\s*Name|Framework\s*Reference)\s*\]",
+    r"Control\s*Name|Framework\s*Reference|[^\]]{1,45}\s*Name)\s*\]",
     re.IGNORECASE,
 )
 
@@ -3747,12 +3747,14 @@ class PayloadToASTBridge:
         vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", vuln_txt)
         impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", impact_txt)
         actuarial_box_text = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", actuarial_box_text)
-        vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), vuln_txt)
-        impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), impact_txt)
-        actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), actuarial_box_text)
+        vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), vuln_txt)
+        impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), impact_txt)
+        actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), actuarial_box_text)
         vuln_txt = _repair_broken_template_grammar(vuln_txt, meta_lang, fallback_pillar_ref)
         impact_txt = _repair_broken_template_grammar(impact_txt, meta_lang, fallback_pillar_ref)
         actuarial_box_text = _repair_broken_template_grammar(actuarial_box_text, meta_lang, fallback_pillar_ref)
+        vuln_txt = _deduplicate_prose_sentences(vuln_txt)
+        impact_txt = _deduplicate_prose_sentences(impact_txt)
 
         # Prioritize stack-grounded causal threat title over generic taxonomy labels
         causal_title = str(
@@ -3766,7 +3768,11 @@ class PayloadToASTBridge:
             causal_title = causal_title.split(":", 1)[1].strip()
         display_title = causal_title if len(causal_title) > 10 else loss_event.title
         display_title = _dedup_clauses(display_title)
-        display_title = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), display_title)
+        display_title = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
+            fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
+            display_title,
+        )
+        display_title = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), display_title)
         display_title = _sanitize_localized_kpi_leaks(
             display_title, meta_lang, fallback_pillar=fallback_pillar_ref
         )
@@ -3774,6 +3780,11 @@ class PayloadToASTBridge:
             display_title = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
                 fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
                 display_title,
+            )
+            display_title = _repair_broken_template_grammar(
+                display_title,
+                meta_lang,
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
             )
 
         card_table = TableNode(
@@ -3881,7 +3892,7 @@ class PayloadToASTBridge:
                 doc_locale = getattr(self, "meta_lang", "en")
                 fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
                 cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_label, cleaned)
-                cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), cleaned)
+                cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), cleaned)
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
                 if not str(doc_locale).lower().startswith("en"):
                     cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
@@ -4012,7 +4023,7 @@ class PayloadToASTBridge:
                             fallback_label, val_str
                         )
                         val_str = _CAMELCASE_ARTIFACT_RE.sub(
-                            lambda m: m.group(1).upper() + m.group(2), val_str
+                            lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), val_str
                         )
                         val_str = _sanitize_localized_kpi_leaks(
                             val_str, meta_l
