@@ -427,14 +427,36 @@ _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
 _CONTRADICTORY_PRAISE_RE: Final[re.Pattern[str]] = re.compile(
     r"(?:exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal|"
     r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?|"
-    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
-    r"sit\s+at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
-    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)\s+del\s+nivel\s+[234]|"
-    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)|al\s+l[íi]mite)\s+del\s+nivel\s+[234]|"
-    r"at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[234]|"
+    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+(?:boundary|limit|threshold)(?:\s+of\s+(?:the\s+)?(?:bracket|range|tier)\s+of)?\s+level\s+[234]|"
+    r"sit\s+at\s+the\s+(?:boundary|limit|threshold)(?:\s+of\s+(?:the\s+)?(?:bracket|range|tier)\s+of)?\s+level\s+[234]|"
+    r"situ(?:ando\s+a\s+[^.,;]{1,35}?|[áa]ndose|an)\s+en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)(?:\s+de\s+tramo)?\s+del\s+nivel\s+[234]|"
+    r"se\s+sit[úu]an?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)(?:\s+de\s+tramo)?\s+del\s+nivel\s+[234]|"
+    r"(?:en\s+(?:la\s+frontera|el\s+l[íi]mite|el\s+umbral)(?:\s+de\s+tramo)?|al\s+l[íi]mite(?:\s+de\s+tramo)?)\s+del\s+nivel\s+[234]|"
+    r"at\s+the\s+(?:boundary|limit|threshold)(?:\s+of\s+(?:the\s+)?(?:bracket|range|tier))?\s+of\s+level\s+[234]|"
     r"plataforma\s+legacy\s*/\s*mainframe\s*(?:&|y)\s*operaci[óo]n\s+core)",
     re.IGNORECASE,
 )
+
+_DANGLING_DISCOURSE_OPENER_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Aunque\s+la\s+conectividad\s+ha\s+evolucionado\s*,?\s*|"
+    r"Although\s+connectivity\s+has\s+evolved\s*,?\s*)",
+    re.IGNORECASE,
+)
+
+
+def _sanitize_dangling_discourse_openers(text: str, locale: str = "es") -> str:
+    """Repair mid-thought discourse openers that reference unintroduced acronyms (e.g., RODC)."""
+    if not text:
+        return text
+    if _DANGLING_DISCOURSE_OPENER_RE.search(text):
+        is_es = str(locale).lower().startswith("es")
+        prefix = (
+            "En la arquitectura de identidad y controladores de dominio en plantas remotas (RODC), aunque la conectividad ha evolucionado, "
+            if is_es
+            else "In the remote plant identity and Read-Only Domain Controller (RODC) architecture, although connectivity has evolved, "
+        )
+        return _DANGLING_DISCOURSE_OPENER_RE.sub(prefix, text, count=1)
+    return text
 
 
 def _synchronize_inline_recalibrated_scores(text: str, locale: str = "es") -> str:
@@ -4276,6 +4298,7 @@ class PayloadToASTBridge:
                     lambda m: f"{m.group(1)}{m.group(2)}" if m.group(2) == "ç" else f"{m.group(1)} {m.group(2)}",
                     cleaned,
                 )
+                cleaned = _sanitize_dangling_discourse_openers(cleaned, doc_locale)
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
                 cleaned = _synchronize_inline_recalibrated_scores(cleaned, doc_locale)
@@ -4437,6 +4460,7 @@ class PayloadToASTBridge:
                             val_str = _repair_broken_template_grammar(
                                 val_str, meta_l, fallback_label
                             )
+                        val_str = _sanitize_dangling_discourse_openers(val_str, meta_l)
                         val_str = _reconcile_replication_topology_prose(val_str, meta_l)
                         val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
                         val_str = _synchronize_inline_recalibrated_scores(val_str, meta_l)
