@@ -1298,14 +1298,22 @@ def _synthesize_empirical_narrative_from_findings(
         for hc in findings[:3]:
             if not isinstance(hc, dict):
                 continue
-            f_txt = str(hc.get("finding") or hc.get("description") or hc.get("risk_observed") or "").strip().rstrip(".")
+            f_txt = _scrub_template_glitches_and_token_leaks(
+                str(hc.get("finding") or hc.get("description") or hc.get("risk_observed") or "").strip().rstrip("."),
+                doc_lang,
+            ).strip().rstrip(".")
             if f_txt and not _is_placeholder_boilerplate(f_txt) and len(f_txt.split()) >= 5:
                 finding_clauses.append(f_txt)
-            imp_txt = str(hc.get("business_risk") or hc.get("operational_impact") or hc.get("primary_impact") or "").strip().rstrip(".")
+            imp_txt = _scrub_template_glitches_and_token_leaks(
+                str(hc.get("business_risk") or hc.get("operational_impact") or hc.get("primary_impact") or "").strip().rstrip("."),
+                doc_lang,
+            ).strip().rstrip(".")
             if imp_txt and not _is_severity_enum_token(imp_txt, doc_lang) and len(imp_txt.split()) >= 5:
                 impact_clauses.append(imp_txt)
 
-    lit_ev = str(pillar.get("literal_evidence") or "").strip().rstrip(".")
+    lit_ev = _scrub_template_glitches_and_token_leaks(
+        str(pillar.get("literal_evidence") or "").strip().rstrip("."), doc_lang
+    ).strip().rstrip(".")
     sota_benchmark = _build_sota_benchmark_paragraph(canonical_pillar_id, doc_lang)
     nexus_narrative = _build_cross_domain_nexus(canonical_pillar_id, doc_lang)
 
@@ -1325,7 +1333,7 @@ def _synthesize_empirical_narrative_from_findings(
 
     if sota_benchmark:
         parts.append(sota_benchmark.rstrip(".") + ".")
-    elif nexus_narrative:
+    if nexus_narrative and nexus_narrative.rstrip(".") + "." not in parts:
         parts.append(nexus_narrative.rstrip(".") + ".")
 
     return " ".join(p for p in parts if p).strip()
@@ -1365,15 +1373,16 @@ def _sanitize_architectural_narrative(
     cleaned_paras: list[str] = []
     for para in raw_paras:
         p_clean = _scrub_template_glitches_and_token_leaks(para.strip(), doc_lang)
+        # Eliminate unedited mail-merge double-preposition artifacts across Romance and English locales
         p_clean = re.sub(
-            r"\b(?:por|en|de|con|para)\s+(?=en\s+|por\s+|de\s+|con\s+|para\s+)",
+            r"\b(?:por|en|de|con|para|a|by|in|of|with|for)\s+(?=en\s+|por\s+|de\s+|con\s+|para\s+|in\s+|by\s+|of\s+|with\s+|for\s+)",
             "",
             p_clean,
             flags=re.IGNORECASE,
         )
         p_clean = re.sub(
-            r"\b(?:condicionad[oa]s?\s+por)\s+(?=en\s+la\s+|en\s+el\s+|en\s+las\s+|en\s+los\s+)",
-            "condicionada ",
+            r"\b(condicionad[oa]s?|afectad[oa]s?|limitad[oa]s?|penalizad[oa]s?|constrained|conditioned)\s+(?:por|by)\s+(?=en\s+la\s+|en\s+el\s+|en\s+las\s+|en\s+los\s+|in\s+the\s+|in\s+most\s+)",
+            r"\1 ",
             p_clean,
             flags=re.IGNORECASE,
         )
@@ -1574,6 +1583,15 @@ def derive_in_memory_maturity_matrix(
         pillar_for_narrative["health_check_asis"] = sanitized_findings
         if not asis_desc or (quarantined_count > 0 and clean_state == fallback_pos):
             pillar_for_narrative["asis_architecture_description"] = ""
+        if active_gatekeeper and canonical_p_id:
+            raw_lit_ev = str(pillar_for_narrative.get("literal_evidence") or "").strip()
+            if raw_lit_ev:
+                lit_val = active_gatekeeper.validate_text_for_pillar(
+                    raw_lit_ev, canonical_p_id, tower_id=current_tower_id
+                )
+                if lit_val.verdict == ValidationVerdict.QUARANTINED_FOREIGN_DOMAIN:
+                    quarantined_count += 1
+                    pillar_for_narrative["literal_evidence"] = ""
 
         arch_paras = _sanitize_architectural_narrative(
             pillar_for_narrative,
