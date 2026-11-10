@@ -4309,6 +4309,7 @@ class PayloadToASTBridge:
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
                 cleaned = _synchronize_inline_recalibrated_scores(cleaned, doc_locale)
+                cleaned = _reconcile_cmmi_level_bracket_claims(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
                 # Strip dangling English template tokens after prepositions in Spanish prose (e.g., "en Site Reliability Engineering (SRE) Maturity: Error Budgets .")
                 if not str(doc_locale).lower().startswith("en"):
@@ -4478,6 +4479,7 @@ class PayloadToASTBridge:
                         val_str = _reconcile_replication_topology_prose(val_str, meta_l)
                         val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
                         val_str = _synchronize_inline_recalibrated_scores(val_str, meta_l)
+                        val_str = _reconcile_cmmi_level_bracket_claims(val_str, meta_l)
                         val_str = _deduplicate_prose_sentences(val_str)
                         if not str(meta_l).lower().startswith("en"):
                             val_str = re.sub(
@@ -4518,6 +4520,57 @@ class PayloadToASTBridge:
                 rows.append(TableRowNode(cells=cells))
 
         return TableNode(rows=rows, autofit=True, col_widths=col_widths)
+
+
+def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -> str:
+    """Reconcile CMMI numeric scores with their declared maturity level labels and bracket claims."""
+    if not text or not isinstance(text, str):
+        return text
+
+    is_es = not str(locale or "en").lower().startswith("en")
+
+    def _level_info(score_val: float) -> tuple[int, str]:
+        if score_val < 1.60:
+            return 1, ("Inicial" if is_es else "Initial")
+        if score_val < 2.60:
+            return 2, ("Gestionado" if is_es else "Managed")
+        if score_val < 3.60:
+            return 3, ("Definido" if is_es else "Defined")
+        if score_val < 4.60:
+            return 4, ("Cuantitativamente Gestionado" if is_es else "Quantitatively Managed")
+        return 5, ("Optimizado" if is_es else "Optimizing")
+
+    def _fix_score_and_parenthetical_level(match: re.Match[str]) -> str:
+        prefix = match.group(1)
+        score_raw = match.group(2)
+        mid = match.group(3)
+        score_val = _safe_float(score_raw.replace(",", "."), default=-1.0)
+        if score_val < 0.0 or score_val > 5.0:
+            return match.group(0)
+        lvl_num, lvl_label = _level_info(score_val)
+        lvl_word = "Nivel" if is_es else "Level"
+        return f"{prefix}{score_raw}{mid}({lvl_word} {lvl_num} - {lvl_label})"
+
+    reconciled = re.sub(
+        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,25}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]0\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[-–—:]\s*[^)]+)?\)",
+        _fix_score_and_parenthetical_level,
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    # Neutralize false boundary claims where a Level 1 or Level 2 score claims to border Level 3/4
+    reconciled = re.sub(
+        r"(,\s*[^.,;]{1,55}?\s+)(?:se\s+sit[úu]an?\s+en\s+(?:el\s+l[íi]mite|la\s+frontera|el\s+umbral)(?:\s+de\s+tramo)?\s+del\s+nivel\s+[345]|sit\s+at\s+the\s+(?:boundary|limit|threshold)\s+of\s+level\s+[345])",
+        lambda m: (
+            f"{m.group(1)}evidencian brechas estructurales de estandarización operativa"
+            if is_es
+            else f"{m.group(1)}evidence structural standardization gaps across operations"
+        ),
+        reconciled,
+        flags=re.IGNORECASE,
+    )
+
+    return reconciled
 
 
 def compile_asis_docx_via_ast(
