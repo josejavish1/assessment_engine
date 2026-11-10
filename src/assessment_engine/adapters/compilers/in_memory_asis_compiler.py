@@ -1318,6 +1318,9 @@ def _synthesize_empirical_narrative_from_findings(
     nexus_narrative = _build_cross_domain_nexus(canonical_pillar_id, doc_lang)
 
     parts: list[str] = []
+    if fallback_pos and len(fallback_pos.split()) >= 5:
+        parts.append(fallback_pos.rstrip(".") + ".")
+
     if finding_clauses:
         parts.append(". ".join(finding_clauses) + ".")
     elif fallback_neg:
@@ -1328,8 +1331,6 @@ def _synthesize_empirical_narrative_from_findings(
 
     if impact_clauses:
         parts.append(". ".join(impact_clauses[:2]) + ".")
-    elif fallback_pos:
-        parts.append(fallback_pos.rstrip(".") + ".")
 
     if sota_benchmark:
         parts.append(sota_benchmark.rstrip(".") + ".")
@@ -1547,6 +1548,13 @@ def derive_in_memory_maturity_matrix(
             clean_f = _scrub_template_glitches_and_token_leaks(
                 _sanitize_breach_clause(f_text, fallback_neg, doc_lang), doc_lang
             )
+            if active_gatekeeper and canonical_p_id and clean_f:
+                f_val = active_gatekeeper.validate_text_for_pillar(
+                    clean_f, canonical_p_id, tower_id=current_tower_id
+                )
+                if f_val.verdict == ValidationVerdict.QUARANTINED_FOREIGN_DOMAIN:
+                    quarantined_count += 1
+                    clean_f = _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
         else:
             clean_f = _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
 
@@ -1617,7 +1625,9 @@ def derive_in_memory_maturity_matrix(
         if is_alpha_hammer:
             sota_benchmark = _build_sota_benchmark_paragraph(canonical_p_id, doc_lang)
             if sota_benchmark and diag_rationale:
-                fused_para = f"{sota_benchmark} {diag_rationale}"
+                fused_para = _scrub_template_glitches_and_token_leaks(
+                    f"{sota_benchmark} {diag_rationale}", doc_lang
+                )
                 if len(arch_paras) > 1:
                     arch_paras = [arch_paras[0], fused_para]
                 elif arch_paras:
