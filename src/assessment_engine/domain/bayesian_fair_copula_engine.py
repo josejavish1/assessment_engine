@@ -100,6 +100,8 @@ class FindingTelemetry:
     blast_radius_alpha: float = 0.35      # Operational impact factor alpha in [0.05, 1.0]
     catastrophic_rto_hours: float = 24.0  # Physical ceiling recovery time under full control failure
     direct_replacement_cost: float = 0.0  # Emergency hardware / forensic response cost
+    audit_k_failures: int = 0             # Observed control deficiencies from audit evidence
+    audit_n_trials: int = 0               # Total evaluated controls/evidence items
     dissonance: Optional[EpistemicDissonanceRecord] = None
 
 
@@ -249,7 +251,8 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 f"{f.zone.max_annual_outage_hours:.2f}:{f.zone.catastrophic_recovery_ceiling_hours:.2f}:"
                 f"{f.zone.emergency_replacement_ratio:.4f}:{int(f.is_spof)}:"
                 f"{f.shared_dependence_factor:.4f}:{f.blast_radius_alpha:.4f}:"
-                f"{f.catastrophic_rto_hours:.2f}:{f.direct_replacement_cost:.2f}:{diss_token}"
+                f"{f.catastrophic_rto_hours:.2f}:{f.direct_replacement_cost:.2f}:"
+                f"{f.audit_k_failures}:{f.audit_n_trials}:{diss_token}"
             )
         canonical_str = "|".join(canonical_parts)
         sha_hex = hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
@@ -281,8 +284,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         is_spof: bool,
         u_samples: np.ndarray,
         dissonance: Optional[EpistemicDissonanceRecord] = None,
+        audit_k_failures: int = 0,
+        audit_n_trials: int = 0,
     ) -> tuple[np.ndarray, float, bool]:
-        """Maps posterior CMMI [1.0, 5.0] -> Beta(alpha, beta) -> VULN samples via Inverse CDF."""
+        """Maps posterior CMMI and empirical audit evidence -> Beta(alpha, beta) -> VULN samples via Inverse CDF."""
         posterior_cmmi, dissonance_applied = self._resolve_posterior_cmmi(
             cmmi, dissonance, ("VULNERABILITY", "BOTH")
         )
@@ -294,10 +299,23 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         ) ** self.gamma
 
         mu_vuln = float(np.clip(mu_vuln, 0.01, 0.99))
-        alpha = mu_vuln * self.kappa
-        beta_param = (1.0 - mu_vuln) * self.kappa
-        vuln_samples = stats.beta.ppf(u_samples, alpha, beta_param)
-        return vuln_samples, mu_vuln, dissonance_applied
+        alpha_0 = mu_vuln * self.kappa
+        beta_0 = (1.0 - mu_vuln) * self.kappa
+
+        # Beta-Binomial Conjugate Update (Open FAIR™ / O-RA standard):
+        # Audit deficiencies (k_failures) and successes (n_trials - k_failures) modulate control resistance
+        if audit_n_trials > 0:
+            k = max(0, min(audit_k_failures, audit_n_trials))
+            n = max(k, audit_n_trials)
+            alpha_post = alpha_0 + float(k)
+            beta_post = beta_0 + float(n - k)
+        else:
+            alpha_post = alpha_0
+            beta_post = beta_0
+
+        vuln_samples = stats.beta.ppf(u_samples, alpha_post, beta_post)
+        mu_vuln_post = float(alpha_post / (alpha_post + beta_post))
+        return vuln_samples, mu_vuln_post, dissonance_applied
 
     @staticmethod
     def _sample_pert(
@@ -407,7 +425,12 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 f.tef_pert_min, f.tef_pert_mode, f.tef_pert_max, u_copula[:, idx]
             )
             vuln_samples, mu_vuln, diss_vuln_applied = self._calibrate_fair_cam_vuln(
-                f.cmmi_maturity, f.is_spof, u_aux_vuln[:, idx], f.dissonance
+                f.cmmi_maturity,
+                f.is_spof,
+                u_aux_vuln[:, idx],
+                f.dissonance,
+                f.audit_k_failures,
+                f.audit_n_trials,
             )
             # Phase 1: Copula-Linked Discrete Compound Poisson / Negative Binomial Event Simulation
             # Instead of continuous scaling (lef_samples = tef_samples * vuln_samples),

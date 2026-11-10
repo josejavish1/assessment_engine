@@ -1386,6 +1386,8 @@ class TowerPayloadHydrator:
                             blast_radius_alpha=alpha_val,
                             catastrophic_rto_hours=cat_rto,
                             direct_replacement_cost=repl_cost,
+                            audit_k_failures=int(hc.get("audit_k_failures") or 0),
+                            audit_n_trials=int(hc.get("audit_n_trials") or 0),
                             dissonance=dissonance_obj,
                         )
                     )

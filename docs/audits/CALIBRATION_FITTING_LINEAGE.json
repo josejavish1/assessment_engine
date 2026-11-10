@@ -1,0 +1,86 @@
+[
+  {
+    "archetype": "CONTINUOUS_DIGITAL_FINTECH",
+    "empirical_inputs": {
+      "p50_median": 85000.0,
+      "p90_tail": 320000.0,
+      "target_lambda": 0.42
+    },
+    "fitted_distribution_parameters": {
+      "lognormal_mu": 11.3504,
+      "lognormal_sigma": 1.0344,
+      "lognormal_theoretical_mean": 145130.94,
+      "beta_vulnerability_alpha": 5.0,
+      "beta_vulnerability_beta": 15.0,
+      "poisson_lambda_rate": 0.42
+    },
+    "goodness_of_fit_checks": {
+      "p50_relative_error": 6.535451096886605e-06,
+      "p90_relative_error": 3.933460294847464e-05,
+      "mathematical_convergence_certified": true
+    }
+  },
+  {
+    "archetype": "PROCESS_MANUFACTURING_OT",
+    "empirical_inputs": {
+      "p50_median": 65000.0,
+      "p90_tail": 240000.0,
+      "target_lambda": 0.24
+    },
+    "fitted_distribution_parameters": {
+      "lognormal_mu": 11.0821,
+      "lognormal_sigma": 1.0193,
+      "lognormal_theoretical_mean": 109270.99,
+      "beta_vulnerability_alpha": 5.0,
+      "beta_vulnerability_beta": 15.0,
+      "poisson_lambda_rate": 0.24
+    },
+    "goodness_of_fit_checks": {
+      "p50_relative_error": 4.254797258304629e-05,
+      "p90_relative_error": 8.691526745193792e-06,
+      "mathematical_convergence_certified": true
+    }
+  },
+  {
+    "archetype": "LIFE_SAFETY_CRITICAL",
+    "empirical_inputs": {
+      "p50_median": 75000.0,
+      "p90_tail": 310000.0,
+      "target_lambda": 0.38
+    },
+    "fitted_distribution_parameters": {
+      "lognormal_mu": 11.2252,
+      "lognormal_sigma": 1.1073,
+      "lognormal_theoretical_mean": 138448.91,
+      "beta_vulnerability_alpha": 5.0,
+      "beta_vulnerability_beta": 15.0,
+      "poisson_lambda_rate": 0.38
+    },
+    "goodness_of_fit_checks": {
+      "p50_relative_error": 4.339157700655051e-05,
+      "p90_relative_error": 6.552578688546595e-05,
+      "mathematical_convergence_certified": true
+    }
+  },
+  {
+    "archetype": "STANDARD_ENTERPRISE_B2B",
+    "empirical_inputs": {
+      "p50_median": 50000.0,
+      "p90_tail": 185000.0,
+      "target_lambda": 0.22
+    },
+    "fitted_distribution_parameters": {
+      "lognormal_mu": 10.8198,
+      "lognormal_sigma": 1.0209,
+      "lognormal_theoretical_mean": 84197.32,
+      "beta_vulnerability_alpha": 5.0,
+      "beta_vulnerability_beta": 15.0,
+      "poisson_lambda_rate": 0.22
+    },
+    "goodness_of_fit_checks": {
+      "p50_relative_error": 2.1715825502760707e-05,
+      "p90_relative_error": 2.48895137602262e-05,
+      "mathematical_convergence_certified": true
+    }
+  }
+]

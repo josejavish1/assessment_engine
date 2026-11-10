@@ -409,7 +409,10 @@ class FairRiskPolicy(BaseSovereignPolicy):
         tef_ml *= tef_mod
         tef_max *= tef_mod
 
-        # Gamma-Poisson Conjugate Update for Threat Event Frequency (TEF) using physical evidence
+        # Open FAIR™ Epistemic Alignment (RFC 087 / SR 11-7):
+        # Audit findings (gaps vs strengths) represent control deficiency evidence (Vulnerability),
+        # NOT external threat agent activity (Threat Event Frequency).
+        # We record empirical control trials and failures for Beta-Binomial Vulnerability updating.
         p_id = p.get("pilar_id", "T2.P1")
         pillar_evidences = [ev for ev in evidences if p_id in ev.get("pillar_ids", [])] if evidences else []
         n_trials = len(pillar_evidences)
@@ -436,26 +439,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 k_failures
                 + max(pillar_strengths, ledger_strengths, len(pillar_evidences)),
             )
-                    
-            # Prior Gamma(alpha, beta) parameters
-            alpha_prior = 4.0
-            beta_prior = 4.0 / max(1e-4, tef_ml)
-            
-            # Poisson observations: x_events = observed control failures over standard 1.0 annual audit horizon
-            x_events = k_failures
-            t_years = 1.0
-            
-            # Posterior Gamma(alpha_post, beta_post) parameters
-            alpha_post = alpha_prior + x_events
-            beta_post = beta_prior + t_years
-            tef_ml_post = alpha_post / beta_post
-            
-            # Shift ranges proportionally
-            tef_ratio = tef_ml_post / max(1e-4, tef_ml)
-            tef_ml = tef_ml_post
-            tef_min = tef_min * tef_ratio
-            tef_max = tef_max * tef_ratio
-            logger.info(f"🔮 [Bayesian Inferencia] TEF_ml actualizado de {tef_ml/tef_ratio:.2f} a {tef_ml:.2f} (Pruebas: {n_trials}, Fallos: {k_failures})")
+
+        finding["audit_k_failures"] = k_failures
+        finding["audit_n_trials"] = n_trials
 
         # standard Actuarial Practice: Metadata-driven Calibration & Typology Segregation (FAIR-MAM)
         # 1. Fetch specific dynamic calibrations for this capability from the client profile
