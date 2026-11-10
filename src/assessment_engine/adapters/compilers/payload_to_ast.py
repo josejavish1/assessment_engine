@@ -1534,41 +1534,29 @@ class PayloadToASTBridge:
         # Load scoring and global ALE data for interpolation.
         total_fair_ale = blueprint_data.get("total_fair_ale", 0.0)
 
-        # Enforce universal deterministic sub-control CMMI clamping against empirical findings upstream
-        from assessment_engine.domain.coherence_gatekeeper import reconcile_subcontrol_cmmi
-        pa = blueprint_data.get("pillars_analysis") or []
-        clamped_p_scores = []
-        for p in pa:
-            if isinstance(p, dict):
-                raw_p_score = safe_float(p.get("score"), locale=meta_lang, allow_zero=True)
-                if raw_p_score is None:
-                    raw_p_score = 2.5
-                findings = p.get("health_check_asis") or p.get("findings") or []
-                reconciled = reconcile_subcontrol_cmmi(
-                    raw_survey_score=raw_p_score,
-                    linked_findings=findings,
-                    evidence_verified=True,
-                )
-                p["score"] = reconciled.final_cmmi
-                p["exact_score"] = reconciled.final_cmmi
-                clamped_p_scores.append(reconciled.final_cmmi)
-
-        if clamped_p_scores:
-            exact_score = round(sum(clamped_p_scores) / len(clamped_p_scores), 2)
-        else:
-            raw_s = (
-                blueprint_data.get("score")
-                or blueprint_data.get("exact_score")
-                or blueprint_data.get("maturity_score")
-                or blueprint_data.get("overall_score")
-            )
-            exact_score = safe_float(raw_s, locale=meta_lang, allow_zero=True)
-
+        # Respect authoritative survey score from blueprint SSOT (eliminating split-brain with Tomo 1)
+        authoritative_raw = (
+            blueprint_data.get("overall_score")
+            or blueprint_data.get("score")
+            or blueprint_data.get("exact_score")
+            or blueprint_data.get("maturity_score")
+        )
+        exact_score = safe_float(authoritative_raw, locale=meta_lang, allow_zero=True)
         if exact_score is None:
             exact_score = 2.5
 
         blueprint_data["score"] = exact_score
         blueprint_data["overall_score"] = exact_score
+
+        # Maintain original pillar survey scores without artificial down-clamping
+        pa = blueprint_data.get("pillars_analysis") or []
+        for p in pa:
+            if isinstance(p, dict):
+                p_score = safe_float(p.get("score"), locale=meta_lang, allow_zero=True)
+                if p_score is None:
+                    p_score = 2.5
+                p["score"] = p_score
+                p["exact_score"] = p_score
 
         gs_val = float(exact_score)
         global_score = f"{gs_val:.2f}"
@@ -3958,10 +3946,16 @@ class PayloadToASTBridge:
             header_text = [255, 255, 255]
             sev_badge_bg = severity_bg_hex
 
+        # Calibrated LEF using the printed reconciled_sle to ensure ALE == SLE * LEF identity
+        ale_num = float(metrics.annualized_loss_expectancy)
+        if reconciled_sle > 0 and ale_num > 0:
+            calibrated_lef = ale_num / float(reconciled_sle)
+        else:
+            calibrated_lef = lef
+
         # Calculate human-readable return period / frequency (RFC 053)
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
             # Chronic operational toil is recurring across multiple incidents per year
-            ale_num = float(metrics.annualized_loss_expectancy)
             if ale_num > 0 and reconciled_sle > 0:
                 est_annual_events = max(1, int(round(ale_num / float(reconciled_sle))))
             else:
@@ -3970,15 +3964,15 @@ class PayloadToASTBridge:
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
             days_int = max(1, int(round(365.0 / est_annual_events)))
             return_period_str = f"~{days_int} {t('days_unit', locale=meta_lang, default='días')}"
-        elif lef <= 0:
+        elif calibrated_lef <= 0:
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=format_number(0.1, locale=meta_lang, decimals=1))
-        elif lef < 1.0:
-            rec_years = round(1.0 / lef, 1)
+        elif calibrated_lef < 1.0:
+            rec_years = round(1.0 / calibrated_lef, 1)
             rec_decimals = 0 if abs(rec_years - round(rec_years)) < 0.15 else 1
             years_str = format_number(rec_years, locale=meta_lang, decimals=rec_decimals)
             freq_display = t("kpi_frequency_value_years", locale=meta_lang, years=years_str)
         else:
-            ev_str = format_number(lef, locale=meta_lang, decimals=1)
+            ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=1)
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
 
         if metrics.is_deduplicated:

@@ -121,11 +121,17 @@ def extract_tower_content(num_str: str) -> str:
     for t_idx, table in enumerate(doc.tables):
         if not table.rows:
             continue
-        header = [c.text.strip().replace("\n", " ") for c in table.rows[0].cells]
-        lines.append(f"\n[Tabla {t_idx + 1}]: {' | '.join(header)}")
-        for r in table.rows[1:]:
-            row_str = " | ".join(c.text.strip().replace("\n", " ") for c in r.cells)
-            lines.append(f"  {row_str}")
+        for r_idx, r in enumerate(table.rows):
+            unique_cells = []
+            prev_tc = None
+            for c in r.cells:
+                if c._tc is not prev_tc:
+                    unique_cells.append(c.text.strip().replace("\n", " "))
+                    prev_tc = c._tc
+            if r_idx == 0:
+                lines.append(f"\n[Tabla {t_idx + 1}]: {' | '.join(unique_cells)}")
+            else:
+                lines.append(f"  {' | '.join(unique_cells)}")
 
     return "\n".join(lines)
 
@@ -142,13 +148,18 @@ THE AUDITED DELIVERABLE CONTENT (Extracted directly from the client's official W
 {raw_content}
 
 YOUR ASSIGNMENT:
-Provide an unflinching, brutally honest, peer-reviewed evaluation of this technical diagnostic and its risk quantification:
-1. OVERALL VERDICT: Would you APPROVE this report, REJECT it, or DEMAND REVISIONS? State your decision clearly in the first sentence.
-2. TECHNICAL REALISM OF THE DIAGNOSTIC: Does the technical analysis reflect the true operational reality of an enterprise at this scale, or does it sound like a generic consulting template?
+Provide an unflinching, peer-reviewed evaluation of this technical diagnostic and its risk quantification according to the following Board-level rubric:
+- 9.0 - 10.0 (Board-Ready / Exceptional): Grounded in empirical field reality with specific hardware/topologies, mathematically closed and defensible Open FAIR quantification, MECE domain boundaries, and executive gravitas.
+- 7.5 - 8.9 (Approved with Minor Notes): Technically sound with realistic diagnostic; minor modeling or editorial refinements recommended.
+- 6.0 - 7.4 (Revisions Required): Substantial technical findings present but requires structural realignment of numbers or risk scenarios before C-level sign-off.
+- Below 6.0 (Rejected): Generic template or unacceptable technical/financial flaws.
+
+STRUCTURE YOUR EVALUATION:
+1. OVERALL VERDICT: (APPROVE / APPROVE WITH NOTES / DEMAND REVISIONS) State clearly in the first sentence.
+2. TECHNICAL REALISM OF THE DIAGNOSTIC: Does the technical analysis reflect the true operational reality of Molins at this scale?
 3. SCRUTINY OF RISK FORMULATION & NUMBERS:
    - What is your opinion of the numbers (ALE, Single Severe Event / P90)?
-   - How are the risk scenarios articulated? Are they credible, or can a smart client engineer shoot them down?
-   - What objections would you raise if you were defending the company's budget?
+   - Are the risk scenarios and downtime derivations credible and defensible?
 4. WHAT IS GENUINELY IMPRESSIVE ABOUT THIS REPORT?
 5. FINAL GRADE (1 to 10) & ONE ACTIONABLE RECOMMENDATION.
 
