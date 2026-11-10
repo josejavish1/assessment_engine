@@ -438,6 +438,38 @@ _UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
     re.IGNORECASE,
 )
 
+_RAW_ENGLISH_COMPOUND_KPI_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:[A-Z][a-z0-9/+\-]+(?:\s+(?:&|and|or|of|for|in|to|vs\.?|with|by)\s+|\s+)){2,}"
+    r"(?:Rate|Governance|Management|Compliance|Architecture|Resilience|Optimization|"
+    r"Monitoring|Automation|Operations|Lifecycle|Security|Hardening|Provisioning|"
+    r"Integration|Orchestration|Observability|Telemetry|Continuity|Recovery|"
+    r"Replication|Tiering|Licensing|Capacity|Performance|Availability|Trail|"
+    r"Baseline|Drift|Benchmarking|Chargeback|Showback|Coverage|Authentication|"
+    r"Access|Detection|Response|Patching|Segmentation|Encryption|Backup|Testing|"
+    r"Control|Pipeline|Virtualization|Storage|Network|Routing|Switching|Redundancy|"
+    r"Failover|Balancing|Cooling|Surveillance|Cabling|Alignment|Adoption|Economics|"
+    r"Immutability|Verification|Accountability|Score|Index|Ratio|Threshold|SLA|SLO|MTTR|MTTF)\b"
+)
+
+
+def _deduplicate_prose_sentences(raw_txt: str) -> str:
+    """Eliminate consecutive or repeated sentences within a paragraph or narrative block."""
+    if not raw_txt or len(raw_txt) < 40:
+        return raw_txt
+    parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", raw_txt) if p.strip()]
+    if len(parts) <= 1:
+        return raw_txt
+    seen: set[str] = set()
+    unique_parts: list[str] = []
+    for p in parts:
+        norm_p = re.sub(r"\s+", " ", p.lower()).strip(" .;:,-")
+        if len(norm_p) > 20 and norm_p in seen:
+            continue
+        if len(norm_p) > 20:
+            seen.add(norm_p)
+        unique_parts.append(p)
+    return " ".join(unique_parts) if unique_parts else raw_txt
+
 _LOCALIZED_KPI_CLAUSE_RE: Final[re.Pattern[str]] = re.compile(
     r"(\b(?:incidencias\s+no\s+contenidas\s+en|deficiencias(?:\s+\w+){0,3}\s+en|"
     r"brechas(?:\s+\w+){0,3}\s+en|vulnerabilidades(?:\s+\w+){0,3}\s+en|"
@@ -3549,12 +3581,25 @@ class PayloadToASTBridge:
         ).strip()
         vuln_txt = _sanitize_localized_kpi_leaks(vuln_txt, meta_lang, fallback_pillar=fallback_pillar_ref)
         impact_txt = _sanitize_localized_kpi_leaks(impact_txt, meta_lang, fallback_pillar=fallback_pillar_ref)
+        if not str(meta_lang).lower().startswith("en"):
+            fallback_clause = fallback_pillar_ref or t(
+                "domain_control_standard_fallback",
+                locale=meta_lang,
+                default="la gobernanza operativa del dominio",
+            )
+            vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, vuln_txt)
+            impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, impact_txt)
 
         act_just = _sanitize_localized_kpi_leaks(
             str(hc.get("actuarial_justification") or "").strip(),
             meta_lang,
             fallback_pillar=fallback_pillar_ref,
         )
+        if not str(meta_lang).lower().startswith("en") and act_just:
+            act_just = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="la gobernanza operativa del dominio"),
+                act_just,
+            )
         if act_just:
             actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{act_just}\n\n• {sle_bullet}\n• {ale_bullet}"
         else:
@@ -3605,6 +3650,11 @@ class PayloadToASTBridge:
         display_title = _sanitize_localized_kpi_leaks(
             display_title, meta_lang, fallback_pillar=fallback_pillar_ref
         )
+        if not str(meta_lang).lower().startswith("en"):
+            display_title = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
+                display_title,
+            )
 
         card_table = TableNode(
             rows=[
@@ -3700,6 +3750,7 @@ class PayloadToASTBridge:
         with open(md_path, "r", encoding="utf-8") as f:
             lines = [html.unescape(line) for line in f.readlines()]
 
+        seen_paragraphs: set[str] = set()
         for line in lines:
             cleaned = line.strip()
             if not cleaned:
@@ -3710,6 +3761,18 @@ class PayloadToASTBridge:
                 doc_locale = getattr(self, "meta_lang", "en")
                 cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2), cleaned)
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
+                if not str(doc_locale).lower().startswith("en"):
+                    fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
+                    cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
+                cleaned = _deduplicate_prose_sentences(cleaned)
+
+            # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
+            if not cleaned.startswith("#"):
+                norm_line = re.sub(r"\s+", " ", cleaned.lower()).strip(" .;:,-*")
+                if len(norm_line) > 45:
+                    if norm_line in seen_paragraphs:
+                        continue
+                    seen_paragraphs.add(norm_line)
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
             skip_directives = get_localized_list(
