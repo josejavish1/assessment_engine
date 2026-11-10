@@ -746,7 +746,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                         # Scale dynamically with global turnover statutory cap (e.g. 2.0%-4.0% rule under NIS2/GDPR)
                         fine_ratio = float(custom_calibration.get("regulatory_fine_cap_ratio", 0.02))
                         turnover_fine = revenue * fine_ratio if revenue > 0 else base_fine
-                        reg_max_fine = min(base_fine, turnover_fine) if revenue > 0 else base_fine
+                        reg_max_fine = max(base_fine, turnover_fine) if revenue > 0 else base_fine
                     except (ValueError, TypeError):
                         reg_max_fine = 10000000.0
                 else:

@@ -1259,6 +1259,13 @@ class TowerPayloadHydrator:
                         else:
                             tef_mode_val = float(prior["tef_mode"])
 
+                    from assessment_engine.domain.taxonomy.archetype_registry import (
+                        LossArchetypeType,
+                        get_actuarial_archetype_registry,
+                    )
+                    t_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(code)
+                    t_arch = t_mapping.primary_archetype
+
                     if (
                         raw_lm is not None
                         and 1.0 <= raw_lm <= 5.0
@@ -1266,9 +1273,7 @@ class TowerPayloadHydrator:
                     ):
                         rating_key = int(raw_lm)
                         rto_mode_val = float(rto_scale.get(rating_key, prior["rto_mode"]))
-                        sec_mean_val = float(
-                            derived_hourly_rate * sec_hours_scale.get(rating_key, 1.0)
-                        )
+                        lm_scale_factor = rating_key / 5.0
                     else:
                         explicit_rto = safe_float(hc.get("recovery_time_hours"), locale=doc_lang)
                         if explicit_rto is None:
@@ -1278,12 +1283,26 @@ class TowerPayloadHydrator:
                             if explicit_rto is not None
                             else float(prior["rto_mode"])
                         )
+                        lm_scale_factor = (raw_lm / 5.0) if (raw_lm is not None and raw_lm > 0) else 0.5
 
-                        explicit_sec = safe_float(hc.get("secondary_loss_mean"), locale=doc_lang)
-                        sec_mean_val = (
-                            float(explicit_sec)
-                            if explicit_sec is not None
-                            else default_sec_mean
+                    # Polymorphic secondary loss derivation respecting economic domain (Vector 5)
+                    explicit_sec = safe_float(hc.get("secondary_loss_mean"), locale=doc_lang)
+                    if explicit_sec is not None:
+                        sec_mean_val = float(explicit_sec)
+                    elif t_arch == LossArchetypeType.REGULATORY_AND_BREACH:
+                        ann_rev = safe_float(fin_tel.get("annual_revenue") or fin_tel.get("global_annual_revenue") or 100_000_000.0)
+                        max_stat_fine = max(20_000_000.0, ann_rev * 0.04)
+                        b2b_damp = safe_float(fin_tel.get("b2b_exposure_dampener") or 0.25)
+                        sec_mean_val = float(max_stat_fine * (0.01 + 0.03 * lm_scale_factor) * b2b_damp)
+                    elif t_arch == LossArchetypeType.CAPITAL_INEFFICIENCY:
+                        it_opex_val = safe_float(fin_tel.get("annual_it_opex") or 5_000_000.0)
+                        sec_mean_val = float(it_opex_val * (0.02 + 0.04 * lm_scale_factor))
+                    elif t_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+                        labor_wage = safe_float(fin_tel.get("fully_burdened_hourly_rate") or 65.0)
+                        sec_mean_val = float(labor_wage * (20.0 + 30.0 * lm_scale_factor))
+                    else:
+                        sec_mean_val = float(
+                            derived_hourly_rate * (sec_hours_scale.get(rating_key, 1.0) if 'rating_key' in locals() else 1.5)
                         )
 
                     spof_flag = (
