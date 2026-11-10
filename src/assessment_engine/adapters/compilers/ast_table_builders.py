@@ -200,9 +200,23 @@ def build_heatmap_mosaic(
             DEFAULT_LM_CRITICAL_THRESHOLDS if is_critical else DEFAULT_LM_STANDARD_THRESHOLDS
         )
     for r in risks_data_list:
-        r_tef, r_lm = resolve_risk_matrix_coordinates(r, effective_bounds, locale=locale)
+        explicit_tef = safe_float(r.get("tef_scale_level"), locale=locale)
+        explicit_lm = safe_float(r.get("lm_scale_level"), locale=locale)
+        if (
+            explicit_tef is not None
+            and explicit_lm is not None
+            and 1 <= int(explicit_tef) <= 5
+            and 1 <= int(explicit_lm) <= 5
+        ):
+            r_tef, r_lm = int(explicit_tef), int(explicit_lm)
+        else:
+            r_tef, r_lm = resolve_risk_matrix_coordinates(
+                r, effective_bounds, locale=locale
+            )
+            r["tef_scale_level"] = r_tef
+            r["lm_scale_level"] = r_lm
         risk_id = str(r.get("id") or r.get("risk_id") or "").strip()
-        if risk_id:
+        if risk_id and risk_id not in matrix_cells[r_tef][r_lm]:
             matrix_cells[r_tef][r_lm].append(risk_id)
 
     heatmap_rows = []
