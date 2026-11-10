@@ -413,7 +413,21 @@ _ENGLISH_KPI_MARKER_RE: Final[re.Pattern[str]] = re.compile(
     r"Optimization|Monitoring|Automation|Operations|Lifecycle|Security|Hardening|"
     r"Provisioning|Integration|Orchestration|Observability|Telemetry|Continuity|"
     r"Recovery|Replication|Tiering|Licensing|Capacity|Performance|Availability|"
-    r"Forensic|Audit\s+Trail|Baseline|Drift|Benchmarking|Chargeback|Showback)\b",
+    r"Forensic|Audit\s+Trail|Baseline|Drift|Benchmarking|Chargeback|Showback|"
+    r"Coverage|Across|Critical|Infrastructure|Resistant|Phishing|Multi-Factor|"
+    r"Authentication|Privileged|Access|Endpoint|Detection|Response|Vulnerability|"
+    r"Patching|Segmentation|Encryption|Key\s+Management|Backup|Disaster|Testing|"
+    r"Incident|Service\s+Desk|Change\s+Control|Problem\s+Management|Release|"
+    r"Deployment|Pipeline|Container|Kubernetes|Virtualization|Hypervisor|Storage|"
+    r"Network|Firewall|Routing|Switching|Wireless|Bandwidth|Latency|Throughput|"
+    r"Redundancy|Failover|Load\s+Balancing|Power|Cooling|Thermal|Environmental|"
+    r"Physical\s+Access|Surveillance|Cabling|Rack|UPS|Generator|Substation)\b",
+    re.IGNORECASE,
+)
+
+_UNRESOLVED_BRACKET_PLACEHOLDER_RE: Final[re.Pattern[str]] = re.compile(
+    r"\[\s*(?:Pillar\s*Name|KPI\s*Name|Capability\s*Name|Domain\s*Name|Tower\s*Name|"
+    r"Metric\s*Name|Sub-?capability|Dimension|Pilar|Capacidad|Dominio)\s*\]",
     re.IGNORECASE,
 )
 
@@ -421,8 +435,10 @@ _LOCALIZED_KPI_CLAUSE_RE: Final[re.Pattern[str]] = re.compile(
     r"(\b(?:incidencias\s+no\s+contenidas\s+en|deficiencias(?:\s+\w+){0,3}\s+en|"
     r"brechas(?:\s+\w+){0,3}\s+en|vulnerabilidades(?:\s+\w+){0,3}\s+en|"
     r"riesgo(?:s)?(?:\s+\w+){0,4}\s+en|exposición(?:\s+\w+){0,4}\s+en|"
-    r"fallos(?:\s+\w+){0,3}\s+en|control(?:es)?\s+de|ámbito\s+de|dominio\s+de)\s+)"
-    r"([A-Z][A-Za-z0-9\s,&/\-]{8,}?)"
+    r"fallos(?:\s+\w+){0,3}\s+en|control(?:es)?\s+de|ámbito\s+de|dominio\s+de|"
+    r"factores\s+clave\s+como|aspectos\s+críticos\s+como|métricas\s+como|"
+    r"capacidades\s+de|estándares\s+de|procesos\s+de|arquitectura\s+de)\s+)"
+    r"([A-Za-z][A-Za-z0-9\s,&/\-()]{8,}?)"
     r"(?=[.;:)\n]|$)"
 )
 
@@ -455,6 +471,19 @@ def _sanitize_localized_kpi_leaks(
         " & " in resolved_fallback or _ENGLISH_KPI_MARKER_RE.search(resolved_fallback)
     ):
         resolved_fallback = ""
+
+    default_domain_fallback = (
+        resolved_fallback
+        if resolved_fallback
+        else t(
+            "generic_operational_domain_fallback",
+            locale=locale,
+            default="la arquitectura operativa del dominio" if norm_loc.startswith("es") else "the operational domain architecture",
+        )
+    )
+
+    if _UNRESOLVED_BRACKET_PLACEHOLDER_RE.search(text):
+        text = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(default_domain_fallback, text)
 
     def _replace_clause(match: re.Match[str]) -> str:
         prefix = match.group(1)
