@@ -441,9 +441,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
             alpha_prior = 4.0
             beta_prior = 4.0 / max(1e-4, tef_ml)
             
-            # Poisson observations: x_events = failures, t_years = trials * 0.25
+            # Poisson observations: x_events = observed control failures over standard 1.0 annual audit horizon
             x_events = k_failures
-            t_years = n_trials * 0.25
+            t_years = 1.0
             
             # Posterior Gamma(alpha_post, beta_post) parameters
             alpha_post = alpha_prior + x_events
@@ -671,18 +671,19 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 ),
             )
             
-            # 'mu' is the service rate (1 / MTTR). SRE Maturity directly and exponentially scales MTTR
+            # 'mu' is the service rate in 1/hours (1 / MTTR). SRE Maturity exponentially scales MTTR
             # Low maturity (1.5) -> MTTR = 12 hours. High maturity (4.5) -> MTTR = 0.5 hours.
             mttr_hours = 12.0 / (1.5 ** (p_score - 1.0))
             mu_rate = 1.0 / max(0.1, mttr_hours)
             
-            # 'lambda' (arrival rate) is the concurrent incident count in the simulated year
+            # 'lambda' arrival rate: convert annual simulated incident count to hourly arrival rate (events / 8760 hours)
             k_per_event = np.repeat(k_losses, k_losses)
+            lambda_hourly = k_per_event / 8760.0
             
-            # Calculate Erlang-C probability of delay and average queue wait time for each simulated year
-            # To avoid division by zero and infinite queues when lambda >= c * mu, we clamp utilization (rho < 1.0)
-            rho = k_per_event / (c_crews * mu_rate)
-            rho = np.minimum(0.99, rho)  # Anti-crash saturation clamp
+            # Dimensionally consistent traffic intensity: rho = lambda_hourly / (c_crews * mu_rate)
+            # Both numerator and denominator are strictly in units of events / hour
+            rho = lambda_hourly / (c_crews * mu_rate)
+            rho = np.minimum(0.99, np.maximum(1e-6, rho))  # Anti-crash saturation guard
 
             # Erlang-C Delay Probability (P_q) formula calculation
             # We compute the numerator and denominator terms for the exact formula
@@ -835,16 +836,16 @@ class FairRiskPolicy(BaseSovereignPolicy):
         # Calculate statistical exposures using the truncated distribution
         mean_ale = float(np.mean(truncated_losses))
         
-        # standard Actuarial Practice: Coherent Risk Measure (Expected Shortfall / CVaR)
-        # Value-at-Risk (P90) is not subadditive and ignores the tail magnitude. We use Expected Shortfall (CVaR).
-        # Under the Basel Committee's Fundamental Review of the Trading Book (FRTB) and Enterprise banking standards, 
-        # Expected Shortfall must be calculated at the 97.5% confidence level to properly capture tail risk without dilution.
-        # Since we operate on the truncated distribution, CVaR is mathematically bounded by the P99 limit.
+        # Standard Open FAIR™ & Basel III Actuarial Metrics
+        # Strict 90th Percentile Value-at-Risk (P90)
+        p90_val = float(np.percentile(truncated_losses, 90.0)) if len(truncated_losses) > 0 else 0.0
+
+        # Coherent Risk Measure: Expected Shortfall (CVaR at 97.5%)
         sorted_losses = np.sort(truncated_losses)
         tail_index = int(len(sorted_losses) * 0.975)
         tail_losses = sorted_losses[tail_index:]
         cvar_ale = float(np.mean(tail_losses)) if len(tail_losses) > 0 else 0.0
-        p90_ale = cvar_ale  # Overwriting the legacy P90 variable with the Coherent Risk Measure (CVaR 97.5%) to maintain schema compatibility
+        p90_ale = p90_val
         
         min_ale = float(np.min(truncated_losses))
         max_ale = p99_limit
@@ -857,6 +858,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         finding["loss_magnitude"] = lm
         finding["fair_ale_score"] = ale_euros
         finding["fair_p90_score"] = round(p90_ale, 2)
+        finding["fair_cvar_score"] = round(cvar_ale, 2)
         finding["fair_min_score"] = round(min_ale, 2)
         finding["fair_max_score"] = round(max_ale, 2)
 
