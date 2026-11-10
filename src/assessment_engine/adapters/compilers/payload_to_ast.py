@@ -408,16 +408,81 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"\b(?:zero\s+(?:dex|telemetry|real-time|visibility|tooling)|"
     r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning)|"
+    r"lack\s+of\s+(?:dex\s+tools|telemetry|formal\s+equipment\s+renewal)|"
+    r"absence\s+of\s+(?:a\s+formal\s+equipment\s+renewal|dex\s+tools|telemetry)|"
     r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
-    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real)|"
+    r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real|ciclo\s+formal\s+de\s+renovaci[óo]n)|"
     r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex)|"
-    r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex)|"
+    r"falta\s+de\s+(?:herramientas\s+dex|telemetr[íi]a|ciclo\s+formal\s+de\s+renovaci[óo]n)|"
+    r"ausencia\s+de\s+(?:un\s+ciclo\s+formal\s+de\s+renovaci[óo]n|herramientas\s+dex|telemetr[íi]a|control\s+de\s+obsolescencia)|"
+    r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex|ciclo\s+formal)|"
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
     r"artisanal\s+preparation|static\s+images|"
     r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones|"
     r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual)\b",
     re.IGNORECASE,
 )
+
+_CONTRADICTORY_PRAISE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal|"
+    r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?|"
+    r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+boundary\s+of\s+level\s+3|"
+    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+la\s+frontera\s+del\s+nivel\s+3|"
+    r"plataforma\s+legacy\s*/\s*mainframe\s*(?:&|y)\s*operaci[óo]n\s+core)",
+    re.IGNORECASE,
+)
+
+
+def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") -> str:
+    """Sanitize contradictory boilerplate praise and legacy industry template leaks from diagnostic prose."""
+    if not text:
+        return text
+    is_es = str(locale).lower().startswith("es")
+    if is_es:
+        text = re.sub(
+            r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?",
+            "gestión reactiva del ciclo de vida del parque de dispositivos",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r",?\s*situando\s+a\s+[^.,;]{1,35}?\s+en\s+la\s+frontera\s+del\s+nivel\s+3",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"Plataforma\s+Legacy\s*/\s*Mainframe\s*(?:&|y)\s*Operaci[óo]n\s+Core",
+            "Gobernanza y Operación de Sistemas Core",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"La\s+operativa\s+se\s+ve\s+severamente\s+condicionada\s+por\s+la\s+mayor[íi]a\s+de\s+las\s+",
+            "La operativa se ve severamente condicionada dado que en la mayoría de las ",
+            text,
+            flags=re.IGNORECASE,
+        )
+    else:
+        text = re.sub(
+            r"exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal",
+            "reactive lifecycle management across the endpoint fleet",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r",?\s*placing\s+[^.,;]{1,35}?\s+at\s+the\s+boundary\s+of\s+level\s+3",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"Legacy\s*/\s*Mainframe\s+Platform\s*(?:&|and)\s*Core\s+Operations?",
+            "Core Systems Operations & Governance",
+            text,
+            flags=re.IGNORECASE,
+        )
+    return text
 
 _EXPLICIT_CALIBRATED_DOWNGRADE_RE: Final[re.Pattern[str]] = re.compile(
     r"(?:calibrad[oa]\s+a\s+la\s+baja|ajustad[oa]\s+a|recalibrad[oa]\s+a|"
@@ -4058,6 +4123,7 @@ class PayloadToASTBridge:
                     cleaned,
                 )
                 cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
+                cleaned = _reconcile_internal_narrative_contradictions(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
 
             # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
@@ -4209,6 +4275,7 @@ class PayloadToASTBridge:
                                 val_str, meta_l, fallback_label
                             )
                         val_str = _reconcile_replication_topology_prose(val_str, meta_l)
+                        val_str = _reconcile_internal_narrative_contradictions(val_str, meta_l)
                         val_str = _deduplicate_prose_sentences(val_str)
 
                     if c_idx == 2:
