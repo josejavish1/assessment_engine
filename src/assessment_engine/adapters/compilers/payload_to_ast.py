@@ -63,7 +63,11 @@ def _partition_risks_into_tiers(
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Deterministically partitions risks into Tier 1 (>=15%), Tier 2 (3-15%), and Tier 3 (<3%)."""
     primary_risks = [
-        r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        r
+        for r in risks_data_list
+        if str(r.get("ownership_type") or "").strip().upper()
+        not in ("TANGENTIAL_CONTRIBUTOR", "OUT_OF_SCOPE", "SECONDARY_CONTRIBUTOR")
+        and not bool(r.get("is_cross_domain_contamination", False))
     ]
     pool = primary_risks if primary_risks else list(risks_data_list)
     sorted_pool = sorted(
@@ -4003,6 +4007,16 @@ class PayloadToASTBridge:
                     continue
                 bg = self.alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
                 cells = []
+                row_pillar_label = ""
+                if len(row_data) > 0 and str(row_data[0]).strip():
+                    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                    resolver = get_taxonomy_resolver()
+                    row_pillar_label = resolver.resolve_pillar_by_any_reference(
+                        str(row_data[0]).strip(),
+                        default=str(row_data[0]).strip(),
+                        locale=getattr(self, "meta_lang", "en"),
+                    )
+
                 for c_idx, val in enumerate(row_data):
                     bold = c_idx == 0
                     align = (
@@ -4010,11 +4024,13 @@ class PayloadToASTBridge:
                         if c_idx == 1
                         else ("JUSTIFY" if c_idx == 2 else "LEFT")
                     )
-                    
+
                     val_str = str(val)
-                    if isinstance(val_str, str):
+                    if c_idx == 0 and row_pillar_label:
+                        val_str = row_pillar_label
+                    elif isinstance(val_str, str):
                         meta_l = getattr(self, "meta_lang", "en")
-                        fallback_label = t(
+                        fallback_label = row_pillar_label or t(
                             "domain_control_standard_fallback",
                             locale=meta_l,
                             default="la gobernanza operativa del dominio",
@@ -4026,7 +4042,7 @@ class PayloadToASTBridge:
                             lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), val_str
                         )
                         val_str = _sanitize_localized_kpi_leaks(
-                            val_str, meta_l
+                            val_str, meta_l, fallback_pillar=fallback_label
                         )
                         if not str(meta_l).lower().startswith("en"):
                             val_str = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
@@ -4035,13 +4051,7 @@ class PayloadToASTBridge:
                             val_str = _repair_broken_template_grammar(
                                 val_str, meta_l, fallback_label
                             )
-
-                    if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
-                        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-                        resolver = get_taxonomy_resolver()
-                        val_str = resolver.resolve_pillar_by_any_reference(
-                            val_str, default=val_str, locale=getattr(self, "meta_lang", "en")
-                        )
+                        val_str = _deduplicate_prose_sentences(val_str)
 
                     if c_idx == 2:
                         just_hdr = t("asis_header_score_justification", locale=getattr(self, "meta_lang", "en"))
@@ -4055,7 +4065,7 @@ class PayloadToASTBridge:
                             just_hdr,
                             val_str
                         )
-                        
+
                     cells.append(
                         CellNode(text=val_str, bold=bold, bg_color=bg, align=align)
                     )
