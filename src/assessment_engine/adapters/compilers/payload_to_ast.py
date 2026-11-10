@@ -413,7 +413,14 @@ _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
     r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex)|"
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
-    r"artisanal\s+preparation|static\s+images)\b",
+    r"artisanal\s+preparation|static\s+images|"
+    r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones)\b",
+    re.IGNORECASE,
+)
+
+_EXPLICIT_CALIBRATED_DOWNGRADE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:calibrad[oa]\s+a\s+la\s+baja|ajustad[oa]\s+a|recalibrad[oa]\s+a|downgraded\s+to|calibrated\s+(?:down\s+)?to)"
+    r"[^0-9]{1,40}?\b([1-4][.,]\d{1,2})\b",
     re.IGNORECASE,
 )
 
@@ -423,19 +430,27 @@ def _calibrate_pillar_score_from_evidence(pillar_dict: Mapping[str, Any], raw_sc
 
     If a pillar sits at or near the default unassessed baseline (e.g., 2.50) or higher,
     but its explicit calibrated score or diagnostic prose testifies to a complete absence
-    of foundational telemetry/tooling (Level 1 Initial), cap the score to prevent
-    executive summary praise of non-existent capabilities.
+    of foundational telemetry/tooling (Level 1 Initial) or an explicit auditor downgrade,
+    cap the score to prevent scoring contradictions between tables and prose.
     """
-    calibrated_override = pillar_dict.get("calibrated_score") or pillar_dict.get("audited_score")
-    if calibrated_override is not None:
-        cal_val = _safe_float(calibrated_override, default=raw_score)
-        if 1.0 <= cal_val < raw_score:
-            return cal_val
+    for override_key in ("calibrated_score", "audited_score", "auditor_score", "adjusted_score", "final_score"):
+        calibrated_override = pillar_dict.get(override_key)
+        if calibrated_override is not None:
+            cal_val = _safe_float(calibrated_override, default=raw_score)
+            if 1.0 <= cal_val < raw_score:
+                return cal_val
 
     evidence_corpus = " ".join(
         str(pillar_dict.get(k) or "")
         for k in ("finding", "findings", "justification", "description", "narrative", "gap_analysis", "status")
     )
+
+    explicit_match = _EXPLICIT_CALIBRATED_DOWNGRADE_RE.search(evidence_corpus)
+    if explicit_match:
+        parsed_downgrade = _safe_float(explicit_match.group(1), default=raw_score)
+        if 1.0 <= parsed_downgrade < raw_score:
+            return parsed_downgrade
+
     if raw_score >= 2.0 and _CRITICAL_DEFICIT_TELEMETRY_RE.search(evidence_corpus):
         # If prose explicitly states zero telemetry/tooling, cap maturity at 1.25 (Initial)
         if re.search(
@@ -3984,6 +3999,12 @@ class PayloadToASTBridge:
                 if not str(doc_locale).lower().startswith("en"):
                     cleaned = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_label, cleaned)
                     cleaned = _repair_broken_template_grammar(cleaned, doc_locale, fallback_label)
+                # Repair broken mail-merge punctuation artifacts (e.g. 'fábrica.ç', 'adquisición.en', 'El área.gestiona')
+                cleaned = re.sub(
+                    r"([a-záéíóúñüA-ZÁÉÍÓÚÑÜ])\.([a-záéíóúñüç])",
+                    lambda m: f"{m.group(1)}{m.group(2)}" if m.group(2) == "ç" else f"{m.group(1)} {m.group(2)}",
+                    cleaned,
+                )
                 cleaned = _deduplicate_prose_sentences(cleaned)
 
             # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
@@ -4148,6 +4169,12 @@ class PayloadToASTBridge:
                             just_hdr,
                             val_str
                         )
+                    # Repair broken mail-merge punctuation artifacts (e.g. 'fábrica.ç', 'adquisición.en', 'El área.gestiona')
+                    val_str = re.sub(
+                        r"([a-záéíóúñüA-ZÁÉÍÓÚÑÜ])\.([a-záéíóúñüç])",
+                        lambda m: f"{m.group(1)}{m.group(2)}" if m.group(2) == "ç" else f"{m.group(1)} {m.group(2)}",
+                        val_str,
+                    )
 
                     cells.append(
                         CellNode(text=val_str, bold=bold, bg_color=bg, align=align)
