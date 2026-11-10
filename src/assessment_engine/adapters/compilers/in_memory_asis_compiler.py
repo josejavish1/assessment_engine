@@ -1421,10 +1421,15 @@ def _sanitize_architectural_narrative(
             p_clean,
             flags=re.IGNORECASE,
         )
-        # Strip leaked English KPI title-case tokens preceded by Romance prepositions
+        # Strip leaked English KPI title-case tokens preceded by Romance prepositions or connectors
         p_clean = re.sub(
-            r"\b(?:seg[úu]n|en|de|por|con)\s+(?:[A-Z][a-z0-9\-]+\s+){2,6}[A-Z][a-z0-9\-]+\.?",
+            r"\b(?:seg[úu]n|en|de|por|con|ante)\s+(?:[A-Z][a-z0-9\-]+\s+){2,6}[A-Z][a-z0-9\-]+(?:\s*\([^)]*\))?\.?",
             "",
+            p_clean,
+        ).strip()
+        p_clean = re.sub(
+            r"\s*(?:&|and)\s+(?:[A-Z][a-z0-9\-]+\s+){1,5}[A-Z][a-z0-9\-]+\.?",
+            ".",
             p_clean,
         ).strip()
         words = p_clean.split(None, 1)
@@ -1603,6 +1608,11 @@ def derive_in_memory_maturity_matrix(
         exact_score, clean_state = _reconcile_telemetry_tool_contradictions(
             exact_score, clean_state, clean_f, fallback_neg, doc_lang
         )
+        # Synchronize calibrated score back into the source pillar payload so Executive Summary,
+        # Table 4, and global averages remain 100% mathematically consistent with Table 5/6.
+        pillar["score"] = exact_score
+        if raw_declared is None:
+            pillar["declared_score"] = declared_score
         band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         band_label = band_info.get("label", "")
 
@@ -1700,5 +1710,15 @@ def derive_in_memory_maturity_matrix(
                 "target_label": target_label,
             }
         )
+
+    if rows:
+        calibrated_avg = round(sum(float(r["score"]) for r in rows) / len(rows), 2)
+        b_data["calibrated_global_score"] = calibrated_avg
+        if isinstance(b_data.get("executive_summary"), dict):
+            b_data["executive_summary"]["global_maturity_score"] = calibrated_avg
+            b_data["executive_summary"]["overall_score"] = calibrated_avg
+        if isinstance(b_data.get("maturity_summary"), dict):
+            b_data["maturity_summary"]["global_score"] = calibrated_avg
+            b_data["maturity_summary"]["average_score"] = calibrated_avg
 
     return rows
