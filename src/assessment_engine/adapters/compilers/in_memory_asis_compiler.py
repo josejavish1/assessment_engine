@@ -1365,6 +1365,18 @@ def _sanitize_architectural_narrative(
     cleaned_paras: list[str] = []
     for para in raw_paras:
         p_clean = _scrub_template_glitches_and_token_leaks(para.strip(), doc_lang)
+        p_clean = re.sub(
+            r"\b(?:por|en|de|con|para)\s+(?=en\s+|por\s+|de\s+|con\s+|para\s+)",
+            "",
+            p_clean,
+            flags=re.IGNORECASE,
+        )
+        p_clean = re.sub(
+            r"\b(?:condicionad[oa]s?\s+por)\s+(?=en\s+la\s+|en\s+el\s+|en\s+las\s+|en\s+los\s+)",
+            "condicionada ",
+            p_clean,
+            flags=re.IGNORECASE,
+        )
         words = p_clean.split(None, 1)
         if words:
             first_w = f"{words[0].lower().rstrip(' ,;:.')} "
@@ -1483,6 +1495,13 @@ def derive_in_memory_maturity_matrix(
         asis_desc = (pillar.get("asis_architecture_description") or "").strip()
         if _is_placeholder_boilerplate(asis_desc):
             asis_desc = ""
+        if active_gatekeeper and canonical_p_id and asis_desc:
+            desc_val = active_gatekeeper.validate_text_for_pillar(
+                asis_desc, canonical_p_id, tower_id=current_tower_id
+            )
+            if desc_val.verdict == ValidationVerdict.QUARANTINED_FOREIGN_DOMAIN:
+                quarantined_count += 1
+                asis_desc = ""
         clean_state = _sanitize_strength_clause(asis_desc, fallback_pos, exact_score, doc_lang)
 
         raw_justification = str(pillar.get("justification") or "").strip()
@@ -1553,7 +1572,7 @@ def derive_in_memory_maturity_matrix(
 
         pillar_for_narrative = dict(pillar)
         pillar_for_narrative["health_check_asis"] = sanitized_findings
-        if quarantined_count > 0 and clean_state == fallback_pos:
+        if not asis_desc or (quarantined_count > 0 and clean_state == fallback_pos):
             pillar_for_narrative["asis_architecture_description"] = ""
 
         arch_paras = _sanitize_architectural_narrative(
