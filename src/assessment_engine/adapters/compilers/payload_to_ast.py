@@ -2676,6 +2676,28 @@ class PayloadToASTBridge:
             precomputed_thresholds=dynamic_lm_bounds,
         )
 
+        # Pre-synchronize exact SLE with Risk Cards to eliminate Heatmap Table 6 coordinate discrepancies (RFC 085)
+        raw_arch = str(blueprint_data.get("loss_archetype") or "AVAILABILITY_OUTAGE").upper()
+        for r_item in risks_data_list:
+            r_ale = safe_float(r_item.get("ale") or r_item.get("ale_val") or 0.0)
+            r_tef = safe_float(r_item.get("tef") or 1.0)
+            r_lm = safe_float(r_item.get("lm") or 1.0)
+            if r_tef >= 1.0:
+                r_lef = min(0.50, max(0.08, r_tef * 0.09))
+            else:
+                r_lef = max(0.05, r_tef)
+
+            if "TOIL" in raw_arch:
+                r_rate = 65.0
+                r_eff_sle = r_ale / r_lef if (r_ale > 0.0 and r_lef > 0.0) else (r_lm * 5000.0)
+                r_hours = max(round(r_eff_sle / r_rate, 1), 0.1)
+                r_item["sle"] = round(r_hours * r_rate)
+            else:
+                r_rate = max(round(hourly_burn * 0.70, 2), 1.0) if hourly_burn > 0 else 5000.0
+                r_eff_sle = r_ale / r_lef if (r_ale > 0.0 and r_lef > 0.0) else (r_lm * 5000.0)
+                r_hours = max(round(r_eff_sle / r_rate, 1), 0.1)
+                r_item["sle"] = round(r_hours * r_rate)
+
         # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
             HeadingNode(
@@ -3181,9 +3203,14 @@ class PayloadToASTBridge:
         )
 
         # Single Invariant Domain Hourly Downtime Rate across all cards (RFC 054)
-        domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
-        eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
-        reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+            domain_hourly_rate = 65.0  # Fully burdened engineering labour rate (eliminates 9,142 EUR/h fallacy)
+            eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
+            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+        else:
+            domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
+            eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
+            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
 
         formatted_ale = format_currency(
             float(metrics.annualized_loss_expectancy),

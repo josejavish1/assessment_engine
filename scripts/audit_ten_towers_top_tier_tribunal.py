@@ -170,32 +170,48 @@ Respond in 100% Technical English with senior executive gravitas.
     return "Error generating response"
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 def main() -> None:
     print("=" * 80)
     print("STARTING TOP TIER-1 WORLD EXPERT TRIBUNAL FOR ALL 10 MOLINS TOWERS")
     print("=" * 80)
-    
+
     out_dir = REPO_ROOT / "docs" / "audits" / "tribunal_10_towers"
     out_dir.mkdir(parents=True, exist_ok=True)
-    
-    master_report = []
-    master_report.append("# TOP TIER-1 WORLD EXPERT TRIBUNAL: CEMENTOS MOLINS DELIVERABLE AUDIT\n")
-    master_report.append("**Authority:** Independent External Expert Panel convened by the Board of Directors\n")
-    master_report.append("**Target Suite:** Official AS-IS Deliverables (`Molins_Entrega_Cliente_Final`)\n\n")
-    
-    for tower_id, profile in sorted(TOWER_EXPERT_PROFILES.items(), key=lambda x: int(x[0][1:])):
-        print(f"\nEvaluating {tower_id} ({profile['role']})...")
+
+    def _eval_single(item):
+        tower_id, profile = item
+        print(f"Starting evaluation for {tower_id} ({profile['role']})...")
         raw_text = extract_tower_content(profile["num"])
         expert_review = audit_single_tower(tower_id, profile, raw_text)
-        
         tower_file = out_dir / f"AUDIT_EXPERT_{tower_id}.md"
         tower_file.write_text(expert_review, encoding="utf-8")
-        print(f"  ✓ Review written to: {tower_file.name}")
-        
-        master_report.append(f"## {tower_id}: {profile['role']}\n")
-        master_report.append(expert_review)
-        master_report.append("\n---\n\n")
-        
+        print(f"  ✓ {tower_id} review complete -> {tower_file.name}")
+        return tower_id, profile, expert_review
+
+    sorted_profiles = sorted(TOWER_EXPERT_PROFILES.items(), key=lambda x: int(x[0][1:]))
+    reviews_by_id = {}
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(_eval_single, item): item[0] for item in sorted_profiles}
+        for future in as_completed(futures):
+            tid, prof, rev = future.result()
+            reviews_by_id[tid] = (prof, rev)
+
+    master_report = [
+        "# TOP TIER-1 WORLD EXPERT TRIBUNAL: CEMENTOS MOLINS DELIVERABLE AUDIT\n",
+        "**Authority:** Independent External Expert Panel convened by the Board of Directors\n",
+        "**Target Suite:** Official AS-IS Deliverables (`Molins_Entrega_Cliente_Final`)\n\n",
+    ]
+
+    for tower_id, profile in sorted_profiles:
+        if tower_id in reviews_by_id:
+            prof, rev = reviews_by_id[tower_id]
+            master_report.append(f"## {tower_id}: {prof['role']}\n")
+            master_report.append(rev)
+            master_report.append("\n---\n\n")
+
     master_file = REPO_ROOT / "docs" / "audits" / "ARGON_10_TOWERS_TOP_TIER_TRIBUNAL_CONSOLIDATED.md"
     master_file.write_text("".join(master_report), encoding="utf-8")
     print(f"\n✓ Consolidated Master Tribunal Report written to: {master_file}")
