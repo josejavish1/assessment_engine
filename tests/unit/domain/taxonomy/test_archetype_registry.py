@@ -113,6 +113,8 @@ def test_custom_domain_generic_fallback() -> None:
 
     assert mapping.tower_id == "EDGE_01"
     assert mapping.primary_archetype == t1_map.primary_archetype
+    assert mapping.classification_confidence == "UNCONFIRMED"
+    assert mapping.review_required is True
     # Must survive roundtrip serialization and model validation
     validated = TowerActuarialMapping.model_validate(mapping.model_dump())
     assert validated.tower_id == "EDGE_01"
@@ -123,3 +125,10 @@ def test_canonical_unregistered_t99_raises_key_error() -> None:
 
     with pytest.raises(KeyError, match="Canonical tower ID 'T99'.*is not mapped"):
         registry.get_mapping_for_tower("T99")
+
+
+def test_prohibited_sentinels_raise_key_error() -> None:
+    registry = get_actuarial_archetype_registry()
+    for sentinel in ["UNKNOWN", "NONE", "NULL", "UNDEFINED", "DEFAULT"]:
+        with pytest.raises(KeyError):
+            registry.get_mapping_for_tower(sentinel)

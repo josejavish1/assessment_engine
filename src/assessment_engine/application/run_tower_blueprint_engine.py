@@ -12,12 +12,6 @@ logger = logging.getLogger(__name__)
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.application.services.tower_payload_hydrator import (
-    TowerPayloadHydrator,
-)
-from assessment_engine.application.services.universal_tower_synthesizer import (
-    UniversalTowerSynthesizer,
-)
 from assessment_engine.domain.ontology_registry import OntologyRegistry
 from assessment_engine.domain.prompts.blueprint_prompts import (
     get_blueprint_architect_instruction,
@@ -30,9 +24,6 @@ from assessment_engine.domain.schemas.blueprint import (
     BlueprintPayload,
     OrchestratorBlueprintDraft,
     PillarBlueprintDraft,
-)
-from assessment_engine.domain.services.closed_world_grounding_firewall import (
-    ClosedWorldGroundingFirewall,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
 from assessment_engine.infrastructure.client_intelligence import (
@@ -1138,15 +1129,15 @@ async def run_tower_blueprint(
     logger.info("Executing Strategic Synthesis and Risk Consensus via Polymorphic Facade...")
     facade_instance = None
     try:
+        from assessment_engine.application.services.cegar_synthesis_engine import (
+            CegarSynthesisEngine,
+        )
         from assessment_engine.application.services.synthesis_facade import (
             PolymorphicSynthesisFacade,
             SynthesisMode,
         )
-        from assessment_engine.application.services.cegar_synthesis_engine import (
-            CegarSynthesisEngine,
-        )
-        from assessment_engine.infrastructure.llm.cegar_adapter import CegarLLMAdapter
         from assessment_engine.domain.synthesis.oracle import SynthesisContext
+        from assessment_engine.infrastructure.llm.cegar_adapter import CegarLLMAdapter
 
         async def legacy_fallback(context: Any, payload: Any, **kwargs: Any) -> Any:
             # Standalone fallback when operating outside active CEGAR mode
@@ -1230,7 +1221,7 @@ async def run_tower_blueprint(
         if facade_instance is not None:
             await facade_instance.shutdown()
 
-    logger.info("Executing Sovereign QA Architecture Policies and FAIR Monte Carlo Simulation...")
+    logger.info("Executing Sovereign QA Architecture Policies and Canonical Risk Quantification...")
     try:
         from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
@@ -1241,7 +1232,21 @@ async def run_tower_blueprint(
             f"Critical failure in SovereignPolicyEngine: {policy_err}"
         ) from policy_err
 
-    total_ale = _calculate_total_fair_ale(blueprint_payload)
+    # Canonical Application-Layer Risk Quantification Flow (SR 11-7 SSOT)
+    from assessment_engine.application.services.canonical_risk_orchestrator import (
+        CanonicalRiskOrchestrator,
+    )
+    blueprint_payload = CanonicalRiskOrchestrator.quantify_single_tower(
+        tower_id=tower_id,
+        blueprint_payload=blueprint_payload,
+        global_context={
+            "financial_telemetry": blueprint_payload.get("financial_telemetry", {}),
+            "currency": blueprint_payload.get("currency", "EUR"),
+        },
+        persist_to_disk=False,
+        doc_lang=target_language,
+    )
+    total_ale = float(blueprint_payload.get("total_fair_ale") or 0.0)
 
     logger.info("Generating Executive Snapshot and Strategic Roadmap...")
     closing_prompt = get_closing_orchestrator_prompt(
@@ -1277,7 +1282,9 @@ async def run_tower_blueprint(
 
     # Phase 8.1: Quantitative SSOT Reconciler Gatekeeper
     try:
-        from assessment_engine.domain.services.score_reconciler import reconcile_tower_scores
+        from assessment_engine.domain.services.score_reconciler import (
+            reconcile_tower_scores,
+        )
         from assessment_engine.domain.validation.mathematical_integrity import (
             assert_tower_mathematical_integrity,
         )

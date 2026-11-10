@@ -308,7 +308,9 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                     if isinstance(raw_val, (int, float)):
                         return float(raw_val)
                     try:
-                        from assessment_engine.domain.actuarial_scale_calibrator import safe_float as actuarial_safe_float
+                        from assessment_engine.domain.actuarial_scale_calibrator import (
+                            safe_float as actuarial_safe_float,
+                        )
                         res = actuarial_safe_float(raw_val, allow_zero=True)
                         if res is not None:
                             return float(res)
@@ -341,5 +343,6 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                 hc["fair_min_score"] = min_s
                 hc["fair_p90_score"] = p90_s
                 hc["fair_max_score"] = max_s
+                hc["quantification_status"] = "DRAFT"
 
         return validated

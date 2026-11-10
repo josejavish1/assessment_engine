@@ -59,6 +59,14 @@ class OperationalZone:
     secondary_loss_retention_factor: float = 0.85
     catastrophic_recovery_ceiling_hours: float = 24.0
     emergency_replacement_ratio: float = 0.25
+    tenant_id: str = "DEFAULT_TENANT"
+    legal_entity_id: str = "DEFAULT_ENTITY"
+    operating_site_id: str = "DEFAULT_SITE"
+
+    @property
+    def canonical_scoped_key(self) -> str:
+        """Returns the stable, fully-qualified scoped zone identifier."""
+        return f"{self.tenant_id}:{self.legal_entity_id}:{self.operating_site_id}:{self.zone_id}"
 
     def __post_init__(self) -> None:
         if self.hourly_burn_rate < 0.0:
@@ -239,7 +247,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         config_header = (
             f"CFG:{currency_code}:{self.n_sims}:{self.vuln_min:.4f}:{self.vuln_max:.4f}:"
             f"{self.gamma:.4f}:{self.kappa:.4f}:{self.copula_df}:{self.intra_tower_boost:.4f}:"
-            f"{self.secondary_loss_cv:.4f}:{self.spof_cmmi_penalty:.4f}:"
+            f"{self.secondary_loss_cv:.4f}:{self.inaction_horizon_years:.2f}:{self.spof_cmmi_penalty:.4f}:"
             f"{self.max_dependence_loading:.4f}:{self.max_copula_correlation:.4f}:"
             f"{self.rto_cmmi_degradation_slope:.4f}:{self.rto_spof_multiplier:.4f}:"
             f"{self.catastrophic_tail_quantile:.4f}"
@@ -258,9 +266,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 f"{f.finding_id}:{f.tower_id}:{f.cmmi_maturity:.4f}:"
                 f"{f.tef_pert_min:.4f}:{f.tef_pert_mode:.4f}:{f.tef_pert_max:.4f}:"
                 f"{f.rto_hours_min:.4f}:{f.rto_hours_mode:.4f}:{f.rto_hours_max:.4f}:"
-                f"{f.secondary_loss_mean:.2f}:{f.zone.zone_id}:{f.zone.hourly_burn_rate:.2f}:"
-                f"{f.zone.max_annual_outage_hours:.2f}:{f.zone.catastrophic_recovery_ceiling_hours:.2f}:"
-                f"{f.zone.emergency_replacement_ratio:.4f}:{int(f.is_spof)}:"
+                f"{f.secondary_loss_mean:.2f}:{f.zone.canonical_scoped_key}:{f.zone.hourly_burn_rate:.2f}:"
+                f"{f.zone.max_annual_outage_hours:.2f}:{f.zone.secondary_loss_retention_factor:.4f}:"
+                f"{f.zone.catastrophic_recovery_ceiling_hours:.2f}:{f.zone.emergency_replacement_ratio:.4f}:{int(f.is_spof)}:"
                 f"{f.shared_dependence_factor:.4f}:{f.blast_radius_alpha:.4f}:"
                 f"{f.catastrophic_rto_hours:.2f}:{f.direct_replacement_cost:.2f}:"
                 f"{f.audit_k_failures}:{f.audit_n_trials}:{diss_token}"
@@ -746,7 +754,26 @@ class SerializedFindingTelemetry(BaseModel):
     direct_replacement_cost: float
     audit_k_failures: int
     audit_n_trials: int
+    tenant_id: str = "DEFAULT_TENANT"
+    legal_entity_id: str = "DEFAULT_ENTITY"
+    operating_site_id: str = "DEFAULT_SITE"
     dissonance: Optional[Dict[str, Any]] = None
+
+
+class RiskScopeContext(BaseModel):
+    """Explicit risk scope modeling entity, site, jurisdiction, and accounting boundaries."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tenant_id: str = "DEFAULT_TENANT"
+    legal_entity_id: str = "DEFAULT_ENTITY"
+    operating_site_id: str = "DEFAULT_SITE"
+    country_code: str = "ES"
+    jurisdiction_code: str = "EU_GDPR_NIS2"
+    source_currency_code: str = "EUR"
+    reporting_currency_code: str = "EUR"
+    sector_code: str = "PROCESS_MANUFACTURING"
+    subsector_code: str = "CEMENT_HEAVY_BUILDING_MATERIALS"
 
 
 class PortfolioReproductionManifest(BaseModel):
@@ -759,6 +786,8 @@ class PortfolioReproductionManifest(BaseModel):
     engine_config: Dict[str, Any]
     currency_code: str
     deterministic_seed_hash: str
+    risk_scope: RiskScopeContext = Field(default_factory=RiskScopeContext)
+    assessment_period: str = Field(default="2026.Q4")
     findings_telemetry: List[SerializedFindingTelemetry]
     expected_portfolio_outputs: Dict[str, float]
     expected_tower_outputs: Dict[str, Dict[str, float]]
@@ -800,6 +829,9 @@ def create_reproduction_manifest(
                 direct_replacement_cost=f.direct_replacement_cost,
                 audit_k_failures=f.audit_k_failures,
                 audit_n_trials=f.audit_n_trials,
+                tenant_id=f.zone.tenant_id,
+                legal_entity_id=f.zone.legal_entity_id,
+                operating_site_id=f.zone.operating_site_id,
                 dissonance=(
                     {
                         "record_id": f.dissonance.record_id,
@@ -900,16 +932,34 @@ def replay_portfolio_simulation(
     zone_cache: Dict[str, OperationalZone] = {}
 
     for sf in manifest_obj.findings_telemetry:
-        if sf.zone_id not in zone_cache:
-            zone_cache[sf.zone_id] = OperationalZone(
+        scoped_key = f"{sf.tenant_id}:{sf.legal_entity_id}:{sf.operating_site_id}:{sf.zone_id}"
+        if scoped_key not in zone_cache:
+            zone_cache[scoped_key] = OperationalZone(
                 zone_id=sf.zone_id,
                 hourly_burn_rate=sf.hourly_burn_rate,
                 max_annual_outage_hours=sf.max_annual_outage_hours,
                 secondary_loss_retention_factor=sf.secondary_loss_retention_factor,
                 catastrophic_recovery_ceiling_hours=sf.catastrophic_recovery_ceiling_hours,
                 emergency_replacement_ratio=sf.emergency_replacement_ratio,
+                tenant_id=sf.tenant_id,
+                legal_entity_id=sf.legal_entity_id,
+                operating_site_id=sf.operating_site_id,
             )
-        zone = zone_cache[sf.zone_id]
+        else:
+            cached = zone_cache[scoped_key]
+            if (
+                cached.hourly_burn_rate != sf.hourly_burn_rate
+                or cached.max_annual_outage_hours != sf.max_annual_outage_hours
+                or cached.secondary_loss_retention_factor != sf.secondary_loss_retention_factor
+                or cached.catastrophic_recovery_ceiling_hours != sf.catastrophic_recovery_ceiling_hours
+                or cached.emergency_replacement_ratio != sf.emergency_replacement_ratio
+            ):
+                raise ValueError(
+                    f"Domain Validation Error: Conflicting parameters detected for scoped zone '{scoped_key}'. "
+                    f"Cached: burn={cached.hourly_burn_rate}, h_max={cached.max_annual_outage_hours}; "
+                    f"Attempted: burn={sf.hourly_burn_rate}, h_max={sf.max_annual_outage_hours}."
+                )
+        zone = zone_cache[scoped_key]
 
         diss = (
             EpistemicDissonanceRecord(

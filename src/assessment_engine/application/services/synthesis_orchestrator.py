@@ -10,16 +10,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import re
 import secrets
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from assessment_engine.domain.schemas.workspace_contracts import (
-    ClientDossierV3,
-    DigitalTwinStateContract,
     PipelineStageStatus,
     PipelineStatusContract,
 )
@@ -130,7 +127,9 @@ class SynthesisOrchestrator:
 
             # Render radar chart
             radar_png_path = client_dir / "global_radar_chart.png"
-            from assessment_engine.application.generate_global_radar_chart import render_radar_chart
+            from assessment_engine.application.generate_global_radar_chart import (
+                render_radar_chart,
+            )
             render_radar_chart(towers=heatmap, out_path=radar_png_path, doc_lang=target_lang)
             shutil.copy2(radar_png_path, out_dir / "global_radar_chart.png")
 
@@ -140,8 +139,12 @@ class SynthesisOrchestrator:
             )
             await asyncio.sleep(0.4)
 
-            from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1AsisASTCompiler
-            from assessment_engine.application.services.tower_payload_hydrator import TowerPayloadHydrator
+            from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
+                Volume1AsisASTCompiler,
+            )
+            from assessment_engine.application.services.tower_payload_hydrator import (
+                TowerPayloadHydrator,
+            )
 
             annual_revenue = float(dossier.financials.annual_revenue_amount * 1_000_000.0) if dossier else 1_250_000_000.0
             hourly_downtime = round(annual_revenue * 0.00018, 2)
@@ -207,7 +210,7 @@ class SynthesisOrchestrator:
                     "hourly_downtime_rate": hourly_downtime,
                     "consolidated_hourly_downtime_rate": hourly_downtime,
                     "corporate_ale": total_ale,
-                    "total_fair_p90": total_ale * 2.2,
+                    "total_fair_p90": None,
                 },
                 "heatmap": heatmap,
                 "tower_overrides": {t_id: {"status": "In Scope", "target_maturity": 4.0} for t_id in active_towers},
@@ -242,7 +245,9 @@ class SynthesisOrchestrator:
             )
             await asyncio.sleep(0.4)
 
-            from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_docx_via_ast
+            from assessment_engine.adapters.compilers.payload_to_ast import (
+                compile_asis_docx_via_ast,
+            )
 
             # Compile first 3 in-scope specialist annexes for responsiveness
             for t_id in active_towers[:3]:

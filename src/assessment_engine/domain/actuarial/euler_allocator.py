@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Dict, List, Self, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -14,11 +14,28 @@ class EulerAllocationResult(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    tower_id: str = Field(..., pattern=r"^T\d{1,2}$", description="Normalized tower identifier (e.g. T1, T10)")
-    standalone_ale: int = Field(..., ge=0, description="Pure bottom-up unconstrained standalone ALE")
-    diversification_adjustment: int = Field(..., le=0, description="Copula correlation and entity absorption delta (strictly <= 0)")
-    euler_net_contribution: int = Field(..., ge=0, description="Net diversified portfolio contribution")
-    portfolio_weight_pct: Decimal = Field(..., ge=Decimal("0.0"), le=Decimal("100.0"), description="Relative share of net portfolio risk")
+    tower_id: str = Field(
+        ...,
+        pattern=r"^(?:T\d{1,2}|D_[A-Z0-9_]+|[A-Z][A-Z0-9_]{1,31})$",
+        description="Normalized canonical or supported dynamic/custom tower code (e.g. T1, D_FAC, CLINICAL_CORE)",
+    )
+    standalone_ale: int = Field(
+        ..., ge=0, description="Pure bottom-up unconstrained standalone ALE"
+    )
+    diversification_adjustment: int = Field(
+        ...,
+        le=0,
+        description="Copula correlation and entity absorption delta (strictly <= 0)",
+    )
+    euler_net_contribution: int = Field(
+        ..., ge=0, description="Net diversified portfolio contribution"
+    )
+    portfolio_weight_pct: Decimal = Field(
+        ...,
+        ge=Decimal("0.0"),
+        le=Decimal("100.0"),
+        description="Relative share of net portfolio risk",
+    )
 
     @model_validator(mode="after")
     def validate_row_accounting_identity(self) -> Self:
@@ -42,7 +59,9 @@ class PortfolioEulerDecomposition(BaseModel):
     allocations: Tuple[EulerAllocationResult, ...] = Field(..., min_length=1)
     subtotal_gross_undiversified_ale: int = Field(..., ge=0)
     actuarial_copula_adjustment_ale: int = Field(..., le=0)
-    actuarial_copula_overlap_pct: Decimal = Field(..., ge=Decimal("0.0"), le=Decimal("100.0"))
+    actuarial_copula_overlap_pct: Decimal = Field(
+        ..., ge=Decimal("0.0"), le=Decimal("100.0")
+    )
     total_net_consolidated_ale: int = Field(..., ge=0)
     total_portfolio_weight_pct: Decimal = Field(default=Decimal("100.0"))
 
@@ -74,7 +93,9 @@ class PortfolioEulerDecomposition(BaseModel):
             )
 
         # 4. Bridge Cross-Check: Subtotal Gross + Copula Adjustment == Total Net
-        bridge_net = self.subtotal_gross_undiversified_ale + self.actuarial_copula_adjustment_ale
+        bridge_net = (
+            self.subtotal_gross_undiversified_ale + self.actuarial_copula_adjustment_ale
+        )
         if bridge_net != self.total_net_consolidated_ale:
             raise ValueError(
                 f"Actuarial Bridge Violation: Gross ({self.subtotal_gross_undiversified_ale:,}) + "
@@ -138,8 +159,12 @@ class EulerPortfolioAllocator:
         if subtotal_gross > 0 and len(sorted_towers) > 1:
             implied_discount = (subtotal_gross - target_net) / float(subtotal_gross)
             if implied_discount > 0.35 or target_net <= 0:
-                natural_discount = min(0.28, max(0.18, 0.12 + 0.016 * len(sorted_towers)))
-                target_net = int(round(float(subtotal_gross) * (1.0 - natural_discount)))
+                natural_discount = min(
+                    0.28, max(0.18, 0.12 + 0.016 * len(sorted_towers))
+                )
+                target_net = int(
+                    round(float(subtotal_gross) * (1.0 - natural_discount))
+                )
 
         # Degenerate single-tower or zero-risk case
         if subtotal_gross == 0 or len(sorted_towers) == 1:
@@ -186,13 +211,20 @@ class EulerPortfolioAllocator:
         residual_net = target_net - sum(euler_ints.values())
         if residual_net != 0:
             # Distribute residual into highest standalone towers with headroom
-            headroom_towers = [t for t in sorted_towers if standalone_ints[t] > euler_ints[t]]
+            headroom_towers = [
+                t for t in sorted_towers if standalone_ints[t] > euler_ints[t]
+            ]
             if headroom_towers:
                 step = 1 if residual_net > 0 else -1
                 for _ in range(abs(residual_net)):
-                    t_target = max(headroom_towers, key=lambda t: standalone_ints[t] - euler_ints[t])
+                    t_target = max(
+                        headroom_towers,
+                        key=lambda t: standalone_ints[t] - euler_ints[t],
+                    )
                     euler_ints[t_target] += step
-                    adjustments[t_target] = euler_ints[t_target] - standalone_ints[t_target]
+                    adjustments[t_target] = (
+                        euler_ints[t_target] - standalone_ints[t_target]
+                    )
 
         # 5. Reconcile percentage weights at 0.1% precision summing to exactly 100.0%
         pct_floats: Dict[str, float] = {
@@ -204,7 +236,8 @@ class EulerPortfolioAllocator:
         # 6. Overall copula diversification delta and overlap percentage
         total_copula_adjustment = sum(adjustments.values())
         overlap_pct = (
-            (Decimal(str(abs(total_copula_adjustment))) / Decimal(str(subtotal_gross))) * Decimal("100.0")
+            (Decimal(str(abs(total_copula_adjustment))) / Decimal(str(subtotal_gross)))
+            * Decimal("100.0")
         ).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
 
         allocation_rows = [
@@ -229,7 +262,9 @@ class EulerPortfolioAllocator:
         )
 
     @staticmethod
-    def _hare_niemeyer_discretize(raw_values: Dict[str, float], target_sum: int) -> Dict[str, int]:
+    def _hare_niemeyer_discretize(
+        raw_values: Dict[str, float], target_sum: int
+    ) -> Dict[str, int]:
         """Discretizes continuous float allocations into exact integer units summing to target_sum."""
         integers: Dict[str, int] = {}
         remainders: List[Tuple[str, float]] = []
@@ -251,7 +286,9 @@ class EulerPortfolioAllocator:
         return integers
 
     @staticmethod
-    def _hare_niemeyer_percentage_discretize(raw_pcts: Dict[str, float]) -> Dict[str, Decimal]:
+    def _hare_niemeyer_percentage_discretize(
+        raw_pcts: Dict[str, float],
+    ) -> Dict[str, Decimal]:
         """Discretizes percentages to 1 decimal place summing to exactly Decimal('100.0')."""
         target_tenths = 1000  # 100.0% represented in tenths of a percent
         tenths_floats = {k: v * 10.0 for k, v in raw_pcts.items()}
