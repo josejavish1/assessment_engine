@@ -427,14 +427,16 @@ _CONTRADICTORY_PRAISE_RE: Final[re.Pattern[str]] = re.compile(
     r"(?:exemplary\s+discipline\s+in\s+(?:corporate\s+)?(?:laptop|equipment)\s+renewal|"
     r"disciplina\s+ejemplar\s+en\s+la\s+renovaci[óo]n\s+de\s+(?:port[áa]tiles|equipos)(?:\s+corporativos)?|"
     r"placing\s+[^.,;]{1,35}?\s+at\s+the\s+boundary\s+of\s+level\s+3|"
-    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+la\s+frontera\s+del\s+nivel\s+3|"
+    r"situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+3|"
+    r"al\s+l[íi]mite\s+del\s+nivel\s+3|"
+    r"at\s+the\s+limit\s+of\s+level\s+3|"
     r"plataforma\s+legacy\s*/\s*mainframe\s*(?:&|y)\s*operaci[óo]n\s+core)",
     re.IGNORECASE,
 )
 
 
 def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") -> str:
-    """Sanitize contradictory boilerplate praise and legacy industry template leaks from diagnostic prose."""
+    """Sanitize contradictory boilerplate praise, colloquial interview quotes, and template mashups from prose."""
     if not text:
         return text
     is_es = str(locale).lower().startswith("es")
@@ -446,7 +448,13 @@ def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") 
             flags=re.IGNORECASE,
         )
         text = re.sub(
-            r",?\s*situando\s+a\s+[^.,;]{1,35}?\s+en\s+la\s+frontera\s+del\s+nivel\s+3",
+            r",?\s*situando\s+a\s+[^.,;]{1,35}?\s+en\s+(?:la\s+frontera|el\s+l[íi]mite)\s+del\s+nivel\s+3",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r",?\s*al\s+l[íi]mite\s+del\s+nivel\s+3",
             "",
             text,
             flags=re.IGNORECASE,
@@ -454,6 +462,23 @@ def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") 
         text = re.sub(
             r"Plataforma\s+Legacy\s*/\s*Mainframe\s*(?:&|y)\s*Operaci[óo]n\s+Core",
             "Gobernanza y Operación de Sistemas Core",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"Healing\s*&\s*Mean-Time-to-Restore\s*\(MTTR\)\s*Reduction",
+            "mediante mecanismos de autorrecuperación y reducción del tiempo medio de restauración (MTTR)",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"([a-záéíóúñüA-ZÁÉÍÓÚÑÜ]{4,})\s+Reduction\b",
+            r"\1",
+            text,
+        )
+        text = re.sub(
+            r'["«“]\s*Nosotros\s+deber[íi]amos\s+de\s+crear[^"»”]{1,120}?["»”]',
+            "la carencia de plantillas estandarizadas de aprovisionamiento",
             text,
             flags=re.IGNORECASE,
         )
