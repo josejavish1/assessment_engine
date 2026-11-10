@@ -1453,6 +1453,12 @@ def _sanitize_architectural_narrative(
     full_ctx = f"{desc} {fallback_pos} {fallback_neg} {pillar.get('literal_evidence', '')}"
     cleaned_paras = _reconcile_contradictory_replication_claims(cleaned_paras, full_ctx, doc_lang)
 
+    sota_bench = _build_sota_benchmark_paragraph(canonical_pillar_id, doc_lang)
+    if sota_bench and len(cleaned_paras) < 3:
+        sota_clean = _scrub_template_glitches_and_token_leaks(sota_bench, doc_lang)
+        if sota_clean and not any(sota_clean[:40].lower() in p.lower() for p in cleaned_paras):
+            cleaned_paras.append(sota_clean)
+
     return cleaned_paras if cleaned_paras else [_scrub_template_glitches_and_token_leaks(desc, doc_lang)]
 
 
@@ -1604,10 +1610,32 @@ def derive_in_memory_maturity_matrix(
             clean_f = _scrub_template_glitches_and_token_leaks(fallback_neg, doc_lang)
 
         clean_state = _scrub_template_glitches_and_token_leaks(clean_state, doc_lang)
+        full_pillar_ctx = f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}"
+        reconciled_states = _reconcile_contradictory_replication_claims([clean_state], full_pillar_ctx, doc_lang)
+        if reconciled_states:
+            clean_state = reconciled_states[0]
+        reconciled_gaps = _reconcile_contradictory_replication_claims([clean_f], full_pillar_ctx, doc_lang)
+        if reconciled_gaps:
+            clean_f = reconciled_gaps[0]
+
         exact_score = _calibrate_empirical_maturity_score(exact_score, pillar, clean_state, clean_f)
         exact_score, clean_state = _reconcile_telemetry_tool_contradictions(
             exact_score, clean_state, clean_f, fallback_neg, doc_lang
         )
+        # Prevent contradictory lifecycle praise in DEX/EUC pillars when hardware refresh or telemetry gaps exist
+        if canonical_p_id.endswith(("P4", "P6")) or "DEX" in canonical_p_id or "EUC" in current_tower_id:
+            if re.search(
+                r"\b(?:ausencia\s+de\s+telemetr[ií]a|sin\s+telemetr[ií]a|absence\s+of\s+.*telemetry|no\s+.*telemetry|sin\s+ciclo\s+formal\s+de\s+renovaci[oó]n|absence\s+of\s+a\s+formal\s+.*refresh)\b",
+                f"{clean_f} {pillar.get('literal_evidence', '')}",
+                re.IGNORECASE,
+            ):
+                exact_score = min(exact_score, 1.75)
+                clean_state = re.sub(
+                    r"\b(?:disciplina\s+ejemplar|exemplary\s+discipline|alta\s+madurez|high\s+maturity)\b",
+                    "gestión operativa parcial" if doc_lang.startswith("es") else "partial operational management",
+                    clean_state,
+                    flags=re.IGNORECASE,
+                )
         # Synchronize calibrated score back into the source pillar payload so Executive Summary,
         # Table 4, and global averages remain 100% mathematically consistent with Table 5/6.
         pillar["score"] = exact_score
@@ -1714,11 +1742,16 @@ def derive_in_memory_maturity_matrix(
     if rows:
         calibrated_avg = round(sum(float(r["score"]) for r in rows) / len(rows), 2)
         b_data["calibrated_global_score"] = calibrated_avg
+        b_data["overall_maturity_score"] = calibrated_avg
+        b_data["global_score"] = calibrated_avg
         if isinstance(b_data.get("executive_summary"), dict):
             b_data["executive_summary"]["global_maturity_score"] = calibrated_avg
             b_data["executive_summary"]["overall_score"] = calibrated_avg
         if isinstance(b_data.get("maturity_summary"), dict):
             b_data["maturity_summary"]["global_score"] = calibrated_avg
             b_data["maturity_summary"]["average_score"] = calibrated_avg
+        if isinstance(b_data.get("document_meta"), dict):
+            b_data["document_meta"]["global_maturity_score"] = calibrated_avg
+            b_data["document_meta"]["overall_score"] = calibrated_avg
 
     return rows
