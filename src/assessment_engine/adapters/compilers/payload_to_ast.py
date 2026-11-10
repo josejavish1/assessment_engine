@@ -401,10 +401,91 @@ def extract_dimension_boundary_profile(
     weakest_name, weakest_score = sorted_dims[0]
     strongest_name, strongest_score = sorted_dims[-1]
 
-    strongest_str = format_number(strongest_score, locale=locale, decimals=1)
-    weakest_str = format_number(weakest_score, locale=locale, decimals=1)
+    strongest_str = format_number(strongest_score, locale=locale, decimals=2)
+    weakest_str = format_number(weakest_score, locale=locale, decimals=2)
 
     return strongest_name, strongest_str, weakest_name, weakest_str
+
+
+_ENGLISH_KPI_MARKER_RE: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:Retention|Immutability|Verification|Accountability|Adoption|Unit-Economics|"
+    r"Economics|Governance|Configuration|Management|Architecture|Compliance|Resilience|"
+    r"Optimization|Monitoring|Automation|Operations|Lifecycle|Security|Hardening|"
+    r"Provisioning|Integration|Orchestration|Observability|Telemetry|Continuity|"
+    r"Recovery|Replication|Tiering|Licensing|Capacity|Performance|Availability|"
+    r"Forensic|Audit\s+Trail|Baseline|Drift|Benchmarking|Chargeback|Showback)\b",
+    re.IGNORECASE,
+)
+
+_LOCALIZED_KPI_CLAUSE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(\b(?:incidencias\s+no\s+contenidas\s+en|deficiencias(?:\s+\w+){0,3}\s+en|"
+    r"brechas(?:\s+\w+){0,3}\s+en|vulnerabilidades(?:\s+\w+){0,3}\s+en|"
+    r"riesgo(?:s)?(?:\s+\w+){0,4}\s+en|exposición(?:\s+\w+){0,4}\s+en|"
+    r"fallos(?:\s+\w+){0,3}\s+en|control(?:es)?\s+de|ámbito\s+de|dominio\s+de)\s+)"
+    r"([A-Z][A-Za-z0-9\s,&/\-]{8,}?)"
+    r"(?=[.;:)\n]|$)"
+)
+
+
+def _sanitize_localized_kpi_leaks(
+    text: str,
+    locale: str,
+    fallback_pillar: str = "",
+) -> str:
+    """Eliminates untranslated English KPI/capability template leaks inside localized sentences."""
+    if not text or not isinstance(text, str):
+        return text
+    norm_loc = str(locale or "en").strip().lower()
+    if norm_loc.startswith("en"):
+        return text
+
+    resolver = None
+    try:
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+    except Exception:
+        resolver = None
+
+    resolved_fallback = str(fallback_pillar or "").strip()
+    if resolved_fallback and resolver is not None:
+        resolved_fallback = resolver.resolve_pillar_by_any_reference(
+            resolved_fallback, default=resolved_fallback, locale=locale
+        )
+    if resolved_fallback and (
+        " & " in resolved_fallback or _ENGLISH_KPI_MARKER_RE.search(resolved_fallback)
+    ):
+        resolved_fallback = ""
+
+    def _replace_clause(match: re.Match[str]) -> str:
+        prefix = match.group(1)
+        candidate_kpi = match.group(2).strip()
+        if " & " not in candidate_kpi and not _ENGLISH_KPI_MARKER_RE.search(candidate_kpi):
+            return match.group(0)
+
+        if resolver is not None:
+            resolved = resolver.resolve_pillar_by_any_reference(
+                candidate_kpi, default="", locale=locale
+            )
+            if (
+                resolved
+                and resolved != candidate_kpi
+                and " & " not in resolved
+                and not _ENGLISH_KPI_MARKER_RE.search(resolved)
+            ):
+                return f"{prefix}{resolved}"
+
+        if resolved_fallback:
+            return f"{prefix}{resolved_fallback}"
+
+        substituted = apply_vocabulary_substitutions(candidate_kpi, locale=locale)
+        if substituted != candidate_kpi and not _ENGLISH_KPI_MARKER_RE.search(substituted):
+            return f"{prefix}{substituted}"
+
+        default_domain_lbl = t("default_capability_domain_label", locale=locale, default="la arquitectura operativa del dominio")
+        return f"{prefix}{default_domain_lbl}"
+
+    sanitized = _LOCALIZED_KPI_CLAUSE_RE.sub(_replace_clause, text)
+    return apply_vocabulary_substitutions(sanitized, locale=locale)
 
 
 def resolve_domain_semantics_key(tower_id: str, available_keys: set[str]) -> str:
@@ -3423,12 +3504,29 @@ class PayloadToASTBridge:
             ale_formatted=formatted_ale,
             frequency_text=freq_display,
         )
-        act_just = str(hc.get("actuarial_justification") or "").strip()
+        fallback_pillar_ref = str(
+            hc.get("pillar_name")
+            or hc.get("pillar")
+            or hc.get("domain_name")
+            or ""
+        ).strip()
+        vuln_txt = _sanitize_localized_kpi_leaks(vuln_txt, meta_lang, fallback_pillar=fallback_pillar_ref)
+        impact_txt = _sanitize_localized_kpi_leaks(impact_txt, meta_lang, fallback_pillar=fallback_pillar_ref)
+
+        act_just = _sanitize_localized_kpi_leaks(
+            str(hc.get("actuarial_justification") or "").strip(),
+            meta_lang,
+            fallback_pillar=fallback_pillar_ref,
+        )
         if act_just:
             actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{act_just}\n\n• {sle_bullet}\n• {ale_bullet}"
         else:
             actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
-        scope_note = str(hc.get("scope_note") or "").strip()
+        scope_note = _sanitize_localized_kpi_leaks(
+            str(hc.get("scope_note") or "").strip(),
+            meta_lang,
+            fallback_pillar=fallback_pillar_ref,
+        )
         if scope_note:
             actuarial_box_text += f"\n• *{scope_note}*"
 
@@ -3443,6 +3541,9 @@ class PayloadToASTBridge:
         if ":" in causal_title and len(causal_title.split(":", 1)[0]) <= 40:
             causal_title = causal_title.split(":", 1)[1].strip()
         display_title = causal_title if len(causal_title) > 10 else loss_event.title
+        display_title = _sanitize_localized_kpi_leaks(
+            display_title, meta_lang, fallback_pillar=fallback_pillar_ref
+        )
 
         card_table = TableNode(
             rows=[
@@ -3543,11 +3644,10 @@ class PayloadToASTBridge:
             if not cleaned:
                 continue
 
-            # Sanitization: Replace non-standard vocabulary with canonical terms
+            # Sanitization: Replace non-standard vocabulary and any leaked English KPI tokens with canonical localized terms
             if isinstance(cleaned, str):
-                cleaned = apply_vocabulary_substitutions(
-                    cleaned, locale=getattr(self, "meta_lang", "en")
-                )
+                doc_locale = getattr(self, "meta_lang", "en")
+                cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
             skip_directives = get_localized_list(
@@ -3656,8 +3756,8 @@ class PayloadToASTBridge:
                     val_str = str(val)
                     if isinstance(val_str, str):
                         meta_l = getattr(self, "meta_lang", "en")
-                        val_str = apply_vocabulary_substitutions(
-                            val_str, locale=meta_l
+                        val_str = _sanitize_localized_kpi_leaks(
+                            val_str, meta_l
                         )
 
                     if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
