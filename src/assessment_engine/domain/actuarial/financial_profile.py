@@ -130,12 +130,21 @@ class TenantFinancialProfile:
     currency_code: str = "USD"
     working_days_per_year: int = 250
     explicit_hourly_burn_override: Decimal | None = None
+    explicit_specialist_engineering_rate_override: Decimal | None = None
+    contingency_manual_retention_ratio: Decimal | None = None
 
     def __post_init__(self) -> None:
         if self.annual_revenue < Decimal("0"):
             raise ValueError(f"annual_revenue cannot be negative: {self.annual_revenue}")
         if self.working_days_per_year <= 0:
             raise ValueError(f"working_days_per_year must be positive: {self.working_days_per_year}")
+        if (
+            self.contingency_manual_retention_ratio is not None
+            and not (Decimal("0") <= self.contingency_manual_retention_ratio <= Decimal("1"))
+        ):
+            raise ValueError(
+                f"contingency_manual_retention_ratio must be in [0, 1]: {self.contingency_manual_retention_ratio}"
+            )
 
     @property
     def operational_hours_per_year(self) -> Decimal:
@@ -225,6 +234,46 @@ class TenantFinancialProfile:
         return Decimal("0.00")
 
     @property
+    def manual_contingency_retention_factor(self) -> Decimal:
+        """Fraction of physical/operational throughput retained via local manual fallback (e.g., paper waybills)."""
+        if self.contingency_manual_retention_ratio is not None:
+            return self.contingency_manual_retention_ratio
+        mapping: dict[IndustryArchetype, Decimal] = {
+            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("0.40"),    # Decoupled local weighing & paper dispatch
+            IndustryArchetype.DEFERRED_NETWORK_LOGISTICS: Decimal("0.35"),  # Manual manifest processing
+            IndustryArchetype.LIFE_SAFETY_CRITICAL: Decimal("0.30"),        # Paper clinical charting & manual triage
+            IndustryArchetype.PUBLIC_SECTOR_CIVIC_MISSION: Decimal("0.25"),
+            IndustryArchetype.STANDARD_ENTERPRISE_B2B: Decimal("0.20"),
+            IndustryArchetype.HIGH_TEMPO_COMMERCIAL: Decimal("0.10"),
+            IndustryArchetype.CONTINUOUS_DIGITAL_FINTECH: Decimal("0.00"),  # Zero manual bypass for digital APIs
+            IndustryArchetype.DYNAMIC_EMPIRICAL_AUTONOMOUS: Decimal("0.20"),
+        }
+        return mapping.get(self.industry_archetype, Decimal("0.20"))
+
+    @property
+    def specialist_engineering_hourly_rate(self) -> Decimal:
+        """Internal specialist engineering labor rate for operational toil valuation.
+
+        Strictly decoupled from macroeconomic plant/revenue downtime burn to prevent
+        the actuarial fallacy of pricing IT sysadmin toil at corporate revenue velocity.
+        """
+        if self.explicit_specialist_engineering_rate_override is not None:
+            return self.explicit_specialist_engineering_rate_override.quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+        mapping: dict[IndustryArchetype, Decimal] = {
+            IndustryArchetype.CONTINUOUS_DIGITAL_FINTECH: Decimal("85.00"),
+            IndustryArchetype.LIFE_SAFETY_CRITICAL: Decimal("75.00"),
+            IndustryArchetype.STANDARD_ENTERPRISE_B2B: Decimal("75.00"),
+            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("65.00"),
+            IndustryArchetype.HIGH_TEMPO_COMMERCIAL: Decimal("65.00"),
+            IndustryArchetype.DEFERRED_NETWORK_LOGISTICS: Decimal("60.00"),
+            IndustryArchetype.PUBLIC_SECTOR_CIVIC_MISSION: Decimal("55.00"),
+            IndustryArchetype.DYNAMIC_EMPIRICAL_AUTONOMOUS: Decimal("65.00"),
+        }
+        return mapping.get(self.industry_archetype, Decimal("65.00"))
+
+    @property
     def hourly_downtime_burn(self) -> Decimal:
         """Authoritative hourly business cost during a systemic operational blackout."""
         if self.explicit_hourly_burn_override is not None:
@@ -234,3 +283,15 @@ class TenantFinancialProfile:
         base_hourly = self.annual_revenue / self.operational_hours_per_year
         burn = base_hourly * self.operational_dependency_factor
         return burn.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    def effective_hourly_burn_for_redundancy(self, redundancy_state: RedundancyState) -> Decimal:
+        """Calculates net hourly business interruption burn accounting for manual contingency retention."""
+        gross_burn = self.hourly_downtime_burn
+        if redundancy_state == RedundancyState.DEGRADED_MANUAL_FAILOVER:
+            net_factor = Decimal("1.00") - self.manual_contingency_retention_factor
+            return (gross_burn * net_factor).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if redundancy_state == RedundancyState.ACTIVE_PASSIVE_WARM:
+            return (gross_burn * Decimal("0.25")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if redundancy_state == RedundancyState.ACTIVE_ACTIVE_HA:
+            return (gross_burn * Decimal("0.05")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return gross_burn
