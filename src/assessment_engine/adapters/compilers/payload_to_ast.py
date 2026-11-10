@@ -410,19 +410,60 @@ _CRITICAL_DEFICIT_TELEMETRY_RE: Final[re.Pattern[str]] = re.compile(
     r"no\s+(?:dex|telemetry|real-time\s+telemetry|automated\s+provisioning)|"
     r"nula\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
     r"sin\s+(?:telemetr[íi]a|herramientas\s+dex|visibilidad\s+en\s+tiempo\s+real)|"
-    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n)|"
+    r"carece\s+de\s+(?:telemetr[íi]a|visibilidad|instrumentaci[óo]n|herramientas\s+dex)|"
     r"inexistencia\s+de\s+(?:telemetr[íi]a|herramientas\s+dex)|"
     r"preparaci[óo]n\s+artesanal|im[áa]genes\s+est[áa]ticas|"
     r"artisanal\s+preparation|static\s+images|"
-    r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones)\b",
+    r"logrotate|logs?\s+de\s+apache|vaciado\s+manual|matar\s+sesiones|"
+    r"scripts?\s+en\s+zabbix|reactiva\s+y\s+manual)\b",
     re.IGNORECASE,
 )
 
 _EXPLICIT_CALIBRATED_DOWNGRADE_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:calibrad[oa]\s+a\s+la\s+baja|ajustad[oa]\s+a|recalibrad[oa]\s+a|downgraded\s+to|calibrated\s+(?:down\s+)?to)"
-    r"[^0-9]{1,40}?\b([1-4][.,]\d{1,2})\b",
+    r"(?:calibrad[oa]\s+a\s+la\s+baja|ajustad[oa]\s+a|recalibrad[oa]\s+a|"
+    r"downgraded\s+to|calibrated\s+(?:down\s+)?to|puntuaci[óo]n\s+auditada\s+de)"
+    r"(?:[^0-9]{1,45}?\bde\s+[1-5][.,]\d{1,2}\s+a\s+|[^0-9]{1,45}?)"
+    r"\b([1-4][.,]\d{1,2})\b",
     re.IGNORECASE,
 )
+
+
+def _reconcile_replication_topology_prose(text: str, locale: str = "es") -> str:
+    """Reconcile contradictory synchronous vs. asynchronous replication statements in prose.
+
+    Prevents boilerplate templates from asserting 'ordinary synchronous replication'
+    as a ransomware propagation vector when the architecture relies on asynchronous
+    replication without immutable snapshots/WORM.
+    """
+    if not text:
+        return text
+    if str(locale).lower().startswith("es"):
+        text = re.sub(
+            r"replicaci[óo]n\s+s[íi]ncrona\s+ordinaria\s+entre\s+cabinas",
+            "replicación entre cabinas sin inmutabilidad criptográfica (WORM/SnapLock)",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"replicaci[óo]n\s+s[íi]ncrona\s+ordinaria",
+            "replicación estándar sin bloqueo de inmutabilidad (WORM)",
+            text,
+            flags=re.IGNORECASE,
+        )
+    else:
+        text = re.sub(
+            r"ordinary\s+synchronous\s+replication\s+between\s+arrays",
+            "standard array replication lacking cryptographic immutability (WORM/SnapLock)",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(
+            r"ordinary\s+synchronous\s+replication",
+            "standard replication without WORM immutability",
+            text,
+            flags=re.IGNORECASE,
+        )
+    return text
 
 
 def _calibrate_pillar_score_from_evidence(pillar_dict: Mapping[str, Any], raw_score: float) -> float:
@@ -442,7 +483,18 @@ def _calibrate_pillar_score_from_evidence(pillar_dict: Mapping[str, Any], raw_sc
 
     evidence_corpus = " ".join(
         str(pillar_dict.get(k) or "")
-        for k in ("finding", "findings", "justification", "description", "narrative", "gap_analysis", "status")
+        for k in (
+            "finding",
+            "findings",
+            "justification",
+            "description",
+            "narrative",
+            "gap_analysis",
+            "status",
+            "calibration_rationale",
+            "divergence_rationale",
+            "auditor_notes",
+        )
     )
 
     explicit_match = _EXPLICIT_CALIBRATED_DOWNGRADE_RE.search(evidence_corpus)
@@ -455,11 +507,11 @@ def _calibrate_pillar_score_from_evidence(pillar_dict: Mapping[str, Any], raw_sc
         # If prose explicitly states zero telemetry/tooling, cap maturity at 1.25 (Initial)
         if re.search(
             r"\b(?:zero\s+(?:dex|telemetry|tooling)|nula\s+telemetr[íi]a|sin\s+telemetr[íi]a|"
-            r"carece\s+de\s+telemetr[íi]a|inexistencia\s+de\s+telemetr[íi]a)\b",
+            r"carece\s+de\s+telemetr[íi]a|inexistencia\s+de\s+telemetr[íi]a|sin\s+herramientas\s+dex)\b",
             evidence_corpus,
             re.IGNORECASE,
         ):
-            return min(raw_score, 1.00)
+            return min(raw_score, 1.25)
         return min(raw_score, 1.50)
 
     return raw_score
@@ -4005,6 +4057,7 @@ class PayloadToASTBridge:
                     lambda m: f"{m.group(1)}{m.group(2)}" if m.group(2) == "ç" else f"{m.group(1)} {m.group(2)}",
                     cleaned,
                 )
+                cleaned = _reconcile_replication_topology_prose(cleaned, doc_locale)
                 cleaned = _deduplicate_prose_sentences(cleaned)
 
             # Prevent consecutive or duplicate identical narrative paragraphs (e.g., repeated benchmark citations)
@@ -4155,6 +4208,7 @@ class PayloadToASTBridge:
                             val_str = _repair_broken_template_grammar(
                                 val_str, meta_l, fallback_label
                             )
+                        val_str = _reconcile_replication_topology_prose(val_str, meta_l)
                         val_str = _deduplicate_prose_sentences(val_str)
 
                     if c_idx == 2:
