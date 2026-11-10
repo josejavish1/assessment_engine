@@ -166,7 +166,7 @@ class TenantFinancialProfile:
         """Fraction of total revenue velocity directly halted by a severe infrastructure disruption."""
         mapping: dict[IndustryArchetype, Decimal] = {
             IndustryArchetype.CONTINUOUS_DIGITAL_FINTECH: Decimal("1.85"),  # SLA penalties + churn multiplier
-            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("0.35"),
+            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("0.45"),    # Coupled discrete/perishable dispatch & OT interlocks
             IndustryArchetype.LIFE_SAFETY_CRITICAL: Decimal("0.45"),
             IndustryArchetype.HIGH_TEMPO_COMMERCIAL: Decimal("0.35"),
             IndustryArchetype.DEFERRED_NETWORK_LOGISTICS: Decimal("0.22"),
@@ -180,7 +180,7 @@ class TenantFinancialProfile:
     def revenue_deferral_factor(self) -> Decimal:
         """Fraction of halted revenue that is recovered later via backlog fulfillment or shift rescheduling."""
         mapping: dict[IndustryArchetype, Decimal] = {
-            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("0.65"),    # Factory orders made up in subsequent shifts
+            IndustryArchetype.PROCESS_MANUFACTURING_OT: Decimal("0.55"),    # Blended bulk silo buffering vs perishable batching/demurrage
             IndustryArchetype.DEFERRED_NETWORK_LOGISTICS: Decimal("0.50"),  # Freight delivered with delay
             IndustryArchetype.STANDARD_ENTERPRISE_B2B: Decimal("0.40"),     # Advisory work resumed next business day
             IndustryArchetype.HIGH_TEMPO_COMMERCIAL: Decimal("0.20"),       # Some retail delayed, most abandoned
@@ -190,6 +190,23 @@ class TenantFinancialProfile:
             IndustryArchetype.DYNAMIC_EMPIRICAL_AUTONOMOUS: Decimal("0.35"),
         }
         return mapping.get(self.industry_archetype, Decimal("0.35"))
+
+    @property
+    def hauler_demurrage_hourly_rate(self) -> Decimal:
+        """Hourly contractual demurrage and logistics detention penalty per blocked dispatch unit."""
+        if self.industry_archetype in (
+            IndustryArchetype.PROCESS_MANUFACTURING_OT,
+            IndustryArchetype.DEFERRED_NETWORK_LOGISTICS,
+        ):
+            return Decimal("65.00")
+        return Decimal("0.00")
+
+    @property
+    def perishable_batch_spoilage_fraction(self) -> Decimal:
+        """Fraction of active work-in-progress inventory subject to immediate physical spoilage upon dispatch halt."""
+        if self.industry_archetype == IndustryArchetype.PROCESS_MANUFACTURING_OT:
+            return Decimal("0.25")
+        return Decimal("0.00")
 
     @property
     def mvr_recovery_hours(self) -> float:
