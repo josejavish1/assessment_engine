@@ -466,7 +466,12 @@ class ActuarialInputResolver:
 
         # 6. Secondary Loss Mean (Strict non-negative, normalized FX)
         raw_sec = hc.get("secondary_loss_mean")
-        if raw_sec is not None:
+        if not physics_profile.allows_secondary_regulatory_fallout:
+            sec_raw_val = 0.0
+            sec_source = ParameterSourceType.DERIVED
+            sec_conf = ParameterConfidenceLevel.HIGH
+            sec_method = "Zero secondary fallout for FinOps/Velocity findings"
+        elif raw_sec is not None:
             parsed_sec = parse_strict_float(raw_sec, "secondary_loss_mean")
             if parsed_sec is None or parsed_sec < 0.0:
                 raise ValueError(

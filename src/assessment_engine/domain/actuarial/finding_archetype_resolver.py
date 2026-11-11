@@ -68,6 +68,7 @@ class FindingPhysicsProfile:
     canonical_archetype: LossArchetypeType
     epistemic_state: EpistemicEvidenceState
     allows_downtime_burn: bool
+    allows_secondary_regulatory_fallout: bool
     default_rto_hours: float
     blast_radius_factor: float
     max_euler_ale_discount_pct: float
@@ -80,6 +81,7 @@ class PhysicsDefaultSpec:
     """Declarative actuarial parameter specification for a FindingLossPhysics class."""
 
     allows_downtime_burn: bool
+    allows_secondary_regulatory_fallout: bool
     default_rto_hours: float
     default_blast_radius_factor: float
     max_euler_ale_discount_pct: float
@@ -183,6 +185,7 @@ class PolymorphicFindingClassifier:
     _PHYSICS_DEFAULTS: Final[Mapping[FindingLossPhysics, PhysicsDefaultSpec]] = {
         FindingLossPhysics.FINOPS_RESOURCE_WASTE: PhysicsDefaultSpec(
             allows_downtime_burn=False,
+            allows_secondary_regulatory_fallout=False,
             default_rto_hours=0.0,
             default_blast_radius_factor=0.0,
             max_euler_ale_discount_pct=0.0,
@@ -190,6 +193,7 @@ class PolymorphicFindingClassifier:
         ),
         FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION: PhysicsDefaultSpec(
             allows_downtime_burn=False,
+            allows_secondary_regulatory_fallout=False,
             default_rto_hours=0.0,
             default_blast_radius_factor=0.05,
             max_euler_ale_discount_pct=0.10,
@@ -197,6 +201,7 @@ class PolymorphicFindingClassifier:
         ),
         FindingLossPhysics.REGULATORY_AND_BREACH: PhysicsDefaultSpec(
             allows_downtime_burn=False,
+            allows_secondary_regulatory_fallout=True,
             default_rto_hours=0.0,
             default_blast_radius_factor=0.25,
             max_euler_ale_discount_pct=0.15,
@@ -204,6 +209,7 @@ class PolymorphicFindingClassifier:
         ),
         FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY: PhysicsDefaultSpec(
             allows_downtime_burn=True,
+            allows_secondary_regulatory_fallout=True,
             default_rto_hours=4.0,
             default_blast_radius_factor=0.15,
             max_euler_ale_discount_pct=0.20,
@@ -211,6 +217,7 @@ class PolymorphicFindingClassifier:
         ),
         FindingLossPhysics.AVAILABILITY_OUTAGE: PhysicsDefaultSpec(
             allows_downtime_burn=True,
+            allows_secondary_regulatory_fallout=True,
             default_rto_hours=8.0,
             default_blast_radius_factor=0.35,
             max_euler_ale_discount_pct=0.20,
@@ -428,6 +435,7 @@ class PolymorphicFindingClassifier:
             canonical_archetype=physics.to_canonical_archetype(),
             epistemic_state=epistemic_state,
             allows_downtime_burn=spec.allows_downtime_burn,
+            allows_secondary_regulatory_fallout=spec.allows_secondary_regulatory_fallout,
             default_rto_hours=rto_val,
             blast_radius_factor=blast_val,
             max_euler_ale_discount_pct=spec.max_euler_ale_discount_pct,

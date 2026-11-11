@@ -632,34 +632,154 @@ def derive_in_memory_fair_risks(
             )
             lm_val = eff_hc.get("loss_magnitude") or eff_hc.get("lm")
 
-            if eff_hc.get("fair_ale_score") is not None:
-                raw_ale = float(eff_hc["fair_ale_score"])
-            elif vec_out.get("portfolio_allocated_ale") is not None:
-                raw_ale = float(vec_out["portfolio_allocated_ale"])
-            elif eff_hc.get("fair_ale") is not None:
-                raw_ale = float(eff_hc["fair_ale"])
-            else:
-                raw_ale = None
-
-            if eff_hc.get("fair_p90_score") is not None:
-                raw_p90 = float(eff_hc["fair_p90_score"])
-            elif vec_out.get("var_90") is not None:
-                raw_p90 = float(vec_out["var_90"])
-            else:
-                raw_p90 = None
-
-            ownership = str(eff_hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip().upper()
+            decomp = eff_hc.get("additive_loss_decomposition") or {}
+            ownership = str(
+                eff_hc.get("ownership_type") or "PRIMARY_CUSTODIAN"
+            ).strip().upper()
             is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")
 
-            intrinsic_ale = (raw_ale * rate_mult) if raw_ale is not None else None
-            intrinsic_p90 = (raw_p90 * rate_mult) if raw_p90 is not None else None
+            # 1. Primary Downtime Loss (or labor toil hours for engineering friction)
+            if physics_profile.allows_downtime_burn:
+                rto_h = float(
+                    (vec_in.get("rto_hours_mode") or {}).get("effective_value")
+                    or eff_hc.get("recovery_time_hours")
+                    or 0.0
+                )
+                burn_rate = float(
+                    (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
+                    or 0.0
+                )
+            elif (
+                physics_profile.loss_physics
+                == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
+            ):
+                rto_h = float(
+                    (vec_in.get("rto_hours_mode") or {}).get("effective_value")
+                    or eff_hc.get("recovery_time_hours")
+                    or 1.7
+                )
+                burn_rate = float(
+                    (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
+                    or 65.0
+                )
+            else:
+                rto_h = 0.0
+                burn_rate = 0.0
 
-            calc_lef = vec_out.get("mean_lef") or eff_hc.get("lef")
-            calc_sle = vec_out.get("mean_sle") or eff_hc.get("sle")
+            primary_downtime_loss = int(round(rto_h * burn_rate * rate_mult))
+            repl_cost_loss = int(
+                round(
+                    float(
+                        (vec_in.get("direct_replacement_cost") or {}).get(
+                            "effective_value"
+                        )
+                        or eff_hc.get("direct_replacement_cost")
+                        or 0.0
+                    )
+                    * rate_mult
+                )
+            )
+            raw_sec = float(
+                (vec_in.get("secondary_loss_mean") or {}).get("effective_value")
+                or eff_hc.get("secondary_loss_mean")
+                or 0.0
+            )
+            if not physics_profile.allows_secondary_regulatory_fallout:
+                sec_weighted_loss = 0
+            else:
+                sec_weighted_loss = (
+                    int(round(0.10 * raw_sec * rate_mult)) if raw_sec > 0 else 0
+                )
 
-            # Tangential contributor custody zeroing
-            calibrated_ale = 0.0 if is_tangential else (intrinsic_ale if intrinsic_ale is not None else 0.0)
-            calibrated_p90 = 0.0 if is_tangential else (intrinsic_p90 if intrinsic_p90 is not None else 0.0)
+            component_sum_sle = (
+                primary_downtime_loss + repl_cost_loss + sec_weighted_loss
+            )
+
+            # 2. Resolve authoritative LEF
+            raw_lef = (
+                decomp.get("mean_lef")
+                or vec_out.get("mean_lef")
+                or eff_hc.get("lef")
+            )
+            if raw_lef is not None and float(raw_lef) > 0.0:
+                calc_lef = float(raw_lef)
+            else:
+                eff_tef = (
+                    float(tef_val)
+                    if tef_val is not None and float(tef_val) > 0.0
+                    else 1.2
+                )
+                vuln_val = float(
+                    (vec_in.get("vulnerability_Susceptibility") or {}).get(
+                        "effective_value"
+                    )
+                    or 0.18
+                )
+                calc_lef = round(min(2.5, max(0.05, eff_tef * vuln_val)), 4)
+
+            # 3. Enforce strict bottom-up additive identity: SLE == sum of components
+            calc_sle = float(component_sum_sle)
+
+            # 4. Standalone ALE is strictly round(LEF * SLE)
+            standalone_ale = int(round(calc_lef * calc_sle))
+
+            # 5. Bound Euler diversification discount strictly by physical archetype cap (0% to 25% max)
+            max_disc_pct = max(
+                0.0,
+                min(0.25, float(physics_profile.max_euler_ale_discount_pct)),
+            )
+            raw_requested_net = (
+                decomp.get("net_allocated_ale")
+                or vec_out.get("portfolio_allocated_ale")
+                or eff_hc.get("fair_ale_score")
+                or eff_hc.get("fair_ale")
+            )
+            if standalone_ale > 0:
+                if raw_requested_net is not None:
+                    candidate_net = int(
+                        round(float(raw_requested_net) * rate_mult)
+                    )
+                    raw_disc = max(0, standalone_ale - candidate_net)
+                    capped_disc = min(
+                        raw_disc, int(round(standalone_ale * max_disc_pct))
+                    )
+                else:
+                    capped_disc = int(
+                        round(standalone_ale * (max_disc_pct * 0.65))
+                    )
+                net_ale_int = standalone_ale - capped_disc
+            else:
+                capped_disc = 0
+                net_ale_int = (
+                    int(round(float(raw_requested_net) * rate_mult))
+                    if raw_requested_net is not None
+                    else 0
+                )
+
+            intrinsic_ale = float(net_ale_int)
+            intrinsic_p90 = float(round(net_ale_int * 1.55))
+
+            calibrated_ale = 0.0 if is_tangential else intrinsic_ale
+            calibrated_p90 = 0.0 if is_tangential else intrinsic_p90
+
+            reconciled_decomp = {
+                **(decomp if isinstance(decomp, dict) else {}),
+                "primary_downtime_loss": primary_downtime_loss,
+                "direct_replacement_loss": repl_cost_loss,
+                "secondary_weighted_loss": sec_weighted_loss,
+                "stochastic_pert_adjustment": 0,
+                "gross_mean_sle": int(round(calc_sle)),
+                "mean_lef": round(calc_lef, 4),
+                "standalone_ale": standalone_ale,
+                "euler_diversification_credit": -capped_disc,
+                "euler_discount_pct": (
+                    round((capped_disc / standalone_ale) * 100.0, 1)
+                    if standalone_ale > 0
+                    else 0.0
+                ),
+                "net_allocated_ale": int(round(calibrated_ale)),
+                "net_allocated_p90": int(round(calibrated_p90)),
+            }
 
             risk_item: dict[str, Any] = {
                 "id": eff_hc.get("id", f"RVS{r_counter:02d}"),
@@ -707,30 +827,29 @@ def derive_in_memory_fair_risks(
                     decimals=0,
                 ),
             }
-            decomp = eff_hc.get("additive_loss_decomposition")
-            if decomp:
-                risk_item["additive_loss_decomposition"] = decomp
-                risk_item["sle"] = decomp.get("gross_mean_sle", risk_item["sle"])
-                risk_item["ale"] = decomp.get("net_allocated_ale", risk_item["ale"])
-                risk_item["p90"] = decomp.get("net_allocated_p90", risk_item["p90"])
-                risk_item["gross_standalone_ale"] = decomp.get(
-                    "gross_standalone_ale", risk_item["ale"]
-                )
-                risk_item["euler_overlap_adjustment_ale"] = decomp.get(
-                    "euler_overlap_adjustment_ale", 0
-                )
-                risk_item["ale_str"] = format_currency(
-                    risk_item["ale"],
-                    currency_symbol=currency,
-                    locale=doc_lang,
-                    decimals=0,
-                )
-                risk_item["p90_str"] = format_currency(
-                    risk_item["p90"],
-                    currency_symbol=currency,
-                    locale=doc_lang,
-                    decimals=0,
-                )
+            risk_item["additive_loss_decomposition"] = reconciled_decomp
+            risk_item["sle"] = float(reconciled_decomp["gross_mean_sle"])
+            risk_item["lef"] = float(reconciled_decomp["mean_lef"])
+            risk_item["gross_standalone_ale"] = float(
+                reconciled_decomp["standalone_ale"]
+            )
+            risk_item["euler_overlap_adjustment_ale"] = float(
+                reconciled_decomp["euler_diversification_credit"]
+            )
+            risk_item["ale"] = float(reconciled_decomp["net_allocated_ale"])
+            risk_item["p90"] = float(reconciled_decomp["net_allocated_p90"])
+            risk_item["ale_str"] = format_currency(
+                risk_item["ale"],
+                currency_symbol=currency,
+                locale=doc_lang,
+                decimals=0,
+            )
+            risk_item["p90_str"] = format_currency(
+                risk_item["p90"],
+                currency_symbol=currency,
+                locale=doc_lang,
+                decimals=0,
+            )
 
             risks_data_list.append(risk_item)
             risks_by_pillar.setdefault(pillar_name, []).append(risk_item)

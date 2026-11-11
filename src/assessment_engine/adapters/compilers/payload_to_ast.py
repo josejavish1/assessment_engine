@@ -3334,33 +3334,15 @@ class PayloadToASTBridge:
             precomputed_thresholds=dynamic_lm_bounds,
         )
 
-        # Pre-synchronize exact SLE with Risk Cards to eliminate Heatmap Table 6 coordinate discrepancies (RFC 085)
-        raw_arch = str(blueprint_data.get("loss_archetype") or "AVAILABILITY_OUTAGE").upper()
+        # Enforce strict SSOT read from additive_loss_decomposition (Zero Presentation Math Mutation)
         for r_item in risks_data_list:
-            r_ale = safe_float(r_item.get("ale") or r_item.get("ale_val") or 0.0)
-            r_tef = safe_float(r_item.get("tef") or 1.0)
-            r_lm = safe_float(r_item.get("lm") or 1.0)
-            if r_tef >= 1.0:
-                r_lef = min(0.50, max(0.08, r_tef * 0.09))
-            else:
-                r_lef = max(0.05, r_tef)
-
-            if "TOIL" in raw_arch:
-                r_rate = 65.0
-                r_hours = min(12.0, max(2.0, float(r_item.get("downtime_hours") or (r_lm * 2.0))))
-                r_sle = round(r_hours * r_rate)
-                r_item["sle"] = r_sle
-                if r_ale > 0 and r_sle > 0:
-                    est_annual = max(1, int(round(r_ale / float(r_sle))))
-                else:
-                    est_annual = max(1, int(round(r_tef * 6.0)))
-                r_item["lef"] = float(est_annual)
-                r_item["tef_annual"] = float(est_annual)
-            else:
-                r_rate = max(round(hourly_burn * 0.70, 2), 1.0) if hourly_burn > 0 else 5000.0
-                r_eff_sle = r_ale / r_lef if (r_ale > 0.0 and r_lef > 0.0) else (r_lm * 5000.0)
-                r_hours = max(round(r_eff_sle / r_rate, 1), 0.1)
-                r_item["sle"] = round(r_hours * r_rate)
+            decomp = r_item.get("additive_loss_decomposition") or {}
+            if decomp.get("gross_mean_sle") is not None:
+                r_item["sle"] = int(round(float(decomp["gross_mean_sle"])))
+            if decomp.get("mean_lef") is not None:
+                r_item["lef"] = round(float(decomp["mean_lef"]), 4)
+            if decomp.get("net_allocated_ale") is not None and r_item.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
+                r_item["ale"] = int(round(float(decomp["net_allocated_ale"])))
 
         # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
@@ -4179,38 +4161,76 @@ class PayloadToASTBridge:
         base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
         alpha_pct_str = str(int(round(alpha * 100)))
 
-        stochastic_tail_adj = 0
-        if decomp and decomp.get("gross_mean_sle"):
-            standalone_base_ale = int(
-                decomp.get(
-                    "gross_standalone_ale", round(displayed_mult_freq * reconciled_sle)
+        decomp = hc.get("additive_loss_decomposition") or {}
+        primary_downtime_loss = int(
+            round(
+                float(
+                    decomp.get("primary_downtime_loss", primary_downtime_loss)
                 )
             )
-            euler_delta = int(
-                decomp.get(
-                    "euler_overlap_adjustment_ale",
-                    round(canonical_ale - standalone_base_ale),
+        )
+        repl_cost_num = int(
+            round(float(decomp.get("direct_replacement_loss", repl_cost_num)))
+        )
+        sec_weighted_loss = int(
+            round(float(decomp.get("secondary_weighted_loss", sec_weighted_loss)))
+        )
+        stochastic_tail_adj = int(
+            round(float(decomp.get("stochastic_pert_adjustment", 0)))
+        )
+
+        # Strict Additive Identity Invariant: Downtime + Replacement + Secondary + Stochastic == Mean SLE
+        reconciled_sle = (
+            primary_downtime_loss
+            + repl_cost_num
+            + sec_weighted_loss
+            + stochastic_tail_adj
+        )
+
+        # Strict Standalone & Bounded Euler Identity Invariant:
+        displayed_mult_freq = round(
+            float(decomp.get("mean_lef") or canonical_lef or 0.25), 2
+        )
+        standalone_base_ale = int(round(displayed_mult_freq * reconciled_sle))
+        max_disc_pct = max(
+            0.0,
+            min(0.25, float(hc.get("max_euler_ale_discount_pct") or 0.20)),
+        )
+
+        raw_net_ale = int(
+            round(
+                float(
+                    decomp.get("net_allocated_ale")
+                    or canonical_ale
+                    or standalone_base_ale
                 )
             )
-            canonical_ale = int(
-                decomp.get("net_allocated_ale", standalone_base_ale + euler_delta)
-            )
-        else:
-            standalone_base_ale = (
-                round(displayed_mult_freq * reconciled_sle)
-                if displayed_mult_freq > 0
-                else 0
-            )
-            euler_delta = round(canonical_ale - standalone_base_ale)
+        )
+        raw_credit = max(0, standalone_base_ale - raw_net_ale)
+        capped_credit = min(
+            raw_credit, int(round(standalone_base_ale * max_disc_pct))
+        )
+
+        canonical_ale = standalone_base_ale - capped_credit
+        euler_delta = -capped_credit
 
         p_down_str = format_currency(
-            primary_downtime_loss, currency_symbol=currency, locale=meta_lang, decimals=0
+            primary_downtime_loss,
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
         )
         p_repl_str = format_currency(
-            repl_cost_num, currency_symbol=currency, locale=meta_lang, decimals=0
+            repl_cost_num,
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
         )
         p_sec_str = format_currency(
-            sec_weighted_loss, currency_symbol=currency, locale=meta_lang, decimals=0
+            sec_weighted_loss,
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
         )
         p_adj_str = "+0 €"
 
