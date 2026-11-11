@@ -3607,8 +3607,32 @@ class PayloadToASTBridge:
                 secondary_spend_str=secondary_spend_str,
             )
         elif canonical_t_id == "T10":
+            doc_meta = (
+                blueprint_data.get("document_meta", {})
+                if isinstance(blueprint_data.get("document_meta"), dict)
+                else {}
+            )
+            industry = str(
+                blueprint_data.get("industry")
+                or doc_meta.get("industry")
+                or blueprint_data.get("industry_vertical")
+                or ""
+            ).lower()
+            is_plant = any(
+                k in industry
+                for k in ("cement", "manufacturing", "logistics", "heavy", "industrial")
+            )
             p1_text = t("p90_callout_p1", locale=meta_lang, **fmt_kwargs)
-            p2_text = t("p90_callout_plant_p2", locale=meta_lang, p90_rec_hours_str=p90_rec_hours_str, default=t("p90_callout_p2", locale=meta_lang, **fmt_kwargs))
+            p2_text = (
+                t(
+                    "p90_callout_plant_p2",
+                    locale=meta_lang,
+                    p90_rec_hours_str=p90_rec_hours_str,
+                    default=t("p90_callout_p2", locale=meta_lang, **fmt_kwargs),
+                )
+                if is_plant
+                else t("p90_callout_p2", locale=meta_lang, **fmt_kwargs)
+            )
             p3_text = t("p90_callout_p3", locale=meta_lang, **fmt_kwargs)
         else:
             p1_text = t("p90_callout_p1", locale=meta_lang, **fmt_kwargs)
