@@ -32,24 +32,27 @@ from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1A
 from assessment_engine.application.run_scoring import build_scoring
 from assessment_engine.application.sync_payload_scores import parse_raw_responses
 from assessment_engine.application.services.semantic_epistemic_router import SemanticEpistemicRouter
-from assessment_engine.domain.actuarial.calculators import (
-    AvailabilityOutageCalculator,
-    CapitalInefficiencyCalculator,
-    ProductivityToilCalculator,
-    RegulatoryBreachCalculator,
-)
+from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
 from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
 from assessment_engine.domain.actuarial.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,
 )
-from assessment_engine.domain.actuarial.vectors import (
-    AvailabilityOutageVector,
-    CapitalInefficiencyVector,
-    ProductivityToilVector,
-    RegulatoryBreachVector,
-)
 from assessment_engine.domain.models.telemetry import PolymorphicFinancialTelemetry
+
+# Canonical exposure baseline hours per archetype
+ARCHETYPE_BASE_HOURS: Dict[str, float] = {
+    "T1": 14.0,  # Facilities
+    "T2": 16.0,  # Compute/Virtualization
+    "T3": 12.0,  # Network
+    "T4": 10.0,  # Storage
+    "T5": 18.0,  # Resilience/Disaster
+    "T6": 20.0,  # Security / NIS2
+    "T7": 8.0,   # ITSM / SRE
+    "T8": 12.0,  # FinOps / Licenses
+    "T9": 8.0,   # Workplace / EUC
+    "T10": 14.0, # Plant OT / Scales
+}
 
 # The ONLY TWO permitted input files
 SOURCE_DOCS_DIR = REPO_ROOT / "source_docs" / "molins"
@@ -124,12 +127,6 @@ def main() -> None:
     print("\nStep 4: Synthesizing towers and executing Polymorphic FAIR Calculators...")
     tower_codes = [f"T{i}" for i in range(1, 11)]
 
-    # Polymorphic calculators
-    avail_calc = AvailabilityOutageCalculator()
-    cap_calc = CapitalInefficiencyCalculator()
-    toil_calc = ProductivityToilCalculator()
-    sec_calc = RegulatoryBreachCalculator()
-
     raw_standalone_ales: Dict[str, float] = {}
     hydrated_blueprints: Dict[str, Dict[str, Any]] = {}
 
@@ -179,54 +176,43 @@ def main() -> None:
 
         # Determine loss archetype for this tower
         # T6: Regulatory & Breach | T8: Capital Inefficiency | T7, T9: Productivity Toil | T1..T5, T10: Availability Outage
-        from assessment_engine.domain.actuarial.calibration_engine import UniversalActuarialCalibrationEngine
-        priors = UniversalActuarialCalibrationEngine.load_priors()["PROCESS_MANUFACTURING_OT"]
-        omega = priors.default_perimeter_ratio
-        beta = priors.buffering_elasticity_beta
-        gamma = priors.cloud_intensity_gamma
-        theta = priors.base_enforcement_discretion_theta
-
         if code == "T6":
-            vec = sec_calc.calculate_vector(fin_baseline, overall_cmmi)
             arch_label = "Regulatory & Breach (NIS2)"
         elif code == "T8":
-            vec = cap_calc.calculate_vector(fin_baseline, overall_cmmi)
             arch_label = "Capital Inefficiency (FinOps)"
         elif code in ("T7", "T9"):
-            vec = toil_calc.calculate_vector(fin_baseline, overall_cmmi)
             arch_label = "Productivity Toil (ITSM/Workplace)"
         else:
-            vec = avail_calc.calculate_vector(fin_baseline, overall_cmmi)
             arch_label = "Availability Outage (Downtime)"
 
-        s_ale = round(float(vec.annualized_loss_expectancy), 2)
-        s_sle = round(float(vec.probable_loss_magnitude), 2)
-        s_p90 = round(float(vec.confidence_interval_95_high), 2)
+        # Pure native Open FAIR calibration via ActuarialDowntimeCalibrator
+        base_hourly_downtime_cost = float(profile.annual_revenue) / 8760.0 * 0.10
+        base_h = ARCHETYPE_BASE_HOURS.get(code, 12.0)
+        eff_hours = round(base_h * ((5.0 - overall_cmmi) / 2.5), 1)
+        p90_h = round(eff_hours * 1.8, 1)
+
+        m = ActuarialDowntimeCalibrator.calibrate_domain_exposure(
+            tower_id=code,
+            currency_code="EUR",
+            currency_symbol="€",
+            raw_hourly_burn_rate=base_hourly_downtime_cost,
+            deduplicated_annual_hours=eff_hours,
+            p90_stress_hours=p90_h,
+            current_maturity_score=overall_cmmi,
+        )
+
+        s_ale = float(m.annual_loss_expectancy)
+        s_p90 = float(m.p90_value_at_risk)
         raw_standalone_ales[code] = s_ale
-        print(f"  [{code}] Score: {overall_cmmi:.2f} | Archetype: {arch_label:<32} | Calibrated ALE: {s_ale:,.0f} €")
+        print(f"  [{code}] Score: {overall_cmmi:.2f} | Archetype: {arch_label:<32} | Calibrated ALE: {s_ale:,.0f} € | P90: {s_p90:,.0f} €")
 
         bp["score"] = overall_cmmi
         bp["overall_score"] = overall_cmmi
         bp["total_fair_ale"] = s_ale
         bp["ale"] = s_ale
+        bp["standalone_fair_ale"] = s_ale
         bp["worst_crisis_event"] = s_p90
         bp["total_fair_p90"] = s_p90
-
-        # Distribute s_ale and s_sle across health checks using Pareto severity weights
-        all_hcs = []
-        for p in bp.get("pillars_analysis", []):
-            if isinstance(p, dict):
-                for hc in p.get("health_check_asis", []):
-                    if isinstance(hc, dict):
-                        all_hcs.append(hc)
-
-        if all_hcs:
-            from assessment_engine.domain.actuarial.continuous_risk_allocator import ContinuousRiskAllocator
-            ContinuousRiskAllocator.allocate_risks(
-                total_ale=s_ale,
-                total_sle=s_sle,
-                health_checks=all_hcs,
-            )
 
         hydrated_blueprints[code] = bp
 
@@ -236,21 +222,29 @@ def main() -> None:
         with open(t_dir / f"blueprint_{code.lower()}_payload.json", "w", encoding="utf-8") as f:
             json.dump(bp, f, indent=2, ensure_ascii=False)
 
-    # Step 5: Execute Euler Portfolio Allocation with Natural Copula Bounds
+    # Step 5: Execute Native Euler Portfolio Allocation with Natural Copula Bounds
     gross_undiversified = sum(raw_standalone_ales.values())
-    natural_copula_overlap = 0.22  # ~22% multi-domain copula discount
+    natural_copula_overlap = 0.20  # 20.0% natural multi-domain copula diversification
     target_net_portfolio = int(round(gross_undiversified * (1.0 - natural_copula_overlap)))
 
-    print(f"\nStep 5: Executing Euler Marginal Allocation (Hare-Niemeyer rounding)...")
-    print(f"  - Undiversified Gross Sum: {gross_undiversified:,.0f} €")
-    print(f"  - Natural Copula Discount: -{natural_copula_overlap*100:.1f}%")
-    print(f"  - Target Net Portfolio Total: {target_net_portfolio:,.0f} €")
-
+    print(f"\nStep 5: Executing Native Euler Marginal Allocation (Hare-Niemeyer rounding)...")
     decomp = EulerPortfolioAllocator.allocate_portfolio(
         standalone_ales=raw_standalone_ales,
         total_portfolio_ale=target_net_portfolio,
         currency_iso="EUR",
     )
+    print(f"  - Undiversified Gross Sum: {decomp.subtotal_gross_undiversified_ale:,.0f} €")
+    print(f"  - Natural Copula Discount: -{natural_copula_overlap*100:.1f}%")
+    print(f"  - Target Net Portfolio Total: {decomp.total_net_consolidated_ale:,.0f} €")
+
+    for alloc in decomp.allocations:
+        c = alloc.tower_id
+        if c in hydrated_blueprints:
+            hydrated_blueprints[c]["euler_net_ale"] = alloc.euler_net_contribution
+            hydrated_blueprints[c]["diversification_adjustment"] = alloc.diversification_adjustment
+            hydrated_blueprints[c]["portfolio_allocated_ale"] = alloc.euler_net_contribution
+            with open(PURE_BUILD_DIR / c / f"blueprint_{c.lower()}_payload.json", "w", encoding="utf-8") as f:
+                json.dump(hydrated_blueprints[c], f, indent=2, ensure_ascii=False)
 
     # Step 6: Compile 10 Specialist Annexes
     print("\nStep 6: Compiling 10 Specialist Annexes via Declarative AST Engine...")
