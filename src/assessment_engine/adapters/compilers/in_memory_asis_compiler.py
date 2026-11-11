@@ -1799,18 +1799,44 @@ def derive_in_memory_maturity_matrix(
             sota_benchmark = _build_sota_benchmark_paragraph(canonical_p_id, doc_lang)
             if sota_benchmark and diag_rationale:
                 norm_sota = re.sub(r"\W+", "", sota_benchmark).lower()
-                if norm_sota and any(norm_sota[:40] in re.sub(r"\W+", "", existing).lower() for existing in arch_paras):
-                    fused_para = _scrub_template_glitches_and_token_leaks(diag_rationale, doc_lang)
-                else:
-                    fused_para = _scrub_template_glitches_and_token_leaks(
-                        f"{sota_benchmark} {diag_rationale}", doc_lang
+                norm_diag = re.sub(r"\W+", "", diag_rationale).lower()
+                already_has_diag = (
+                    any(
+                        norm_diag[:50] in re.sub(r"\W+", "", existing).lower()
+                        for existing in arch_paras
                     )
-                if len(arch_paras) > 1:
-                    arch_paras = [arch_paras[0], fused_para]
-                elif arch_paras:
-                    arch_paras.append(fused_para)
+                    if norm_diag
+                    else False
+                )
+                already_has_sota = (
+                    any(
+                        norm_sota[:40] in re.sub(r"\W+", "", existing).lower()
+                        for existing in arch_paras
+                    )
+                    if norm_sota
+                    else False
+                )
+
+                if already_has_diag:
+                    if not already_has_sota:
+                        arch_paras.append(
+                            _scrub_template_glitches_and_token_leaks(sota_benchmark, doc_lang)
+                        )
                 else:
-                    arch_paras = [fused_para]
+                    if already_has_sota:
+                        fused_para = _scrub_template_glitches_and_token_leaks(
+                            diag_rationale, doc_lang
+                        )
+                    else:
+                        fused_para = _scrub_template_glitches_and_token_leaks(
+                            f"{sota_benchmark} {diag_rationale}", doc_lang
+                        )
+                    if len(arch_paras) > 1:
+                        arch_paras = [arch_paras[0], fused_para]
+                    elif arch_paras:
+                        arch_paras.append(fused_para)
+                    else:
+                        arch_paras = [fused_para]
 
         target_lvl = min(5, int(exact_score) + 1)
         target_label = str(target_lvl)

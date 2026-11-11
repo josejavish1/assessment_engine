@@ -223,9 +223,26 @@ def build_heatmap_mosaic(
                 sle_candidate = ale_val / lef_val
 
         if sle_candidate is not None and sle_candidate > 0:
-            r_lm = resolve_dynamic_lm_scale_level(
+            r_lm_mean = resolve_dynamic_lm_scale_level(
                 sle_candidate, effective_bounds, locale=locale
             )
+            # Red Team Reform 4: Dual-Threshold Coherent Severity Anchor
+            # LM_final = max(Bucket(Mean SLE), Bucket(Tail Shock / Worst Crisis))
+            vec_out = (r.get("actuarial_input_vector") or {}).get("outputs", {})
+            p99_candidate = safe_float(
+                r.get("var_99")
+                or r.get("worst_crisis_event")
+                or vec_out.get("var_99")
+                or r.get("p90"),
+                locale=locale,
+            )
+            if p99_candidate is not None and p99_candidate > 0:
+                r_lm_tail = resolve_dynamic_lm_scale_level(
+                    p99_candidate, effective_bounds, locale=locale
+                )
+                r_lm = max(r_lm_mean, r_lm_tail)
+            else:
+                r_lm = r_lm_mean
 
         r_tef = max(1, min(5, int(r_tef)))
         r_lm = max(1, min(5, int(r_lm)))

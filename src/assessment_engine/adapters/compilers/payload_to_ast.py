@@ -4083,11 +4083,45 @@ class PayloadToASTBridge:
                 ),
             ]
 
-        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 056)
+        # Enforce exact closed-form arithmetic identity: Primary + Replacement + Secondary + Stochastic == SLE (Red Team / SR 11-7)
         eff_h_str = format_number(eff_recovery_hours, locale=meta_lang, decimals=1)
         rate_str = format_currency(domain_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
         base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
         alpha_pct_str = str(int(round(alpha * 100)))
+
+        primary_downtime_loss = round(eff_recovery_hours * domain_hourly_rate)
+        repl_cost_num = round(
+            float(
+                (vec_inputs.get("direct_replacement_cost") or {}).get("effective_value")
+                or hc.get("direct_replacement_cost")
+                or 0.0
+            )
+        )
+        p_sec = 0.10
+        raw_sec_mean = float(
+            (vec_inputs.get("secondary_loss_mean") or {}).get("effective_value")
+            or hc.get("secondary_loss_mean")
+            or 0.0
+        )
+        sec_weighted_loss = round(p_sec * raw_sec_mean) if raw_sec_mean > 0 else 0
+        stochastic_tail_adj = round(
+            reconciled_sle - (primary_downtime_loss + repl_cost_num + sec_weighted_loss)
+        )
+
+        p_down_str = format_currency(
+            primary_downtime_loss, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+        p_repl_str = format_currency(
+            repl_cost_num, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+        p_sec_str = format_currency(
+            sec_weighted_loss, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+        p_adj_str = (
+            f"+{format_currency(stochastic_tail_adj, currency_symbol=currency, locale=meta_lang, decimals=0)}"
+            if stochastic_tail_adj >= 0
+            else f"-{format_currency(abs(stochastic_tail_adj), currency_symbol=currency, locale=meta_lang, decimals=0)}"
+        )
 
         arch_suffix = primary_arch.value.lower()
         sle_key = f"sle_derivation_formula_bullet_{arch_suffix}"
@@ -4099,6 +4133,10 @@ class PayloadToASTBridge:
             alpha_pct=alpha_pct_str,
             base_rate=base_rate_str,
             sle_formatted=formatted_sle,
+            primary_formatted=p_down_str,
+            replacement_formatted=p_repl_str,
+            secondary_formatted=p_sec_str,
+            stochastic_formatted=p_adj_str,
             default=t(
                 "sle_derivation_formula_bullet",
                 locale=meta_lang,
@@ -4107,13 +4145,36 @@ class PayloadToASTBridge:
                 alpha_pct=alpha_pct_str,
                 base_rate=base_rate_str,
                 sle_formatted=formatted_sle,
+                primary_formatted=p_down_str,
+                replacement_formatted=p_repl_str,
+                secondary_formatted=p_sec_str,
+                stochastic_formatted=p_adj_str,
             ),
         )
+
+        # Standalone to Allocated ALE Euler Reconciliation Bridge
+        standalone_base_ale = round(canonical_lef * reconciled_sle) if canonical_lef > 0 else 0
+        euler_credit = (
+            round(standalone_base_ale - canonical_ale)
+            if standalone_base_ale > canonical_ale
+            else 0
+        )
+
+        st_ale_str = format_currency(
+            standalone_base_ale, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+        eul_cr_str = format_currency(
+            euler_credit, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+
         ale_bullet = t(
             "ale_derivation_formula_bullet",
             locale=meta_lang,
             ale_formatted=formatted_ale,
             frequency_text=freq_display,
+            sle_formatted=formatted_sle,
+            standalone_ale_formatted=st_ale_str,
+            euler_credit_formatted=eul_cr_str,
         )
         fallback_pillar_ref = str(
             hc.get("pillar_name")
