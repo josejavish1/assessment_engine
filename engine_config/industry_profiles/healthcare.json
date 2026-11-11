@@ -26,5 +26,15 @@
     "T8": "Strict biomedical data governance and anonymization pipelines (3.95) for clinical research and compliance auditability.",
     "T9": "Standardized clinical workstations, single sign-on (SSO) tap-and-go badges, and mobile nursing tablets (3.80).",
     "T10": "Clinical IT governance and medical device software lifecycle management (3.70)."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.20,
+    "shared_operational_edge_ratio": 0.65,
+    "deskless_field_ratio": 0.15,
+    "primary_disruption_driver": "CLINICAL_FLOW_AND_TRIAGE",
+    "work_make_up_elasticity": 0.10,
+    "annual_endpoint_refresh_rate": 0.25,
+    "hours_per_manual_refresh": 3.0,
+    "typical_it_support_hourly_rate": 50.0
   }
 }

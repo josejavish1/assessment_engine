@@ -26,5 +26,15 @@
     "T8": "Strict data governance, privacy compliance (GDPR/GLBA), and automated regulatory reporting pipelines (4.05).",
     "T9": "Secure workplace endpoints with zero-trust network access, conditional access policies, and enterprise DLP (3.85).",
     "T10": "Fiduciary IT governance, automated cloud financial controls (FinOps), and rigorous vendor audit mechanisms (3.90)."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.95,
+    "shared_operational_edge_ratio": 0.05,
+    "deskless_field_ratio": 0.00,
+    "primary_disruption_driver": "TRANSACTION_CLEARING_AND_TRADING",
+    "work_make_up_elasticity": 0.15,
+    "annual_endpoint_refresh_rate": 0.333,
+    "hours_per_manual_refresh": 2.0,
+    "typical_it_support_hourly_rate": 65.0
   }
 }

@@ -627,9 +627,9 @@
     "en": "How does the enterprise govern and measure IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives) across the operational environment?",
     "es": "How does the enterprise govern and measure IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives) across the operational environment?"
   },
-  "T8.P1.K3.PR1": {
+  "T8.P2.K2.PR1": {
     "en": "How does the enterprise govern and measure Technology Obsolescence & Proactive Lifecycle Refresh Governance across the operational environment?",
-    "es": "How does the enterprise govern and measure Technology Obsolescence & Proactive Lifecycle Refresh Governance across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la obsolescencia tecnológica y la renovación proactiva del ciclo de vida en todo el entorno operativo?"
   },
   "T8.P1.K4.PR1": {
     "en": "How does the enterprise govern and measure Architecture Review Board (ARB) & Engineering Guardrails Enforcement across the operational environment?",
@@ -705,43 +705,43 @@
   },
   "T9.P1.K1.PR1": {
     "en": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?",
-    "es": "How does the enterprise govern and measure Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la estandarización de puestos de trabajo (hardware homologado, imágenes base y configuraciones de referencia) en todo el entorno operativo?"
   },
   "T9.P1.K2.PR1": {
     "en": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?",
-    "es": "How does the enterprise govern and measure Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el aprovisionamiento desatendido (Zero-Touch) y el tiempo de preparación de dispositivos listos para usar en todo el entorno operativo?"
   },
   "T9.P1.K3.PR1": {
     "en": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?",
-    "es": "How does the enterprise govern and measure Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la postura de seguridad en el puesto (cifrado BitLocker, protección EDR y cumplimiento de parches) en todo el entorno operativo?"
   },
   "T9.P1.K4.PR1": {
     "en": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?",
-    "es": "How does the enterprise govern and measure Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el ciclo de vida de renovación de hardware, la gestión de obsolescencia y la retirada certificada de activos en todo el entorno operativo?"
   },
   "T9.P2.K1.PR1": {
     "en": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?",
-    "es": "How does the enterprise govern and measure Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la cobertura de inicio de sesión único (SSO corporativo) en aplicaciones SaaS y corporativas en todo el entorno operativo?"
   },
   "T9.P2.K2.PR1": {
     "en": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?",
-    "es": "How does the enterprise govern and measure Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el acceso condicional basado en riesgo y el doble factor de autenticación (MFA) resistente a phishing en todo el entorno operativo?"
   },
   "T9.P2.K3.PR1": {
     "en": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?",
-    "es": "How does the enterprise govern and measure Self-Service Password Reset (SSPR) & User Account Self-Remediation across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el restablecimiento de contraseñas en autoservicio (SSPR) y la autorreparación de cuentas de usuario en todo el entorno operativo?"
   },
   "T9.P2.K4.PR1": {
     "en": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?",
-    "es": "How does the enterprise govern and measure User Access Request Incident Rate & Access Provisioning Lead Time across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la tasa de incidencias por solicitudes de acceso y los tiempos de concesión de privilegios en todo el entorno operativo?"
   },
   "T9.P3.K1.PR1": {
     "en": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?",
-    "es": "How does the enterprise govern and measure Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el gobierno de plataformas de colaboración (ciclo de vida de Teams/Slack y control de proliferación) en todo el entorno operativo?"
   },
   "T9.P3.K2.PR1": {
     "en": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?",
-    "es": "How does the enterprise govern and measure Enterprise Content & Document Management (DLP & Classification) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la gestión documental corporativa (clasificación de información y prevención de fugas DLP) en todo el entorno operativo?"
   },
   "T9.P3.K3.PR1": {
     "en": "How does the enterprise govern and measure Unified Communications Quality of Service (QoS for Voice & Video) across the operational environment?",
@@ -753,34 +753,34 @@
   },
   "T9.P4.K1.PR1": {
     "en": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?",
-    "es": "How does the enterprise govern and measure Workplace Support SLA Adherence (Incident & Request Resolution) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el cumplimiento de acuerdos de nivel de servicio (SLA en resolución de incidencias y peticiones) en todo el entorno operativo?"
   },
   "T9.P4.K2.PR1": {
     "en": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?",
-    "es": "How does the enterprise govern and measure Self-Service Support Portal & Knowledge Base Deflection Ratio across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización el portal de soporte de autoservicio y la tasa de resolución asistida mediante bases de conocimiento en todo el entorno operativo?"
   },
   "T9.P4.K3.PR1": {
     "en": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?",
-    "es": "How does the enterprise govern and measure Endpoint Self-Healing & Automated Client-Side Remediation across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización las capacidades de autorreparación del puesto y la remediación automatizada de incidencias en el cliente en todo el entorno operativo?"
   },
   "T9.P4.K4.PR1": {
     "en": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?",
-    "es": "How does the enterprise govern and measure Workplace Problem Management & Endpoint Crash Trend Reduction across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la gestión de problemas en el puesto de trabajo y la reducción de caídas recurrentes del sistema en todo el entorno operativo?"
   },
   "T9.P5.K1.PR1": {
     "en": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?",
-    "es": "How does the enterprise govern and measure Digital Employee Experience (DEX) Real-Time Telemetry Coverage across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la cobertura de telemetría en tiempo real de la experiencia digital del empleado (DEX) en todo el entorno operativo?"
   },
   "T9.P5.K2.PR1": {
     "en": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?",
-    "es": "How does the enterprise govern and measure Endpoint Boot Times, Application Crash Frequency & Latency Metrics across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización los tiempos de arranque del equipo, la frecuencia de caídas de aplicaciones y las métricas de latencia en todo el entorno operativo?"
   },
   "T9.P5.K3.PR1": {
     "en": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?",
-    "es": "How does the enterprise govern and measure End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización las métricas de satisfacción del usuario final (encuestas CSAT y NPS del puesto de trabajo) en todo el entorno operativo?"
   },
   "T9.P5.K4.PR1": {
     "en": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?",
-    "es": "How does the enterprise govern and measure DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle) across the operational environment?"
+    "es": "¿Cómo gobierna y mide la organización la mejora continua de la experiencia digital (ciclo operativo de detección, priorización y remediación) en todo el entorno operativo?"
   }
 }

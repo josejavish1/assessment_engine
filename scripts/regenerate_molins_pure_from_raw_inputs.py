@@ -40,7 +40,7 @@ from assessment_engine.domain.actuarial.financial_profile import (
 )
 from assessment_engine.domain.models.telemetry import PolymorphicFinancialTelemetry
 
-# Canonical exposure baseline hours per archetype
+# Canonical exposure baseline hours per archetype (calibrated to true operational scale)
 ARCHETYPE_BASE_HOURS: Dict[str, float] = {
     "T1": 14.0,  # Facilities
     "T2": 16.0,  # Compute/Virtualization
@@ -48,9 +48,9 @@ ARCHETYPE_BASE_HOURS: Dict[str, float] = {
     "T4": 10.0,  # Storage
     "T5": 18.0,  # Resilience/Disaster
     "T6": 20.0,  # Security / NIS2
-    "T7": 8.0,   # ITSM / SRE
-    "T8": 12.0,  # FinOps / Licenses
-    "T9": 8.0,   # Workplace / EUC
+    "T7": 30.0,  # ITSM / SRE (reflects 40% toil of 5-engineer team >130k €/yr)
+    "T8": 65.0,  # FinOps / Contracts (reflects >450k €/yr NOS contract & Broadcom exposure)
+    "T9": 28.0,  # Workplace / EUC (reflects 1,225h manual USB toil >55k €/yr + 800 kiosks)
     "T10": 14.0, # Plant OT / Scales
 }
 

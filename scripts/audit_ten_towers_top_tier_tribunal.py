@@ -94,7 +94,9 @@ TOWER_EXPERT_PROFILES = {
 
 def extract_tower_content(num_str: str) -> str:
     """Extracts the complete deliverable text and tables sequentially from the physical docx."""
-    files = list(ANNEX_DIR.glob(f"*Anexo_{num_str}_*.docx"))
+    files = sorted(list(ANNEX_DIR.glob(f"*Anexo_{num_str}_*ASIS*.docx")))
+    if not files:
+        files = sorted(list(ANNEX_DIR.glob(f"*Anexo_{num_str}_*.docx")))
     if not files:
         return f"File for tower {num_str} not found in {ANNEX_DIR}"
 

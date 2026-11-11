@@ -31,5 +31,15 @@
     "T5": "Calibrated against EU NIS2 Directive 2022/2555 requirements for essential service continuity. Operators of essential and critical infrastructure entities are operationally mandated to maintain high-availability platforms with multi-site geographic redundancy, sub-hour Recovery Time Objectives (RTO), and continuous replication pipelines, mapping to a Level 4.2 (Predictable) operational state.",
     "T6": "Directly mapped to international critical infrastructure protection frameworks (NIST SP 800-82, ISO/IEC 27001) and national essential entities regulations. Requires automated, 24/7 security operations center (SOC) ingestion, strict perimeter zoning (IT/OT airgapping), and continuous cryptographic signing of control-plane payloads, pushing the benchmark to Level 4.5 (Optimized Threat Resilience).",
     "T8": "Derived from Gartner Critical Infrastructure & Regulated Enterprise Governance Best Practices (2026). The baseline is calibrated to Level 4.0 to reflect mandatory compliance reporting and regulated asset lifecycle management, requiring formalized cost-attribution and multi-cloud governance frameworks."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.30,
+    "shared_operational_edge_ratio": 0.30,
+    "deskless_field_ratio": 0.40,
+    "primary_disruption_driver": "GRID_AND_SUBSTATION_SUPERVISION",
+    "work_make_up_elasticity": 0.15,
+    "annual_endpoint_refresh_rate": 0.25,
+    "hours_per_manual_refresh": 3.0,
+    "typical_it_support_hourly_rate": 55.0
   }
 }

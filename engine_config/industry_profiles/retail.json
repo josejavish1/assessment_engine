@@ -32,5 +32,15 @@
     "T4": "Sourced from PCI-DSS v4.0 Section 3 requirements and GDPR compliance frameworks for customer data protection. Retailers must maintain highly secure, tokenized payment gateways and automated retention policies, raising the industry baseline to Level 4.5.",
     "T6": "Directly mapped to PCI-DSS v4.0 threat detection and perimeter defense requirements. Retail environments require automated file integrity monitoring, continuous vulnerability scanning, and secure edge-computing boundaries for brick-and-mortar stores, driving the benchmark to Level 4.0.",
     "T8": "Derived from the Gartner FinOps & Cloud Cost Optimization Retail Index (2026). Extreme pressure on low-margin retail sales models drives advanced adoption of cloud cost governance and automated resource termination, raising the baseline to Level 4.3."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.12,
+    "shared_operational_edge_ratio": 0.73,
+    "deskless_field_ratio": 0.15,
+    "primary_disruption_driver": "POINT_OF_SALE_AND_WAREHOUSE_PICKING",
+    "work_make_up_elasticity": 0.25,
+    "annual_endpoint_refresh_rate": 0.25,
+    "hours_per_manual_refresh": 2.5,
+    "typical_it_support_hourly_rate": 40.0
   }
 }

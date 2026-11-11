@@ -26,5 +26,15 @@
     "T8": "Core ERP governance (3.55) supporting international multi-entity supply chain and financial operations.",
     "T9": "Workplace and collaboration maturity (3.75) underpinned by standardized cloud productivity suites and modern endpoint management.",
     "T10": "Plant dispatch and industrial weighbridge systems (3.25) constrained by localized dependencies and legacy serial communications."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.25,
+    "shared_operational_edge_ratio": 0.15,
+    "deskless_field_ratio": 0.60,
+    "primary_disruption_driver": "PLANT_DISPATCH_AND_LOGISTICS",
+    "work_make_up_elasticity": 0.30,
+    "annual_endpoint_refresh_rate": 0.285,
+    "hours_per_manual_refresh": 3.5,
+    "typical_it_support_hourly_rate": 45.0
   }
 }

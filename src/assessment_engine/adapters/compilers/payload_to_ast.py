@@ -3909,9 +3909,15 @@ class PayloadToASTBridge:
             f"risk_card_coupling_{coupling_regime.value.lower()}",
             locale=meta_lang,
         )
+        sev_key = (
+            "moderate"
+            if metrics.severity_tier.lower() in ("medium", "moderate")
+            else metrics.severity_tier.lower()
+        )
         sev_badge_text = t(
-            f"risk_card_severity_{metrics.severity_tier.lower()}",
+            f"risk_card_severity_{sev_key}",
             locale=meta_lang,
+            default=metrics.severity_tier.upper(),
         )
 
         severity_colors = {
@@ -4152,7 +4158,7 @@ class PayloadToASTBridge:
             ),
         )
 
-        # Standalone to Allocated ALE Euler Reconciliation Bridge (guarantees exact mathematical identity)
+        # Standalone to Allocated ALE Euler Reconciliation Bridge (guarantees exact mathematical closure)
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
             effective_mult_freq = float(est_annual_events)
         else:
@@ -4163,17 +4169,29 @@ class PayloadToASTBridge:
             if effective_mult_freq > 0
             else 0
         )
-        euler_credit = (
-            round(standalone_base_ale - canonical_ale)
-            if standalone_base_ale > canonical_ale
-            else 0
-        )
+
+        # Honest algebraic Euler delta (SR 11-7 compliant)
+        euler_delta = round(canonical_ale - standalone_base_ale)
+        if euler_delta < 0:
+            credit_num = abs(euler_delta)
+            credit_str = format_currency(
+                credit_num, currency_symbol=currency, locale=meta_lang, decimals=0
+            )
+            euler_line = f"{t('euler_credit_label', locale=meta_lang, default='Crédito de diversificación de cartera (Euler)')}: -{credit_str}/{t('year_lbl', locale=meta_lang, default='año')}"
+        elif euler_delta > 0:
+            surcharge_num = euler_delta
+            surcharge_str = format_currency(
+                surcharge_num, currency_symbol=currency, locale=meta_lang, decimals=0
+            )
+            euler_line = f"{t('euler_contagion_label', locale=meta_lang, default='Recargo por contagio e interdependencia sistémica')}: +{surcharge_str}/{t('year_lbl', locale=meta_lang, default='año')}"
+        else:
+            euler_line = f"{t('euler_neutral_label', locale=meta_lang, default='Ajuste de acoplamiento de cartera')}: 0 {currency}/{t('year_lbl', locale=meta_lang, default='año')}"
 
         st_ale_str = format_currency(
             standalone_base_ale, currency_symbol=currency, locale=meta_lang, decimals=0
         )
         eul_cr_str = format_currency(
-            euler_credit, currency_symbol=currency, locale=meta_lang, decimals=0
+            abs(euler_delta), currency_symbol=currency, locale=meta_lang, decimals=0
         )
 
         ale_bullet = t(
@@ -4183,6 +4201,7 @@ class PayloadToASTBridge:
             frequency_text=freq_display,
             sle_formatted=formatted_sle,
             standalone_ale_formatted=st_ale_str,
+            euler_line=euler_line,
             euler_credit_formatted=eul_cr_str,
         )
         fallback_pillar_ref = str(

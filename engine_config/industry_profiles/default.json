@@ -27,5 +27,15 @@
   },
   "justifications": {
     "default": "The benchmark is aligned with the modern cross-industry advanced baseline defined in the Gartner I&O Maturity Index (2026). In response to widespread cloud-native scaling and modern operational demands, even non-regulated corporate environments are expected to achieve Level 4 (Managed and Sustainable), characterized by automated telemetry, quantitatively measured execution metrics, and continuous compliance feedback loops."
+  },
+  "workforce_digital_profile": {
+    "corporate_seat_ratio": 0.60,
+    "shared_operational_edge_ratio": 0.20,
+    "deskless_field_ratio": 0.20,
+    "primary_disruption_driver": "CORE_BUSINESS_WORKFLOW",
+    "work_make_up_elasticity": 0.25,
+    "annual_endpoint_refresh_rate": 0.285,
+    "hours_per_manual_refresh": 3.0,
+    "typical_it_support_hourly_rate": 50.0
   }
 }

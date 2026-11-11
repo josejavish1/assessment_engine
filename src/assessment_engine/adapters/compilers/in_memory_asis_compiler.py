@@ -1395,14 +1395,14 @@ def _sanitize_architectural_narrative(
             p_clean,
             flags=re.IGNORECASE,
         )
-        # Strip leaked English KPI title-case tokens preceded by Romance prepositions or connectors
+        # Strip leaked English KPI title-case tokens preceded by Romance prepositions or connectors (restricted to framework nouns)
         p_clean = re.sub(
-            r"\b(?:seg[úu]n|en|de|por|con|ante)\s+(?:[A-Z][a-z0-9\-]+\s+){2,6}[A-Z][a-z0-9\-]+(?:\s*\([^)]*\))?\.?",
+            r"\b(?:seg[úu]n|en|de|por|con|ante)\s+(?:[A-Z][a-z0-9\-]+\s+){1,5}(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b(?:\s*\([^)]*\))?\.?",
             "",
             p_clean,
         ).strip()
         p_clean = re.sub(
-            r"\s*(?:&|and)\s+(?:[A-Z][a-z0-9\-]+\s+){1,5}[A-Z][a-z0-9\-]+\.?",
+            r"\s*(?:&|and)\s+(?:[A-Z][a-z0-9\-]+\s+){1,4}(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b\.?",
             ".",
             p_clean,
         ).strip()
