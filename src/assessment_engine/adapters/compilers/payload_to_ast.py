@@ -3501,6 +3501,97 @@ class PayloadToASTBridge:
         t2_focus_str = _get_tier_focus_summary(t2_risks, t2_fallback_focus)
         t3_focus_str = _get_tier_focus_summary(t3_risks, t3_fallback_focus)
 
+        # Dual-Ledger Governance Architecture: Ledger A (Stochastic ALE) vs Ledger B (Deterministic OpEx)
+        ledger_a_risks = [
+            r for r in risks_data_list
+            if not r.get("is_deterministic")
+            and (r.get("additive_loss_decomposition") or {}).get("ledger_type") != "LEDGER_B_DETERMINISTIC_OPEX"
+            and r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        ]
+        ledger_b_risks = [
+            r for r in risks_data_list
+            if (r.get("is_deterministic")
+                or (r.get("additive_loss_decomposition") or {}).get("ledger_type") == "LEDGER_B_DETERMINISTIC_OPEX")
+            and r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        ]
+        ledger_a_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_a_risks)
+        ledger_b_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_b_risks)
+        is_es_mat = (meta_lang == "es")
+
+        dual_ledger_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text="**Libro Contable / Horizonte Financiero**" if is_es_mat else "**Accounting Ledger / Financial Horizon**",
+                        bold=True,
+                        bg_color=self.primary_color_hex,
+                        text_color_rgb=[255, 255, 255],
+                        font_size=8.5,
+                        align="LEFT",
+                    ),
+                    CellNode(
+                        text="**Exposición Anual**" if is_es_mat else "**Annual Exposure**",
+                        bold=True,
+                        bg_color=self.primary_color_hex,
+                        text_color_rgb=[255, 255, 255],
+                        font_size=8.5,
+                        align="CENTER",
+                    ),
+                    CellNode(
+                        text="**Destino en Estados Financieros (IFRS / GAAP)**" if is_es_mat else "**Financial Statement Impact (IFRS / GAAP)**",
+                        bold=True,
+                        bg_color=self.primary_color_hex,
+                        text_color_rgb=[255, 255, 255],
+                        font_size=8.5,
+                        align="LEFT",
+                    ),
+                ],
+                is_header=True,
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text="**Libro A: Riesgo Operacional Estocástico** (P < 1.0)" if is_es_mat else "**Ledger A: Stochastic Operational Risk** (P < 1.0)",
+                        bg_color="F8FAFC",
+                        font_size=8.5,
+                    ),
+                    CellNode(
+                        text=f"**{format_number(ledger_a_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**",
+                        bg_color="F8FAFC",
+                        align="CENTER",
+                        font_size=8.5,
+                    ),
+                    CellNode(
+                        text="Reserva de Capital Económico y Pérdida Máxima Probable (Balance)" if is_es_mat else "Economic Capital Reserve & Probable Maximum Loss (Balance Sheet)",
+                        bg_color="F8FAFC",
+                        font_size=8.0,
+                    ),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text="**Libro B: Ineficiencia OpEx y Toil Recurrente** (P = 1.0)" if is_es_mat else "**Ledger B: Deterministic OpEx & Toil** (P = 1.0)",
+                        bg_color="F1F5F9",
+                        font_size=8.5,
+                    ),
+                    CellNode(
+                        text=f"**{format_number(ledger_b_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**",
+                        bg_color="F1F5F9",
+                        align="CENTER",
+                        font_size=8.5,
+                    ),
+                    CellNode(
+                        text="Sobrecoste Recurrente en Cuenta de Resultados (EBITDA Drag)" if is_es_mat else "Recurring Operating Expenditure Leakage (EBITDA Drag)",
+                        bg_color="F1F5F9",
+                        font_size=8.0,
+                    ),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=dual_ledger_rows, autofit=True, col_widths=[0.42, 0.22, 0.36]))
+        nodes.append(SpacerNode(points=10))
+
         tier_summary_rows = [
             TableRowNode(
                 cells=[
@@ -4142,12 +4233,29 @@ class PayloadToASTBridge:
         ev_unit = t("event_frequency_unit", locale=meta_lang)
         tier_prefix = t("portfolio_tier_prefix", locale=meta_lang)
 
-        # Apply specific styling if this is a tangential contributor
+        is_deterministic = bool(
+            hc.get("is_deterministic")
+            or decomp.get("is_deterministic")
+            or hc.get("ledger_type") == "LEDGER_B_DETERMINISTIC_OPEX"
+            or decomp.get("ledger_type") == "LEDGER_B_DETERMINISTIC_OPEX"
+            or str(hc.get("loss_physics") or "").upper() == "FINOPS_RESOURCE_WASTE"
+        )
+
+        # Apply specific styling if this is a tangential contributor or deterministic OpEx
         if metrics.is_deduplicated:
             header_bg = "F1F5F9"
             header_text = [71, 85, 105]
             sev_badge_text = t("risk_card_ownership_badge_tangential", locale=meta_lang)
             sev_badge_bg = "64748B"
+        elif is_deterministic:
+            header_bg = "0F172A"
+            header_text = [255, 255, 255]
+            sev_badge_text = t(
+                "risk_card_ledger_b_badge",
+                locale=meta_lang,
+                default="LIBRO B: OPEX DETERMINISTA",
+            )
+            sev_badge_bg = "0D9488"
         else:
             header_bg = "1B263B"
             header_text = [255, 255, 255]
@@ -4366,7 +4474,9 @@ class PayloadToASTBridge:
 
         # Honest algebraic Euler delta (SR 11-7 compliant)
         euler_delta = round(canonical_ale - standalone_base_ale)
-        if euler_delta < 0:
+        if is_deterministic:
+            euler_line = f"{t('euler_invariant_opex_label', locale=meta_lang, default='Ajuste de cartera (OpEx Determinista sin diversificación)')}: 0 {currency}/{t('year_lbl', locale=meta_lang, default='año')}"
+        elif euler_delta < 0:
             credit_num = abs(euler_delta)
             credit_str = format_currency(
                 credit_num, currency_symbol=currency, locale=meta_lang, decimals=0

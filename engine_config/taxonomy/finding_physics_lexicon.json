@@ -14,7 +14,11 @@
     "recursos?\\s+(ociosos?|[o\u00f3]rf[a\u00e3]os?|inativos?)",
     "optimizaci[o\u00f3]n\\s+de\\s+costes\\s+cloud",
     "gasto\\s+en\\s+la\\s+nube\\s+sin\\s+control",
-    "contrato\\s+(?:de\\s+externalizaci[o\u00f3]n\\s+)?cautivo"
+    "contrato\\s+(?:de\\s+externalizaci[o\u00f3]n\\s+)?cautiv[oa]s?",
+    "licenciamiento.*(?:broadcom|vmware|oracle|microsoft)",
+    "sobrecoste\\s+(?:estructural|anual|de\\s+opex)",
+    "duplicidad\\s+de\\s+(?:gesti[o\u00f3]n|costes?|servicios?|contratos?|proveedor)",
+    "absorbe\\s+m[a\u00e1]s\\s+de\\s+[\\d.,]+\\s*\u20ac\\s+de\\s+opex"
   ],
   "engineering_friction": [
     "infraestructura\\s+como\\s+c[o\u00f3]digo",
@@ -23,6 +27,8 @@
     "deriva\\s+de\\s+configuraci[o\u00f3]n",
     "im[a\u00e1]genes\\s+est[a\u00e1]ticas",
     "maquetaci[o\u00f3]n\\s+manual",
+    "toil\\s+(?:de\\s+aprovisionamiento|manual|operativo)",
+    "windows\\s+autopilot",
     "soporte\\s+reactivo\\s+manual",
     "tarefas\\s+manuais\\s+de\\s+infraestrutura"
   ],
