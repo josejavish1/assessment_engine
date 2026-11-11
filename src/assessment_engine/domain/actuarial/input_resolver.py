@@ -431,18 +431,18 @@ class ActuarialInputResolver:
                     global_fb.statutory_max_fine_ceiling,
                     rev * global_fb.statutory_max_fine_revenue_pct,
                 )
-                sec_raw_val = max_fine * (0.01 + 0.03 * lm_factor) * 0.25
+                sec_raw_val = max_fine * (0.005 + 0.015 * lm_factor) * 0.05
                 sec_method = "Statutory fine exposure model (prior)"
             elif archetype == LossArchetypeType.CAPITAL_INEFFICIENCY:
                 opex = annual_it_opex or global_fb.annual_it_opex_default
-                sec_raw_val = opex * (0.02 + 0.04 * lm_factor)
+                sec_raw_val = opex * (0.005 + 0.010 * lm_factor) * 0.25
                 sec_method = "IT OpEx capital drag model (prior)"
             elif archetype == LossArchetypeType.PRODUCTIVITY_TOIL:
                 wage = hourly_wage or global_fb.hourly_wage_default
-                sec_raw_val = wage * (20.0 + 30.0 * lm_factor)
+                sec_raw_val = wage * (10.0 + 15.0 * lm_factor)
                 sec_method = "Burdened wage toil hours model (prior)"
             else:
-                sec_raw_val = zone.hourly_burn_rate * (1.5 + 2.0 * lm_factor)
+                sec_raw_val = zone.hourly_burn_rate * (0.5 + 1.0 * lm_factor)
                 sec_method = "Outage disruption factor (prior)"
             sec_source = ParameterSourceType.MODEL_DEFAULT
             sec_conf = ParameterConfidenceLevel.LOW

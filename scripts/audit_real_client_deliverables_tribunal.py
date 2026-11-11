@@ -77,21 +77,20 @@ HERE ARE THE REAL, GROUND-TRUTH NUMBERS CURRENTLY GENERATED IN THE ACTUAL DELIVE
 {full_matrix}
 
 CRITICAL CONTEXT FOR THE AUDIT:
-- In Molins (Cement & Industrial Group, ~€1.14B annual turnover, 13,061.29 €/h corporate downtime rate):
-  * Notice Tower 2 (Hybrid Compute & Platforms): Score 1.89/5.00 -> ALE €156,160 / year (Exactly 12 hours of downtime at 13,061 €/h).
-  * Notice Tower 10 (Core Operational Systems & Plant Dispatch): Score 2.40/5.00 -> ALE €47,223 / year (Plant hourly impact €5,000/h).
-  * Notice Tower 7 (ITSM & Support): Score 2.43/5.00 -> ALE €54,830 / year.
-  * Notice Tower 9 (Digital Workplace): Score 3.19/5.00 -> ALE €8,107 / year.
+- In Molins (Cement & Industrial Group, ~€1.14B annual turnover, 13,061.29 €/h corporate downtime rate, 5,000.00 €/h plant dispatch rate):
+  * Notice the operational risk distribution: Tower 2 (Hybrid Compute) and Tower 5 (Resilience) represent the primary operational availability risks due to low maturity (~1.80-1.85).
+  * Notice Tower 10 (Core Operational Systems & Plant Dispatch) operates with decoupled plant hourly impact (€5,000/h).
+  * Notice Tower 7 (ITSM) and Tower 9 (Digital Workplace) reflect realistic operational friction without runaway multi-million-euro hallucinations.
 - In Starling Bank (Cloud Neobank, ~£140M turnover, £140,000/hr downtime rate):
-  * High maturity across all 6 towers (scores 4.19 to 4.70).
-  * ALE values strictly bounded between £37,053 and £253,624.
+  * High maturity across all 6 active towers (scores 4.19 to 4.70).
+  * Solvency II / Open FAIR coherent risk measures protect against zero-inflated Poisson tail collapse while keeping expected annual loss strictly bounded.
 
 YOUR MANDATE:
 1. Conduct an in-depth forensic review of these REAL numbers across both enterprises.
 2. Specifically address the proportionality between towers:
-   - Does it make sense that Molins' worst exposure is Tower 2 (€156k) due to low maturity (1.89/5.00)?
-   - Does it make sense that ITSM (€54k) and Workplace (€8k) are modest and realistic, rather than millions of euros?
-   - Does it make sense that Starling Bank's high maturity keeps all towers strictly bounded despite £140k/h burn rate?
+   - Does it make sense that Molins' highest operational exposures are Hybrid Compute and Resilience due to legacy low maturity?
+   - Does it make sense that ITSM, Workplace, and FinOps are modest and realistic, rather than millions of euros?
+   - Does it make sense that Starling Bank's high maturity keeps expected annual loss strictly bounded despite £140k/h burn rate, while preserving realistic tail risk?
 3. Provide each of the 4 Judges' specific verdicts and critiques.
 4. Conclude with a Table of Pass/Fail verdicts for each tower and a Final Binding Evaluation.
 

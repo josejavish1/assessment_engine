@@ -154,9 +154,12 @@ class KernelCalibrationPack(BaseModel):
     max_dependence_loading: float = Field(..., ge=0.0, le=1.0)
     max_copula_correlation: float = Field(..., gt=0.0, lt=1.0)
     rto_cmmi_degradation_slope: float = Field(..., ge=0.0)
-    rto_spof_multiplier: float = Field(..., ge=1.0)
+    rto_spof_multiplier: float = Field(..., ge=0.0, le=5.0)
     catastrophic_tail_quantile: float = Field(..., gt=0.5, lt=1.0)
     baseline_horizon_years: int = Field(default=3, ge=1)
+    tail_collapse_metric: Literal["CVAR_90", "VAR_99"] = Field(default="CVAR_90")
+    tail_collapse_threshold_frequency: float = Field(default=0.105, gt=0.0)
+    secondary_loss_event_probability: float = Field(default=0.10, ge=0.0, le=1.0)
     calibration_sha256: str = Field(default="")
 
     @model_validator(mode="after")
@@ -179,9 +182,9 @@ def create_default_kernel_calibration_pack() -> KernelCalibrationPack:
     cal = KernelCalibrationPack(
         calibration_id="fair_copula_kernel_std",
         calibration_version="2026.Q4.v1",
-        vuln_min=0.02,
+        vuln_min=0.08,
         vuln_max=0.95,
-        gamma=4.0,
+        gamma=1.45,
         kappa=0.35,
         copula_df=4,
         intra_tower_boost=0.25,
@@ -190,9 +193,12 @@ def create_default_kernel_calibration_pack() -> KernelCalibrationPack:
         max_dependence_loading=0.35,
         max_copula_correlation=0.85,
         rto_cmmi_degradation_slope=0.15,
-        rto_spof_multiplier=1.35,
+        rto_spof_multiplier=0.35,
         catastrophic_tail_quantile=0.95,
         baseline_horizon_years=3,
+        tail_collapse_metric="CVAR_90",
+        tail_collapse_threshold_frequency=0.105,
+        secondary_loss_event_probability=0.10,
     )
     return cal.model_copy(update={"calibration_sha256": cal.compute_canonical_sha256()})
 

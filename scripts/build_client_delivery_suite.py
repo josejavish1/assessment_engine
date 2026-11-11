@@ -80,6 +80,11 @@ def setup_client_workspace(client_id: str) -> tuple[Path, dict[str, Any], list[s
     # Sort towers numerically
     in_scope_towers.sort(key=lambda x: int(x[1:]) if x[1:].isdigit() else 99)
 
+    # Purge legacy out-of-scope tower directories to prevent stale artifacts
+    for existing_t in working_client_dir.glob("T*"):
+        if existing_t.is_dir() and existing_t.name not in in_scope_towers:
+            shutil.rmtree(existing_t)
+
     return working_client_dir, intel_data, in_scope_towers
 
 

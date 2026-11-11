@@ -718,7 +718,16 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             primary_loss_s = (
                 annual_downtime_s * effective_hourly_rate
             ) + replacement_loss_s
-            secondary_loss_s = event_counts * sec_sle_samples
+            # Open FAIR Secondary Loss Frequency: A secondary regulatory/breach event is conditional
+            # on primary operational events with probability secondary_loss_event_probability (Open FAIR O-RA standard).
+            p_sec = float(
+                getattr(self.calibration_pack, "secondary_loss_event_probability", 0.10)
+            )
+            if p_sec > 0.0 and f.secondary_loss_mean > 0.0:
+                sec_event_counts = rng.binomial(n=event_counts, p=p_sec)
+            else:
+                sec_event_counts = np.zeros(self.n_sims, dtype=np.int64)
+            secondary_loss_s = sec_event_counts * sec_sle_samples
 
             # Equivalent full-zone outage hours preserve blast_radius_alpha during zone convolution
             finding_equivalent_zone_hours[:, idx] = annual_downtime_s * alpha_effective
@@ -838,6 +847,17 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             allocated_finding_sim_primary + allocated_finding_sim_secondary
         )
 
+        # Monotonicity Invariant: Worst Crisis Event must at least bound the simulated maximum annual loss
+        for idx in range(n_f):
+            sim_max_finding = (
+                float(np.max(allocated_finding_sim_losses[:, idx]))
+                if self.n_sims > 0
+                else 0.0
+            )
+            finding_crisis_events[idx] = max(
+                finding_crisis_events[idx], sim_max_finding
+            )
+
         # 3. Aggregate Expectations and Quantiles
         total_primary_ale = float(np.mean(portfolio_primary_losses))
         total_secondary_ale = float(np.mean(retained_secondary_losses))
@@ -871,11 +891,23 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             t_worst_crisis = float(finding_crisis_events[worst_f_idx])
             t_worst_hours = float(finding_crisis_hours[worst_f_idx])
 
-            t_var_90 = float(np.percentile(t_alloc_sim_sum, 90))
+            t_raw_var_90 = float(np.percentile(t_alloc_sim_sum, 90))
             t_cvar_90 = self._cvar(t_alloc_sim_sum, 90.0)
             t_var_95 = float(np.percentile(t_alloc_sim_sum, 95))
             t_var_99 = float(np.percentile(t_alloc_sim_sum, 99))
             t_cvar_99 = self._cvar(t_alloc_sim_sum, 99.0)
+
+            # Solvency II Coherent Risk Measure: If raw VaR90 collapses to 0.0 due to Poisson low-frequency (lambda < 0.10)
+            # but expected loss (ALE) > 0.0, substitute with coherent CVaR90 to reflect tail severity.
+            if t_raw_var_90 <= 0.0 and t_allocated_ale > 0.0:
+                t_var_90 = t_cvar_90 if t_cvar_90 > 0.0 else t_var_99
+            else:
+                t_var_90 = t_raw_var_90
+
+            sim_t_max = (
+                float(np.max(t_alloc_sim_sum)) if len(t_alloc_sim_sum) > 0 else 0.0
+            )
+            t_worst_crisis = max(t_worst_crisis, sim_t_max, t_var_90)
 
             cmmi_vec = np.array(
                 [canonical_findings[i].cmmi_maturity for i in t_indices],
@@ -887,37 +919,44 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             else:
                 t_cmmi = float(np.mean(cmmi_vec))
 
-            f_results = [
-                FindingRiskResult(
-                    finding_id=canonical_findings[i].finding_id,
-                    title=canonical_findings[i].title,
-                    cmmi_maturity=canonical_findings[i].cmmi_maturity,
-                    mean_vuln=round(float(mean_vulns[i]), 4),
-                    mean_lef=round(float(mean_lefs[i]), 3),
-                    mean_sle=round(float(mean_sles[i]), 2),
-                    standalone_ale=round(float(standalone_finding_ales[i]), 2),
-                    portfolio_allocated_ale=round(float(allocated_finding_ales[i]), 2),
-                    var_90=round(
-                        float(np.percentile(allocated_finding_sim_losses[:, i], 90)), 2
-                    ),
-                    cvar_90=round(
-                        self._cvar(allocated_finding_sim_losses[:, i], 90.0), 2
-                    ),
-                    var_95=round(
-                        float(np.percentile(allocated_finding_sim_losses[:, i], 95)), 2
-                    ),
-                    var_99=round(
-                        float(np.percentile(allocated_finding_sim_losses[:, i], 99)), 2
-                    ),
-                    cvar_99=round(
-                        self._cvar(allocated_finding_sim_losses[:, i], 99.0), 2
-                    ),
-                    worst_crisis_event=round(float(finding_crisis_events[i]), 2),
-                    worst_crisis_rto_hours=round(float(finding_crisis_hours[i]), 2),
-                    dissonance_applied=finding_dissonance_flags[i],
+            f_results = []
+            for i in t_indices:
+                raw_f_var_90 = float(
+                    np.percentile(allocated_finding_sim_losses[:, i], 90)
                 )
-                for i in t_indices
-            ]
+                f_cvar_90 = self._cvar(allocated_finding_sim_losses[:, i], 90.0)
+                f_var_95 = float(np.percentile(allocated_finding_sim_losses[:, i], 95))
+                f_var_99 = float(np.percentile(allocated_finding_sim_losses[:, i], 99))
+                f_cvar_99 = self._cvar(allocated_finding_sim_losses[:, i], 99.0)
+                f_ale = float(allocated_finding_ales[i])
+
+                if raw_f_var_90 <= 0.0 and f_ale > 0.0:
+                    f_var_90 = f_cvar_90 if f_cvar_90 > 0.0 else f_var_99
+                else:
+                    f_var_90 = raw_f_var_90
+
+                f_worst_crisis = max(float(finding_crisis_events[i]), f_var_90)
+
+                f_results.append(
+                    FindingRiskResult(
+                        finding_id=canonical_findings[i].finding_id,
+                        title=canonical_findings[i].title,
+                        cmmi_maturity=canonical_findings[i].cmmi_maturity,
+                        mean_vuln=round(float(mean_vulns[i]), 4),
+                        mean_lef=round(float(mean_lefs[i]), 3),
+                        mean_sle=round(float(mean_sles[i]), 2),
+                        standalone_ale=round(float(standalone_finding_ales[i]), 2),
+                        portfolio_allocated_ale=round(f_ale, 2),
+                        var_90=round(f_var_90, 2),
+                        cvar_90=round(f_cvar_90, 2),
+                        var_95=round(f_var_95, 2),
+                        var_99=round(f_var_99, 2),
+                        cvar_99=round(f_cvar_99, 2),
+                        worst_crisis_event=round(f_worst_crisis, 2),
+                        worst_crisis_rto_hours=round(float(finding_crisis_hours[i]), 2),
+                        dissonance_applied=finding_dissonance_flags[i],
+                    )
+                )
 
             towers_dict[t_id] = TowerRiskResult(
                 tower_id=t_id,
@@ -937,6 +976,17 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 worst_crisis_rto_hours=round(t_worst_hours, 2),
             )
 
+        port_raw_var_90 = float(np.percentile(portfolio_convolved_losses, 90))
+        port_cvar_90 = self._cvar(portfolio_convolved_losses, 90.0)
+        port_var_95 = float(np.percentile(portfolio_convolved_losses, 95))
+        port_var_99 = float(np.percentile(portfolio_convolved_losses, 99))
+        port_cvar_99 = self._cvar(portfolio_convolved_losses, 99.0)
+
+        if port_raw_var_90 <= 0.0 and total_portfolio_ale > 0.0:
+            port_var_90 = port_cvar_90 if port_cvar_90 > 0.0 else port_var_99
+        else:
+            port_var_90 = port_raw_var_90
+
         return PortfolioRiskSummary(
             deterministic_seed_hash=seed_hash,
             currency_code=normalized_currency,
@@ -947,17 +997,11 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             three_year_cost_of_inaction=round(
                 total_portfolio_ale * self.inaction_horizon_years, 2
             ),
-            portfolio_var_90=round(
-                float(np.percentile(portfolio_convolved_losses, 90)), 2
-            ),
-            portfolio_cvar_90=round(self._cvar(portfolio_convolved_losses, 90.0), 2),
-            portfolio_var_95=round(
-                float(np.percentile(portfolio_convolved_losses, 95)), 2
-            ),
-            portfolio_var_99=round(
-                float(np.percentile(portfolio_convolved_losses, 99)), 2
-            ),
-            portfolio_cvar_99=round(self._cvar(portfolio_convolved_losses, 99.0), 2),
+            portfolio_var_90=round(port_var_90, 2),
+            portfolio_cvar_90=round(port_cvar_90, 2),
+            portfolio_var_95=round(port_var_95, 2),
+            portfolio_var_99=round(port_var_99, 2),
+            portfolio_cvar_99=round(port_cvar_99, 2),
             diversification_ratio=(
                 round(total_portfolio_ale / total_standalone_sum, 4)
                 if total_standalone_sum > 0
