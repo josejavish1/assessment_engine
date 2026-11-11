@@ -766,66 +766,93 @@ def derive_in_memory_fair_risks(
                 primary_downtime_loss + repl_cost_loss + sec_weighted_loss
             )
 
-            # 2. Resolve authoritative LEF
-            raw_lef = (
-                decomp.get("mean_lef")
-                or vec_out.get("mean_lef")
-                or eff_hc.get("lef")
-            )
-            if raw_lef is not None and float(raw_lef) > 0.0:
-                calc_lef = float(raw_lef)
-            else:
-                eff_tef = (
-                    float(tef_val)
-                    if tef_val is not None and float(tef_val) > 0.0
-                    else 1.2
-                )
-                vuln_val = float(
-                    (vec_in.get("vulnerability_Susceptibility") or {}).get(
-                        "effective_value"
-                    )
-                    or 0.18
-                )
-                calc_lef = round(min(2.5, max(0.05, eff_tef * vuln_val)), 4)
+            # Telemetry-driven extraction of declared contractual OpEx and fleet volumes (SR 11-7 / Zero-Magic)
+            import re
+            m_opex = re.search(r"(\d{2,3}(?:\.\d{3})*)\s*€\s+de\s+opex", finding_text + " " + business_risk, re.I)
+            m_fleet = re.search(r"(\d{2,4})\s*(?:port[aá]tiles|equipos|laptops|m[aá]quinas)", finding_text + " " + business_risk, re.I)
+            fleet_volume = int(m_fleet.group(1)) if m_fleet else int(eff_hc.get("fleet_volume") or 1)
 
-            # 3. Enforce strict bottom-up additive identity: SLE == sum of components
-            calc_sle = float(component_sum_sle)
+            if m_opex and physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE:
+                declared_opex = float(m_opex.group(1).replace(".", ""))
+                repl_cost_loss = int(round(declared_opex))
+                calc_lef = 1.0
+                calc_sle = float(repl_cost_loss)
+            elif fleet_volume > 1 and physics_profile.loss_physics == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION:
+                calc_lef = float(fleet_volume)
+                calc_sle = float(component_sum_sle)
+            else:
+                # 2. Resolve authoritative LEF
+                raw_lef = (
+                    decomp.get("mean_lef")
+                    or vec_out.get("mean_lef")
+                    or eff_hc.get("lef")
+                )
+                if raw_lef is not None and float(raw_lef) > 0.0:
+                    calc_lef = float(raw_lef)
+                else:
+                    eff_tef = (
+                        float(tef_val)
+                        if tef_val is not None and float(tef_val) > 0.0
+                        else 1.2
+                    )
+                    vuln_val = float(
+                        (vec_in.get("vulnerability_Susceptibility") or {}).get(
+                            "effective_value"
+                        )
+                        or 0.18
+                    )
+                    calc_lef = round(min(2.5, max(0.05, eff_tef * vuln_val)), 4)
+                calc_sle = float(component_sum_sle)
 
             # 4. Standalone ALE is strictly round(LEF * SLE)
             standalone_ale = int(round(calc_lef * calc_sle))
 
+            is_deterministic = (
+                physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE
+                or (fleet_volume > 1 and physics_profile.loss_physics == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION)
+            )
+            ledger_type = (
+                "LEDGER_B_DETERMINISTIC_OPEX"
+                if is_deterministic
+                else "LEDGER_A_STOCHASTIC"
+            )
+
             # 5. Bound Euler diversification discount strictly by physical archetype cap (0% to 25% max)
-            max_disc_pct = max(
-                0.0,
-                min(0.25, float(physics_profile.max_euler_ale_discount_pct)),
-            )
-            raw_requested_net = (
-                decomp.get("net_allocated_ale")
-                or vec_out.get("portfolio_allocated_ale")
-                or eff_hc.get("fair_ale_score")
-                or eff_hc.get("fair_ale")
-            )
-            if standalone_ale > 0:
-                if raw_requested_net is not None:
-                    candidate_net = int(
-                        round(float(raw_requested_net) * rate_mult)
-                    )
-                    raw_disc = max(0, standalone_ale - candidate_net)
-                    capped_disc = min(
-                        raw_disc, int(round(standalone_ale * max_disc_pct))
-                    )
-                else:
-                    capped_disc = int(
-                        round(standalone_ale * (max_disc_pct * 0.65))
-                    )
-                net_ale_int = standalone_ale - capped_disc
-            else:
+            if is_deterministic:
                 capped_disc = 0
-                net_ale_int = (
-                    int(round(float(raw_requested_net) * rate_mult))
-                    if raw_requested_net is not None
-                    else 0
+                net_ale_int = standalone_ale
+            else:
+                max_disc_pct = max(
+                    0.0,
+                    min(0.25, float(physics_profile.max_euler_ale_discount_pct)),
                 )
+                raw_requested_net = (
+                    decomp.get("net_allocated_ale")
+                    or vec_out.get("portfolio_allocated_ale")
+                    or eff_hc.get("fair_ale_score")
+                    or eff_hc.get("fair_ale")
+                )
+                if standalone_ale > 0:
+                    if raw_requested_net is not None:
+                        candidate_net = int(
+                            round(float(raw_requested_net) * rate_mult)
+                        )
+                        raw_disc = max(0, standalone_ale - candidate_net)
+                        capped_disc = min(
+                            raw_disc, int(round(standalone_ale * max_disc_pct))
+                        )
+                    else:
+                        capped_disc = int(
+                            round(standalone_ale * (max_disc_pct * 0.65))
+                        )
+                    net_ale_int = standalone_ale - capped_disc
+                else:
+                    capped_disc = 0
+                    net_ale_int = (
+                        int(round(float(raw_requested_net) * rate_mult))
+                        if raw_requested_net is not None
+                        else 0
+                    )
 
             intrinsic_ale = float(net_ale_int)
             intrinsic_p90 = float(round(net_ale_int * 1.55))
@@ -852,6 +879,9 @@ def derive_in_memory_fair_risks(
                 ),
                 "net_allocated_ale": int(round(calibrated_ale)),
                 "net_allocated_p90": int(round(calibrated_p90)),
+                "is_deterministic": is_deterministic,
+                "ledger_type": ledger_type,
+                "fleet_volume": fleet_volume,
             }
 
             risk_item: dict[str, Any] = {
