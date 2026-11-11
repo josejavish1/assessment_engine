@@ -11,8 +11,7 @@ import logging
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
-from types import MappingProxyType
-from typing import Any, Dict, Final, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 from assessment_engine.application.generate_global_radar_chart import render_radar_chart
 from assessment_engine.domain.actuarial_reconciler import ActuarialReconciler
@@ -489,28 +488,23 @@ class Volume1AsisASTCompiler:
                     except Exception as ex:
                         logger.debug("Fallback deriving FAIR risks in telemetry resolver: %s", ex)
 
-            baseline_factor = (
-                safe_float(fin.get("baseline_risk_factor"), locale=doc_lang)
-                or DEFAULT_BASELINE_RISK_FACTOR
-            )
-            corporate_ale = sum(tower_ales) if tower_ales else (annual_revenue * baseline_factor)
+            corporate_ale = sum(tower_ales) if tower_ales else 0.0
 
-        tail_multiplier = (
-            safe_float(fin.get("tail_risk_multiplier"), locale=doc_lang)
-            or DEFAULT_TAIL_RISK_MULTIPLIER
-        )
         corporate_p90 = (
-            safe_float(fin.get("total_fair_p90"), locale=doc_lang)
-            or safe_float(port_summary.get("portfolio_var_90"), locale=doc_lang)
-            or safe_float(fin.get("corporate_p90_tail_risk"), locale=doc_lang)
-            or safe_float(global_payload.get("total_fair_p90"), locale=doc_lang)
-            or (derived_p90_sum if derived_p90_sum > 0.0 else None)
-            or (corporate_ale * tail_multiplier)
+            safe_float(fin.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
+            or safe_float(port_summary.get("portfolio_var_90"), locale=doc_lang, allow_zero=True)
+            or safe_float(fin.get("corporate_p90_tail_risk"), locale=doc_lang, allow_zero=True)
+            or safe_float(global_payload.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
+            or (derived_p90_sum if derived_p90_sum > 0.0 else 0.0)
         )
 
         # 4. Cumulative 3-year exposure
-        var_3y_expected = corporate_ale * STRATEGIC_HORIZON_YEARS
-        var_3y_tail = (corporate_ale * STRATEGIC_HORIZON_YEARS) + (corporate_p90 * TAIL_STRESS_HORIZON_FACTOR)
+        var_3y_expected = corporate_ale * STRATEGIC_HORIZON_YEARS if corporate_ale > 0 else 0.0
+        var_3y_tail = (
+            (corporate_ale * STRATEGIC_HORIZON_YEARS) + (corporate_p90 * TAIL_STRESS_HORIZON_FACTOR)
+            if corporate_ale > 0
+            else 0.0
+        )
 
         domain_scenario_counts = fin.get("domain_scenario_counts") or fin.get("domain_scenarios") or {
             t_code: max(1, len([
@@ -1318,7 +1312,9 @@ class Volume1AsisASTCompiler:
             )
         )
 
-        from assessment_engine.domain.actuarial.maturity_band import get_canonical_scale_intervals
+        from assessment_engine.domain.actuarial.maturity_band import (
+            get_canonical_scale_intervals,
+        )
         canonical_intervals = get_canonical_scale_intervals()
         scale_definitions: List[Tuple[str, float, float, str]] = [
             (f"tomo_ch2_scale_lvl{i.level}_name", i.min_score, i.max_score, f"tomo_ch2_scale_lvl{i.level}_desc")
@@ -1377,7 +1373,6 @@ class Volume1AsisASTCompiler:
         nodes.append(ParagraphNode(text=p_intro, font_size=9.5, space_after=10))
 
         catalog = self._get_locale_catalog(doc_lang)
-        catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         fin_metrics = self._resolve_financial_telemetry(global_payload, tower_payloads, currency, doc_lang)
         total_ale = fin_metrics["corporate_ale"]
@@ -1433,34 +1428,25 @@ class Volume1AsisASTCompiler:
         )
         nodes.append(ParagraphNode(text=bridge_text, font_size=9.5, space_after=8))
 
-        from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
+        class AllocationRow:
+            def __init__(self, s_ale: float, net_ale: float, adj: float, pct: float):
+                self.standalone_ale = int(round(s_ale))
+                self.euler_net_contribution = int(round(net_ale))
+                self.diversification_adjustment = int(round(adj))
+                self.portfolio_weight_pct = round(pct, 1)
 
-        # Build raw standalone ALE map directly from active tower payloads (Bottom-Up)
-        raw_standalone_map: dict[str, float] = {}
+        row_map = {}
         for code, clean_tower_name, score, _, _ in domain_topology:
             code_u = code.upper()
             tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
-            s_ale = safe_float(tp.get("total_fair_ale") or tp.get("ale"), locale=doc_lang, allow_zero=True)
-            if s_ale is None or s_ale <= 0.0:
-                s_ale = float(total_ale) / max(1, len(domain_topology)) if total_ale > 0 else 0.0
-            raw_standalone_map[code] = float(s_ale)
+            s_ale = float(tp.get("standalone_fair_ale") or tp.get("total_fair_ale") or 0.0)
+            net_ale = float(tp.get("euler_net_ale") or tp.get("total_fair_ale") or tp.get("portfolio_allocated_ale") or s_ale)
+            adj = net_ale - s_ale
+            pct = (net_ale / float(total_ale) * 100.0) if total_ale > 0 else 0.0
+            row_map[code] = AllocationRow(s_ale=s_ale, net_ale=net_ale, adj=adj, pct=pct)
 
-        from assessment_engine.domain.actuarial_scale_calibrator import resolve_iso_currency_code
-        currency_code = str(
-            global_payload.get("currency_code")
-            or fin_metrics.get("currency_code")
-            or resolve_iso_currency_code(currency, locale=doc_lang)
-            or "USD"
-        ).upper()
-
-        decomp = EulerPortfolioAllocator.allocate_portfolio(
-            standalone_ales=raw_standalone_map,
-            total_portfolio_ale=total_ale,
-            currency_iso=currency_code,
-        )
-        target_ale_int = decomp.total_net_consolidated_ale
-        row_map = {r.tower_id: r for r in decomp.allocations}
-        reconciled_allocations = {r.tower_id: r.euler_net_contribution for r in decomp.allocations}
+        target_ale_int = int(round(total_ale))
+        reconciled_allocations = {code: row.euler_net_contribution for code, row in row_map.items()}
 
         col_dom_lbl = t("tomo_table5_col_domain", locale=doc_lang)
         col_cmmi_lbl = t("tomo_table5_col_cmmi", locale=doc_lang)
@@ -1507,8 +1493,12 @@ class Volume1AsisASTCompiler:
                 )
             )
 
+        subtotal_standalone = sum(r.standalone_ale for r in row_map.values())
+        total_adj = sum(r.diversification_adjustment for r in row_map.values())
+        overlap_pct = (abs(total_adj) / subtotal_standalone * 100.0) if subtotal_standalone > 0 else 0.0
+
         subtotal_lbl = t("tomo_table5_row_subtotal_gross", locale=doc_lang)
-        subtotal_str = format_currency(decomp.subtotal_gross_undiversified_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+        subtotal_str = format_currency(subtotal_standalone, currency_symbol=currency, locale=doc_lang, decimals=0)
         symbol_na = t("tomo_table5_symbol_na", locale=doc_lang)
 
         table4_rows.append(
@@ -1525,11 +1515,11 @@ class Volume1AsisASTCompiler:
         )
 
         adj_lbl = t("tomo_table5_row_copula_adjustment", locale=doc_lang)
-        copula_adj_str = format_currency(decomp.actuarial_copula_adjustment_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+        copula_adj_str = format_currency(total_adj, currency_symbol=currency, locale=doc_lang, decimals=0)
         badge_overlap = t(
             "tomo_table5_badge_copula_overlap",
             locale=doc_lang,
-            overlap_pct=format_number(float(decomp.actuarial_copula_overlap_pct), locale=doc_lang, decimals=1),
+            overlap_pct=format_number(float(overlap_pct), locale=doc_lang, decimals=1),
         )
 
         table4_rows.append(
@@ -1546,7 +1536,7 @@ class Volume1AsisASTCompiler:
         )
 
         tot_label = t("tomo_table5_row_total_net", locale=doc_lang)
-        net_tot_str = format_currency(decomp.total_net_consolidated_ale, currency_symbol=currency, locale=doc_lang, decimals=0)
+        net_tot_str = format_currency(target_ale_int, currency_symbol=currency, locale=doc_lang, decimals=0)
         pct_100_str = f"{format_number(100.0, locale=doc_lang, decimals=1)}%"
 
         table4_rows.append(

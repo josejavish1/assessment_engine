@@ -64,7 +64,7 @@ class ClientDossierV3(BaseModel):
     legal_entity_name: str = Field(..., description="Registered corporate legal entity name")
     industry_vertical_code: str = Field(..., description="Standardized industry vertical ID")
     primary_hq_country_iso: str = Field(..., pattern=r"^[A-Z]{2}$", description="Headquarters country ISO code")
-    output_locale: str = Field(default="es", description="Target deliverable language code, e.g., es, en, pt")
+    output_locale: str = Field(default="en", description="Target deliverable language code, e.g., en, es, pt")
     last_updated_utc: str = Field(..., description="ISO 8601 UTC timestamp of last modification")
     perimeter: PerimeterDefinition
     financials: FinancialParameters

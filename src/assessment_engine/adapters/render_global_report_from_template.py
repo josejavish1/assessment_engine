@@ -14,7 +14,7 @@ from docx.oxml import OxmlElement, ns, parse_xml
 from docx.shared import Inches, Pt
 
 from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
-from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
+from assessment_engine.domain.theme_registry import SemanticColorRole
 
 BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
@@ -1749,12 +1749,12 @@ def _normalize_burning_platform(bp_list: list) -> None:
 
 
 def _normalize_tower_bottom_lines(tbl_list: list) -> None:
-    """Ensure default score, band, and status_color in tower bottom lines."""
+    """Ensure default score, band, and status_color in tower bottom lines without greenwashing."""
     for item in tbl_list:
         if isinstance(item, dict):
-            item.setdefault("score", 4.0)
-            item.setdefault("band", "Managed")
-            item.setdefault("status_color", "green")
+            item.setdefault("score", "UNASSESSED")
+            item.setdefault("band", "UNASSESSED")
+            item.setdefault("status_color", "grey")
 
 
 def _normalize_global_report_dict(payload_dict: dict) -> None:

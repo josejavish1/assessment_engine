@@ -61,8 +61,6 @@ from assessment_engine.infrastructure.localization import (
 )
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
-P90_ALE_MULTIPLIER_FALLBACK: Final[float] = 2.5
-MAX_LOSS_P90_MULTIPLIER_FALLBACK: Final[float] = 1.5
 TIER1_THRESHOLD_MULTIPLIER: Final[float] = 1.5
 TIER2_THRESHOLD_MULTIPLIER: Final[float] = 0.5
 
@@ -416,21 +414,13 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
     if total_p90 <= 0.0:
         explicit_p90 = safe_float(b_data.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
-        total_p90 = (
-            explicit_p90
-            if explicit_p90 is not None and explicit_p90 > 0.0
-            else (global_fair_ale * P90_ALE_MULTIPLIER_FALLBACK)
-        )
+        total_p90 = explicit_p90 if explicit_p90 is not None and explicit_p90 > 0.0 else 0.0
     if total_max <= 0.0:
         explicit_max = safe_float(b_data.get("total_fair_max"), locale=doc_lang, allow_zero=True)
-        total_max = (
-            explicit_max
-            if explicit_max is not None and explicit_max > 0.0
-            else (total_p90 * MAX_LOSS_P90_MULTIPLIER_FALLBACK)
-        )
+        total_max = explicit_max if explicit_max is not None and explicit_max > 0.0 else 0.0
 
-    formatted_p90 = _format_integer_currency_safe(total_p90, t_sep, d_sep, locale=doc_lang)
-    formatted_max = _format_integer_currency_safe(total_max, t_sep, d_sep, locale=doc_lang)
+    formatted_p90 = _format_integer_currency_safe(total_p90, t_sep, d_sep, locale=doc_lang) if total_p90 > 0 else "UNQUANTIFIED"
+    formatted_max = _format_integer_currency_safe(total_max, t_sep, d_sep, locale=doc_lang) if total_max > 0 else "UNQUANTIFIED"
 
     intro_prose_p1 = t("fair_intro_prose_p1", locale=doc_lang)
     intro_prose_p2 = t("fair_intro_prose_p2", locale=doc_lang, client_name=client_name, formatted_ale=formatted_ale, currency=currency)
@@ -716,13 +706,9 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         raw_p90_candidate = r.get("p90") if r.get("p90") is not None else fair_metrics.get("p90")
         clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang, allow_zero=True)
         clean_ale_val = safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0
-        p90_val = (
-            clean_p90_candidate
-            if clean_p90_candidate is not None
-            else (clean_ale_val * P90_ALE_MULTIPLIER_FALLBACK)
-        )
-        formatted_ale_r = _format_integer_currency_safe(clean_ale_val, t_sep, d_sep, locale=doc_lang)
-        formatted_p90_r = _format_integer_currency_safe(p90_val, t_sep, d_sep, locale=doc_lang)
+        p90_val = clean_p90_candidate if clean_p90_candidate is not None else 0.0
+        formatted_ale_r = _format_integer_currency_safe(clean_ale_val, t_sep, d_sep, locale=doc_lang) if clean_ale_val > 0 else "UNQUANTIFIED"
+        formatted_p90_r = _format_integer_currency_safe(p90_val, t_sep, d_sep, locale=doc_lang) if p90_val > 0 else "UNQUANTIFIED"
         if r_idx == 0:
             formatted_ale_item = formatted_ale_r
 
@@ -753,13 +739,9 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         raw_p90_candidate = r.get("p90") if r.get("p90") is not None else fair_metrics.get("p90")
         clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang, allow_zero=True)
         clean_ale_val = safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0
-        p90_val = (
-            clean_p90_candidate
-            if clean_p90_candidate is not None
-            else (clean_ale_val * P90_ALE_MULTIPLIER_FALLBACK)
-        )
-        formatted_ale_r = _format_integer_currency_safe(clean_ale_val, t_sep, d_sep, locale=doc_lang)
-        formatted_p90_r = _format_integer_currency_safe(p90_val, t_sep, d_sep, locale=doc_lang)
+        p90_val = clean_p90_candidate if clean_p90_candidate is not None else 0.0
+        formatted_ale_r = _format_integer_currency_safe(clean_ale_val, t_sep, d_sep, locale=doc_lang) if clean_ale_val > 0 else "UNQUANTIFIED"
+        formatted_p90_r = _format_integer_currency_safe(p90_val, t_sep, d_sep, locale=doc_lang) if p90_val > 0 else "UNQUANTIFIED"
 
         if clean_ale_val > 0.0 and clean_ale_val >= tier1_threshold:
             tier_badge = t("tier_label_critical", locale=doc_lang)

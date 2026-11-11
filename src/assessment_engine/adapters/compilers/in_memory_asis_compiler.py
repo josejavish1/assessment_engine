@@ -18,11 +18,13 @@ from assessment_engine.domain.maturity_band import (
     ANNEX_MATURITY_BANDS,
     resolve_maturity_band,
 )
+from assessment_engine.domain.services.dynamic_custody_resolver import (
+    DynamicCustodyResolver,
+)
 from assessment_engine.domain.taxonomy_resolver import (
     extract_pillar_identifiers,
     get_taxonomy_resolver,
 )
-from assessment_engine.domain.services.dynamic_custody_resolver import DynamicCustodyResolver
 from assessment_engine.infrastructure.localization import (
     format_currency,
     format_number,
@@ -592,42 +594,45 @@ def derive_in_memory_fair_risks(
             raw_cap = re.sub(r"\s*\([KT]?\d+\)\s*$", "", raw_cap).strip()
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
-            deficit = float(eff_hc.get("deficit") or max(0.1, 5.0 - float(eff_hc.get("score") or 3.0)))
-            tef_val = float(eff_hc.get("threat_event_frequency") or eff_hc.get("tef") or max(0.1, round(deficit * 0.8, 2)))
-            lm_val = float(eff_hc.get("loss_magnitude") or eff_hc.get("lm") or max(0.5, round(deficit * 1.5, 2)))
-            if eff_hc.get("fair_ale") is not None:
-                raw_ale = float(eff_hc["fair_ale"])
-            elif eff_hc.get("fair_ale_score") is not None:
+            vec = eff_hc.get("actuarial_input_vector") or {}
+            vec_out = vec.get("outputs") or {}
+            vec_in = vec.get("inputs") or {}
+
+            tef_val = (
+                (vec_in.get("tef_pert_mode") or {}).get("effective_value")
+                or eff_hc.get("threat_event_frequency")
+                or eff_hc.get("tef")
+            )
+            lm_val = eff_hc.get("loss_magnitude") or eff_hc.get("lm")
+
+            if eff_hc.get("fair_ale_score") is not None:
                 raw_ale = float(eff_hc["fair_ale_score"])
-            elif eff_hc.get("ale") is not None:
-                raw_ale = float(eff_hc["ale"])
+            elif vec_out.get("portfolio_allocated_ale") is not None:
+                raw_ale = float(vec_out["portfolio_allocated_ale"])
+            elif eff_hc.get("fair_ale") is not None:
+                raw_ale = float(eff_hc["fair_ale"])
             else:
-                raw_ale = float(tef_val * lm_val * 1000.0)
+                raw_ale = None
 
             if eff_hc.get("fair_p90_score") is not None:
                 raw_p90 = float(eff_hc["fair_p90_score"])
+            elif vec_out.get("var_90") is not None:
+                raw_p90 = float(vec_out["var_90"])
             else:
-                raw_p90 = float(raw_ale * 2.5)
+                raw_p90 = None
 
             ownership = str(eff_hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip().upper()
             is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")
 
-            intrinsic_ale = raw_ale * rate_mult
-            intrinsic_p90 = raw_p90 * rate_mult
+            intrinsic_ale = (raw_ale * rate_mult) if raw_ale is not None else None
+            intrinsic_p90 = (raw_p90 * rate_mult) if raw_p90 is not None else None
 
-            # Calibrate actuarial LEF and SLE (RFC 055)
-            if tef_val >= 1.0:
-                calc_lef = min(0.50, max(0.08, tef_val * 0.09))
-            else:
-                calc_lef = max(0.05, tef_val)
-            if eff_hc.get("sle") is not None:
-                calc_sle = float(eff_hc["sle"]) * rate_mult
-            else:
-                calc_sle = intrinsic_ale / calc_lef if (intrinsic_ale > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
+            calc_lef = vec_out.get("mean_lef") or eff_hc.get("lef")
+            calc_sle = vec_out.get("mean_sle") or eff_hc.get("sle")
 
-            # Enforce zero financial double counting in ledger totals for tangential contributors:
-            calibrated_ale = 0.0 if is_tangential else intrinsic_ale
-            calibrated_p90 = 0.0 if is_tangential else intrinsic_p90
+            # Tangential contributor custody zeroing
+            calibrated_ale = 0.0 if is_tangential else (intrinsic_ale if intrinsic_ale is not None else 0.0)
+            calibrated_p90 = 0.0 if is_tangential else (intrinsic_p90 if intrinsic_p90 is not None else 0.0)
 
             risk_item: dict[str, Any] = {
                 "id": eff_hc.get("id", f"RVS{r_counter:02d}"),
@@ -639,8 +644,8 @@ def derive_in_memory_fair_risks(
                 "business_risk": business_risk,
                 "tef": tef_val,
                 "lm": lm_val,
-                "lef": round(calc_lef, 4),
-                "sle": round(calc_sle, 2),
+                "lef": round(float(calc_lef), 4) if calc_lef is not None else None,
+                "sle": round(float(calc_sle), 2) if calc_sle is not None else None,
                 "ale": calibrated_ale,
                 "p90": calibrated_p90,
                 "intrinsic_ale": intrinsic_ale,
@@ -673,74 +678,39 @@ def derive_in_memory_fair_risks(
             r_counter += 1
 
     if not risks_data_list:
-        from assessment_engine.application.services.actuarial_inference_engine import (
-            ActuarialInferenceEngine,
-            TenantActuarialProfile,
-        )
-
-        doc_meta = b_data.get("document_meta", {}) if isinstance(b_data.get("document_meta"), dict) else {}
-        fin_telemetry = b_data.get("financial_telemetry", {}) if isinstance(b_data.get("financial_telemetry"), dict) else {}
-        rev = float(fin_telemetry.get("annual_revenue") or doc_meta.get("annual_revenue") or b_data.get("annual_revenue") or 100_000_000.0)
-        vertical = str(doc_meta.get("industry_vertical") or b_data.get("industry_vertical") or "general")
-        profile = TenantActuarialProfile(annual_revenue=rev, industry_vertical=vertical, currency_code=currency)
-        act_engine = ActuarialInferenceEngine(default_profile=profile)
-
-        for p_num in range(1, 6):
-            p_id = f"{current_tower_id}.P{p_num}"
-            p_name = resolver.resolve_pillar_by_any_reference(
-                p_id,
-                default=f"Pillar {p_id}",
-                locale=doc_lang,
-                tower_id=current_tower_id,
-            )
-            latent = act_engine.calculate_latent_risk(
-                tower_code=current_tower_id,
-                pillar_id=p_id,
-                pillar_name=p_name,
-            )
-            latent_item: dict[str, Any] = {
-                "id": f"RVS{r_counter:02d}",
-                "node_id": f"NODE-{r_counter:03d}",
-                "pillar": p_name,
-                "pillar_id": p_id,
-                "capability": p_name,
-                "finding": latent.rationale,
-                "business_risk": f"Epistemic uncertainty and unobserved control environment in {p_name}",
-                "tef": 2.5,
-                "lm": 3.0,
-                "lef": latent.loss_event_frequency,
-                "sle": latent.single_loss_expectancy,
-                "ale": latent.annual_loss_expectancy,
-                "p90": latent.value_at_risk_90,
-                "intrinsic_ale": latent.annual_loss_expectancy,
-                "intrinsic_p90": latent.value_at_risk_90,
-                "ownership_type": "PRIMARY_CUSTODIAN",
-                "epistemic_state": "UNOBSERVED_BLINDSPOT",
-                "primary_risk_ref": None,
-                "contributing_towers": [],
-                "evidence": "Unobserved telemetry during discovery",
-                "mitigation_directive": f"Establish operational visibility and controls for {p_name}",
-                "initiating_threat": "Governance Blindspot",
-                "control_vulnerability": "Unverified control environment",
-                "primary_impact": "Latent unmitigated financial loss",
-                "scope_note": "Calculated via Open FAIR prior distributions",
-                "custody_resolution_metadata": {},
-                "ale_str": format_currency(
-                    latent.annual_loss_expectancy,
-                    currency_symbol=currency,
-                    locale=doc_lang,
-                    decimals=0,
-                ),
-                "p90_str": format_currency(
-                    latent.value_at_risk_90,
-                    currency_symbol=currency,
-                    locale=doc_lang,
-                    decimals=0,
-                ),
-            }
-            risks_data_list.append(latent_item)
-            risks_by_pillar.setdefault(p_name, []).append(latent_item)
-            r_counter += 1
+        unassessed_item: dict[str, Any] = {
+            "id": f"RVS{r_counter:02d}",
+            "node_id": f"NODE-{r_counter:03d}",
+            "pillar": "Unassessed Scope",
+            "pillar_id": f"{current_tower_id}.P0",
+            "capability": "No empirical risk scenarios identified",
+            "finding": "This operational domain contains zero empirical findings in the assessment scope.",
+            "business_risk": "Unassessed control environment (No empirical exposure calculated).",
+            "tef": None,
+            "lm": None,
+            "lef": None,
+            "sle": None,
+            "ale": 0.0,
+            "p90": 0.0,
+            "intrinsic_ale": 0.0,
+            "intrinsic_p90": 0.0,
+            "ownership_type": "PRIMARY_CUSTODIAN",
+            "epistemic_state": "UNASSESSED_OUT_OF_SCOPE",
+            "primary_risk_ref": None,
+            "contributing_towers": [],
+            "evidence": "Out of scope / unassessed in current telemetry",
+            "mitigation_directive": "Collect telemetry and audit controls for this operational domain.",
+            "initiating_threat": "Unassessed Scope",
+            "control_vulnerability": "Unassessed",
+            "primary_impact": "None evaluated",
+            "scope_note": "No empirical findings in assessment payload",
+            "custody_resolution_metadata": {},
+            "ale_str": "UNQUANTIFIED",
+            "p90_str": "UNQUANTIFIED",
+            "sle_str": "UNQUANTIFIED",
+        }
+        risks_data_list.append(unassessed_item)
+        risks_by_pillar.setdefault("Unassessed Scope", []).append(unassessed_item)
 
     return risks_data_list, risks_by_pillar
 
@@ -762,8 +732,12 @@ def _get_global_gatekeeper():
     if _CACHED_GATEKEEPER is not None:
         return _CACHED_GATEKEEPER
     try:
-        from assessment_engine.infrastructure.ontology.taxonomy_loader import DomainTaxonomyRegistry
-        from assessment_engine.domain.validation.semantic_gatekeeper import OntologicalGatekeeper
+        from assessment_engine.domain.validation.semantic_gatekeeper import (
+            OntologicalGatekeeper,
+        )
+        from assessment_engine.infrastructure.ontology.taxonomy_loader import (
+            DomainTaxonomyRegistry,
+        )
 
         repo_root = _find_repo_root()
         ontology_file = repo_root / "engine_config/ontologies/global_tech_ontology.yaml"
@@ -795,7 +769,9 @@ def _resolve_pillar_kpi_fallback(tower_id: str, pillar_id: str, doc_lang: str) -
                     if kpis:
                         raw_first = str(kpis[0].get("kpi_name", "")).strip()
                         raw_last = str(kpis[-1].get("kpi_name", "")).strip()
-                        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                        from assessment_engine.domain.taxonomy_resolver import (
+                            get_taxonomy_resolver,
+                        )
                         res = get_taxonomy_resolver()
                         first_kpi = res.resolve_capability_name(raw_first, default=raw_first, locale=doc_lang)
                         last_kpi = res.resolve_capability_name(raw_last, default=raw_last, locale=doc_lang)
@@ -1245,7 +1221,7 @@ def _reconcile_contradictory_replication_claims(
     if not paragraphs:
         return paragraphs
     if _ASYNC_WITHOUT_METROCLUSTER_RE.search(full_context_text):
-        norm_lang = (doc_lang or "es").strip().lower()
+        norm_lang = (doc_lang or "en").strip().lower()
         replacement = (
             "replicación asíncrona programada (sin conmutación síncrona activa)"
             if norm_lang.startswith("es")
@@ -1396,11 +1372,6 @@ def _sanitize_architectural_narrative(
     raw_paras = _chunk_monolithic_paragraph(desc, doc_lang)
 
     prefixes = _resolve_adversative_prefixes(doc_lang)
-    anaphoric_prefixes = [
-        str(item).strip().lower()
-        for item in get_localized_list("anaphoric_prefixes", locale=doc_lang, default=[])
-        if str(item).strip()
-    ]
     raw_art_map = t("compiler_demonstrative_replacements", locale=doc_lang, default={})
     art_map: dict[str, str] = raw_art_map if isinstance(raw_art_map, dict) else {}
 
@@ -1537,7 +1508,9 @@ def derive_in_memory_maturity_matrix(
     with strict ontological gatekeeping and KPI-anchored causal alignment.
     """
     from assessment_engine.domain.ontology.models import ValidationVerdict
-    from assessment_engine.domain.validation.semantic_gatekeeper import OntologicalGatekeeper
+    from assessment_engine.domain.validation.semantic_gatekeeper import (
+        OntologicalGatekeeper,
+    )
 
     resolver = get_taxonomy_resolver()
     active_gatekeeper = gatekeeper or (
@@ -1750,7 +1723,9 @@ def derive_in_memory_maturity_matrix(
         else:
             justification = f"• **{lbl_neg}:** {clean_f.rstrip('.')}."
 
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
 
         justification = restore_locale_diacritics(justification, doc_lang)
 

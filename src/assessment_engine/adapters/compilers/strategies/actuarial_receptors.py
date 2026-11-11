@@ -8,11 +8,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
+from assessment_engine.domain.actuarial.receptor_allocator import (
+    ActuarialVectorAllocator,
+)
 from assessment_engine.domain.schemas.ast import (
     BaseNode as ASTNode,
+)
+from assessment_engine.domain.schemas.ast import (
     CellNode,
     HeadingNode,
     ParagraphNode,
@@ -24,8 +28,6 @@ from assessment_engine.domain.taxonomy.archetype_registry import (
     LossArchetypeType,
     get_actuarial_archetype_registry,
 )
-from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
-from assessment_engine.domain.actuarial.receptor_allocator import ActuarialVectorAllocator
 from assessment_engine.infrastructure.localization import format_number, t
 
 
@@ -136,14 +138,12 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
         total_fmt = f"{format_number(total_val, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
 
         # Discretize Percentage Weights to strictly sum to 100.0%
-        pct_map = EulerPortfolioAllocator._hare_niemeyer_percentage_discretize({
-            "alpha": w_alpha * 100.0,
-            "beta": w_beta * 100.0,
-            "gamma": w_gamma * 100.0,
-        })
-        p_alpha_str = f"{format_number(float(pct_map['alpha']), locale=ctx.meta_lang, decimals=1)}%"
-        p_beta_str = f"{format_number(float(pct_map['beta']), locale=ctx.meta_lang, decimals=1)}%"
-        p_gamma_str = f"{format_number(float(pct_map['gamma']), locale=ctx.meta_lang, decimals=1)}%"
+        p_a = round(w_alpha * 100.0, 1)
+        p_b = round(w_beta * 100.0, 1)
+        p_c = round(100.0 - (p_a + p_b), 1)
+        p_alpha_str = f"{format_number(p_a, locale=ctx.meta_lang, decimals=1)}%"
+        p_beta_str = f"{format_number(p_b, locale=ctx.meta_lang, decimals=1)}%"
+        p_gamma_str = f"{format_number(p_c, locale=ctx.meta_lang, decimals=1)}%"
         p_tot_str = f"{format_number(100.0, locale=ctx.meta_lang, decimals=1)}%"
 
         # Dynamic Tenant Theme Colors
@@ -240,7 +240,9 @@ class AvailabilityOutageStrategy(BaseReceptorStrategy):
         arch = ctx.operational_archetype.upper()
         beta_map = ctx.loc_branch.get("annex_ch4_context_beta", {})
 
-        from assessment_engine.domain.actuarial.financial_profile import IndustryArchetype
+        from assessment_engine.domain.actuarial.financial_profile import (
+            IndustryArchetype,
+        )
         resolved_arch = IndustryArchetype.from_str(arch)
 
         if resolved_arch in (IndustryArchetype.PROCESS_MANUFACTURING_OT, IndustryArchetype.DEFERRED_NETWORK_LOGISTICS):
