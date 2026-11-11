@@ -3807,6 +3807,80 @@ class PayloadToASTBridge:
         global_rank = hc.get("global_rank", 1)
         share_pct = float(hc.get("share_pct") or 0.0)
 
+        # In-Place Compact Governance Stub (SR 11-7 Contiguous Index Bijection)
+        if hc.get("quantification_status") == "UNQUANTIFIED_MATURITY_GAP":
+            card_id = raw_id
+            display_title = str(hc.get("title") or r_cap or p_name)
+            finding_text = str(hc.get("finding") or "")
+            risk_text = str(hc.get("business_risk") or "")
+            is_es = (meta_lang == "es")
+            status_badge = (
+                "CONTROL DE GOBERNANZA (CUESTIONARIO)"
+                if is_es
+                else "GOVERNANCE CONTROL GAP (SURVEY)"
+            )
+            desc_text = (
+                f"{finding_text}\n\n_{risk_text}_"
+                if risk_text and risk_text != finding_text
+                else finding_text
+            )
+            impact_stub = (
+                "Brecha de madurez metodológica detectada en evaluación CMMI. "
+                "Requiere telemetría operativa para cuantificación actuarial estocástica (Exposición directa asignada: 0 €/año)."
+                if is_es
+                else "Governance maturity gap identified in CMMI survey. "
+                "Requires field telemetry for stochastic actuarial quantification (Direct exposure assigned: 0 €/yr)."
+            )
+
+            return TableNode(
+                rows=[
+                    TableRowNode(
+                        cells=[
+                            CellNode(
+                                text=f"**[{card_id}] {display_title}**",
+                                font_size=9.0,
+                                bg_color="F1F5F9",
+                                bold=True,
+                                grid_span=8,
+                                align="LEFT",
+                            ),
+                            CellNode(
+                                text=f"**{status_badge}**",
+                                font_size=8.0,
+                                bg_color="E2E8F0",
+                                grid_span=4,
+                                align="RIGHT",
+                            ),
+                        ],
+                        cant_split=True,
+                    ),
+                    TableRowNode(
+                        cells=[
+                            CellNode(
+                                text=f"**{t('risk_card_vulnerability_label', locale=meta_lang)}:**\n{desc_text}",
+                                font_size=8.0,
+                                bg_color="FFFFFF",
+                                grid_span=8,
+                                border_left_color="94A3B8",
+                                border_left_size=24,
+                                align="LEFT",
+                            ),
+                            CellNode(
+                                text=f"**{t('risk_card_operational_impact_label', locale=meta_lang)}:**\n{impact_stub}",
+                                font_size=8.0,
+                                bg_color="FFFFFF",
+                                grid_span=4,
+                                border_left_color="CBD5E1",
+                                border_left_size=24,
+                                align="LEFT",
+                            ),
+                        ],
+                        cant_split=True,
+                    ),
+                ],
+                cant_split=True,
+            )
+
         # 1. Authoritative Actuarial Reconciliation & Scale Calibration
         authoritative_ale = float(hc.get("intrinsic_ale") or hc.get("ale") or hc.get("ale_val") or 0.0)
         raw_tef = float(hc.get("tef") or 1.0)

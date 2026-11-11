@@ -605,20 +605,81 @@ def derive_in_memory_fair_risks(
             raw_cap = re.sub(r"\s*\([KT]?\d+\)\s*$", "", raw_cap).strip()
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
-            # Quarantine synthetic survey boilerplate into epistemic maturity gaps register
+            # If finding is survey boilerplate, render In-Place Compact Governance Stub (SR 11-7 Contiguous Index Bijection)
             if physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE:
-                gap_item = {
-                    "id": eff_hc.get("id", f"GAP-{r_counter:02d}"),
-                    "pillar": pillar_name,
-                    "pillar_id": p_id,
+                gap_id = f"RVS{r_counter:02d}"
+                r_counter += 1
+                stub_decomp = {
+                    "currency_iso": (currency or "EUR").upper(),
+                    "mean_lef": 0.0,
+                    "expected_downtime_loss": 0,
+                    "expected_replacement_cost": 0,
+                    "expected_secondary_loss": 0,
+                    "gross_mean_sle": 0,
+                    "gross_standalone_ale": 0,
+                    "standalone_ale": 0,
+                    "euler_overlap_adjustment_ale": 0,
+                    "euler_diversification_credit": 0,
+                    "net_allocated_ale": 0,
+                    "euler_discount_pct": 0.0,
+                    "gross_standalone_p90": 0,
+                    "net_allocated_p90": 0,
+                    "loss_physics": physics_profile.loss_physics.value,
+                    "epistemic_state": physics_profile.epistemic_state.value,
+                    "ledger_type": "LEDGER_A_STOCHASTIC",
+                    "is_deterministic": False,
+                    "fleet_volume": 1,
+                    "rto_hours": 0.0,
+                    "hourly_burn_rate": 0.0,
+                }
+                stub_item: dict[str, Any] = {
+                    "id": gap_id,
+                    "finding_id": gap_id,
+                    "title": capability,
+                    "name": capability,
                     "capability": capability,
+                    "pillar_id": p_id,
+                    "pillar_name": pillar_name,
+                    "pillar": pillar_name,
                     "finding": finding_text,
+                    "technical_failure_mechanism": finding_text,
+                    "control_vulnerability": finding_text,
                     "business_risk": business_risk,
+                    "primary_impact": business_risk,
+                    "operational_impact": business_risk,
+                    "impact_severity": "LOW",
+                    "severity": "LOW",
+                    "threat_event_frequency": 0.0,
+                    "tef": 0.0,
+                    "loss_magnitude": 1.0,
+                    "lm": 1.0,
+                    "lef": 0.0,
+                    "sle": 0.0,
+                    "ale": 0.0,
+                    "p90": 0.0,
+                    "gross_standalone_ale": 0.0,
+                    "euler_overlap_adjustment_ale": 0.0,
+                    "intrinsic_ale": 0.0,
+                    "intrinsic_p90": 0.0,
+                    "ownership_type": "PRIMARY_CUSTODIAN",
+                    "quantification_status": "UNQUANTIFIED_MATURITY_GAP",
                     "epistemic_state": physics_profile.epistemic_state.value,
                     "epistemic_notice": "Control maturity gap inferred from survey score; empirical telemetry required for FAIR quantification.",
+                    "evidence": eff_hc.get("evidence", ""),
+                    "mitigation_directive": eff_hc.get("mitigation_directive", ""),
+                    "initiating_threat": eff_hc.get("initiating_threat", ""),
+                    "scope_note": eff_hc.get("scope_note", ""),
+                    "custody_resolution_metadata": eff_hc.get("custody_resolution_metadata", {}),
+                    "loss_physics": physics_profile.loss_physics.value,
+                    "max_euler_ale_discount_pct": 0.0,
+                    "max_euler_var_discount_pct": 0.0,
+                    "ale_str": "0 €",
+                    "p90_str": "0 €",
+                    "sle_str": "0 €",
+                    "additive_loss_decomposition": stub_decomp,
                 }
-                b_data.setdefault("epistemic_maturity_gaps", []).append(gap_item)
-                r_counter += 1
+                risks_data_list.append(stub_item)
+                risks_by_pillar.setdefault(pillar_name, []).append(stub_item)
                 continue
 
             vec = eff_hc.get("actuarial_input_vector") or {}
@@ -901,6 +962,19 @@ def derive_in_memory_fair_risks(
         }
         risks_data_list.append(unassessed_item)
         risks_by_pillar.setdefault("Unassessed Scope", []).append(unassessed_item)
+
+    # Strict Contiguous Index Bijection Assertion (SR 11-7 / Zero-Gap Mandate)
+    actual_rvs_ids = [
+        str(r.get("id"))
+        for r in risks_data_list
+        if str(r.get("id", "")).startswith("RVS")
+    ]
+    expected_rvs_ids = [f"RVS{i:02d}" for i in range(1, len(actual_rvs_ids) + 1)]
+    if actual_rvs_ids != expected_rvs_ids:
+        raise ValueError(
+            f"Index Bijection Violation in Tower {current_tower_id}: "
+            f"Generated IDs {actual_rvs_ids} do not match contiguous sequence {expected_rvs_ids}."
+        )
 
     return risks_data_list, risks_by_pillar
 
