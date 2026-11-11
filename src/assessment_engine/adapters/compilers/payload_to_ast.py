@@ -3828,9 +3828,15 @@ class PayloadToASTBridge:
         vec_outputs = vec.get("outputs") or {}
         vec_inputs = vec.get("inputs") or {}
 
-        canonical_ale = float(vec_outputs.get("portfolio_allocated_ale") or hc.get("fair_ale_score") or 0.0)
-        canonical_sle = float(vec_outputs.get("mean_sle") or 0.0)
-        canonical_lef = float(vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
+        canonical_ale = float(
+            vec_outputs.get("portfolio_allocated_ale")
+            or hc.get("fair_ale_score")
+            or hc.get("ale")
+            or hc.get("intrinsic_ale")
+            or 0.0
+        )
+        canonical_sle = float(vec_outputs.get("mean_sle") or hc.get("sle") or 0.0)
+        canonical_lef = float(vec_outputs.get("mean_lef") or hc.get("lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
 
         eff_recovery_hours = float(
             (vec_inputs.get("rto_hours_mode") or {}).get("effective_value")

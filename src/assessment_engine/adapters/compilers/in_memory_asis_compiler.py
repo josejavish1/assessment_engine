@@ -650,6 +650,9 @@ def derive_in_memory_fair_risks(
                 "p90": calibrated_p90,
                 "intrinsic_ale": intrinsic_ale,
                 "intrinsic_p90": intrinsic_p90,
+                "actuarial_input_vector": eff_hc.get("actuarial_input_vector"),
+                "fair_ale_score": eff_hc.get("fair_ale_score"),
+                "fair_p90_score": eff_hc.get("fair_p90_score"),
                 "ownership_type": ownership,
                 "primary_risk_ref": (str(eff_hc.get("primary_risk_ref") or "").strip() or None) if is_tangential else None,
                 "contributing_towers": eff_hc.get("contributing_towers", []) if not is_tangential else [],
@@ -1765,6 +1768,7 @@ def derive_in_memory_maturity_matrix(
             )
             if not cleaned_p:
                 continue
+            cleaned_p = re.sub(r"([.)])([A-ZÁÉÍÓÚ])", r"\1 \2", cleaned_p)
             unique_sents: list[str] = []
             for sent in re.split(r"(?<=[.!?])\s+", cleaned_p):
                 norm_s = re.sub(r"\W+", "", sent).lower()
