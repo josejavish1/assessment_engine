@@ -13,13 +13,10 @@ Multilingual lexical tokens are loaded strictly from external declarative config
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
-from functools import lru_cache
-from pathlib import Path
 from typing import Any, Final, Mapping, Sequence
 
 from assessment_engine.domain.taxonomy.archetype_registry import (
@@ -165,25 +162,26 @@ class AdditiveLossDecomposition:
         }
 
 
-@lru_cache(maxsize=1)
-def _load_external_physics_lexicon() -> dict[str, Sequence[re.Pattern[str]]]:
-    """Loads multilingual semantic patterns from external declarative configuration if present."""
-    candidates = (
-        Path("engine_config/taxonomy/finding_physics_lexicon.json"),
-        Path(__file__).resolve().parents[4] / "engine_config" / "taxonomy" / "finding_physics_lexicon.json",
-    )
-    for path in candidates:
-        if path.is_file():
-            try:
-                raw_data = json.loads(path.read_text(encoding="utf-8"))
-                return {
-                    key: tuple(re.compile(pat, re.I) for pat in patterns if isinstance(pat, str))
-                    for key, patterns in raw_data.items()
-                    if isinstance(patterns, list)
-                }
-            except (OSError, ValueError):
-                break
-    return {}
+_REGISTERED_PHYSICS_LEXICON: dict[str, Sequence[re.Pattern[str]]] = {}
+
+
+def register_physics_lexicon(
+    raw_data: Mapping[str, Sequence[str]],
+) -> None:
+    """Registers multilingual semantic patterns into domain classifier without filesystem I/O."""
+    global _REGISTERED_PHYSICS_LEXICON
+    _REGISTERED_PHYSICS_LEXICON = {
+        key: tuple(
+            re.compile(pat, re.I) for pat in patterns if isinstance(pat, str)
+        )
+        for key, patterns in raw_data.items()
+        if isinstance(patterns, (list, tuple))
+    }
+
+
+def _get_external_physics_lexicon() -> dict[str, Sequence[re.Pattern[str]]]:
+    """Retrieves the registered declarative lexicon."""
+    return _REGISTERED_PHYSICS_LEXICON
 
 
 class PolymorphicFindingClassifier:
@@ -307,7 +305,7 @@ class PolymorphicFindingClassifier:
     ) -> bool:
         if any(p.search(corpus) for p in builtin_patterns):
             return True
-        ext_patterns = _load_external_physics_lexicon().get(lexicon_key, ())
+        ext_patterns = _get_external_physics_lexicon().get(lexicon_key, ())
         return any(p.search(corpus) for p in ext_patterns)
 
     @classmethod

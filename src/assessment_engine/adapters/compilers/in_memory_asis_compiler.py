@@ -991,6 +991,24 @@ def _find_repo_root() -> Path:
     return current.parents[4]
 
 
+def _bootstrap_physics_lexicon() -> None:
+    try:
+        repo_root = _find_repo_root()
+        lex_path = repo_root / "engine_config" / "taxonomy" / "finding_physics_lexicon.json"
+        if lex_path.is_file():
+            with open(lex_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+                register_physics_lexicon,
+            )
+            register_physics_lexicon(data)
+    except Exception as exc:
+        logger.debug("Could not bootstrap physics lexicon: %s", exc)
+
+
+_bootstrap_physics_lexicon()
+
+
 def _get_global_gatekeeper():
     global _CACHED_GATEKEEPER
     if _CACHED_GATEKEEPER is not None:

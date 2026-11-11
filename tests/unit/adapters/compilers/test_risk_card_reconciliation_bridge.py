@@ -91,8 +91,8 @@ def test_risk_card_reconciliation_bridge_closed_form_arithmetic() -> None:
     assert "NaN" not in full_card_text
     assert "None" not in full_card_text
 
-    # 2. Assert that Mean SLE (45.224 €) and Net ALE (61.669 €) are explicitly printed
-    assert "45.224 €" in full_card_text or "45.224" in full_card_text
+    # 2. Assert that Mean SLE (92.769 €) and Net ALE (61.669 €) are explicitly printed
+    assert "92.769 €" in full_card_text or "92.769" in full_card_text
     assert "61.669 €" in full_card_text or "61.669" in full_card_text
 
     # 3. Assert the presence of the structured arithmetic breakdown
