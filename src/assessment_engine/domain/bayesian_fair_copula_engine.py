@@ -142,12 +142,12 @@ class FindingTelemetry:
                 f"TEF PERT ordering violated: min ({self.tef_pert_min}) <= mode ({self.tef_pert_mode}) <= max ({self.tef_pert_max})"
             )
         if (
-            self.rto_hours_min <= 0.0
-            or self.rto_hours_mode <= 0.0
-            or self.rto_hours_max <= 0.0
+            self.rto_hours_min < 0.0
+            or self.rto_hours_mode < 0.0
+            or self.rto_hours_max < 0.0
         ):
             raise ValueError(
-                f"RTO PERT parameters must all be > 0.0, got min={self.rto_hours_min}, "
+                f"RTO PERT parameters must all be >= 0.0, got min={self.rto_hours_min}, "
                 f"mode={self.rto_hours_mode}, max={self.rto_hours_max}"
             )
         if not (self.rto_hours_min <= self.rto_hours_mode <= self.rto_hours_max):

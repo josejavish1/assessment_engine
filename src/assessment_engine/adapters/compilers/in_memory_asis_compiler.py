@@ -581,6 +581,17 @@ def derive_in_memory_fair_risks(
             resolved_list = custody_resolver.resolve_portfolio([hc], current_tower_id=current_tower_id)
             eff_hc = resolved_list[0] if resolved_list else hc
 
+            from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+                EpistemicEvidenceState,
+                FindingLossPhysics,
+                PolymorphicFindingClassifier,
+            )
+
+            physics_profile = PolymorphicFindingClassifier.classify_finding(
+                hc=eff_hc,
+                tower_id=current_tower_id,
+            )
+
             # Prioritize risk title, capability name, or finding over target_state (RFC 085 Semantic Inversion Fix)
             import re
             raw_cap = str(
@@ -593,6 +604,22 @@ def derive_in_memory_fair_risks(
             raw_cap = re.sub(r"^\[[A-Za-z0-9_-]+\]\s*", "", raw_cap).strip()
             raw_cap = re.sub(r"\s*\([KT]?\d+\)\s*$", "", raw_cap).strip()
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
+
+            # Quarantine synthetic survey boilerplate into epistemic maturity gaps register
+            if physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE:
+                gap_item = {
+                    "id": eff_hc.get("id", f"GAP-{r_counter:02d}"),
+                    "pillar": pillar_name,
+                    "pillar_id": p_id,
+                    "capability": capability,
+                    "finding": finding_text,
+                    "business_risk": business_risk,
+                    "epistemic_state": physics_profile.epistemic_state.value,
+                    "epistemic_notice": "Control maturity gap inferred from survey score; empirical telemetry required for FAIR quantification.",
+                }
+                b_data.setdefault("epistemic_maturity_gaps", []).append(gap_item)
+                r_counter += 1
+                continue
 
             vec = eff_hc.get("actuarial_input_vector") or {}
             vec_out = vec.get("outputs") or {}
@@ -663,6 +690,10 @@ def derive_in_memory_fair_risks(
                 "primary_impact": eff_hc.get("primary_impact", ""),
                 "scope_note": eff_hc.get("scope_note", ""),
                 "custody_resolution_metadata": eff_hc.get("custody_resolution_metadata", {}),
+                "loss_physics": physics_profile.loss_physics.value,
+                "epistemic_state": physics_profile.epistemic_state.value,
+                "max_euler_ale_discount_pct": physics_profile.max_euler_ale_discount_pct,
+                "max_euler_var_discount_pct": physics_profile.max_euler_var_discount_pct,
                 "ale_str": format_currency(
                     calibrated_ale,
                     currency_symbol=currency,
@@ -676,6 +707,31 @@ def derive_in_memory_fair_risks(
                     decimals=0,
                 ),
             }
+            decomp = eff_hc.get("additive_loss_decomposition")
+            if decomp:
+                risk_item["additive_loss_decomposition"] = decomp
+                risk_item["sle"] = decomp.get("gross_mean_sle", risk_item["sle"])
+                risk_item["ale"] = decomp.get("net_allocated_ale", risk_item["ale"])
+                risk_item["p90"] = decomp.get("net_allocated_p90", risk_item["p90"])
+                risk_item["gross_standalone_ale"] = decomp.get(
+                    "gross_standalone_ale", risk_item["ale"]
+                )
+                risk_item["euler_overlap_adjustment_ale"] = decomp.get(
+                    "euler_overlap_adjustment_ale", 0
+                )
+                risk_item["ale_str"] = format_currency(
+                    risk_item["ale"],
+                    currency_symbol=currency,
+                    locale=doc_lang,
+                    decimals=0,
+                )
+                risk_item["p90_str"] = format_currency(
+                    risk_item["p90"],
+                    currency_symbol=currency,
+                    locale=doc_lang,
+                    decimals=0,
+                )
+
             risks_data_list.append(risk_item)
             risks_by_pillar.setdefault(pillar_name, []).append(risk_item)
             r_counter += 1
@@ -1338,10 +1394,10 @@ def _reconcile_telemetry_tool_contradictions(
     doc_lang: str,
 ) -> tuple[float, str]:
     """Enforces CMMI Level 1.00 floor and scrubs synthetic KPI export headers when empirical findings admit zero tooling."""
-    combined_gap = f"{clean_gap} {fallback_neg}"
+    target_gap = clean_gap if (clean_gap and clean_gap != fallback_neg) else fallback_neg
     scrubbed_state = _KPI_EXPORT_ARTIFACT_RE.sub("", clean_state).strip()
 
-    if _ABSENCE_OF_TELEMETRY_RE.search(combined_gap) or _ABSENCE_OF_TELEMETRY_RE.search(clean_state):
+    if _ABSENCE_OF_TELEMETRY_RE.search(target_gap) or _ABSENCE_OF_TELEMETRY_RE.search(clean_state):
         calibrated_score = min(score, 1.25) if score >= 2.0 else score
         if scrubbed_state != clean_state or _KPI_EXPORT_ARTIFACT_RE.match(clean_state):
             calibrated_score = 1.00
@@ -1802,7 +1858,11 @@ def derive_in_memory_maturity_matrix(
                 norm_diag = re.sub(r"\W+", "", diag_rationale).lower()
                 already_has_diag = (
                     any(
-                        norm_diag[:50] in re.sub(r"\W+", "", existing).lower()
+                        (norm_diag[:40] in re.sub(r"\W+", "", existing).lower())
+                        or (
+                            ("autoevaluaci" in existing.lower() or "self-assessment" in existing.lower())
+                            and ("calibra" in existing.lower() or "calibrat" in existing.lower())
+                        )
                         for existing in arch_paras
                     )
                     if norm_diag

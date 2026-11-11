@@ -384,6 +384,51 @@ class CanonicalRiskOrchestrator:
                                 mode="json"
                             )
 
+            # Compute closed-form AdditiveLossDecomposition per finding within this tower
+            from assessment_engine.domain.actuarial.euler_allocator import (
+                EulerPortfolioAllocator,
+            )
+
+            tower_findings_for_decomp: list[dict[str, Any]] = []
+            for pillar in payload.get("pillars_analysis", []):
+                if not isinstance(pillar, dict):
+                    continue
+                for hc in pillar.get("health_check_asis", []):
+                    if not isinstance(hc, dict):
+                        continue
+                    f_id = hc.get("node_id")
+                    if f_id in finding_results:
+                        f_res = finding_results[f_id]
+                        tower_findings_for_decomp.append(
+                            {
+                                "id": f_id,
+                                "node_id": f_id,
+                                "mean_lef": f_res.mean_lef,
+                                "gross_mean_sle": f_res.mean_sle,
+                                "gross_standalone_ale": f_res.standalone_ale,
+                                "gross_p90": f_res.var_90,
+                                "loss_physics": hc.get("loss_physics")
+                                or "AVAILABILITY_OUTAGE",
+                                "epistemic_state": hc.get("epistemic_state")
+                                or "VERIFIED_EMPIRICAL",
+                            }
+                        )
+
+            tower_decomps = EulerPortfolioAllocator.allocate_findings_within_domain(
+                tower_findings_for_decomp, currency_iso=eval_currency
+            )
+            for pillar in payload.get("pillars_analysis", []):
+                if not isinstance(pillar, dict):
+                    continue
+                for hc in pillar.get("health_check_asis", []):
+                    if not isinstance(hc, dict):
+                        continue
+                    f_id = hc.get("node_id")
+                    if f_id in tower_decomps:
+                        hc["additive_loss_decomposition"] = tower_decomps[
+                            f_id
+                        ].to_dict()
+
             payload["quantification_status"] = (
                 QuantificationStatus.ESTIMATED_LOW_CONFIDENCE.value
                 if tower_has_low_conf

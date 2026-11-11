@@ -177,6 +177,75 @@ def main() -> None:
                         p["score"] = round(float(pillar_map[pid]), 2)
                         p["exact_score"] = round(float(pillar_map[pid]), 2)
 
+        # Apply PolymorphicFindingClassifier per finding (SR 11-7 Layer 1 & Layer 2)
+        from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+            FindingLossPhysics,
+            PolymorphicFindingClassifier,
+        )
+
+        for p in bp.get("pillars_analysis", []):
+            if not isinstance(p, dict):
+                continue
+            for hc in p.get("health_check_asis", []):
+                if not isinstance(hc, dict):
+                    continue
+                profile_f = PolymorphicFindingClassifier.classify_finding(hc, code)
+                hc["loss_physics"] = profile_f.loss_physics.value
+                hc["epistemic_state"] = profile_f.epistemic_state.value
+                hc["max_euler_ale_discount_pct"] = (
+                    profile_f.max_euler_ale_discount_pct
+                )
+                hc["max_euler_var_discount_pct"] = (
+                    profile_f.max_euler_var_discount_pct
+                )
+
+                vec_in = (hc.get("actuarial_input_vector") or {}).get(
+                    "inputs", {}
+                )
+                if not profile_f.allows_downtime_burn:
+                    # Non-downtime findings (FinOps waste, IaC friction, regulatory breaches) have 0.0h downtime
+                    if "rto_hours_mode" in vec_in:
+                        vec_in["rto_hours_mode"]["effective_value"] = 0.0
+                    if "rto_hours_min" in vec_in:
+                        vec_in["rto_hours_min"]["effective_value"] = 0.0
+                    if "rto_hours_max" in vec_in:
+                        vec_in["rto_hours_max"]["effective_value"] = 0.0
+                    if "recovery_time_hours" in hc:
+                        hc["recovery_time_hours"] = 0.0
+
+                    # Calibrate realistic non-downtime direct cost (e.g. storage/cloud waste or remediation toil)
+                    if (
+                        profile_f.loss_physics
+                        == FindingLossPhysics.FINOPS_RESOURCE_WASTE
+                    ):
+                        waste_cost = (
+                            4800.0
+                            if (
+                                "decommission" in str(hc).lower()
+                                or "desmantelamiento" in str(hc).lower()
+                            )
+                            else 12500.0
+                        )
+                        if "direct_replacement_cost" in vec_in:
+                            vec_in["direct_replacement_cost"][
+                                "effective_value"
+                            ] = waste_cost
+                        hc["direct_replacement_cost"] = waste_cost
+                        if "hourly_burn_rate" in vec_in:
+                            vec_in["hourly_burn_rate"]["effective_value"] = 0.0
+                    elif (
+                        profile_f.loss_physics
+                        == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
+                    ):
+                        toil_cost = 6500.0
+                        if "direct_replacement_cost" in vec_in:
+                            vec_in["direct_replacement_cost"][
+                                "effective_value"
+                            ] = toil_cost
+                        hc["direct_replacement_cost"] = toil_cost
+                        if "hourly_burn_rate" in vec_in:
+                            vec_in["hourly_burn_rate"]["effective_value"] = 0.0
+
         # Determine loss archetype for this tower
         # T6: Regulatory & Breach | T8: Capital Inefficiency | T7, T9: Productivity Toil | T1..T5, T10: Availability Outage
         if code == "T6":

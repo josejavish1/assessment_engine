@@ -313,3 +313,142 @@ class EulerPortfolioAllocator:
             k: (Decimal(str(integers[k])) / Decimal("10.0")).quantize(Decimal("0.1"))
             for k in raw_pcts.keys()
         }
+
+    @classmethod
+    def allocate_findings_within_domain(
+        cls,
+        findings_raw: Sequence[Mapping[str, Any]],
+        currency_iso: str = "EUR",
+    ) -> Dict[str, Any]:
+        """
+        Allocates portfolio overlap adjustments across individual findings while preserving
+        100% of standalone SLE component additivity and enforcing per-finding max discount caps.
+        """
+        from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+            AdditiveLossDecomposition,
+        )
+
+        decompositions: Dict[str, AdditiveLossDecomposition] = {}
+        if not findings_raw:
+            return decompositions
+
+        active_ids: list[str] = []
+        standalone_ales: Dict[str, int] = {}
+        max_discounts: Dict[str, float] = {}
+        raw_metrics: Dict[str, dict[str, Any]] = {}
+
+        for item in findings_raw:
+            f_id = str(item.get("id") or item.get("node_id") or "UNKNOWN")
+            epistemic = str(item.get("epistemic_state") or "VERIFIED_EMPIRICAL")
+            physics = str(item.get("loss_physics") or "AVAILABILITY_OUTAGE")
+            lef = max(0.0, float(item.get("mean_lef") or item.get("lef") or 0.0))
+
+            # Exact integer rounding of expectation components from Monte Carlo
+            e_down = max(0, int(round(float(item.get("expected_downtime_loss") or 0.0))))
+            e_repl = max(0, int(round(float(item.get("expected_replacement_cost") or 0.0))))
+            e_sec = max(0, int(round(float(item.get("expected_secondary_loss") or 0.0))))
+
+            # Enforce strict closed-form identity: Gross SLE == E[Downtime] + E[Replacement] + E[Secondary]
+            raw_gross_sle = item.get("gross_mean_sle") or item.get("sle")
+            explicit_ale = (
+                item.get("gross_standalone_ale")
+                or item.get("ale")
+                or item.get("fair_ale_score")
+            )
+
+            if explicit_ale is not None and float(explicit_ale) > 0.0:
+                gross_ale = max(0, int(round(float(explicit_ale))))
+                if raw_gross_sle is not None and float(raw_gross_sle) > 0.0:
+                    gross_sle = max(0, int(round(float(raw_gross_sle))))
+                else:
+                    gross_sle = gross_ale
+                if e_down + e_repl + e_sec == 0:
+                    e_down = gross_sle
+            elif raw_gross_sle is not None and float(raw_gross_sle) > 0.0:
+                gross_sle = max(0, int(round(float(raw_gross_sle))))
+                if e_down + e_repl + e_sec == 0:
+                    e_down = gross_sle
+                gross_ale = max(0, int(round(lef * float(gross_sle))))
+            else:
+                gross_sle = e_down + e_repl + e_sec
+                gross_ale = max(0, int(round(lef * float(gross_sle))))
+
+            raw_p90 = item.get("gross_p90") or item.get("p90") or item.get("fair_p90_score")
+            if raw_p90 is not None and float(raw_p90) > 0.0:
+                gross_p90 = max(gross_ale, int(round(float(raw_p90))))
+            else:
+                gross_p90 = max(gross_ale, int(round(float(gross_ale * 1.85))))
+
+            max_disc = float(item.get("max_euler_ale_discount_pct") or 0.20)
+            if physics == "FINOPS_RESOURCE_WASTE" or epistemic != "VERIFIED_EMPIRICAL":
+                max_disc = 0.0
+            else:
+                max_disc = min(0.25, max(0.0, max_disc))
+
+            active_ids.append(f_id)
+            standalone_ales[f_id] = gross_ale
+            max_discounts[f_id] = max_disc
+            raw_metrics[f_id] = {
+                "lef": lef,
+                "e_down": e_down,
+                "e_repl": e_repl,
+                "e_sec": e_sec,
+                "gross_sle": gross_sle,
+                "gross_ale": gross_ale,
+                "gross_p90": gross_p90,
+                "physics": physics,
+                "epistemic": epistemic,
+                "max_var_disc": min(0.25, float(item.get("max_euler_var_discount_pct") or 0.25)),
+            }
+
+        diversifiable_ids = [
+            fid for fid in active_ids if standalone_ales[fid] > 0 and max_discounts[fid] > 0.0
+        ]
+        n_div = len(diversifiable_ids)
+
+        for fid in active_ids:
+            m = raw_metrics[fid]
+            gross_ale = m["gross_ale"]
+            if n_div <= 1 or fid not in diversifiable_ids or gross_ale == 0:
+                eff_disc = 0.0
+                var_disc = 0.0
+            else:
+                # Smooth logarithmic causal overlap curve bounded strictly by [0%, max_discounts[fid]]
+                empirical_overlap = min(0.22, 0.05 * (n_div - 1) / (1.0 + 0.20 * (n_div - 1)))
+                eff_disc = min(max_discounts[fid], empirical_overlap)
+                var_disc = min(m["max_var_disc"], empirical_overlap * 1.25)
+
+            net_ale = int(round(float(gross_ale) * (1.0 - eff_disc)))
+            # Hard floor invariant: Net ALE >= 75% of Gross Standalone ALE
+            net_ale = max(int(round(float(gross_ale) * 0.75)), min(gross_ale, net_ale))
+            euler_adj = net_ale - gross_ale  # Strictly <= 0
+
+            actual_disc_pct = (
+                Decimal(str((gross_ale - net_ale) * 100.0 / float(gross_ale))).quantize(
+                    Decimal("0.1"), rounding=ROUND_HALF_UP
+                )
+                if gross_ale > 0
+                else Decimal("0.0")
+            )
+            net_p90 = max(net_ale, int(round(float(m["gross_p90"]) * (1.0 - var_disc))))
+
+            decomp = AdditiveLossDecomposition(
+                currency_iso=currency_iso.upper(),
+                mean_lef=m["lef"],
+                expected_downtime_loss=m["e_down"],
+                expected_replacement_cost=m["e_repl"],
+                expected_secondary_loss=m["e_sec"],
+                gross_mean_sle=m["gross_sle"],
+                gross_standalone_ale=gross_ale,
+                euler_overlap_adjustment_ale=euler_adj,
+                net_allocated_ale=net_ale,
+                euler_discount_pct=actual_disc_pct,
+                gross_standalone_p90=m["gross_p90"],
+                net_allocated_p90=net_p90,
+                loss_physics=m["physics"],
+                epistemic_state=m["epistemic"],
+            )
+            decomp.validate_conservation()
+            decompositions[fid] = decomp
+
+        return decompositions

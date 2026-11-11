@@ -3858,10 +3858,37 @@ class PayloadToASTBridge:
             else max(round(hourly_rate * alpha, 2), 1.0)
         )
 
-        if canonical_sle > 0.0:
-            reconciled_sle = round(canonical_sle)
+        decomp = hc.get("additive_loss_decomposition") or {}
+        if decomp and decomp.get("gross_mean_sle"):
+            primary_downtime_loss = int(decomp.get("expected_downtime_loss", 0))
+            repl_cost_num = int(decomp.get("expected_replacement_cost", 0))
+            sec_weighted_loss = int(decomp.get("expected_secondary_loss", 0))
+            reconciled_sle = int(decomp["gross_mean_sle"])
+            canonical_ale = float(decomp["net_allocated_ale"])
         else:
-            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+            primary_downtime_loss = round(eff_recovery_hours * domain_hourly_rate)
+            repl_cost_num = round(
+                float(
+                    (vec_inputs.get("direct_replacement_cost") or {}).get(
+                        "effective_value"
+                    )
+                    or hc.get("direct_replacement_cost")
+                    or 0.0
+                )
+            )
+            raw_sec_mean = float(
+                (vec_inputs.get("secondary_loss_mean") or {}).get(
+                    "effective_value"
+                )
+                or hc.get("secondary_loss_mean")
+                or 0.0
+            )
+            sec_weighted_loss = (
+                round(0.10 * raw_sec_mean) if raw_sec_mean > 0 else 0
+            )
+            reconciled_sle = (
+                primary_downtime_loss + repl_cost_num + sec_weighted_loss
+            )
 
         # In PRODUCTIVITY_TOIL, continuous toil labor must NOT explode into millions of euros
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL and (
@@ -4116,34 +4143,29 @@ class PayloadToASTBridge:
         base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
         alpha_pct_str = str(int(round(alpha * 100)))
 
-        primary_downtime_loss = round(eff_recovery_hours * domain_hourly_rate)
-        repl_cost_num = round(
-            float(
-                (vec_inputs.get("direct_replacement_cost") or {}).get("effective_value")
-                or hc.get("direct_replacement_cost")
-                or 0.0
+        stochastic_tail_adj = 0
+        if decomp and decomp.get("gross_mean_sle"):
+            standalone_base_ale = int(
+                decomp.get(
+                    "gross_standalone_ale", round(displayed_mult_freq * reconciled_sle)
+                )
             )
-        )
-        p_sec = 0.10
-        raw_sec_mean = float(
-            (vec_inputs.get("secondary_loss_mean") or {}).get("effective_value")
-            or hc.get("secondary_loss_mean")
-            or 0.0
-        )
-        sec_weighted_loss = round(p_sec * raw_sec_mean) if raw_sec_mean > 0 else 0
-        # In PRODUCTIVITY_TOIL, toil hours are continuous operational labor; clamp reconciled_sle to exact component sum
-        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL and (
-            eff_recovery_hours >= 100.0 or abs(reconciled_sle - primary_downtime_loss) > 50000.0
-        ):
-            reconciled_sle = primary_downtime_loss + repl_cost_num + sec_weighted_loss
-            stochastic_tail_adj = 0
-            formatted_sle = format_currency(
-                reconciled_sle, currency_symbol=currency, locale=meta_lang, decimals=0
+            euler_delta = int(
+                decomp.get(
+                    "euler_overlap_adjustment_ale",
+                    round(canonical_ale - standalone_base_ale),
+                )
+            )
+            canonical_ale = int(
+                decomp.get("net_allocated_ale", standalone_base_ale + euler_delta)
             )
         else:
-            stochastic_tail_adj = round(
-                reconciled_sle - (primary_downtime_loss + repl_cost_num + sec_weighted_loss)
+            standalone_base_ale = (
+                round(displayed_mult_freq * reconciled_sle)
+                if displayed_mult_freq > 0
+                else 0
             )
+            euler_delta = round(canonical_ale - standalone_base_ale)
 
         p_down_str = format_currency(
             primary_downtime_loss, currency_symbol=currency, locale=meta_lang, decimals=0
@@ -4154,13 +4176,26 @@ class PayloadToASTBridge:
         p_sec_str = format_currency(
             sec_weighted_loss, currency_symbol=currency, locale=meta_lang, decimals=0
         )
-        p_adj_str = (
-            f"+{format_currency(stochastic_tail_adj, currency_symbol=currency, locale=meta_lang, decimals=0)}"
-            if stochastic_tail_adj >= 0
-            else f"-{format_currency(abs(stochastic_tail_adj), currency_symbol=currency, locale=meta_lang, decimals=0)}"
-        )
+        p_adj_str = "+0 €"
 
-        arch_suffix = primary_arch.value.lower()
+        finding_physics = hc.get("loss_physics") or (
+            decomp.get("loss_physics") if decomp else None
+        )
+        if finding_physics:
+            from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+                FindingLossPhysics,
+            )
+
+            try:
+                active_arch = FindingLossPhysics(
+                    finding_physics
+                ).to_canonical_archetype()
+            except ValueError:
+                active_arch = primary_arch
+        else:
+            active_arch = primary_arch
+
+        arch_suffix = active_arch.value.lower()
         sle_key = f"sle_derivation_formula_bullet_{arch_suffix}"
         sle_bullet = t(
             sle_key,

@@ -293,13 +293,34 @@ class ActuarialInputResolver:
             default_conf=tef_conf,
         )
 
-        # 4. Recovery Time Objective (RTO) PERT
+        # 4. Recovery Time Objective (RTO) PERT — Governed by PolymorphicFindingClassifier (SR 11-7)
+        from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+            FindingLossPhysics,
+            PolymorphicFindingClassifier,
+        )
+
+        physics_profile = PolymorphicFindingClassifier.classify_finding(
+            hc=hc,
+            tower_id=tower_id,
+        )
+        effective_archetype = physics_profile.canonical_archetype
+
         raw_rto = (
             hc.get("recovery_time_hours")
             if hc.get("recovery_time_hours") is not None
             else hc.get("rto_hours_mode")
         )
-        if raw_rto is not None:
+        if not physics_profile.allows_downtime_burn:
+            # FinOps waste, IaC friction, and regulatory breaches do not cause physical plant downtime
+            rto_mode = 0.0
+            rto_min = 0.0
+            rto_max = 0.0
+            rto_source = ParameterSourceType.DERIVED
+            rto_min_source = ParameterSourceType.DERIVED
+            rto_max_source = ParameterSourceType.DERIVED
+            rto_conf = ParameterConfidenceLevel.HIGH
+            is_explicit_rto = True
+        elif raw_rto is not None:
             parsed_rto = parse_strict_float(raw_rto, "recovery_time_hours")
             if parsed_rto is None or parsed_rto <= 0.0:
                 raise ValueError(f"rto_hours must be strictly > 0.0, got {raw_rto}")
@@ -308,9 +329,7 @@ class ActuarialInputResolver:
             rto_conf = ParameterConfidenceLevel.HIGH
             is_explicit_rto = True
         else:
-            rto_mode = (
-                tower_spec.default_rto_hours if tower_spec else global_fb.rto_hours
-            )
+            rto_mode = physics_profile.default_rto_hours
             rto_source = ParameterSourceType.MODEL_DEFAULT
             rto_conf = ParameterConfidenceLevel.LOW
             is_explicit_rto = False
@@ -318,12 +337,15 @@ class ActuarialInputResolver:
 
         raw_rto_min = hc.get("rto_hours_min")
         raw_rto_max = hc.get("rto_hours_max")
-        if raw_rto_min is not None and raw_rto_max is not None:
+        if not physics_profile.allows_downtime_burn:
+            rto_min = 0.0
+            rto_max = 0.0
+        elif raw_rto_min is not None and raw_rto_max is not None:
             rto_min = parse_strict_float(raw_rto_min, "rto_hours_min")
             rto_max = parse_strict_float(raw_rto_max, "rto_hours_max")
-            if rto_min is None or rto_max is None or rto_min <= 0.0 or rto_max <= 0.0:
+            if rto_min is None or rto_max is None or rto_min < 0.0 or rto_max < 0.0:
                 raise ValueError(
-                    f"RTO PERT bounds must be > 0.0, got min={raw_rto_min}, max={raw_rto_max}"
+                    f"RTO PERT bounds must be >= 0.0, got min={raw_rto_min}, max={raw_rto_max}"
                 )
             if not (rto_min <= rto_mode <= rto_max):
                 raise ValueError(
@@ -378,6 +400,23 @@ class ActuarialInputResolver:
             repl_raw_val = parsed_repl
             repl_source = ParameterSourceType.ASSESSMENT_PAYLOAD
             repl_conf = ParameterConfidenceLevel.HIGH
+        elif not physics_profile.allows_downtime_burn:
+            # Scaled capacity/tooling waste (not server hardware)
+            if physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE:
+                repl_raw_val = round(
+                    min(50000.0, max(2500.0, (annual_it_opex or 5000000.0) * 0.001))
+                )
+            elif (
+                physics_profile.loss_physics
+                == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
+            ):
+                repl_raw_val = round(
+                    min(30000.0, max(1500.0, (hourly_wage or 50.0) * 40.0))
+                )
+            else:
+                repl_raw_val = 0.0
+            repl_source = ParameterSourceType.DERIVED
+            repl_conf = ParameterConfidenceLevel.MEDIUM
         else:
             repl_raw_val = (
                 tower_spec.default_direct_replacement_cost
@@ -425,7 +464,7 @@ class ActuarialInputResolver:
         else:
             raw_lm = parse_strict_float(hc.get("loss_magnitude")) or 2.5
             lm_factor = (raw_lm / 5.0) if (0.0 < raw_lm <= 5.0) else 0.50
-            if archetype == LossArchetypeType.REGULATORY_AND_BREACH:
+            if effective_archetype == LossArchetypeType.REGULATORY_AND_BREACH:
                 rev = annual_revenue or global_fb.annual_revenue_default
                 max_fine = max(
                     global_fb.statutory_max_fine_ceiling,
@@ -433,11 +472,11 @@ class ActuarialInputResolver:
                 )
                 sec_raw_val = max_fine * (0.005 + 0.015 * lm_factor) * 0.05
                 sec_method = "Statutory fine exposure model (prior)"
-            elif archetype == LossArchetypeType.CAPITAL_INEFFICIENCY:
+            elif effective_archetype == LossArchetypeType.CAPITAL_INEFFICIENCY:
                 opex = annual_it_opex or global_fb.annual_it_opex_default
                 sec_raw_val = opex * (0.005 + 0.010 * lm_factor) * 0.25
                 sec_method = "IT OpEx capital drag model (prior)"
-            elif archetype == LossArchetypeType.PRODUCTIVITY_TOIL:
+            elif effective_archetype == LossArchetypeType.PRODUCTIVITY_TOIL:
                 wage = hourly_wage or global_fb.hourly_wage_default
                 sec_raw_val = wage * (10.0 + 15.0 * lm_factor)
                 sec_method = "Burdened wage toil hours model (prior)"
@@ -446,7 +485,7 @@ class ActuarialInputResolver:
                 sec_method = "Outage disruption factor (prior)"
             sec_source = ParameterSourceType.MODEL_DEFAULT
             sec_conf = ParameterConfidenceLevel.LOW
-            if is_spof and archetype == LossArchetypeType.AVAILABILITY_OUTAGE:
+            if is_spof and effective_archetype == LossArchetypeType.AVAILABILITY_OUTAGE:
                 sec_raw_val = max(sec_raw_val, zone.hourly_burn_rate * 2.65)
 
         sec_mean, _, _ = ctx.normalize_monetary_amount_with_provenance(
