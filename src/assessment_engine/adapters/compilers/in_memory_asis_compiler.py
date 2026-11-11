@@ -645,9 +645,20 @@ def derive_in_memory_fair_risks(
                     or eff_hc.get("recovery_time_hours")
                     or 0.0
                 )
-                burn_rate = float(
+                raw_burn_rate = float(
                     (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
                     or 0.0
+                )
+                raw_alpha = float(
+                    (vec_in.get("blast_radius_alpha") or {}).get("effective_value")
+                    or physics_profile.blast_radius_factor
+                    or 1.0
+                )
+                alpha = min(1.0, max(0.05, raw_alpha)) if raw_alpha > 0.0 else 1.0
+                burn_rate = (
+                    max(1.0, round(raw_burn_rate * alpha, 2))
+                    if raw_burn_rate > 0
+                    else 0.0
                 )
             elif (
                 physics_profile.loss_physics
@@ -656,17 +667,16 @@ def derive_in_memory_fair_risks(
                 rto_h = float(
                     (vec_in.get("rto_hours_mode") or {}).get("effective_value")
                     or eff_hc.get("recovery_time_hours")
-                    or 1.7
+                    or (float(lm_val) * 0.85 if lm_val else 2.0)
+                    or 2.0
                 )
-                burn_rate = float(
-                    (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
-                    or 65.0
-                )
+                burn_rate = 65.0
             else:
                 rto_h = 0.0
                 burn_rate = 0.0
 
-            primary_downtime_loss = int(round(rto_h * burn_rate * rate_mult))
+            effective_unit_rate = round(burn_rate)
+            primary_downtime_loss = int(round(rto_h * effective_unit_rate))
             repl_cost_loss = int(
                 round(
                     float(
@@ -764,6 +774,8 @@ def derive_in_memory_fair_risks(
 
             reconciled_decomp = {
                 **(decomp if isinstance(decomp, dict) else {}),
+                "rto_hours": rto_h,
+                "hourly_burn_rate": burn_rate,
                 "primary_downtime_loss": primary_downtime_loss,
                 "direct_replacement_loss": repl_cost_loss,
                 "secondary_weighted_loss": sec_weighted_loss,

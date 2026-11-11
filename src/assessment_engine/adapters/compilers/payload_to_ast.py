@@ -3863,20 +3863,23 @@ class PayloadToASTBridge:
         canonical_sle = float(vec_outputs.get("mean_sle") or hc.get("sle") or 0.0)
         canonical_lef = float(vec_outputs.get("mean_lef") or hc.get("lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
 
-        eff_recovery_hours = float(
-            (vec_inputs.get("rto_hours_mode") or {}).get("effective_value")
-            or hc.get("recovery_time_hours")
-            or (raw_lm * 0.85)
-            or 3.5
-        )
-
-        domain_hourly_rate = (
-            65.0
-            if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL
-            else max(round(hourly_rate * alpha, 2), 1.0)
-        )
-
         decomp = hc.get("additive_loss_decomposition") or {}
+        if decomp and decomp.get("rto_hours") is not None:
+            eff_recovery_hours = float(decomp["rto_hours"])
+        else:
+            eff_recovery_hours = float(
+                (vec_inputs.get("rto_hours_mode") or {}).get("effective_value")
+                or hc.get("recovery_time_hours")
+                or (raw_lm * 0.85)
+                or 3.5
+            )
+
+        if decomp and decomp.get("hourly_burn_rate") is not None:
+            domain_hourly_rate = float(decomp["hourly_burn_rate"])
+        elif primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+            domain_hourly_rate = 65.0
+        else:
+            domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
         if decomp and decomp.get("gross_mean_sle"):
             primary_downtime_loss = int(decomp.get("expected_downtime_loss", 0))
             repl_cost_num = int(decomp.get("expected_replacement_cost", 0))
@@ -3921,7 +3924,7 @@ class PayloadToASTBridge:
             single_loss_magnitude_base=sle_val,
             operational_coupling_factor=coupling_factor,
             coupling_regime=coupling_regime,
-            downtime_hours_mean=round(eff_recovery_hours, 1),
+            downtime_hours_mean=max(0.1, round(eff_recovery_hours, 1)),
             hourly_operational_impact=Decimal(str(round(domain_hourly_rate, 2))),
         )
 
