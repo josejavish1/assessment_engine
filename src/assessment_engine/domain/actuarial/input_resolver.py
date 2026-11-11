@@ -293,7 +293,7 @@ class ActuarialInputResolver:
             default_conf=tef_conf,
         )
 
-        # 4. Recovery Time Objective (RTO) PERT — Governed by PolymorphicFindingClassifier (SR 11-7)
+        # 4. Recovery Time Objective (RTO) PERT — Governed by PolymorphicFindingClassifier & Circuit Breakers (SR 11-7)
         from assessment_engine.domain.actuarial.finding_archetype_resolver import (
             FindingLossPhysics,
             PolymorphicFindingClassifier,
@@ -305,13 +305,65 @@ class ActuarialInputResolver:
         )
         effective_archetype = physics_profile.canonical_archetype
 
+        # Circuit Breaker 1: Non-Production Zero-Outage Rule
+        env_raw = str(hc.get("environment") or "").strip().upper()
+        finding_corpus_cb = f"{hc.get('title', '')} {hc.get('finding', '')} {hc.get('capability', '')}".lower()
+        is_non_prod = env_raw in (
+            "LAB",
+            "TEST",
+            "DEV",
+            "SANDBOX",
+            "NON_PROD",
+        ) or any(
+            k in finding_corpus_cb
+            for k in (
+                "experimental lab",
+                "test environment",
+                "lab environment",
+                "laboratorio",
+                "sandbox",
+            )
+        )
+
+        # Circuit Breaker 2: Control Gap vs Primary Outage Separation (NAC, PAM, DRP documentation)
+        is_control_gap = any(
+            k in finding_corpus_cb
+            for k in (
+                "802.1x",
+                "nac",
+                "network access control",
+                "control de acceso a la red",
+                "pam",
+                "shared root",
+                "drp documentation",
+                "runbook governance",
+                "simulacros documentados",
+            )
+        )
+
+        # Circuit Breaker 3: Tier-A Operational Friction Ceiling (Logs, disk space)
+        is_tier_a_friction = any(
+            k in finding_corpus_cb
+            for k in (
+                "log saturation",
+                "disk space",
+                "root partition",
+                "log rotation",
+                "rotacion de logs",
+            )
+        )
+
         raw_rto = (
             hc.get("recovery_time_hours")
             if hc.get("recovery_time_hours") is not None
             else hc.get("rto_hours_mode")
         )
-        if not physics_profile.allows_downtime_burn:
-            # FinOps waste, IaC friction, and regulatory breaches do not cause physical plant downtime
+        if (
+            is_non_prod
+            or is_control_gap
+            or not physics_profile.allows_downtime_burn
+        ):
+            # Non-prod, control gaps, FinOps waste, and toil do not cause primary physical plant downtime
             rto_mode = 0.0
             rto_min = 0.0
             rto_max = 0.0
@@ -320,10 +372,22 @@ class ActuarialInputResolver:
             rto_max_source = ParameterSourceType.DERIVED
             rto_conf = ParameterConfidenceLevel.HIGH
             is_explicit_rto = True
+        elif is_tier_a_friction:
+            # Tier A friction: RTO capped at 0.5h (30 minutes max)
+            rto_mode = min(0.5, float(raw_rto) if raw_rto is not None else 0.5)
+            rto_min = min(0.1, rto_mode)
+            rto_max = max(rto_mode, 0.5)
+            rto_source = ParameterSourceType.DERIVED
+            rto_min_source = ParameterSourceType.DERIVED
+            rto_max_source = ParameterSourceType.DERIVED
+            rto_conf = ParameterConfidenceLevel.HIGH
+            is_explicit_rto = True
         elif raw_rto is not None:
             parsed_rto = parse_strict_float(raw_rto, "recovery_time_hours")
             if parsed_rto is None or parsed_rto <= 0.0:
-                raise ValueError(f"rto_hours must be strictly > 0.0, got {raw_rto}")
+                raise ValueError(
+                    f"rto_hours must be strictly > 0.0, got {raw_rto}"
+                )
             rto_mode = parsed_rto
             rto_source = ParameterSourceType.ASSESSMENT_PAYLOAD
             rto_conf = ParameterConfidenceLevel.HIGH
@@ -337,13 +401,25 @@ class ActuarialInputResolver:
 
         raw_rto_min = hc.get("rto_hours_min")
         raw_rto_max = hc.get("rto_hours_max")
-        if not physics_profile.allows_downtime_burn:
+        if (
+            is_non_prod
+            or is_control_gap
+            or not physics_profile.allows_downtime_burn
+        ):
             rto_min = 0.0
             rto_max = 0.0
+        elif is_tier_a_friction:
+            rto_min = min(0.1, rto_mode)
+            rto_max = max(rto_mode, 0.5)
         elif raw_rto_min is not None and raw_rto_max is not None:
             rto_min = parse_strict_float(raw_rto_min, "rto_hours_min")
             rto_max = parse_strict_float(raw_rto_max, "rto_hours_max")
-            if rto_min is None or rto_max is None or rto_min < 0.0 or rto_max < 0.0:
+            if (
+                rto_min is None
+                or rto_max is None
+                or rto_min < 0.0
+                or rto_max < 0.0
+            ):
                 raise ValueError(
                     f"RTO PERT bounds must be >= 0.0, got min={raw_rto_min}, max={raw_rto_max}"
                 )
@@ -394,16 +470,40 @@ class ActuarialInputResolver:
         raw_lm_for_repl = parse_strict_float(hc.get("loss_magnitude") or hc.get("lm")) or 2.5
         severity_factor = min(1.0, max(0.05, (raw_lm_for_repl - 1.0) / 4.0))
 
+        # Circuit Breaker 4: Internal Task Cap Rule (No consulting engagement for internal tasks)
+        is_internal_cleanup = (
+            str(hc.get("remediation_type") or "").upper()
+            == "INTERNAL_SYSADMIN_CLEANUP"
+            or any(
+                k in finding_corpus_cb
+                for k in (
+                    "desmantelamiento de maquinas",
+                    "vm decommissioning",
+                    "orphaned vm",
+                    "zombie vm",
+                    "ficheros de log",
+                )
+            )
+        )
+
         if raw_repl is not None:
             parsed_repl = parse_strict_float(raw_repl, "direct_replacement_cost")
             if parsed_repl is None or parsed_repl < 0.0:
                 raise ValueError(
                     f"direct_replacement_cost cannot be negative, got {raw_repl}"
                 )
-            repl_raw_val = parsed_repl
+            if is_internal_cleanup:
+                effective_wage = hourly_wage or 55.0
+                repl_raw_val = min(parsed_repl, 40.0 * effective_wage)
+            else:
+                repl_raw_val = parsed_repl
             repl_source = ParameterSourceType.ASSESSMENT_PAYLOAD
             repl_conf = ParameterConfidenceLevel.HIGH
-            repl_method = "Explicit replacement cost"
+            repl_method = (
+                "Explicit replacement cost (internal task capped)"
+                if is_internal_cleanup
+                else "Explicit replacement cost"
+            )
             repl_source_curr = hc.get("currency") or ctx.source_currency
         elif not physics_profile.allows_downtime_burn:
             # Derive dynamically in reporting_currency from tenant financial telemetry (zero magic clamps)
@@ -530,7 +630,15 @@ class ActuarialInputResolver:
 
         # 7. Correlation & scope factors (Strict range [0.0, 1.0], preserving 0.0)
         raw_alpha = hc.get("blast_radius_alpha")
-        if raw_alpha is not None:
+        if is_non_prod:
+            alpha_rad = 0.0
+            alpha_source = ParameterSourceType.DERIVED
+            alpha_conf = ParameterConfidenceLevel.HIGH
+        elif is_tier_a_friction:
+            alpha_rad = min(0.02, float(raw_alpha) if raw_alpha is not None else 0.02)
+            alpha_source = ParameterSourceType.DERIVED
+            alpha_conf = ParameterConfidenceLevel.HIGH
+        elif raw_alpha is not None:
             parsed_alpha = parse_strict_float(raw_alpha, "blast_radius_alpha")
             if parsed_alpha is None or not (0.0 <= parsed_alpha <= 1.0):
                 raise ValueError(

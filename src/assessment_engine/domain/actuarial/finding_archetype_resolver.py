@@ -109,6 +109,9 @@ class AdditiveLossDecomposition:
     net_allocated_p90: int
     loss_physics: str
     epistemic_state: str
+    ledger_type: str = "LEDGER_A_STOCHASTIC"
+    is_deterministic: bool = False
+    fleet_volume: int = 1
 
     def validate_conservation(self) -> None:
         sle_sum = (
@@ -125,6 +128,11 @@ class AdditiveLossDecomposition:
         if self.euler_overlap_adjustment_ale > 0:
             raise ValueError(
                 f"Sub-additivity Violation: Euler overlap adjustment must be <= 0, "
+                f"got {self.euler_overlap_adjustment_ale}."
+            )
+        if self.is_deterministic and self.euler_overlap_adjustment_ale != 0:
+            raise ValueError(
+                f"Deterministic OpEx Violation: Ledger B must have 0 Euler adjustment, "
                 f"got {self.euler_overlap_adjustment_ale}."
             )
         ale_bridge = self.gross_standalone_ale + self.euler_overlap_adjustment_ale
@@ -151,6 +159,9 @@ class AdditiveLossDecomposition:
             "net_allocated_p90": self.net_allocated_p90,
             "loss_physics": self.loss_physics,
             "epistemic_state": self.epistemic_state,
+            "ledger_type": self.ledger_type,
+            "is_deterministic": self.is_deterministic,
+            "fleet_volume": self.fleet_volume,
         }
 
 

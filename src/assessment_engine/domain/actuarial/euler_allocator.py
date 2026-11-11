@@ -515,15 +515,37 @@ class EulerPortfolioAllocator:
                 else 0
             )
 
+            is_deterministic = bool(
+                item.get("is_deterministic")
+                or physics == "FINOPS_RESOURCE_WASTE"
+            )
+            ledger_type = str(
+                item.get("ledger_type")
+                or (
+                    "LEDGER_B_DETERMINISTIC_OPEX"
+                    if is_deterministic
+                    else "LEDGER_A_STOCHASTIC"
+                )
+            )
+            fleet_vol = max(1, int(item.get("fleet_volume") or 1))
+
             max_ale_disc = (
-                float(item.get("max_euler_ale_discount_pct") or 0.0)
-                if is_active
-                else 0.0
+                0.0
+                if is_deterministic
+                else (
+                    float(item.get("max_euler_ale_discount_pct") or 0.0)
+                    if is_active
+                    else 0.0
+                )
             )
             max_var_disc = (
-                float(item.get("max_euler_var_discount_pct") or 0.0)
-                if is_active
-                else 0.0
+                0.0
+                if is_deterministic
+                else (
+                    float(item.get("max_euler_var_discount_pct") or 0.0)
+                    if is_active
+                    else 0.0
+                )
             )
 
             standalone_ales[f_id] = gross_ale
@@ -540,6 +562,9 @@ class EulerPortfolioAllocator:
                 "gross_p90": gross_p90,
                 "physics": physics,
                 "epistemic": epistemic,
+                "is_deterministic": is_deterministic,
+                "ledger_type": ledger_type,
+                "fleet_volume": fleet_vol,
             }
 
         gross_ale_sum = sum(standalone_ales.values())
@@ -607,6 +632,9 @@ class EulerPortfolioAllocator:
                 net_allocated_p90=net_p90,
                 loss_physics=r["physics"],
                 epistemic_state=r["epistemic"],
+                ledger_type=r["ledger_type"],
+                is_deterministic=r["is_deterministic"],
+                fleet_volume=r["fleet_volume"],
             )
             decomp.validate_conservation()
             decompositions[f_id] = decomp
