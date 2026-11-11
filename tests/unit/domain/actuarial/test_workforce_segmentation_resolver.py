@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from assessment_engine.domain.actuarial.workforce_segmentation import (
     SegmentationSourceType,
     WorkforceProfile,
@@ -46,17 +44,25 @@ def test_level_1_direct_interview_declarations() -> None:
 
 
 def test_level_1_interview_corpus_arithmetic_inference() -> None:
-    """Verifies arithmetic inference from qualitative interview notes (renewals × lifespan)."""
+    """Verifies arithmetic inference from qualitative English interview notes (renewals × lifespan)."""
     telemetry = {
         "interview_notes": (
-            "La preparación de los aproximadamente 350 ordenadores portátiles que se renuevan anualmente "
-            "sobre una flota total de 1.200 equipos requiere 3,5 horas de dedicación manual de un técnico. "
-            "En las plantas de producción disponemos de más de 800 terminales de báscula."
+            "The annual refresh of approximately 350 laptops across a fleet total of 1,200 "
+            "workstations requires 3.5 hours of manual technician effort per unit. "
+            "Across the production facilities, there are more than 800 shared terminals."
         )
+    }
+    industry_profile = {
+        "industry": "Heavy Manufacturing",
+        "workforce_digital_profile": {
+            "typical_it_support_hourly_rate": 45.0,
+            "primary_disruption_driver": "PLANT_DISPATCH_AND_LOGISTICS",
+        },
     }
     profile = WorkforceSegmentationResolver.resolve(
         total_headcount=3900,
         client_telemetry=telemetry,
+        industry_profile=industry_profile,
     )
 
     assert profile.source_type == SegmentationSourceType.EMPIRICAL_INTERVIEW_GROUND_TRUTH
@@ -65,7 +71,9 @@ def test_level_1_interview_corpus_arithmetic_inference() -> None:
     assert profile.deskless_field_workers == 1900
     assert profile.annual_refresh_units == 350
     assert profile.annual_toil_hours == 1225.0
+    assert profile.annual_toil_cost == 55125.0
     assert profile.confidence_score == 0.92
+    assert profile.primary_disruption_driver == "PLANT_DISPATCH_AND_LOGISTICS"
 
 
 def test_level_2_verified_audited_regulatory_filing() -> None:
@@ -74,7 +82,7 @@ def test_level_2_verified_audited_regulatory_filing() -> None:
         "regulatory_filings": {
             "corporate_workforce": 600,
             "shared_terminals": 200,
-            "citation": "Estado de Información No Financiera (EINF) 2024",
+            "citation": "Audited Non-Financial Information Statement (FY2024)",
         }
     }
     profile = WorkforceSegmentationResolver.resolve(
@@ -87,7 +95,7 @@ def test_level_2_verified_audited_regulatory_filing() -> None:
     assert profile.shared_operational_edge_terminals == 200
     assert profile.deskless_field_workers == 1200
     assert profile.confidence_score == 0.90
-    assert "EINF" in profile.provenance_citation
+    assert "Non-Financial Information Statement" in profile.provenance_citation
 
 
 def test_level_3_pre_flight_web_intelligence_osint() -> None:
@@ -125,6 +133,7 @@ def test_level_4_bayesian_sector_prior_heavy_manufacturing() -> None:
             "annual_endpoint_refresh_rate": 0.285,
             "hours_per_manual_refresh": 3.5,
             "typical_it_support_hourly_rate": 45.0,
+            "primary_disruption_driver": "PLANT_DISPATCH_AND_LOGISTICS",
         },
     }
     profile = WorkforceSegmentationResolver.resolve(
@@ -137,6 +146,7 @@ def test_level_4_bayesian_sector_prior_heavy_manufacturing() -> None:
     assert profile.shared_operational_edge_terminals == 600  # 15% of 4000
     assert profile.deskless_field_workers == 2400  # 60% of 4000
     assert profile.confidence_score == 0.65
+    assert profile.primary_disruption_driver == "PLANT_DISPATCH_AND_LOGISTICS"
     assert (
         profile.corporate_seats
         + profile.shared_operational_edge_terminals
@@ -157,6 +167,7 @@ def test_level_4_bayesian_sector_prior_banking() -> None:
             "annual_endpoint_refresh_rate": 0.333,
             "hours_per_manual_refresh": 2.0,
             "typical_it_support_hourly_rate": 65.0,
+            "primary_disruption_driver": "TRANSACTION_CLEARING_AND_TRADING",
         },
     }
     profile = WorkforceSegmentationResolver.resolve(
@@ -168,3 +179,27 @@ def test_level_4_bayesian_sector_prior_banking() -> None:
     assert profile.corporate_seats == 2850  # 95% of 3000
     assert profile.shared_operational_edge_terminals == 150  # 5% of 3000
     assert profile.deskless_field_workers == 0  # 0% deskless in fintech
+    assert profile.primary_disruption_driver == "TRANSACTION_CLEARING_AND_TRADING"
+
+
+def test_euler_headcount_conservation_under_overflow() -> None:
+    """Verifies that declared seats + shared terminals never exceed total_headcount."""
+    telemetry = {
+        "interview_workforce_declarations": {
+            "corporate_seats": 800,
+            "shared_terminals": 500,
+        }
+    }
+    profile = WorkforceSegmentationResolver.resolve(
+        total_headcount=1000,
+        client_telemetry=telemetry,
+    )
+    assert profile.corporate_seats == 800
+    assert profile.shared_operational_edge_terminals == 200
+    assert profile.deskless_field_workers == 0
+    assert (
+        profile.corporate_seats
+        + profile.shared_operational_edge_terminals
+        + profile.deskless_field_workers
+        == profile.total_headcount
+    )

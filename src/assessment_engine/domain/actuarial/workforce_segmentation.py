@@ -1,20 +1,31 @@
 """Workforce Digital Dependency Segmentation Resolver (SR 11-7 / Open FAIR).
 
 Implements the 4-tier Bayesian hierarchical resolution:
-Level 1: Empirical Interview Ground Truth (forensic declarations & refresh arithmetic).
-Level 2: Verified Audited Regulatory Filings (EINF / 10-K / CMDB / Active Directory).
-Level 3: Pre-Flight Web Intelligence (OSINT / LinkedIn Insights / client_intelligence).
+Level 1: Empirical Interview Ground Truth (structured declarations & lifecycle arithmetic).
+Level 2: Verified Audited Regulatory Filings (Non-Financial Statements / 10-K / CMDB / AD).
+Level 3: Pre-Flight Web Intelligence (OSINT / Workforce Insights / client_intelligence).
 Level 4: Bayesian Sector Prior Fallback (industry_profiles/*.json).
 
-Guarantees 100% zero-regression isolation: hermetically sealed, pure domain logic.
+Guarantees strict Euler conservation of headcount and 100% zero-regression isolation.
 """
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Final, Optional, Tuple
+
+# Canonical Actuarial Baseline Priors (Open FAIR / Gartner Endpoint Lifecycle Benchmarks)
+DEFAULT_CORPORATE_SEAT_RATIO: Final[float] = 0.60
+DEFAULT_SHARED_EDGE_RATIO: Final[float] = 0.20
+DEFAULT_ANNUAL_REFRESH_RATE: Final[float] = 0.285  # ~3.5-year enterprise lifecycle (1 / 3.5)
+DEFAULT_LIFECYCLE_YEARS: Final[float] = 3.5
+DEFAULT_HOURS_PER_REFRESH: Final[float] = 3.0
+DEFAULT_IT_SUPPORT_HOURLY_RATE: Final[float] = 50.0
+DEFAULT_WORK_MAKE_UP_ELASTICITY: Final[float] = 0.25
+DEFAULT_DISRUPTION_DRIVER: Final[str] = "SECTOR_MODAL_BASELINE"
 
 
 class SegmentationSourceType(StrEnum):
@@ -24,6 +35,20 @@ class SegmentationSourceType(StrEnum):
     VERIFIED_AUDITED_FILING = "VERIFIED_AUDITED_FILING"
     DISCOVERED_PUBLIC_OSINT = "DISCOVERED_PUBLIC_OSINT"
     ESTIMATED_SECTOR_BASELINE = "ESTIMATED_SECTOR_BASELINE"
+
+
+@dataclass(frozen=True)
+class _SectorBaselinePriors:
+    """Internal value object holding resolved sector-level priors."""
+
+    corp_ratio: float
+    shared_ratio: float
+    refresh_rate: float
+    hours_per_unit: float
+    hourly_rate: float
+    elasticity: float
+    disruption_driver: str
+    industry_name: str
 
 
 @dataclass(frozen=True)
@@ -75,51 +100,114 @@ class WorkforceSegmentationResolver:
         telemetry = client_telemetry or {}
         intel = client_intelligence or {}
         profile = industry_profile or {}
+        priors = cls._extract_sector_priors(profile)
 
-        # ------------------------------------------------------------------
         # LEVEL 1: Empirical Interview Ground Truth & Lifecycle Arithmetic
-        # ------------------------------------------------------------------
-        l1_profile = cls._try_resolve_level_1_interview(headcount, telemetry)
+        l1_profile = cls._try_resolve_level_1_interview(headcount, telemetry, priors)
         if l1_profile is not None:
             return l1_profile
 
-        # ------------------------------------------------------------------
-        # LEVEL 2: Verified Audited Regulatory Filings (EINF / 10-K / AD)
-        # ------------------------------------------------------------------
-        l2_profile = cls._try_resolve_level_2_filings(headcount, telemetry, intel)
+        # LEVEL 2: Verified Audited Regulatory Filings (10-K / Non-Financial Filings / AD)
+        l2_profile = cls._try_resolve_level_2_filings(headcount, telemetry, intel, priors)
         if l2_profile is not None:
             return l2_profile
 
-        # ------------------------------------------------------------------
         # LEVEL 3: Pre-Flight Web Intelligence (OSINT / Public Footprint)
-        # ------------------------------------------------------------------
-        l3_profile = cls._try_resolve_level_3_osint(headcount, intel)
+        l3_profile = cls._try_resolve_level_3_osint(headcount, intel, priors)
         if l3_profile is not None:
             return l3_profile
 
-        # ------------------------------------------------------------------
         # LEVEL 4: Bayesian Sector Prior Fallback (Safe Default)
-        # ------------------------------------------------------------------
-        return cls._resolve_level_4_sector_prior(headcount, profile)
+        return cls._resolve_level_4_sector_prior(headcount, priors)
+
+    @staticmethod
+    def _extract_sector_priors(profile: Dict[str, Any]) -> _SectorBaselinePriors:
+        """Extracts sector-specific parameters with safe fallbacks to canonical constants."""
+        digital_profile = profile.get("workforce_digital_profile") or {}
+        return _SectorBaselinePriors(
+            corp_ratio=cls_safe_float(
+                digital_profile.get("corporate_seat_ratio"), DEFAULT_CORPORATE_SEAT_RATIO
+            ),
+            shared_ratio=cls_safe_float(
+                digital_profile.get("shared_operational_edge_ratio"), DEFAULT_SHARED_EDGE_RATIO
+            ),
+            refresh_rate=cls_safe_float(
+                digital_profile.get("annual_endpoint_refresh_rate"), DEFAULT_ANNUAL_REFRESH_RATE
+            ),
+            hours_per_unit=cls_safe_float(
+                digital_profile.get("hours_per_manual_refresh"), DEFAULT_HOURS_PER_REFRESH
+            ),
+            hourly_rate=cls_safe_float(
+                digital_profile.get("typical_it_support_hourly_rate"), DEFAULT_IT_SUPPORT_HOURLY_RATE
+            ),
+            elasticity=cls_safe_float(
+                digital_profile.get("work_make_up_elasticity"), DEFAULT_WORK_MAKE_UP_ELASTICITY
+            ),
+            disruption_driver=str(
+                digital_profile.get("primary_disruption_driver") or DEFAULT_DISRUPTION_DRIVER
+            ),
+            industry_name=str(profile.get("industry") or "General Enterprise"),
+        )
+
+    @staticmethod
+    def _reconcile_headcount_partition(
+        headcount: int, raw_corporate: int, raw_shared: int
+    ) -> Tuple[int, int, int]:
+        """Enforces strict Euler conservation: corporate + shared + deskless == headcount."""
+        corp_val = max(1, min(headcount, int(raw_corporate)))
+        remaining_after_corp = max(0, headcount - corp_val)
+        shared_val = max(0, min(remaining_after_corp, int(raw_shared)))
+        deskless_val = max(0, headcount - corp_val - shared_val)
+        return corp_val, shared_val, deskless_val
+
+    @staticmethod
+    def _parse_localized_integer(token: str) -> int:
+        """Safely parses integer tokens with thousand separators (e.g. '1,200' or '1.200')."""
+        cleaned = token.strip()
+        if re.match(r"^\d{1,3}(?:[.,]\d{3})+$", cleaned):
+            cleaned = re.sub(r"[.,]", "", cleaned)
+        else:
+            cleaned = cleaned.replace(",", ".")
+        return int(round(float(cleaned)))
 
     @classmethod
     def _try_resolve_level_1_interview(
         cls,
         headcount: int,
         telemetry: Dict[str, Any],
+        priors: _SectorBaselinePriors,
     ) -> Optional[WorkforceProfile]:
         """Inspects technical interviews for explicit fleet declarations or refresh arithmetic."""
-        # 1. Direct explicit telemetry
         direct = telemetry.get("interview_workforce_declarations") or telemetry.get("workforce_split")
         if isinstance(direct, dict):
-            corp = direct.get("corporate_seats") or direct.get("office_workers")
+            corp = direct.get("corporate_seats")
+            if corp is None:
+                corp = direct.get("office_workers")
             if corp is not None:
-                corp_val = max(1, min(headcount, int(corp)))
-                shared_val = int(direct.get("shared_terminals") or direct.get("edge_terminals") or 0)
-                deskless = max(0, headcount - corp_val - shared_val)
-                refresh = int(direct.get("annual_refresh_units") or round(corp_val * 0.285))
-                hours_per_unit = float(direct.get("hours_per_refresh") or 3.5)
-                rate = float(direct.get("it_support_hourly_rate") or 45.0)
+                raw_shared = direct.get("shared_terminals")
+                if raw_shared is None:
+                    raw_shared = direct.get("edge_terminals", 0)
+                corp_val, shared_val, deskless = cls._reconcile_headcount_partition(
+                    headcount, int(corp), int(raw_shared)
+                )
+                refresh_raw = direct.get("annual_refresh_units")
+                refresh = (
+                    max(0, int(refresh_raw))
+                    if refresh_raw is not None
+                    else int(round(corp_val * priors.refresh_rate))
+                )
+                hours_per_unit = cls_safe_float(
+                    direct.get("hours_per_refresh"), priors.hours_per_unit
+                )
+                rate = cls_safe_float(
+                    direct.get("it_support_hourly_rate"), priors.hourly_rate
+                )
+                elasticity = cls_safe_float(
+                    direct.get("work_make_up_elasticity"), priors.elasticity
+                )
+                driver = str(
+                    direct.get("primary_disruption_driver") or priors.disruption_driver
+                )
                 total_hours = refresh * hours_per_unit
                 total_cost = total_hours * rate
                 return WorkforceProfile(
@@ -133,39 +221,59 @@ class WorkforceSegmentationResolver:
                     annual_refresh_units=refresh,
                     annual_toil_hours=total_hours,
                     annual_toil_cost=total_cost,
-                    work_make_up_elasticity=0.30,
-                    primary_disruption_driver="PLANT_DISPATCH_AND_LOGISTICS",
+                    work_make_up_elasticity=elasticity,
+                    primary_disruption_driver=driver,
                 )
 
-        # 2. Textual search in qualitative interview corpus (e.g. Molins 350 renewals * 3.5 years = 1,200)
+        # Textual search in qualitative interview corpus (Language-agnostic and Technical English patterns)
         corpus = str(telemetry).lower()
-        # Pattern: "renovacion anual de ~?(\d+) portatiles" or "flota total de ~?(\d+) (?:equipos|ordenadores|portatiles)"
         m_fleet = re.search(
-            r"flota\s+(?:total\s+)?de\s+(?:aproximadamente\s+|unos\s+)?~?(\d+(?:\.\d+)?)\s*(?:equipos|ordenadores|port[a\u00e1]tiles)",
+            r"(?:fleet|flota)\s+(?:total\s+)?(?:of|de)\s+(?:approximately|around|about|unos)?\s*~?(\d+(?:[.,]\d{3})*)\s*(?:devices|workstations|laptops|endpoints|computers|equipos|ordenadores|port[a\u00e1]tiles)",
             corpus,
         )
         m_renew = re.search(
-            r"(?:renovaci[o\u00f3]n|preparaci[o\u00f3]n)\s+(?:anual\s+)?de\s+(?:los\s+)?(?:aproximadamente\s+|unos\s+)?~?(\d+(?:\.\d+)?)\s*(?:port[a\u00e1]tiles|ordenadores|equipos)",
+            r"(?:annual\s+)?(?:refresh|renewal|provisioning|preparation|renovaci[o\u00f3]n|preparaci[o\u00f3]n)\s+(?:anual\s+)?(?:of|de)\s+(?:approximately|around|about|los|unos)?\s*~?(\d+(?:[.,]\d{3})*)\s*(?:laptops|workstations|devices|endpoints|computers|port[a\u00e1]tiles|ordenadores|equipos)",
             corpus,
         )
         m_kiosk = re.search(
-            r"(?:m[a\u00e1]s\s+de|unos|aproximadamente)\s+(\d+(?:\.\d+)?)\s*(?:terminales|quioscos|quioscos industriales)",
+            r"(?:more\s+than|over|approximately|around|about|m[a\u00e1]s\s+de|unos)\s+(\d+(?:[.,]\d{3})*)\s*(?:shared\s+terminals|industrial\s+kiosks|kiosks|terminals|terminales|quioscos|quioscos\s+industriales)",
             corpus,
         )
 
         if m_fleet or m_renew:
-            corp_val = int(float(m_fleet.group(1).replace(".", ""))) if m_fleet else (
-                int(float(m_renew.group(1).replace(".", "")) * 3.5) if m_renew else int(headcount * 0.30)
+            lifecycle_years = (
+                (1.0 / priors.refresh_rate) if priors.refresh_rate > 0 else DEFAULT_LIFECYCLE_YEARS
             )
-            corp_val = max(1, min(headcount, corp_val))
-            shared_val = int(float(m_kiosk.group(1).replace(".", ""))) if m_kiosk else int(headcount * 0.20)
-            deskless = max(0, headcount - corp_val - shared_val)
+            raw_corp = (
+                cls._parse_localized_integer(m_fleet.group(1))
+                if m_fleet
+                else int(round(cls._parse_localized_integer(m_renew.group(1)) * lifecycle_years))
+            )
+            raw_shared = (
+                cls._parse_localized_integer(m_kiosk.group(1))
+                if m_kiosk
+                else int(round(headcount * priors.shared_ratio))
+            )
+            corp_val, shared_val, deskless = cls._reconcile_headcount_partition(
+                headcount, raw_corp, raw_shared
+            )
 
-            refresh_units = int(float(m_renew.group(1).replace(".", ""))) if m_renew else int(round(corp_val / 3.5))
-            m_hours = re.search(r"(\d+(?:[.,]\d+)?)\s*horas?\s+de\s+(?:dedicaci[o\u00f3]n|t[e\u00e9]cnico)", corpus)
-            hours_per_unit = float(m_hours.group(1).replace(",", ".")) if m_hours else 3.5
+            refresh_units = (
+                cls._parse_localized_integer(m_renew.group(1))
+                if m_renew
+                else int(round(corp_val * priors.refresh_rate))
+            )
+            m_hours = re.search(
+                r"(\d+(?:[.,]\d+)?)\s*hours?\s+(?:of|de)\s+(?:manual\s+)?(?:dedication|effort|technician|provisioning|dedicaci[o\u00f3]n|t[e\u00e9]cnico)",
+                corpus,
+            )
+            hours_per_unit = (
+                float(m_hours.group(1).replace(",", "."))
+                if m_hours
+                else priors.hours_per_unit
+            )
             total_hours = refresh_units * hours_per_unit
-            total_cost = total_hours * 45.0  # Standard IT tech rate
+            total_cost = total_hours * priors.hourly_rate
 
             return WorkforceProfile(
                 total_headcount=headcount,
@@ -178,8 +286,8 @@ class WorkforceSegmentationResolver:
                 annual_refresh_units=refresh_units,
                 annual_toil_hours=total_hours,
                 annual_toil_cost=total_cost,
-                work_make_up_elasticity=0.30,
-                primary_disruption_driver="PLANT_DISPATCH_AND_LOGISTICS",
+                work_make_up_elasticity=priors.elasticity,
+                primary_disruption_driver=priors.disruption_driver,
             )
 
         return None
@@ -190,17 +298,21 @@ class WorkforceSegmentationResolver:
         headcount: int,
         telemetry: Dict[str, Any],
         intel: Dict[str, Any],
+        priors: _SectorBaselinePriors,
     ) -> Optional[WorkforceProfile]:
-        """Inspects documentary filings (EINF / 10-K / Intune / AD)."""
+        """Inspects documentary filings (Non-Financial Disclosures / 10-K / Intune / AD)."""
         doc_data = telemetry.get("regulatory_filings") or intel.get("regulatory_filings") or {}
         if isinstance(doc_data, dict) and doc_data.get("corporate_workforce") is not None:
-            corp = max(1, min(headcount, int(doc_data["corporate_workforce"])))
-            shared = int(doc_data.get("shared_terminals") or 0)
-            deskless = max(0, headcount - corp - shared)
-            refresh = int(round(corp * 0.285))
-            total_hours = refresh * 3.0
-            total_cost = total_hours * 50.0
-            citation = str(doc_data.get("citation") or "Audited Non-Financial Information Statement (EINF)")
+            raw_shared = int(doc_data.get("shared_terminals") or 0)
+            corp, shared, deskless = cls._reconcile_headcount_partition(
+                headcount, int(doc_data["corporate_workforce"]), raw_shared
+            )
+            refresh = int(round(corp * priors.refresh_rate))
+            total_hours = refresh * priors.hours_per_unit
+            total_cost = total_hours * priors.hourly_rate
+            citation = str(
+                doc_data.get("citation") or "Audited Non-Financial Information Statement"
+            )
             return WorkforceProfile(
                 total_headcount=headcount,
                 corporate_seats=corp,
@@ -212,7 +324,7 @@ class WorkforceSegmentationResolver:
                 annual_refresh_units=refresh,
                 annual_toil_hours=total_hours,
                 annual_toil_cost=total_cost,
-                work_make_up_elasticity=0.25,
+                work_make_up_elasticity=priors.elasticity,
                 primary_disruption_driver="AUDITED_REGULATORY_DISCLOSURE",
             )
         return None
@@ -222,17 +334,24 @@ class WorkforceSegmentationResolver:
         cls,
         headcount: int,
         intel: Dict[str, Any],
+        priors: _SectorBaselinePriors,
     ) -> Optional[WorkforceProfile]:
         """Inspects pre-flight web intelligence / LinkedIn / client_intelligence."""
-        wf_intel = (intel.get("profile") or {}).get("workforce_intelligence") or intel.get("workforce_intelligence")
+        wf_intel = (
+            (intel.get("profile") or {}).get("workforce_intelligence")
+            or intel.get("workforce_intelligence")
+        )
         if isinstance(wf_intel, dict) and wf_intel.get("corporate_workforce") is not None:
-            corp = max(1, min(headcount, int(wf_intel["corporate_workforce"])))
-            shared = int(wf_intel.get("shared_edge_terminals") or 0)
-            deskless = max(0, headcount - corp - shared)
-            refresh = int(round(corp * 0.285))
-            total_hours = refresh * 3.0
-            total_cost = total_hours * 50.0
-            citation = str(wf_intel.get("evidence_citation") or "OSINT Public Footprint Discovery")
+            raw_shared = int(wf_intel.get("shared_edge_terminals") or 0)
+            corp, shared, deskless = cls._reconcile_headcount_partition(
+                headcount, int(wf_intel["corporate_workforce"]), raw_shared
+            )
+            refresh = int(round(corp * priors.refresh_rate))
+            total_hours = refresh * priors.hours_per_unit
+            total_cost = total_hours * priors.hourly_rate
+            citation = str(
+                wf_intel.get("evidence_citation") or "OSINT Public Footprint Discovery"
+            )
             return WorkforceProfile(
                 total_headcount=headcount,
                 corporate_seats=corp,
@@ -244,7 +363,7 @@ class WorkforceSegmentationResolver:
                 annual_refresh_units=refresh,
                 annual_toil_hours=total_hours,
                 annual_toil_cost=total_cost,
-                work_make_up_elasticity=0.25,
+                work_make_up_elasticity=priors.elasticity,
                 primary_disruption_driver="PUBLIC_INTELLIGENCE_DISCOVERY",
             )
         return None
@@ -253,28 +372,18 @@ class WorkforceSegmentationResolver:
     def _resolve_level_4_sector_prior(
         cls,
         headcount: int,
-        profile: Dict[str, Any],
+        priors: _SectorBaselinePriors,
     ) -> WorkforceProfile:
         """Fallback to Bayesian Sector Prior from industry profile."""
-        digital_profile = profile.get("workforce_digital_profile") or {}
-        corp_ratio = float(digital_profile.get("corporate_seat_ratio") or 0.60)
-        shared_ratio = float(digital_profile.get("shared_operational_edge_ratio") or 0.20)
-        deskless_ratio = float(digital_profile.get("deskless_field_ratio") or 0.20)
-        refresh_rate = float(digital_profile.get("annual_endpoint_refresh_rate") or 0.285)
-        hours_per_unit = float(digital_profile.get("hours_per_manual_refresh") or 3.0)
-        hourly_rate = float(digital_profile.get("typical_it_support_hourly_rate") or 50.0)
-        elasticity = float(digital_profile.get("work_make_up_elasticity") or 0.25)
-        driver = str(digital_profile.get("primary_disruption_driver") or "SECTOR_MODAL_BASELINE")
-
-        corp = max(1, int(round(headcount * corp_ratio)))
-        shared = int(round(headcount * shared_ratio))
-        deskless = max(0, headcount - corp - shared)
-        refresh = int(round(corp * refresh_rate))
-        total_hours = refresh * hours_per_unit
-        total_cost = total_hours * hourly_rate
-
-        industry_name = str(profile.get("industry") or "General Enterprise")
-        citation = f"Bayesian Sector Prior ({industry_name} Baseline Distribution)"
+        raw_corp = max(1, int(round(headcount * priors.corp_ratio)))
+        raw_shared = int(round(headcount * priors.shared_ratio))
+        corp, shared, deskless = cls._reconcile_headcount_partition(
+            headcount, raw_corp, raw_shared
+        )
+        refresh = int(round(corp * priors.refresh_rate))
+        total_hours = refresh * priors.hours_per_unit
+        total_cost = total_hours * priors.hourly_rate
+        citation = f"Bayesian Sector Prior ({priors.industry_name} Baseline Distribution)"
 
         return WorkforceProfile(
             total_headcount=headcount,
@@ -287,6 +396,17 @@ class WorkforceSegmentationResolver:
             annual_refresh_units=refresh,
             annual_toil_hours=total_hours,
             annual_toil_cost=total_cost,
-            work_make_up_elasticity=elasticity,
-            primary_disruption_driver=driver,
+            work_make_up_elasticity=priors.elasticity,
+            primary_disruption_driver=priors.disruption_driver,
         )
+
+
+def cls_safe_float(value: Any, default: float) -> float:
+    """Safely converts an arbitrary value to a finite float, preserving 0.0 when explicitly set."""
+    if value is None:
+        return default
+    try:
+        parsed = float(value)
+        return parsed if math.isfinite(parsed) and parsed >= 0.0 else default
+    except (ValueError, TypeError):
+        return default
