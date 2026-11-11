@@ -27,6 +27,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+    derive_in_memory_fair_risks,
+)
 from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_docx_via_ast
 from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1AsisASTCompiler
 from assessment_engine.application.run_scoring import build_scoring
@@ -48,9 +51,9 @@ ARCHETYPE_BASE_HOURS: Dict[str, float] = {
     "T4": 10.0,  # Storage
     "T5": 18.0,  # Resilience/Disaster
     "T6": 20.0,  # Security / NIS2
-    "T7": 30.0,  # ITSM / SRE (reflects 40% toil of 5-engineer team >130k €/yr)
-    "T8": 65.0,  # FinOps / Contracts (reflects >450k €/yr NOS contract & Broadcom exposure)
-    "T9": 28.0,  # Workplace / EUC (reflects 1,225h manual USB toil >55k €/yr + 800 kiosks)
+    "T7": 42.0,  # ITSM / SRE (harmonizes with >130k €/yr 5-engineer capacity toil)
+    "T8": 210.0, # FinOps / Contracts (harmonizes with >450k €/yr NOS contract & Broadcom cliff)
+    "T9": 38.0,  # Workplace / EUC (harmonizes with 1,225h manual USB toil >55k €/yr + 800 kiosks)
     "T10": 14.0, # Plant OT / Scales
 }
 
@@ -186,7 +189,10 @@ def main() -> None:
             arch_label = "Availability Outage (Downtime)"
 
         # Pure native Open FAIR calibration via ActuarialDowntimeCalibrator
-        base_hourly_downtime_cost = float(profile.annual_revenue) / 8760.0 * 0.10
+        if code == "T10":
+            base_hourly_downtime_cost = 5000.0  # Plant weighbridge and dispatch stoppage rate
+        else:
+            base_hourly_downtime_cost = float(profile.annual_revenue) / 8760.0 * 0.10
         base_h = ARCHETYPE_BASE_HOURS.get(code, 12.0)
         eff_hours = round(base_h * ((5.0 - overall_cmmi) / 2.5), 1)
         p90_h = round(eff_hours * 1.8, 1)
@@ -201,13 +207,26 @@ def main() -> None:
             current_maturity_score=overall_cmmi,
         )
 
-        s_ale = float(m.annual_loss_expectancy)
-        s_p90 = float(m.p90_value_at_risk)
+        # Bottom-up exact risk cards reconciliation (SR 11-7 SSOT)
+        risks_list, _ = derive_in_memory_fair_risks(bp, "es", "EUR")
+        cards_sum = sum(
+            float(r.get("ale") or 0.0)
+            for r in risks_list
+            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        )
+        p90_max = max(
+            (float(r.get("p90") or 0.0) for r in risks_list),
+            default=0.0,
+        )
+
+        s_ale = round(cards_sum, 2) if cards_sum > 0 else float(m.annual_loss_expectancy)
+        s_p90 = round(p90_max, 2) if p90_max > 0 else float(m.p90_value_at_risk)
         raw_standalone_ales[code] = s_ale
-        print(f"  [{code}] Score: {overall_cmmi:.2f} | Archetype: {arch_label:<32} | Calibrated ALE: {s_ale:,.0f} € | P90: {s_p90:,.0f} €")
+        print(f"  [{code}] Score: {overall_cmmi:.2f} | Archetype: {arch_label:<32} | Reconciled ALE: {s_ale:,.0f} € | P90: {s_p90:,.0f} €")
 
         bp["score"] = overall_cmmi
         bp["overall_score"] = overall_cmmi
+        bp["hourly_burn_rate"] = base_hourly_downtime_cost
         bp["total_fair_ale"] = s_ale
         bp["ale"] = s_ale
         bp["standalone_fair_ale"] = s_ale

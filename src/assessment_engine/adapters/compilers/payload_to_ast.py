@@ -3105,12 +3105,15 @@ class PayloadToASTBridge:
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
                     logger.warning(f"[AST Bridge Warning] Error reading risks CSV file: {ex}")
 
+        # Build executive risks summary paragraph
+        primary_risks = [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"]
+        actual_cards_sum = sum(float(r.get("ale") or 0.0) for r in primary_risks)
+        if actual_cards_sum > 0:
+            total_fair_ale = actual_cards_sum
+
         formatted_ale = format_number(
             total_fair_ale, locale=meta_lang, decimals=0
         )
-
-        # Build executive risks summary paragraph
-        primary_risks = [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"]
         if primary_risks and total_fair_ale > 0:
             pillar_sums: dict[str, float] = {}
             for r in primary_risks:
@@ -3802,12 +3805,16 @@ class PayloadToASTBridge:
         except (KeyError, ValueError):
             primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
 
-        fin_telemetry = blueprint_data.get("financial_telemetry") or ctx.get("financial_telemetry") or {}
-        hourly_rate = float(
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        tower_rate = (
             fin_telemetry.get("authoritative_hourly_downtime_cost")
-            or ctx.get("authoritative_hourly_downtime_cost")
-            or blueprint_data.get("hourly_downtime_rate")
             or blueprint_data.get("hourly_burn_rate")
+            or blueprint_data.get("hourly_downtime_rate")
+        )
+        hourly_rate = float(
+            tower_rate
+            or (ctx.get("financial_telemetry") or {}).get("authoritative_hourly_downtime_cost")
+            or ctx.get("authoritative_hourly_downtime_cost")
             or (total_fair_ale / 8760.0 if total_fair_ale > 0 else 0.0)
         )
 
@@ -3854,6 +3861,12 @@ class PayloadToASTBridge:
         if canonical_sle > 0.0:
             reconciled_sle = round(canonical_sle)
         else:
+            reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+
+        # In PRODUCTIVITY_TOIL, continuous toil labor must NOT explode into millions of euros
+        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL and (
+            eff_recovery_hours >= 100.0 or reconciled_sle > 100000.0
+        ):
             reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
 
         sle_val = max(Decimal("0.00"), Decimal(str(reconciled_sle)))
@@ -4022,27 +4035,35 @@ class PayloadToASTBridge:
         ale_num = float(metrics.annualized_loss_expectancy)
         calibrated_lef = canonical_lef
 
-        # Calculate human-readable return period / frequency (RFC 053)
+        # Calculate human-readable return period / frequency (Adaptive Significant Digits)
         if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
-            # Chronic operational toil is recurring across multiple incidents per year
             if ale_num > 0 and reconciled_sle > 0:
                 est_annual_events = max(1, int(round(ale_num / float(reconciled_sle))))
             else:
                 est_annual_events = max(1, int(round(raw_tef * 6.0)))
             ev_str = format_number(float(est_annual_events), locale=meta_lang, decimals=0)
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
-            days_int = max(1, int(round(365.0 / est_annual_events)))
-            return_period_str = f"~{days_int} {t('days_unit', locale=meta_lang, default='días')}"
+            displayed_mult_freq = float(est_annual_events)
         elif calibrated_lef <= 0:
-            freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=format_number(0.1, locale=meta_lang, decimals=1))
-        elif calibrated_lef < 1.0:
-            rec_years = round(1.0 / calibrated_lef, 1)
-            rec_decimals = 0 if abs(rec_years - round(rec_years)) < 0.15 else 1
-            years_str = format_number(rec_years, locale=meta_lang, decimals=rec_decimals)
-            freq_display = t("kpi_frequency_value_years", locale=meta_lang, years=years_str)
-        else:
-            ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=1)
+            ev_str = format_number(0.1, locale=meta_lang, decimals=1)
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
+            displayed_mult_freq = 0.1
+        elif calibrated_lef < 0.1:
+            ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=3)
+            rec_years = round(1.0 / calibrated_lef, 1)
+            years_str = format_number(rec_years, locale=meta_lang, decimals=1)
+            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang, default='año')})"
+            displayed_mult_freq = float(f"{calibrated_lef:.3f}")
+        elif calibrated_lef < 1.0:
+            ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=2)
+            rec_years = round(1.0 / calibrated_lef, 1)
+            years_str = format_number(rec_years, locale=meta_lang, decimals=1)
+            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang, default='año')})"
+            displayed_mult_freq = float(f"{calibrated_lef:.2f}")
+        else:
+            ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=2)
+            freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
+            displayed_mult_freq = float(f"{calibrated_lef:.2f}")
 
         if metrics.is_deduplicated:
             notice_text = t("actuarial_custody_deduplicated_note", locale=meta_lang).format(
@@ -4110,9 +4131,19 @@ class PayloadToASTBridge:
             or 0.0
         )
         sec_weighted_loss = round(p_sec * raw_sec_mean) if raw_sec_mean > 0 else 0
-        stochastic_tail_adj = round(
-            reconciled_sle - (primary_downtime_loss + repl_cost_num + sec_weighted_loss)
-        )
+        # In PRODUCTIVITY_TOIL, toil hours are continuous operational labor; clamp reconciled_sle to exact component sum
+        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL and (
+            eff_recovery_hours >= 100.0 or abs(reconciled_sle - primary_downtime_loss) > 50000.0
+        ):
+            reconciled_sle = primary_downtime_loss + repl_cost_num + sec_weighted_loss
+            stochastic_tail_adj = 0
+            formatted_sle = format_currency(
+                reconciled_sle, currency_symbol=currency, locale=meta_lang, decimals=0
+            )
+        else:
+            stochastic_tail_adj = round(
+                reconciled_sle - (primary_downtime_loss + repl_cost_num + sec_weighted_loss)
+            )
 
         p_down_str = format_currency(
             primary_downtime_loss, currency_symbol=currency, locale=meta_lang, decimals=0
@@ -4159,14 +4190,9 @@ class PayloadToASTBridge:
         )
 
         # Standalone to Allocated ALE Euler Reconciliation Bridge (guarantees exact mathematical closure)
-        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
-            effective_mult_freq = float(est_annual_events)
-        else:
-            effective_mult_freq = calibrated_lef
-
         standalone_base_ale = (
-            round(effective_mult_freq * reconciled_sle)
-            if effective_mult_freq > 0
+            round(displayed_mult_freq * reconciled_sle)
+            if displayed_mult_freq > 0
             else 0
         )
 
