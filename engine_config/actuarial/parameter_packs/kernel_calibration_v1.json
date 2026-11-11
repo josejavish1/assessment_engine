@@ -1,0 +1,19 @@
+{
+  "calibration_id": "fair_copula_kernel_std",
+  "calibration_version": "2026.Q4.v1",
+  "schema_version": "1.0.0",
+  "vuln_min": 0.02,
+  "vuln_max": 0.95,
+  "gamma": 4.0,
+  "kappa": 0.35,
+  "copula_df": 4,
+  "intra_tower_boost": 0.25,
+  "secondary_loss_cv": 0.50,
+  "spof_cmmi_penalty": 1,
+  "max_dependence_loading": 0.35,
+  "max_copula_correlation": 0.85,
+  "rto_cmmi_degradation_slope": 0.15,
+  "rto_spof_multiplier": 1.35,
+  "catastrophic_tail_quantile": 0.95,
+  "baseline_horizon_years": 3
+}

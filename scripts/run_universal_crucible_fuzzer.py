@@ -12,6 +12,7 @@ from __future__ import annotations
 import math
 import random
 import sys
+from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List
@@ -20,10 +21,24 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from assessment_engine.domain.actuarial.actuarial_ledger import (
-    ActuarialLedgerSSOT,
-    DomainFinancialMetric,
-)
+@dataclass(frozen=True)
+class DomainFinancialMetric:
+    tower_id: str
+    raw_standalone_ale: int
+    diversification_adjustment: int
+    calibrated_net_ale: int
+    worst_crisis_event_p90: int
+    portfolio_weight_pct: Decimal
+
+
+@dataclass(frozen=True)
+class ActuarialLedgerSSOT:
+    currency_iso: str
+    domain_metrics: Dict[str, DomainFinancialMetric]
+    gross_undiversified_ale: int
+    copula_adjustment_ale: int
+    copula_overlap_pct: Decimal
+    net_consolidated_portfolio_ale: int
 from assessment_engine.domain.actuarial.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,

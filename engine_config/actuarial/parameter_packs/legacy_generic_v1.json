@@ -1,10 +1,41 @@
 {
   "pack_id": "legacy_generic_v1",
-  "version": "1.0.0",
-  "description": "Baseline generic actuarial priors and calibration defaults with unconfirmed empirical standing (SR 11-7).",
-  "provenance": "MODEL_DEFAULT",
-  "confidence": "LOW",
-  "source_reference": "Open FAIR Body of Knowledge / Historical Assessment Engine Baseline Defaults",
+  "pack_version": "2026.Q4.v2",
+  "schema_version": "2.0.0",
+  "base_currency": "EUR",
+  "global_fallbacks": {
+    "tef_annual": 0.30,
+    "rto_hours": 4.0,
+    "direct_replacement_cost": 5000.0,
+    "hourly_downtime_cost": 5000.0,
+    "secondary_loss_prob": 0.25,
+    "secondary_loss_mean": 2500.0,
+    "remediation_capex": 10000.0,
+    "cmmi_maturity_level": 3,
+    "control_effectiveness_alpha": 0.60,
+    "intra_domain_correlation_rho": 0.30,
+    "prior_alpha": 2.0,
+    "prior_beta": 2.0,
+    "default_zone_id": "TIER_2_CORE_OPERATIONS",
+    "hourly_wage_default": 65.0,
+    "annual_it_opex_default": 5000000.0,
+    "annual_revenue_default": 100000000.0,
+    "statutory_max_fine_ceiling": 20000000.0,
+    "statutory_max_fine_revenue_pct": 0.04,
+    "simulation_iterations": 8192
+  },
+  "severity_tef_multipliers": {
+    "CRITICAL": 2.0,
+    "HIGH": 1.0,
+    "MEDIUM": 0.5,
+    "LOW": 0.2
+  },
+  "pert_dispersion": {
+    "tef_min_ratio": 0.45,
+    "tef_max_ratio": 2.20,
+    "rto_min_ratio": 0.45,
+    "rto_max_ratio": 2.50
+  },
   "operational_zones": {
     "TIER_1_MISSION_CRITICAL": {
       "burn_multiplier": 0.60,
@@ -28,22 +59,138 @@
       "emergency_replacement_ratio": 0.05
     }
   },
-  "pert_dispersion_multipliers": {
-    "tef_min_ratio": 0.45,
-    "tef_max_ratio": 2.20,
-    "rto_min_ratio": 0.45,
-    "rto_max_ratio": 2.50
-  },
-  "default_priors": {
-    "hourly_burn_rate_default": 5000.0,
-    "tef_mode_fallback": 0.30,
-    "rto_hours_mode_fallback": 4.0,
-    "shared_dependence_factor_fallback": 0.30,
-    "blast_radius_alpha_fallback": 0.60,
-    "fully_burdened_hourly_wage_default": 65.0,
-    "annual_it_opex_default": 5000000.0,
-    "annual_revenue_default": 100000000.0,
-    "statutory_max_fine_ceiling": 20000000.0,
-    "statutory_max_fine_revenue_pct": 0.04
+  "towers": {
+    "T1": {
+      "tower_id": "T1",
+      "default_tef_annual": 0.25,
+      "default_rto_hours": 8.0,
+      "default_direct_replacement_cost": 25000.0,
+      "default_hourly_downtime_cost": 12000.0,
+      "default_secondary_loss_prob": 0.40,
+      "default_secondary_loss_mean": 15000.0,
+      "default_remediation_capex": 50000.0,
+      "default_control_effectiveness_alpha": 0.55,
+      "default_intra_domain_correlation_rho": 0.35
+    },
+    "T2": {
+      "tower_id": "T2",
+      "default_tef_annual": 0.30,
+      "default_rto_hours": 6.0,
+      "default_direct_replacement_cost": 15000.0,
+      "default_hourly_downtime_cost": 8000.0,
+      "default_secondary_loss_prob": 0.30,
+      "default_secondary_loss_mean": 8000.0,
+      "default_remediation_capex": 35000.0,
+      "default_control_effectiveness_alpha": 0.60,
+      "default_intra_domain_correlation_rho": 0.30
+    },
+    "T3": {
+      "tower_id": "T3",
+      "default_tef_annual": 0.35,
+      "default_rto_hours": 4.0,
+      "default_direct_replacement_cost": 10000.0,
+      "default_hourly_downtime_cost": 10000.0,
+      "default_secondary_loss_prob": 0.35,
+      "default_secondary_loss_mean": 12000.0,
+      "default_remediation_capex": 30000.0,
+      "default_control_effectiveness_alpha": 0.60,
+      "default_intra_domain_correlation_rho": 0.40
+    },
+    "T4": {
+      "tower_id": "T4",
+      "default_tef_annual": 0.40,
+      "default_rto_hours": 6.0,
+      "default_direct_replacement_cost": 18000.0,
+      "default_hourly_downtime_cost": 9000.0,
+      "default_secondary_loss_prob": 0.35,
+      "default_secondary_loss_mean": 10000.0,
+      "default_remediation_capex": 40000.0,
+      "default_control_effectiveness_alpha": 0.50,
+      "default_intra_domain_correlation_rho": 0.35
+    },
+    "T5": {
+      "tower_id": "T5",
+      "default_tef_annual": 0.50,
+      "default_rto_hours": 12.0,
+      "default_direct_replacement_cost": 30000.0,
+      "default_hourly_downtime_cost": 15000.0,
+      "default_secondary_loss_prob": 0.60,
+      "default_secondary_loss_mean": 50000.0,
+      "default_remediation_capex": 75000.0,
+      "default_control_effectiveness_alpha": 0.45,
+      "default_intra_domain_correlation_rho": 0.45
+    },
+    "T6": {
+      "tower_id": "T6",
+      "default_tef_annual": 0.30,
+      "default_rto_hours": 4.0,
+      "default_direct_replacement_cost": 8000.0,
+      "default_hourly_downtime_cost": 6000.0,
+      "default_secondary_loss_prob": 0.25,
+      "default_secondary_loss_mean": 5000.0,
+      "default_remediation_capex": 20000.0,
+      "default_control_effectiveness_alpha": 0.65,
+      "default_intra_domain_correlation_rho": 0.25
+    },
+    "T7": {
+      "tower_id": "T7",
+      "default_tef_annual": 0.35,
+      "default_rto_hours": 4.0,
+      "default_direct_replacement_cost": 5000.0,
+      "default_hourly_downtime_cost": 5000.0,
+      "default_secondary_loss_prob": 0.20,
+      "default_secondary_loss_mean": 4000.0,
+      "default_remediation_capex": 15000.0,
+      "default_control_effectiveness_alpha": 0.70,
+      "default_intra_domain_correlation_rho": 0.20
+    },
+    "T8": {
+      "tower_id": "T8",
+      "default_tef_annual": 0.25,
+      "default_rto_hours": 6.0,
+      "default_direct_replacement_cost": 12000.0,
+      "default_hourly_downtime_cost": 7000.0,
+      "default_secondary_loss_prob": 0.30,
+      "default_secondary_loss_mean": 8000.0,
+      "default_remediation_capex": 25000.0,
+      "default_control_effectiveness_alpha": 0.60,
+      "default_intra_domain_correlation_rho": 0.30
+    },
+    "T9": {
+      "tower_id": "T9",
+      "default_tef_annual": 0.20,
+      "default_rto_hours": 8.0,
+      "default_direct_replacement_cost": 15000.0,
+      "default_hourly_downtime_cost": 6000.0,
+      "default_secondary_loss_prob": 0.35,
+      "default_secondary_loss_mean": 10000.0,
+      "default_remediation_capex": 30000.0,
+      "default_control_effectiveness_alpha": 0.65,
+      "default_intra_domain_correlation_rho": 0.25
+    },
+    "T10": {
+      "tower_id": "T10",
+      "default_tef_annual": 0.20,
+      "default_rto_hours": 16.0,
+      "default_direct_replacement_cost": 20000.0,
+      "default_hourly_downtime_cost": 10000.0,
+      "default_secondary_loss_prob": 0.40,
+      "default_secondary_loss_mean": 20000.0,
+      "default_remediation_capex": 40000.0,
+      "default_control_effectiveness_alpha": 0.55,
+      "default_intra_domain_correlation_rho": 0.30
+    },
+    "T11": {
+      "tower_id": "T11",
+      "default_tef_annual": 0.15,
+      "default_rto_hours": 24.0,
+      "default_direct_replacement_cost": 10000.0,
+      "default_hourly_downtime_cost": 4000.0,
+      "default_secondary_loss_prob": 0.50,
+      "default_secondary_loss_mean": 25000.0,
+      "default_remediation_capex": 35000.0,
+      "default_control_effectiveness_alpha": 0.50,
+      "default_intra_domain_correlation_rho": 0.20
+    }
   }
 }

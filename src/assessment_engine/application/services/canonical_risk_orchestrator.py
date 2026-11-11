@@ -76,22 +76,34 @@ class CanonicalRiskOrchestrator:
                 valid_ctx = GlobalAssessmentContext.model_validate(global_context)
             except Exception:
                 fin_tel = global_context.get("financial_telemetry") or {}
-                raw_c = str(
-                    fin_tel.get("currency")
-                    or fin_tel.get("currency_code")
-                    or global_context.get("currency")
-                    or "EUR"
-                ).strip().upper()
+                raw_c = (
+                    str(
+                        fin_tel.get("currency")
+                        or fin_tel.get("currency_code")
+                        or global_context.get("currency")
+                        or "EUR"
+                    )
+                    .strip()
+                    .upper()
+                )
                 if raw_c not in VALID_ISO_CURRENCIES:
                     valid_ctx = None
                 else:
                     valid_ctx = GlobalAssessmentContext.create_legacy_generic_context(
-                        tenant_id=str(global_context.get("tenant_id") or "DEFAULT_TENANT"),
-                        business_entity_id=str(global_context.get("business_entity_id") or "DEFAULT_ENTITY"),
-                        operating_site_id=str(global_context.get("operating_site_id") or "DEFAULT_SITE"),
+                        tenant_id=str(
+                            global_context.get("tenant_id") or "DEFAULT_TENANT"
+                        ),
+                        business_entity_id=str(
+                            global_context.get("business_entity_id") or "DEFAULT_ENTITY"
+                        ),
+                        operating_site_id=str(
+                            global_context.get("operating_site_id") or "DEFAULT_SITE"
+                        ),
                         currency=raw_c,
                         annual_revenue=_safe_float(fin_tel.get("annual_revenue")),
-                        hourly_downtime_cost=_safe_float(fin_tel.get("authoritative_hourly_downtime_cost")),
+                        hourly_downtime_cost=_safe_float(
+                            fin_tel.get("authoritative_hourly_downtime_cost")
+                        ),
                     )
         else:
             valid_ctx = GlobalAssessmentContext.create_legacy_generic_context()
@@ -99,66 +111,79 @@ class CanonicalRiskOrchestrator:
         if valid_ctx is None:
             # Mark unsupported context and abort simulation safely
             for payload in payloads_by_tower.values():
-                payload["quantification_status"] = QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                payload["quantification_status"] = (
+                    QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                )
                 payload["total_fair_ale"] = None
                 payload["total_fair_p90"] = None
                 payload["total_fair_cvar_90"] = None
                 for p in payload.get("pillars_analysis", []):
                     for f in p.get("health_check_asis", []):
-                        f["quantification_status"] = QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                        f["quantification_status"] = (
+                            QuantificationStatus.UNSUPPORTED_CONTEXT.value
+                        )
                         f["fair_ale_score"] = None
                         f["fair_p90_score"] = None
             return payloads_by_tower, None
 
         eval_currency = valid_ctx.reporting_currency
 
+        from assessment_engine.infrastructure.parameter_pack_loader import (
+            load_actuarial_parameter_pack,
+            load_kernel_calibration_pack,
+        )
+
+        pack = load_actuarial_parameter_pack()
+        cal = load_kernel_calibration_pack()
+
         actuarial_cfg = {}
         if isinstance(global_context, dict):
-            actuarial_cfg = (global_context.get("financial_telemetry") or {}).get("actuarial_calibration") or {}
-        num_sims = int(actuarial_cfg.get("simulation_iterations") or 8192)
-        copula_df = int(actuarial_cfg.get("copula_df") or 4)
+            actuarial_cfg = (global_context.get("financial_telemetry") or {}).get(
+                "actuarial_calibration"
+            ) or {}
+        num_sims = int(
+            actuarial_cfg.get("simulation_iterations")
+            or pack.global_fallbacks.simulation_iterations
+        )
+        copula_df = int(actuarial_cfg.get("copula_df") or cal.copula_df)
 
-        base_burn_rate = valid_ctx.authoritative_hourly_downtime_cost or 5000.0
+        base_burn_rate = (
+            valid_ctx.authoritative_hourly_downtime_cost
+            or pack.global_fallbacks.hourly_downtime_cost
+        )
 
         zone_configs = {
-            "TIER_1_MISSION_CRITICAL": {
-                "burn_mult": 0.60,
-                "h_max": 24.0,
-                "retention": 1.00,
-                "ceil_hours": 24.0,
-                "repl_ratio": 0.20,
-            },
-            "TIER_2_CORE_OPERATIONS": {
-                "burn_mult": 0.35,
-                "h_max": 48.0,
-                "retention": 0.85,
-                "ceil_hours": 48.0,
-                "repl_ratio": 0.15,
-            },
-            "TIER_3_INTERNAL_SUPPORT": {
-                "burn_mult": 0.15,
-                "h_max": 72.0,
-                "retention": 0.50,
-                "ceil_hours": 72.0,
-                "repl_ratio": 0.05,
-            },
+            z_id: {
+                "burn_mult": z_spec.burn_multiplier,
+                "h_max": z_spec.max_annual_outage_hours,
+                "retention": z_spec.secondary_loss_retention_factor,
+                "ceil_hours": z_spec.catastrophic_recovery_ceiling_hours,
+                "repl_ratio": z_spec.emergency_replacement_ratio,
+            }
+            for z_id, z_spec in pack.operational_zones.items()
         }
 
         all_telemetry: List[FindingTelemetry] = []
-        telemetry_meta: Dict[Tuple[str, str], Tuple[FindingTelemetry, Dict[str, Any], Dict[str, Any]]] = {}
+        telemetry_meta: Dict[
+            Tuple[str, str], Tuple[FindingTelemetry, Dict[str, Any], Dict[str, Any]]
+        ] = {}
 
         registry = get_actuarial_archetype_registry()
 
         for t_code, payload in payloads_by_tower.items():
             t_mapping = registry.get_mapping_for_tower(t_code)
             if not t_mapping.quantifiable:
-                payload["quantification_status"] = QuantificationStatus.NOT_QUANTIFIED.value
+                payload["quantification_status"] = (
+                    QuantificationStatus.NOT_QUANTIFIED.value
+                )
                 payload["total_fair_ale"] = None
                 payload["total_fair_p90"] = None
                 payload["total_fair_cvar_90"] = None
                 for p in payload.get("pillars_analysis", []):
                     for f in p.get("health_check_asis", []):
-                        f["quantification_status"] = QuantificationStatus.NOT_QUANTIFIED.value
+                        f["quantification_status"] = (
+                            QuantificationStatus.NOT_QUANTIFIED.value
+                        )
                         f["fair_ale_score"] = None
                         f["fair_p90_score"] = None
                         f["fair_cvar_score"] = None
@@ -192,14 +217,20 @@ class CanonicalRiskOrchestrator:
             pillars = payload.get("pillars_analysis") or []
             finding_seq = 0
 
-
             for pillar in pillars:
                 if not isinstance(pillar, dict):
                     continue
-                cmmi_raw = _safe_float(pillar.get("score") or pillar.get("maturity_score"), default=2.5) or 2.5
+                cmmi_raw = (
+                    _safe_float(
+                        pillar.get("score") or pillar.get("maturity_score"), default=2.5
+                    )
+                    or 2.5
+                )
                 cmmi_pillar = max(1.0, min(5.0, cmmi_raw))
 
-                findings = pillar.get("health_check_asis") or pillar.get("findings") or []
+                findings = (
+                    pillar.get("health_check_asis") or pillar.get("findings") or []
+                )
                 for hc in findings:
                     if not isinstance(hc, dict):
                         continue
@@ -208,29 +239,45 @@ class CanonicalRiskOrchestrator:
                     f_id = str(hc.get("node_id") or f"{t_code}_F{finding_seq:03d}")
                     hc["node_id"] = f_id
 
-                    inputs_obj, ft, f_status = ActuarialInputResolver.resolve_finding_inputs(
-                        hc=hc,
-                        tower_id=t_code,
-                        pillar_cmmi=cmmi_pillar,
-                        zone=zone,
-                        archetype=t_arch,
-                        currency_code=eval_currency,
-                        annual_revenue=valid_ctx.annual_revenue,
-                        annual_it_opex=valid_ctx.annual_it_opex,
-                        hourly_wage=valid_ctx.fully_burdened_hourly_rate,
+                    inputs_obj, ft, f_status = (
+                        ActuarialInputResolver.resolve_finding_inputs(
+                            hc=hc,
+                            tower_id=t_code,
+                            pillar_cmmi=cmmi_pillar,
+                            zone=zone,
+                            archetype=t_arch,
+                            currency_code=eval_currency,
+                            annual_revenue=valid_ctx.annual_revenue,
+                            annual_it_opex=valid_ctx.annual_it_opex,
+                            hourly_wage=valid_ctx.fully_burdened_hourly_rate,
+                            parameter_pack=pack,
+                            context=valid_ctx,
+                        )
                     )
                     all_telemetry.append(ft)
                     telemetry_meta[(t_code, f_id)] = (ft, hc, inputs_obj, f_status)
 
         if not all_telemetry:
             for payload in payloads_by_tower.values():
-                payload["quantification_status"] = QuantificationStatus.INSUFFICIENT_EVIDENCE.value
+                if (
+                    payload.get("quantification_status")
+                    != QuantificationStatus.NOT_QUANTIFIED.value
+                ):
+                    payload["quantification_status"] = (
+                        QuantificationStatus.INSUFFICIENT_EVIDENCE.value
+                    )
                 payload["total_fair_ale"] = None
                 payload["total_fair_p90"] = None
                 payload["total_fair_cvar_90"] = None
                 for p in payload.get("pillars_analysis", []):
                     for f in p.get("health_check_asis", []):
-                        f["quantification_status"] = QuantificationStatus.INSUFFICIENT_EVIDENCE.value
+                        if (
+                            f.get("quantification_status")
+                            != QuantificationStatus.NOT_QUANTIFIED.value
+                        ):
+                            f["quantification_status"] = (
+                                QuantificationStatus.INSUFFICIENT_EVIDENCE.value
+                            )
                         f["fair_ale_score"] = None
                         f["fair_p90_score"] = None
                         f["fair_cvar_score"] = None
@@ -238,10 +285,13 @@ class CanonicalRiskOrchestrator:
 
         # 2. Run BayesianFairCopulaEngine as sole production SSOT
         engine = BayesianFairCopulaEngine(
+            calibration_pack=cal,
             num_simulations=num_sims,
             copula_df=copula_df,
         )
-        summary: PortfolioRiskSummary = engine.evaluate_portfolio(all_telemetry, currency_code=eval_currency)
+        summary: PortfolioRiskSummary = engine.evaluate_portfolio(
+            all_telemetry, currency_code=eval_currency
+        )
 
         # 3. Build reproduction manifest with explicit risk scope
         from assessment_engine.domain.bayesian_fair_copula_engine import (
@@ -266,6 +316,9 @@ class CanonicalRiskOrchestrator:
             currency_code=eval_currency,
             risk_scope=risk_scope,
             assessment_period=valid_ctx.assessment_period,
+            parameter_pack_sha256=pack.pack_sha256,
+            kernel_calibration_sha256=cal.calibration_sha256,
+            context_sha256=valid_ctx.compute_context_sha256(),
         )
 
         # 4. Populate canonical outputs into payloads
@@ -299,7 +352,10 @@ class CanonicalRiskOrchestrator:
                         if meta_tuple:
                             ft_obj, _, resolved_inputs, f_status = meta_tuple
                             hc["quantification_status"] = f_status.value
-                            if f_status == QuantificationStatus.ESTIMATED_LOW_CONFIDENCE:
+                            if (
+                                f_status
+                                == QuantificationStatus.ESTIMATED_LOW_CONFIDENCE
+                            ):
                                 tower_has_low_conf = True
 
                             outputs_obj = ActuarialFindingOutputs(
@@ -324,7 +380,9 @@ class CanonicalRiskOrchestrator:
                                 inputs=resolved_inputs,
                                 outputs=outputs_obj,
                             )
-                            hc["actuarial_input_vector"] = input_vector.model_dump(mode="json")
+                            hc["actuarial_input_vector"] = input_vector.model_dump(
+                                mode="json"
+                            )
 
             payload["quantification_status"] = (
                 QuantificationStatus.ESTIMATED_LOW_CONFIDENCE.value
@@ -358,16 +416,23 @@ class CanonicalRiskOrchestrator:
                         with open(local_path, "w", encoding="utf-8") as pf:
                             json.dump(payload, pf, indent=2, ensure_ascii=False)
                     except Exception as p_err:
-                        logger.error("Could not persist payload for tower %s: %s", t_code, p_err)
+                        logger.error(
+                            "Could not persist payload for tower %s: %s", t_code, p_err
+                        )
                         raise p_err
 
                 try:
                     from assessment_engine.application.tools.actuarial_ledger_generator import (
                         generate_actuarial_ledger,
                     )
+
                     generate_actuarial_ledger(t_code, payload)
                 except Exception as ledger_err:
-                    logger.error("Could not flush actuarial ledger for tower %s: %s", t_code, ledger_err)
+                    logger.error(
+                        "Could not flush actuarial ledger for tower %s: %s",
+                        t_code,
+                        ledger_err,
+                    )
                     raise ledger_err
 
         return payloads_by_tower, manifest

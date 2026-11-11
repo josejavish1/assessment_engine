@@ -7,10 +7,11 @@ Strictly adheres to 100% Technical English Codebase and Zero Hardcoding standard
 
 from __future__ import annotations
 
-from enum import StrEnum
 import json
 import re
+from enum import StrEnum
 from typing import Any, Mapping, Optional, Sequence
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -39,9 +40,21 @@ class FindingSeverity(StrEnum):
             return cls.CRITICAL
         if "HIGH" in raw or "SEV2" in raw or "SEV-2" in raw or "P1" in raw:
             return cls.HIGH
-        if "MED" in raw or "MOD" in raw or "SEV3" in raw or "SEV-3" in raw or "P2" in raw:
+        if (
+            "MED" in raw
+            or "MOD" in raw
+            or "SEV3" in raw
+            or "SEV-3" in raw
+            or "P2" in raw
+        ):
             return cls.MEDIUM
-        if "LOW" in raw or "MIN" in raw or "SEV4" in raw or "SEV-4" in raw or "P3" in raw:
+        if (
+            "LOW" in raw
+            or "MIN" in raw
+            or "SEV4" in raw
+            or "SEV-4" in raw
+            or "P3" in raw
+        ):
             return cls.LOW
         return cls.NONE
 
@@ -110,7 +123,11 @@ def reconcile_subcontrol_cmmi(
     """Universally clamps self-reported survey scores against empirical audit findings."""
     bounded_raw = max(1.0, min(5.0, float(raw_survey_score)))
     severities = [_extract_finding_severity(f) for f in linked_findings]
-    max_severity = max(severities, key=lambda s: s.ordinal_rank) if severities else FindingSeverity.NONE
+    max_severity = (
+        max(severities, key=lambda s: s.ordinal_rank)
+        if severities
+        else FindingSeverity.NONE
+    )
 
     finding_ceiling = SEVERITY_CEILINGS[max_severity]
     unverified_clamp_applied = False
@@ -157,6 +174,7 @@ def reconcile_subcontrol_cmmi(
 
 class EpistemicCompilationException(Exception):
     """Raised when a compiled deliverable violates universal quality or actuarial invariants."""
+
     pass
 
 
@@ -166,9 +184,23 @@ class EpistemicCompilerBarrier:
     """
 
     _FINANCIAL_SECTOR_TOKENS: tuple[str, ...] = (
-        "bank", "fintech", "financial", "clearing", "insurance", "reinsurance",
-        "capital market", "payment", "wealth", "asset management", "credit",
-        "brokerage", "exchange", "custodian", "pension", "treasury", "mobile money",
+        "bank",
+        "fintech",
+        "financial",
+        "clearing",
+        "insurance",
+        "reinsurance",
+        "capital market",
+        "payment",
+        "wealth",
+        "asset management",
+        "credit",
+        "brokerage",
+        "exchange",
+        "custodian",
+        "pension",
+        "treasury",
+        "mobile money",
     )
 
     # Language-agnostic structural regex detecting EU financial regulation DORA
@@ -186,9 +218,18 @@ class EpistemicCompilerBarrier:
         text = getattr(node, "text", None)
         if text:
             accumulator.append(str(text))
-        for collection_attr in ("nodes", "children", "rows", "cells", "items", "blocks"):
+        for collection_attr in (
+            "nodes",
+            "children",
+            "rows",
+            "cells",
+            "items",
+            "blocks",
+        ):
             children = getattr(node, collection_attr, None)
-            if isinstance(children, Sequence) and not isinstance(children, (str, bytes)):
+            if isinstance(children, Sequence) and not isinstance(
+                children, (str, bytes)
+            ):
                 for child in children:
                     cls._extract_text_recursively(child, accumulator)
 
@@ -212,16 +253,31 @@ class EpistemicCompilerBarrier:
 
         # 3. Read payload to check sector constraints
         try:
-            with open(payload_path, "r", encoding="utf-8-sig") as f:
-                payload = json.load(f)
+            if isinstance(payload_path, dict):
+                payload = payload_path
+            elif isinstance(payload_path, str) and payload_path.strip().startswith("{"):
+                payload = json.loads(payload_path)
+            else:
+                payload = {}
             doc_meta = payload.get("document_meta", {})
-            industry = str(payload.get("industry") or payload.get("industry_vertical") or doc_meta.get("industry") or "").lower()
-            sub_ind = str(payload.get("sub_industry") or doc_meta.get("sub_industry") or "").lower()
+            industry = str(
+                payload.get("industry")
+                or payload.get("industry_vertical")
+                or doc_meta.get("industry")
+                or ""
+            ).lower()
+            sub_ind = str(
+                payload.get("sub_industry") or doc_meta.get("sub_industry") or ""
+            ).lower()
             combined_ind = f"{industry} {sub_ind}"
 
             # Topological Orthogonality: DORA must never appear in non-financial institutions
             is_financial = any(k in combined_ind for k in cls._FINANCIAL_SECTOR_TOKENS)
-            if not is_financial and "google devops" not in full_text and "dora engineering" not in full_text:
+            if (
+                not is_financial
+                and "google devops" not in full_text
+                and "dora engineering" not in full_text
+            ):
                 if cls._DORA_REGULATORY_REGEX.search(full_text):
                     raise EpistemicCompilationException(
                         f"TOPOLOGICAL BLEED: Banking regulation DORA leaked into non-financial sector '{combined_ind}'!"

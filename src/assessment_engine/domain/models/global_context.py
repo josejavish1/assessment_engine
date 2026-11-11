@@ -11,11 +11,53 @@ from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 VALID_ISO_CURRENCIES: Set[str] = {
-    "AED", "ARS", "AUD", "BHD", "BRL", "CAD", "CHF", "CLP", "CNH", "CNY",
-    "COP", "CZK", "DKK", "EGP", "EUR", "GBP", "HKD", "HUF", "IDR", "ILS",
-    "INR", "ISK", "JOD", "JPY", "KRW", "KWD", "KZT", "MXN", "MYR", "NGN",
-    "NOK", "NZD", "OMR", "PEN", "PHP", "PKR", "PLN", "QAR", "SAR", "SEK",
-    "SGD", "THB", "TRY", "TWD", "USD", "VND", "ZAR",
+    "AED",
+    "ARS",
+    "AUD",
+    "BHD",
+    "BRL",
+    "CAD",
+    "CHF",
+    "CLP",
+    "CNH",
+    "CNY",
+    "COP",
+    "CZK",
+    "DKK",
+    "EGP",
+    "EUR",
+    "GBP",
+    "HKD",
+    "HUF",
+    "IDR",
+    "ILS",
+    "INR",
+    "ISK",
+    "JOD",
+    "JPY",
+    "KRW",
+    "KWD",
+    "KZT",
+    "MXN",
+    "MYR",
+    "NGN",
+    "NOK",
+    "NZD",
+    "OMR",
+    "PEN",
+    "PHP",
+    "PKR",
+    "PLN",
+    "QAR",
+    "SAR",
+    "SEK",
+    "SGD",
+    "THB",
+    "TRY",
+    "TWD",
+    "USD",
+    "VND",
+    "ZAR",
 }
 
 
@@ -36,7 +78,9 @@ class FXRateSnapshot(BaseModel):
     def validate_currency_code(cls, v: str) -> str:
         code = str(v).strip().upper()
         if code not in VALID_ISO_CURRENCIES:
-            raise ValueError(f"Currency code '{code}' is not a supported ISO 4217 currency in the catalog.")
+            raise ValueError(
+                f"Currency code '{code}' is not a supported ISO 4217 currency in the catalog."
+            )
         return code
 
 
@@ -56,7 +100,9 @@ class JurisdictionParameterPack(BaseModel):
     @model_validator(mode="after")
     def validate_confidence_provenance(self) -> JurisdictionParameterPack:
         if self.provenance == "MODEL_DEFAULT" and self.confidence == "CONFIRMED":
-            raise ValueError("Jurisdiction Invariant: MODEL_DEFAULT cannot have confidence CONFIRMED.")
+            raise ValueError(
+                "Jurisdiction Invariant: MODEL_DEFAULT cannot have confidence CONFIRMED."
+            )
         return self
 
 
@@ -69,16 +115,35 @@ class GlobalAssessmentContext(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    tenant_id: str = Field(..., min_length=1, description="Unique tenant or group identifier")
-    business_entity_id: str = Field(..., min_length=1, description="Legal business entity or subsidiary")
-    operating_site_id: str = Field(..., min_length=1, description="Specific facility, campus, or datacenter site")
-    country_code: str = Field(..., min_length=2, max_length=3, description="ISO 3166-1 alpha-2 or alpha-3 country code")
-    jurisdiction_code: str = Field(..., min_length=2, description="Statutory jurisdiction code")
+    tenant_id: str = Field(
+        ..., min_length=1, description="Unique tenant or group identifier"
+    )
+    business_entity_id: str = Field(
+        ..., min_length=1, description="Legal business entity or subsidiary"
+    )
+    operating_site_id: str = Field(
+        ..., min_length=1, description="Specific facility, campus, or datacenter site"
+    )
+    country_code: str = Field(
+        ...,
+        min_length=2,
+        max_length=3,
+        description="ISO 3166-1 alpha-2 or alpha-3 country code",
+    )
+    jurisdiction_code: str = Field(
+        ..., min_length=2, description="Statutory jurisdiction code"
+    )
     source_currency: str = Field(..., description="Source transaction currency")
     reporting_currency: str = Field(..., description="Reporting consolidation currency")
-    assessment_period: str = Field(..., min_length=4, description="Audit or fiscal period (e.g. 2026.Q4)")
-    sector_code: str = Field(..., min_length=2, description="Standard industry sector code")
-    subsector_code: str = Field(..., min_length=2, description="Specific industry subsector code")
+    assessment_period: str = Field(
+        ..., min_length=4, description="Audit or fiscal period (e.g. 2026.Q4)"
+    )
+    sector_code: str = Field(
+        ..., min_length=2, description="Standard industry sector code"
+    )
+    subsector_code: str = Field(
+        ..., min_length=2, description="Specific industry subsector code"
+    )
 
     annual_revenue: Optional[float] = Field(default=None, gt=0.0)
     annual_it_opex: Optional[float] = Field(default=None, gt=0.0)
@@ -91,15 +156,34 @@ class GlobalAssessmentContext(BaseModel):
     def validate_iso_currencies(cls, v: str) -> str:
         code = str(v).strip().upper()
         if code not in VALID_ISO_CURRENCIES:
-            raise ValueError(f"Currency code '{code}' is not supported in the active ISO 4217 catalog.")
+            raise ValueError(
+                f"Currency code '{code}' is not supported in the active ISO 4217 catalog."
+            )
         return code
 
-    def normalize_monetary_amount(self, amount: float, source_curr: str) -> float:
-        """Normalizes source currency into reporting currency via verified FX snapshot."""
-        src = source_curr.strip().upper()
+    def normalize_monetary_amount(
+        self, amount: float, source_curr: Optional[str] = None
+    ) -> float:
+        """Normalizes source currency into reporting currency via verified FX snapshot. Returns float."""
+        converted, _, _ = self.normalize_monetary_amount_with_provenance(
+            amount, source_curr
+        )
+        return converted
+
+    def normalize_monetary_amount_with_provenance(
+        self, amount: float, source_curr: Optional[str] = None
+    ) -> tuple[float, float, str]:
+        """Normalizes source currency into reporting currency via verified FX snapshot.
+
+        Returns:
+            Tuple of (converted_amount, fx_rate, snapshot_provenance_id)
+        """
+        if amount < 0.0:
+            raise ValueError(f"Monetary amount cannot be negative: {amount}")
+        src = (source_curr or self.source_currency).strip().upper()
         rep = self.reporting_currency.strip().upper()
         if src == rep:
-            return amount
+            return round(amount, 2), 1.0, "IDENTITY_1_TO_1"
         pair = f"{src}_{rep}"
         if pair not in self.fx_snapshots:
             raise ValueError(
@@ -107,7 +191,22 @@ class GlobalAssessmentContext(BaseModel):
                 f"Cannot consolidate multi-currency raw exposures without explicit FX evidence."
             )
         snapshot = self.fx_snapshots[pair]
-        return round(amount * snapshot.rate, 2)
+        return (
+            round(amount * snapshot.rate, 2),
+            float(snapshot.rate),
+            snapshot.provenance_reference,
+        )
+
+    def compute_context_sha256(self) -> str:
+        """Computes deterministic SHA-256 fingerprint over sorted canonical JSON."""
+        import hashlib
+        import json
+
+        payload = self.model_dump(mode="json")
+        canonical = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+        return hashlib.sha256(canonical).hexdigest()
 
     @classmethod
     def create_legacy_generic_context(

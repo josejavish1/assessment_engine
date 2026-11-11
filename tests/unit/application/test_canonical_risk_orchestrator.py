@@ -41,6 +41,7 @@ def _build_mock_tower_payload(tower_id: str = "T1") -> dict:
                         "threat_event_frequency": 0.15,
                         "loss_magnitude": 2.0,
                         "recovery_time_hours": 3.0,
+                        "direct_replacement_cost": 5000.0,
                         "blast_radius_alpha": 0.40,
                     },
                 ],
@@ -77,7 +78,10 @@ def test_single_tower_entrypoint_parity() -> None:
     res_from_portfolio = res_portfolio_map["T1"]
 
     assert res_single["quantification_status"] == QuantificationStatus.QUANTIFIED.value
-    assert res_from_portfolio["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    assert (
+        res_from_portfolio["quantification_status"]
+        == QuantificationStatus.QUANTIFIED.value
+    )
 
     # Exact bit-for-bit equality between entrypoints
     assert res_single["total_fair_ale"] == res_from_portfolio["total_fair_ale"]
@@ -86,7 +90,10 @@ def test_single_tower_entrypoint_parity() -> None:
 
     # Manifest is generated and matches
     assert manifest is not None
-    assert manifest.expected_portfolio_outputs["total_portfolio_ale"] == res_single["total_fair_ale"]
+    assert (
+        manifest.expected_portfolio_outputs["total_portfolio_ale"]
+        == res_single["total_fair_ale"]
+    )
 
 
 def test_multi_tower_portfolio_quantification() -> None:
@@ -107,8 +114,12 @@ def test_multi_tower_portfolio_quantification() -> None:
         global_context=global_ctx,
     )
 
-    assert res_map["T1"]["quantification_status"] == QuantificationStatus.QUANTIFIED.value
-    assert res_map["T2"]["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    assert (
+        res_map["T1"]["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    )
+    assert (
+        res_map["T2"]["quantification_status"] == QuantificationStatus.QUANTIFIED.value
+    )
     assert manifest is not None
     assert "T1" in manifest.expected_tower_outputs
     assert "T2" in manifest.expected_tower_outputs
@@ -119,7 +130,8 @@ def test_presentation_modules_do_not_calculate_financial_metrics_ast() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     compiler_files = [
         repo_root / "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-        repo_root / "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
+        repo_root
+        / "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py",
     ]
 
     prohibited_call_patterns = {
@@ -143,7 +155,10 @@ def test_presentation_modules_do_not_calculate_financial_metrics_ast() -> None:
                     func_id = func.id
                 elif isinstance(func, ast.Attribute):
                     func_id = func.attr
-                    if isinstance(func.value, ast.Name) and func.value.id in ("ActuarialEngine", "BayesianFairCopulaEngine"):
+                    if isinstance(func.value, ast.Name) and func.value.id in (
+                        "ActuarialEngine",
+                        "BayesianFairCopulaEngine",
+                    ):
                         func_id = f"{func.value.id}.{func.attr}"
                 assert func_id not in prohibited_call_patterns, (
                     f"Presentation layer violation in {cf.name}: called prohibited actuarial calculation '{func_id}'"

@@ -20,7 +20,7 @@ def test_legacy_payload_migration_to_canonical_contract() -> None:
                         "node_id": "LEGACY_001",
                         "capability": "UPS Battery Degradation",
                         "severity": "HIGH",
-                        "threat_event_frequency": 0.40,
+                        "threat_event_frequency": 3.50,
                         "loss_magnitude": 3.0,
                         # Missing modern actuarial vector, RTO, or copula metrics
                     }

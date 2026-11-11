@@ -24,6 +24,7 @@ from scipy import stats
 
 # 1. DOMAIN LAYER: ENTITIES & VALUE OBJECTS (INDUSTRY & CURRENCY AGNOSTIC)
 
+
 @dataclass(frozen=True)
 class TenantFinancialTelemetry:
     """Contract for enterprise financial and operational scale telemetry."""
@@ -70,9 +71,13 @@ class OperationalZone:
 
     def __post_init__(self) -> None:
         if self.hourly_burn_rate < 0.0:
-            raise ValueError(f"hourly_burn_rate must be non-negative for zone '{self.zone_id}'.")
+            raise ValueError(
+                f"hourly_burn_rate must be non-negative for zone '{self.zone_id}'."
+            )
         if self.max_annual_outage_hours <= 0.0:
-            raise ValueError(f"max_annual_outage_hours must be strictly positive for zone '{self.zone_id}'.")
+            raise ValueError(
+                f"max_annual_outage_hours must be strictly positive for zone '{self.zone_id}'."
+            )
         if not (0.0 <= self.secondary_loss_retention_factor <= 1.0):
             raise ValueError(
                 f"secondary_loss_retention_factor must be in [0.0, 1.0] for zone '{self.zone_id}'."
@@ -94,23 +99,89 @@ class FindingTelemetry:
     finding_id: str
     tower_id: str
     title: str
-    cmmi_maturity: float                  # Claimed or baseline control maturity [1.00 to 5.00]
+    cmmi_maturity: float  # Claimed or baseline control maturity [1.00 to 5.00]
     zone: OperationalZone
-    tef_pert_min: float                   # Threat Event Frequency (PERT min)
-    tef_pert_mode: float                  # Threat Event Frequency (PERT mode)
-    tef_pert_max: float                   # Threat Event Frequency (PERT max)
-    rto_hours_min: float                  # Recovery Time Objective (PERT min)
-    rto_hours_mode: float                 # Recovery Time Objective (PERT mode)
-    rto_hours_max: float                  # Recovery Time Objective (PERT max)
-    secondary_loss_mean: float            # Expected Secondary Loss Magnitude per event
-    is_spof: bool = False                 # Single Point of Failure flag
-    shared_dependence_factor: float = 0.5 # Systemic correlation loading (0.0 to 0.85)
-    blast_radius_alpha: float = 0.35      # Operational impact factor alpha in [0.05, 1.0]
-    catastrophic_rto_hours: float = 24.0  # Physical ceiling recovery time under full control failure
+    tef_pert_min: float  # Threat Event Frequency (PERT min)
+    tef_pert_mode: float  # Threat Event Frequency (PERT mode)
+    tef_pert_max: float  # Threat Event Frequency (PERT max)
+    rto_hours_min: float  # Recovery Time Objective (PERT min)
+    rto_hours_mode: float  # Recovery Time Objective (PERT mode)
+    rto_hours_max: float  # Recovery Time Objective (PERT max)
+    secondary_loss_mean: float  # Expected Secondary Loss Magnitude per event
+    is_spof: bool = False  # Single Point of Failure flag
+    shared_dependence_factor: float = 0.5  # Systemic correlation loading (0.0 to 0.85)
+    blast_radius_alpha: float = 0.35  # Operational impact factor alpha in [0.05, 1.0]
+    catastrophic_rto_hours: float = (
+        24.0  # Physical ceiling recovery time under full control failure
+    )
     direct_replacement_cost: float = 0.0  # Emergency hardware / forensic response cost
-    audit_k_failures: int = 0             # Observed control deficiencies from audit evidence
-    audit_n_trials: int = 0               # Total evaluated controls/evidence items
+    audit_k_failures: int = 0  # Observed control deficiencies from audit evidence
+    audit_n_trials: int = 0  # Total evaluated controls/evidence items
     dissonance: Optional[EpistemicDissonanceRecord] = None
+
+    def __post_init__(self) -> None:
+        if not self.finding_id or not str(self.finding_id).strip():
+            raise ValueError("finding_id must be a non-empty string")
+        if not self.tower_id or not str(self.tower_id).strip():
+            raise ValueError("tower_id must be a non-empty string")
+        if not isinstance(self.is_spof, bool):
+            raise ValueError(
+                f"is_spof must be strictly a bool, got {type(self.is_spof).__name__}"
+            )
+        if (
+            self.tef_pert_min <= 0.0
+            or self.tef_pert_mode <= 0.0
+            or self.tef_pert_max <= 0.0
+        ):
+            raise ValueError(
+                f"tef_annual PERT parameters must be > 0.0, got min={self.tef_pert_min}, "
+                f"mode={self.tef_pert_mode}, max={self.tef_pert_max}"
+            )
+        if not (self.tef_pert_min <= self.tef_pert_mode <= self.tef_pert_max):
+            raise ValueError(
+                f"TEF PERT ordering violated: min ({self.tef_pert_min}) <= mode ({self.tef_pert_mode}) <= max ({self.tef_pert_max})"
+            )
+        if (
+            self.rto_hours_min <= 0.0
+            or self.rto_hours_mode <= 0.0
+            or self.rto_hours_max <= 0.0
+        ):
+            raise ValueError(
+                f"RTO PERT parameters must all be > 0.0, got min={self.rto_hours_min}, "
+                f"mode={self.rto_hours_mode}, max={self.rto_hours_max}"
+            )
+        if not (self.rto_hours_min <= self.rto_hours_mode <= self.rto_hours_max):
+            raise ValueError(
+                f"RTO PERT ordering violated: min ({self.rto_hours_min}) <= mode ({self.rto_hours_mode}) <= max ({self.rto_hours_max})"
+            )
+        if self.direct_replacement_cost < 0.0:
+            raise ValueError(
+                f"direct_replacement_cost must be >= 0.0, got {self.direct_replacement_cost}"
+            )
+        if self.secondary_loss_mean < 0.0:
+            raise ValueError(
+                f"secondary_loss_mean must be >= 0.0, got {self.secondary_loss_mean}"
+            )
+        if not (1.0 <= self.cmmi_maturity <= 5.0):
+            raise ValueError(
+                f"cmmi_maturity must be in [1.0, 5.0], got {self.cmmi_maturity}"
+            )
+        if not (0.0 <= self.blast_radius_alpha <= 1.0):
+            raise ValueError(
+                f"blast_radius_alpha must be in [0.0, 1.0], got {self.blast_radius_alpha}"
+            )
+        if not (0.0 <= self.shared_dependence_factor < 1.0):
+            raise ValueError(
+                f"shared_dependence_factor must be in [0.0, 1.0), got {self.shared_dependence_factor}"
+            )
+        if self.audit_k_failures < 0 or self.audit_n_trials < 0:
+            raise ValueError(
+                f"audit counts must be non-negative: k={self.audit_k_failures}, n={self.audit_n_trials}"
+            )
+        if self.audit_n_trials > 0 and self.audit_k_failures > self.audit_n_trials:
+            raise ValueError(
+                f"audit_k_failures ({self.audit_k_failures}) cannot exceed audit_n_trials ({self.audit_n_trials})"
+            )
 
 
 @dataclass(frozen=True)
@@ -130,9 +201,16 @@ class FindingRiskResult:
     var_95: float
     var_99: float
     cvar_99: float
-    worst_crisis_event: float = 0.0       # Physical Single Loss Expectancy (SLE_max)
-    worst_crisis_rto_hours: float = 0.0   # Physical recovery hours under worst-case disaster
+    worst_crisis_event: float = 0.0  # Physical Single Loss Expectancy (SLE_max)
+    worst_crisis_rto_hours: float = (
+        0.0  # Physical recovery hours under worst-case disaster
+    )
     dissonance_applied: bool = False
+
+    @property
+    def p95_single_event_stress_loss(self) -> float:
+        """Semantically honest alias for worst crisis event under 95th percentile stress."""
+        return self.worst_crisis_event
 
 
 @dataclass(frozen=True)
@@ -141,19 +219,23 @@ class TowerRiskResult:
 
     tower_id: str
     weighted_cmmi: float
-    standalone_ale: float                 # Raw bottom-up expectation (Technical Annex)
-    portfolio_allocated_ale: float        # Coherent sub-additive allocation (Executive Summary)
-    primary_ale: float                    # Allocated primary operational downtime loss
-    secondary_ale: float                  # Allocated secondary response/regulatory/SLA loss
-    var_90: float                         # 90th Percentile Value at Risk
-    cvar_90: float                        # 90th Percentile Expected Shortfall (CVaR)
-    var_95: float                         # 95th Percentile Value at Risk
-    var_99: float                         # 99th Percentile Value at Risk
-    cvar_99: float                        # 99th Percentile Expected Shortfall (CVaR)
-    diversification_benefit: float        # standalone_ale - portfolio_allocated_ale
+    standalone_ale: float  # Raw bottom-up expectation (Technical Annex)
+    portfolio_allocated_ale: (
+        float  # Coherent sub-additive allocation (Executive Summary)
+    )
+    primary_ale: float  # Allocated primary operational downtime loss
+    secondary_ale: float  # Allocated secondary response/regulatory/SLA loss
+    var_90: float  # 90th Percentile Value at Risk
+    cvar_90: float  # 90th Percentile Expected Shortfall (CVaR)
+    var_95: float  # 95th Percentile Value at Risk
+    var_99: float  # 99th Percentile Value at Risk
+    cvar_99: float  # 99th Percentile Expected Shortfall (CVaR)
+    diversification_benefit: float  # standalone_ale - portfolio_allocated_ale
     findings: List[FindingRiskResult]
-    worst_crisis_event: float = 0.0       # Physical Single Loss Expectancy (SLE_max) of worst disaster
-    worst_crisis_rto_hours: float = 0.0   # Physical recovery hours of worst disaster
+    worst_crisis_event: float = (
+        0.0  # Physical Single Loss Expectancy (SLE_max) of worst disaster
+    )
+    worst_crisis_rto_hours: float = 0.0  # Physical recovery hours of worst disaster
 
 
 @dataclass(frozen=True)
@@ -163,20 +245,26 @@ class PortfolioRiskSummary:
     deterministic_seed_hash: str
     currency_code: str
     total_standalone_sum: float
-    total_portfolio_ale: float            # Sub-additive Copula Convolved ALE (Executive Headline)
-    total_primary_ale: float              # Convolved primary operational downtime loss
-    total_secondary_ale: float            # Convolved secondary response & SLA loss
-    three_year_cost_of_inaction: float    # 3-year baseline cumulative exposure
-    portfolio_var_90: float               # 90% Value at Risk
-    portfolio_cvar_90: float              # 90% Expected Shortfall
-    portfolio_var_95: float               # 95% Value at Risk
-    portfolio_var_99: float               # 99% Catastrophic Value at Risk
-    portfolio_cvar_99: float              # 99% Catastrophic Expected Shortfall
+    total_portfolio_ale: float  # Sub-additive Copula Convolved ALE (Executive Headline)
+    total_primary_ale: float  # Convolved primary operational downtime loss
+    total_secondary_ale: float  # Convolved secondary response & SLA loss
+    three_year_cost_of_inaction: float  # 3-year baseline cumulative exposure
+    portfolio_var_90: float  # 90% Value at Risk
+    portfolio_cvar_90: float  # 90% Expected Shortfall
+    portfolio_var_95: float  # 95% Value at Risk
+    portfolio_var_99: float  # 99% Catastrophic Value at Risk
+    portfolio_cvar_99: float  # 99% Catastrophic Expected Shortfall
     diversification_ratio: float
     towers: Dict[str, TowerRiskResult]
 
+    @property
+    def three_year_undiscounted_baseline_expected_loss(self) -> float:
+        """Semantically honest alias for three-year undiscounted expected baseline exposure."""
+        return self.three_year_cost_of_inaction
+
 
 # 2. PORTS (INTERFACES)
+
 
 class RiskQuantificationPort(Protocol):
     """Primary Port for hydrating Tower and Portfolio financial telemetry."""
@@ -186,7 +274,6 @@ class RiskQuantificationPort(Protocol):
     ) -> PortfolioRiskSummary:
         """Evaluates portfolio risk across finding telemetry and returns aggregated summary."""
         ...
-
 
 
 class BayesianFairCopulaEngine(RiskQuantificationPort):
@@ -201,44 +288,105 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
     def __init__(
         self,
-        num_simulations: int = 16384,
-        vuln_min: float = 0.02,
-        vuln_max: float = 0.95,
-        vuln_convexity_gamma: float = 1.65,
-        beta_concentration_kappa: float = 20.0,
-        copula_df: int = 4,
-        intra_tower_correlation_boost: float = 0.20,
-        secondary_loss_cv: float = 0.50,
-        inaction_horizon_years: float = 3.0,
-        spof_cmmi_penalty: float = 0.50,
-        max_dependence_loading: float = 0.85,
-        max_copula_correlation: float = 0.92,
-        rto_cmmi_degradation_slope: float = 0.35,
-        rto_spof_multiplier: float = 0.40,
-        catastrophic_tail_quantile: float = 95.0,
+        calibration_pack: Optional[Any] = None,
+        num_simulations: Optional[int] = None,
+        vuln_min: Optional[float] = None,
+        vuln_max: Optional[float] = None,
+        vuln_convexity_gamma: Optional[float] = None,
+        beta_concentration_kappa: Optional[float] = None,
+        copula_df: Optional[int] = None,
+        intra_tower_correlation_boost: Optional[float] = None,
+        secondary_loss_cv: Optional[float] = None,
+        inaction_horizon_years: Optional[float] = None,
+        spof_cmmi_penalty: Optional[float] = None,
+        max_dependence_loading: Optional[float] = None,
+        max_copula_correlation: Optional[float] = None,
+        rto_cmmi_degradation_slope: Optional[float] = None,
+        rto_spof_multiplier: Optional[float] = None,
+        catastrophic_tail_quantile: Optional[float] = None,
     ):
-        if num_simulations < 64:
-            raise ValueError("num_simulations must be at least 64 for statistical convergence.")
-        if copula_df < 2:
+        from assessment_engine.domain.actuarial.parameter_pack_loader import (
+            create_default_kernel_calibration_pack,
+        )
+
+        cal = calibration_pack or create_default_kernel_calibration_pack()
+        self.calibration_pack = cal
+
+        n_sims = num_simulations if num_simulations is not None else 16384
+        if n_sims < 64:
+            raise ValueError(
+                "num_simulations must be at least 64 for statistical convergence."
+            )
+
+        c_df = copula_df if copula_df is not None else cal.copula_df
+        if c_df < 2:
             raise ValueError("copula_df must be >= 2.")
-        if not (50.0 <= catastrophic_tail_quantile < 100.0):
+
+        tail_q = float(
+            catastrophic_tail_quantile
+            if catastrophic_tail_quantile is not None
+            else (
+                cal.catastrophic_tail_quantile * 100.0
+                if cal.catastrophic_tail_quantile < 1.0
+                else cal.catastrophic_tail_quantile
+            )
+        )
+        if not (50.0 <= tail_q < 100.0):
             raise ValueError("catastrophic_tail_quantile must be in [50.0, 100.0).")
 
-        self.n_sims = num_simulations
-        self.vuln_min = vuln_min
-        self.vuln_max = vuln_max
-        self.gamma = vuln_convexity_gamma
-        self.kappa = beta_concentration_kappa
-        self.copula_df = copula_df
-        self.intra_tower_boost = intra_tower_correlation_boost
-        self.secondary_loss_cv = secondary_loss_cv
-        self.inaction_horizon_years = inaction_horizon_years
-        self.spof_cmmi_penalty = float(spof_cmmi_penalty)
-        self.max_dependence_loading = float(max_dependence_loading)
-        self.max_copula_correlation = float(max_copula_correlation)
-        self.rto_cmmi_degradation_slope = float(rto_cmmi_degradation_slope)
-        self.rto_spof_multiplier = float(rto_spof_multiplier)
-        self.catastrophic_tail_quantile = float(catastrophic_tail_quantile)
+        self.n_sims = n_sims
+        self.vuln_min = vuln_min if vuln_min is not None else cal.vuln_min
+        self.vuln_max = vuln_max if vuln_max is not None else cal.vuln_max
+        self.gamma = (
+            vuln_convexity_gamma if vuln_convexity_gamma is not None else cal.gamma
+        )
+        self.kappa = (
+            beta_concentration_kappa
+            if beta_concentration_kappa is not None
+            else cal.kappa
+        )
+        self.copula_df = c_df
+        self.intra_tower_boost = (
+            intra_tower_correlation_boost
+            if intra_tower_correlation_boost is not None
+            else cal.intra_tower_boost
+        )
+        self.secondary_loss_cv = (
+            secondary_loss_cv
+            if secondary_loss_cv is not None
+            else cal.secondary_loss_cv
+        )
+        self.inaction_horizon_years = (
+            inaction_horizon_years
+            if inaction_horizon_years is not None
+            else float(cal.baseline_horizon_years)
+        )
+        self.spof_cmmi_penalty = float(
+            spof_cmmi_penalty
+            if spof_cmmi_penalty is not None
+            else cal.spof_cmmi_penalty
+        )
+        self.max_dependence_loading = float(
+            max_dependence_loading
+            if max_dependence_loading is not None
+            else cal.max_dependence_loading
+        )
+        self.max_copula_correlation = float(
+            max_copula_correlation
+            if max_copula_correlation is not None
+            else cal.max_copula_correlation
+        )
+        self.rto_cmmi_degradation_slope = float(
+            rto_cmmi_degradation_slope
+            if rto_cmmi_degradation_slope is not None
+            else cal.rto_cmmi_degradation_slope
+        )
+        self.rto_spof_multiplier = float(
+            rto_spof_multiplier
+            if rto_spof_multiplier is not None
+            else cal.rto_spof_multiplier
+        )
+        self.catastrophic_tail_quantile = tail_q
 
     def _compute_deterministic_seed(
         self, findings: List[FindingTelemetry], currency_code: str = "EUR"
@@ -303,7 +451,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             and dissonance.impact_vector in target_vectors
         ):
             w = float(np.clip(dissonance.dissonance_weight, 0.0, 1.0))
-            empirical_cmmi = float(np.clip(dissonance.empirical_reality_maturity, 1.0, 5.0))
+            empirical_cmmi = float(
+                np.clip(dissonance.empirical_reality_maturity, 1.0, 5.0)
+            )
             posterior_cmmi = (1.0 - w) * prior_cmmi + w * empirical_cmmi
             return float(np.clip(posterior_cmmi, 1.0, 5.0)), True
         return prior_cmmi, False
@@ -322,11 +472,15 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             cmmi, dissonance, ("VULNERABILITY", "BOTH")
         )
         effective_cmmi = float(
-            np.clip(posterior_cmmi - (self.spof_cmmi_penalty if is_spof else 0.0), 1.0, 5.0)
+            np.clip(
+                posterior_cmmi - (self.spof_cmmi_penalty if is_spof else 0.0), 1.0, 5.0
+            )
         )
-        mu_vuln = self.vuln_min + (self.vuln_max - self.vuln_min) * (
-            (5.0 - effective_cmmi) / 4.0
-        ) ** self.gamma
+        mu_vuln = (
+            self.vuln_min
+            + (self.vuln_max - self.vuln_min)
+            * ((5.0 - effective_cmmi) / 4.0) ** self.gamma
+        )
 
         mu_vuln = float(np.clip(mu_vuln, 0.01, 0.99))
         alpha_0 = mu_vuln * self.kappa
@@ -417,7 +571,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         for i in range(n_f):
             for j in range(i + 1, n_f):
                 if findings[i].tower_id == findings[j].tower_id:
-                    rem_var = np.sqrt((1.0 - loadings[i] ** 2) * (1.0 - loadings[j] ** 2))
+                    rem_var = np.sqrt(
+                        (1.0 - loadings[i] ** 2) * (1.0 - loadings[j] ** 2)
+                    )
                     corr_ij = corr_matrix[i, j] + self.intra_tower_boost * rem_var
                     corr_matrix[i, j] = corr_matrix[j, i] = min(
                         self.max_copula_correlation, corr_ij
@@ -467,7 +623,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             ),
         )
 
-        seed_int, seed_hash = self._compute_deterministic_seed(canonical_findings, currency_code=normalized_currency)
+        seed_int, seed_hash = self._compute_deterministic_seed(
+            canonical_findings, currency_code=normalized_currency
+        )
         rng = np.random.default_rng(seed_int)
         n_f = len(canonical_findings)
 
@@ -488,7 +646,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         mean_lefs = np.zeros(n_f)
         mean_sles = np.zeros(n_f)
 
-        sigma_sec = float(np.sqrt(np.log(1.0 + self.secondary_loss_cv ** 2)))
+        sigma_sec = float(np.sqrt(np.log(1.0 + self.secondary_loss_cv**2)))
 
         # 1. Marginal Evaluation per Finding
         for idx, f in enumerate(canonical_findings):
@@ -528,17 +686,22 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 w_rto = float(np.clip(f.dissonance.dissonance_weight, 0.0, 1.0))
                 maturity_deficit_ratio = (5.0 - posterior_rto_cmmi) / 4.0
                 shift_fraction = w_rto * maturity_deficit_ratio
-                rto_sampled = rto_sampled + (physical_ceiling_hours - rto_sampled) * shift_fraction
+                rto_sampled = (
+                    rto_sampled
+                    + (physical_ceiling_hours - rto_sampled) * shift_fraction
+                )
 
             degradation_mult = (
                 1.0
                 + self.rto_cmmi_degradation_slope * max(0.0, 3.0 - posterior_rto_cmmi)
                 + (self.rto_spof_multiplier if f.is_spof else 0.0)
             )
-            effective_rto = np.minimum(rto_sampled * degradation_mult, physical_ceiling_hours)
+            effective_rto = np.minimum(
+                rto_sampled * degradation_mult, physical_ceiling_hours
+            )
 
             if f.secondary_loss_mean > 0.0:
-                mu_sec = np.log(f.secondary_loss_mean) - 0.5 * (sigma_sec ** 2)
+                mu_sec = np.log(f.secondary_loss_mean) - 0.5 * (sigma_sec**2)
                 sec_sle_samples = stats.lognorm.ppf(
                     u_aux_sec[:, idx], s=sigma_sec, scale=np.exp(mu_sec)
                 )
@@ -552,7 +715,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             annual_downtime_s = event_counts * effective_rto
             safe_replacement_cost = max(0.0, float(f.direct_replacement_cost))
             replacement_loss_s = event_counts * safe_replacement_cost
-            primary_loss_s = (annual_downtime_s * effective_hourly_rate) + replacement_loss_s
+            primary_loss_s = (
+                annual_downtime_s * effective_hourly_rate
+            ) + replacement_loss_s
             secondary_loss_s = event_counts * sec_sle_samples
 
             # Equivalent full-zone outage hours preserve blast_radius_alpha during zone convolution
@@ -614,10 +779,14 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                 cached_z = unique_zones[scoped_k]
                 if (
                     cached_z.hourly_burn_rate != f.zone.hourly_burn_rate
-                    or cached_z.max_annual_outage_hours != f.zone.max_annual_outage_hours
-                    or cached_z.secondary_loss_retention_factor != f.zone.secondary_loss_retention_factor
-                    or cached_z.catastrophic_recovery_ceiling_hours != f.zone.catastrophic_recovery_ceiling_hours
-                    or cached_z.emergency_replacement_ratio != f.zone.emergency_replacement_ratio
+                    or cached_z.max_annual_outage_hours
+                    != f.zone.max_annual_outage_hours
+                    or cached_z.secondary_loss_retention_factor
+                    != f.zone.secondary_loss_retention_factor
+                    or cached_z.catastrophic_recovery_ceiling_hours
+                    != f.zone.catastrophic_recovery_ceiling_hours
+                    or cached_z.emergency_replacement_ratio
+                    != f.zone.emergency_replacement_ratio
                 ):
                     raise ValueError(
                         f"Domain Validation Error: Conflicting parameters detected for scoped zone '{scoped_k}'. "
@@ -627,7 +796,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
 
         for scoped_k, zone in unique_zones.items():
             zone_indices = [
-                i for i, f in enumerate(canonical_findings) if f.zone.canonical_scoped_key == scoped_k
+                i
+                for i, f in enumerate(canonical_findings)
+                if f.zone.canonical_scoped_key == scoped_k
             ]
             raw_zone_eq_hours = np.sum(
                 finding_equivalent_zone_hours[:, zone_indices], axis=1
@@ -648,13 +819,16 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                     finding_equivalent_zone_hours[:, i] / safe_denom,
                     0.0,
                 )
-                allocated_finding_sim_primary[:, i] += (zone_primary_loss * share_s) + finding_replacement_losses[:, i]
+                allocated_finding_sim_primary[:, i] += (
+                    zone_primary_loss * share_s
+                ) + finding_replacement_losses[:, i]
 
         # Convolve retained secondary losses into portfolio total
         retained_secondary_losses = np.zeros(self.n_sims, dtype=np.float64)
         for i in range(n_f):
             retained_i = (
-                finding_secondary_losses[:, i] * canonical_findings[i].zone.secondary_loss_retention_factor
+                finding_secondary_losses[:, i]
+                * canonical_findings[i].zone.secondary_loss_retention_factor
             )
             allocated_finding_sim_secondary[:, i] = retained_i
             retained_secondary_losses += retained_i
@@ -677,7 +851,9 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         unique_towers = sorted({f.tower_id for f in canonical_findings})
 
         for t_id in unique_towers:
-            t_indices = [i for i, f in enumerate(canonical_findings) if f.tower_id == t_id]
+            t_indices = [
+                i for i, f in enumerate(canonical_findings) if f.tower_id == t_id
+            ]
             t_alloc_sim_sum = np.sum(allocated_finding_sim_losses[:, t_indices], axis=1)
 
             t_standalone_ale = float(np.sum(standalone_finding_ales[t_indices]))
@@ -701,7 +877,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             t_var_99 = float(np.percentile(t_alloc_sim_sum, 99))
             t_cvar_99 = self._cvar(t_alloc_sim_sum, 99.0)
 
-            cmmi_vec = np.array([canonical_findings[i].cmmi_maturity for i in t_indices], dtype=np.float64)
+            cmmi_vec = np.array(
+                [canonical_findings[i].cmmi_maturity for i in t_indices],
+                dtype=np.float64,
+            )
             weights_vec = standalone_finding_ales[t_indices]
             if np.sum(weights_vec) > 1e-9:
                 t_cmmi = float(np.average(cmmi_vec, weights=weights_vec))
@@ -718,11 +897,21 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
                     mean_sle=round(float(mean_sles[i]), 2),
                     standalone_ale=round(float(standalone_finding_ales[i]), 2),
                     portfolio_allocated_ale=round(float(allocated_finding_ales[i]), 2),
-                    var_90=round(float(np.percentile(allocated_finding_sim_losses[:, i], 90)), 2),
-                    cvar_90=round(self._cvar(allocated_finding_sim_losses[:, i], 90.0), 2),
-                    var_95=round(float(np.percentile(allocated_finding_sim_losses[:, i], 95)), 2),
-                    var_99=round(float(np.percentile(allocated_finding_sim_losses[:, i], 99)), 2),
-                    cvar_99=round(self._cvar(allocated_finding_sim_losses[:, i], 99.0), 2),
+                    var_90=round(
+                        float(np.percentile(allocated_finding_sim_losses[:, i], 90)), 2
+                    ),
+                    cvar_90=round(
+                        self._cvar(allocated_finding_sim_losses[:, i], 90.0), 2
+                    ),
+                    var_95=round(
+                        float(np.percentile(allocated_finding_sim_losses[:, i], 95)), 2
+                    ),
+                    var_99=round(
+                        float(np.percentile(allocated_finding_sim_losses[:, i], 99)), 2
+                    ),
+                    cvar_99=round(
+                        self._cvar(allocated_finding_sim_losses[:, i], 99.0), 2
+                    ),
                     worst_crisis_event=round(float(finding_crisis_events[i]), 2),
                     worst_crisis_rto_hours=round(float(finding_crisis_hours[i]), 2),
                     dissonance_applied=finding_dissonance_flags[i],
@@ -758,10 +947,16 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             three_year_cost_of_inaction=round(
                 total_portfolio_ale * self.inaction_horizon_years, 2
             ),
-            portfolio_var_90=round(float(np.percentile(portfolio_convolved_losses, 90)), 2),
+            portfolio_var_90=round(
+                float(np.percentile(portfolio_convolved_losses, 90)), 2
+            ),
             portfolio_cvar_90=round(self._cvar(portfolio_convolved_losses, 90.0), 2),
-            portfolio_var_95=round(float(np.percentile(portfolio_convolved_losses, 95)), 2),
-            portfolio_var_99=round(float(np.percentile(portfolio_convolved_losses, 99)), 2),
+            portfolio_var_95=round(
+                float(np.percentile(portfolio_convolved_losses, 95)), 2
+            ),
+            portfolio_var_99=round(
+                float(np.percentile(portfolio_convolved_losses, 99)), 2
+            ),
             portfolio_cvar_99=round(self._cvar(portfolio_convolved_losses, 99.0), 2),
             diversification_ratio=(
                 round(total_portfolio_ale / total_standalone_sum, 4)
@@ -828,8 +1023,15 @@ class PortfolioReproductionManifest(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    manifest_schema_version: str = Field(default="1.0.0")
-    actuarial_model_version: str = Field(default="2026.Q1.v1")
+    manifest_schema_version: str = Field(default="2.0.0")
+    actuarial_model_version: str = Field(default="2026.Q4.v2")
+    parameter_pack_id: str = Field(default="legacy_generic_v1")
+    parameter_pack_version: str = Field(default="2026.Q4.v2")
+    parameter_pack_sha256: str = Field(default="")
+    kernel_calibration_id: str = Field(default="fair_copula_kernel_std")
+    kernel_calibration_version: str = Field(default="2026.Q4.v1")
+    kernel_calibration_sha256: str = Field(default="")
+    context_sha256: str = Field(default="")
     engine_config: Dict[str, Any]
     currency_code: str
     deterministic_seed_hash: str
@@ -848,6 +1050,9 @@ def create_reproduction_manifest(
     currency_code: str,
     risk_scope: Optional[RiskScopeContext] = None,
     assessment_period: str = "2026.Q4",
+    parameter_pack_sha256: str = "",
+    kernel_calibration_sha256: str = "",
+    context_sha256: str = "",
 ) -> PortfolioReproductionManifest:
     """Serializes the exact configuration, input telemetry, and simulation outputs into a reproduction manifest."""
     serialized_findings = []
@@ -965,6 +1170,9 @@ def create_reproduction_manifest(
             }
 
     return PortfolioReproductionManifest(
+        parameter_pack_sha256=parameter_pack_sha256,
+        kernel_calibration_sha256=kernel_calibration_sha256,
+        context_sha256=context_sha256,
         engine_config=engine_config,
         currency_code=currency_code,
         deterministic_seed_hash=summary.deterministic_seed_hash,
@@ -995,7 +1203,9 @@ def replay_portfolio_simulation(
     zone_cache: Dict[str, OperationalZone] = {}
 
     for sf in manifest_obj.findings_telemetry:
-        scoped_key = f"{sf.tenant_id}:{sf.legal_entity_id}:{sf.operating_site_id}:{sf.zone_id}"
+        scoped_key = (
+            f"{sf.tenant_id}:{sf.legal_entity_id}:{sf.operating_site_id}:{sf.zone_id}"
+        )
         if scoped_key not in zone_cache:
             zone_cache[scoped_key] = OperationalZone(
                 zone_id=sf.zone_id,
@@ -1013,8 +1223,10 @@ def replay_portfolio_simulation(
             if (
                 cached.hourly_burn_rate != sf.hourly_burn_rate
                 or cached.max_annual_outage_hours != sf.max_annual_outage_hours
-                or cached.secondary_loss_retention_factor != sf.secondary_loss_retention_factor
-                or cached.catastrophic_recovery_ceiling_hours != sf.catastrophic_recovery_ceiling_hours
+                or cached.secondary_loss_retention_factor
+                != sf.secondary_loss_retention_factor
+                or cached.catastrophic_recovery_ceiling_hours
+                != sf.catastrophic_recovery_ceiling_hours
                 or cached.emergency_replacement_ratio != sf.emergency_replacement_ratio
             ):
                 raise ValueError(
@@ -1031,7 +1243,9 @@ def replay_portfolio_simulation(
                 claimed_maturity=sf.dissonance["claimed_maturity"],
                 empirical_reality_maturity=sf.dissonance["empirical_reality_maturity"],
                 dissonance_weight=sf.dissonance["dissonance_weight"],
-                transcript_evidence_quote=sf.dissonance.get("transcript_evidence_quote", ""),
+                transcript_evidence_quote=sf.dissonance.get(
+                    "transcript_evidence_quote", ""
+                ),
                 impact_vector=sf.dissonance.get("impact_vector", "BOTH"),
             )
             if sf.dissonance
@@ -1064,7 +1278,9 @@ def replay_portfolio_simulation(
         )
 
     # 3. Execute replay
-    replayed = engine.evaluate_portfolio(findings, currency_code=manifest_obj.currency_code)
+    replayed = engine.evaluate_portfolio(
+        findings, currency_code=manifest_obj.currency_code
+    )
 
     # 4. Assert deterministic seed equality
     if replayed.deterministic_seed_hash != manifest_obj.deterministic_seed_hash:
@@ -1097,7 +1313,9 @@ def replay_portfolio_simulation(
     # 7. Assert finding parity
     for key, exp_f in manifest_obj.expected_finding_outputs.items():
         t_id, f_id = key.split(":", 1)
-        act_f = next((f for f in replayed.towers[t_id].findings if f.finding_id == f_id), None)
+        act_f = next(
+            (f for f in replayed.towers[t_id].findings if f.finding_id == f_id), None
+        )
         if not act_f:
             raise AssertionError(f"Missing finding '{f_id}' in replayed tower '{t_id}'")
         for metric, expected_val in exp_f.items():
