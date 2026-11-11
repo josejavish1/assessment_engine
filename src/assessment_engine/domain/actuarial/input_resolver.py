@@ -389,8 +389,11 @@ class ActuarialInputResolver:
             default_conf=rto_conf,
         )
 
-        # 5. Direct Replacement Cost (Strict non-negative, valid 0.0 preserved)
+        # 5. Direct Replacement Cost (Strict non-negative, scale-invariant, single-currency normalized)
         raw_repl = hc.get("direct_replacement_cost")
+        raw_lm_for_repl = parse_strict_float(hc.get("loss_magnitude") or hc.get("lm")) or 2.5
+        severity_factor = min(1.0, max(0.05, (raw_lm_for_repl - 1.0) / 4.0))
+
         if raw_repl is not None:
             parsed_repl = parse_strict_float(raw_repl, "direct_replacement_cost")
             if parsed_repl is None or parsed_repl < 0.0:
@@ -400,23 +403,40 @@ class ActuarialInputResolver:
             repl_raw_val = parsed_repl
             repl_source = ParameterSourceType.ASSESSMENT_PAYLOAD
             repl_conf = ParameterConfidenceLevel.HIGH
+            repl_method = "Explicit replacement cost"
+            repl_source_curr = hc.get("currency") or ctx.source_currency
         elif not physics_profile.allows_downtime_burn:
-            # Scaled capacity/tooling waste (not server hardware)
+            # Derive dynamically in reporting_currency from tenant financial telemetry (zero magic clamps)
+            effective_rev = annual_revenue or ctx.normalize_monetary_amount(
+                global_fb.annual_revenue_default, source_curr=pack.base_currency
+            )
+            effective_it_opex = annual_it_opex or (effective_rev * 0.016)
+            effective_hourly_wage = hourly_wage or ctx.normalize_monetary_amount(
+                55.0,
+                source_curr=pack.base_currency,
+            )
+
             if physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE:
-                repl_raw_val = round(
-                    min(50000.0, max(2500.0, (annual_it_opex or 5000000.0) * 0.001))
-                )
+                # 5 bps of annual IT OpEx at max severity, scaled by severity_factor in [0.25, 1.0]
+                waste_intensity_bps = 0.0005 * (0.25 + 0.75 * severity_factor)
+                repl_raw_val = round(effective_it_opex * waste_intensity_bps, 2)
+                repl_method = "Derived from tenant IT OpEx and finding severity factor"
             elif (
                 physics_profile.loss_physics
                 == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
             ):
-                repl_raw_val = round(
-                    min(30000.0, max(1500.0, (hourly_wage or 50.0) * 40.0))
-                )
+                # Engineering remediation person-hours (40h to 160h based on severity) * tenant hourly wage
+                remediation_hours = 40.0 * (1.0 + 3.0 * severity_factor)
+                repl_raw_val = round(effective_hourly_wage * remediation_hours, 2)
+                repl_method = "Derived from tenant engineering hourly wage and remediation effort"
             else:
                 repl_raw_val = 0.0
+                repl_method = "Zero direct hardware replacement for regulatory/breach physics"
+
             repl_source = ParameterSourceType.DERIVED
             repl_conf = ParameterConfidenceLevel.MEDIUM
+            # Already computed in ctx.reporting_currency via normalized telemetry
+            repl_source_curr = ctx.reporting_currency
         else:
             repl_raw_val = (
                 tower_spec.default_direct_replacement_cost
@@ -425,16 +445,13 @@ class ActuarialInputResolver:
             )
             repl_source = ParameterSourceType.MODEL_DEFAULT
             repl_conf = ParameterConfidenceLevel.LOW
+            repl_method = "Parameter pack default"
+            repl_source_curr = pack.base_currency
             material_parameters_explicit = False
 
         repl_cost, repl_rate, repl_snap = ctx.normalize_monetary_amount_with_provenance(
             repl_raw_val,
-            source_curr=hc.get("currency")
-            or (
-                ctx.source_currency
-                if repl_source == ParameterSourceType.ASSESSMENT_PAYLOAD
-                else pack.base_currency
-            ),
+            source_curr=repl_source_curr,
         )
 
         repl_provenance = ParameterProvenanceRecord(
@@ -442,9 +459,7 @@ class ActuarialInputResolver:
             effective_value=repl_cost,
             unit=ctx.reporting_currency,
             source_type=repl_source,
-            estimation_method="Explicit replacement cost"
-            if repl_source == ParameterSourceType.ASSESSMENT_PAYLOAD
-            else "Parameter pack default",
+            estimation_method=repl_method,
             confidence=repl_conf,
             validation_status=ParameterValidationStatus.UNCONFIRMED,
         )

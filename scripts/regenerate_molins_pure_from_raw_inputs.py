@@ -177,10 +177,38 @@ def main() -> None:
                         p["score"] = round(float(pillar_map[pid]), 2)
                         p["exact_score"] = round(float(pillar_map[pid]), 2)
 
-        # Apply PolymorphicFindingClassifier per finding (SR 11-7 Layer 1 & Layer 2)
+        # Determine loss archetype for this tower
+        # T6: Regulatory & Breach | T8: Capital Inefficiency | T7, T9: Productivity Toil | T1..T5, T10: Availability Outage
+        if code == "T6":
+            arch_label = "Regulatory & Breach (NIS2)"
+        elif code == "T8":
+            arch_label = "Capital Inefficiency (FinOps)"
+        elif code in ("T7", "T9"):
+            arch_label = "Productivity Toil (ITSM/Workplace)"
+        else:
+            arch_label = "Availability Outage (Downtime)"
+
+        # Pure native Open FAIR calibration via ActuarialDowntimeCalibrator
+        if code == "T10":
+            base_hourly_downtime_cost = 5000.0  # Plant weighbridge and dispatch stoppage rate
+        else:
+            base_hourly_downtime_cost = float(profile.annual_revenue) / 8760.0 * 0.10
+
+        # Apply PolymorphicFindingClassifier and FindingInputResolver per finding (SR 11-7 Layer 1 & Layer 2)
         from assessment_engine.domain.actuarial.finding_archetype_resolver import (
-            FindingLossPhysics,
             PolymorphicFindingClassifier,
+        )
+        from assessment_engine.domain.actuarial.input_resolver import (
+            ActuarialInputResolver,
+        )
+        from assessment_engine.domain.bayesian_fair_copula_engine import (
+            OperationalZone,
+        )
+
+        zone = OperationalZone(
+            zone_id=f"ZONE_{code}",
+            hourly_burn_rate=base_hourly_downtime_cost,
+            max_annual_outage_hours=72.0,
         )
 
         for p in bp.get("pillars_analysis", []):
@@ -199,69 +227,28 @@ def main() -> None:
                     profile_f.max_euler_var_discount_pct
                 )
 
-                vec_in = (hc.get("actuarial_input_vector") or {}).get(
-                    "inputs", {}
-                )
                 if not profile_f.allows_downtime_burn:
-                    # Non-downtime findings (FinOps waste, IaC friction, regulatory breaches) have 0.0h downtime
-                    if "rto_hours_mode" in vec_in:
-                        vec_in["rto_hours_mode"]["effective_value"] = 0.0
-                    if "rto_hours_min" in vec_in:
-                        vec_in["rto_hours_min"]["effective_value"] = 0.0
-                    if "rto_hours_max" in vec_in:
-                        vec_in["rto_hours_max"]["effective_value"] = 0.0
-                    if "recovery_time_hours" in hc:
-                        hc["recovery_time_hours"] = 0.0
+                    hc["recovery_time_hours"] = 0.0
+                    hc["rto_hours_mode"] = 0.0
+                    hc["rto_hours_min"] = 0.0
+                    hc["rto_hours_max"] = 0.0
 
-                    # Calibrate realistic non-downtime direct cost (e.g. storage/cloud waste or remediation toil)
-                    if (
-                        profile_f.loss_physics
-                        == FindingLossPhysics.FINOPS_RESOURCE_WASTE
-                    ):
-                        waste_cost = (
-                            4800.0
-                            if (
-                                "decommission" in str(hc).lower()
-                                or "desmantelamiento" in str(hc).lower()
-                            )
-                            else 12500.0
-                        )
-                        if "direct_replacement_cost" in vec_in:
-                            vec_in["direct_replacement_cost"][
-                                "effective_value"
-                            ] = waste_cost
-                        hc["direct_replacement_cost"] = waste_cost
-                        if "hourly_burn_rate" in vec_in:
-                            vec_in["hourly_burn_rate"]["effective_value"] = 0.0
-                    elif (
-                        profile_f.loss_physics
-                        == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
-                    ):
-                        toil_cost = 6500.0
-                        if "direct_replacement_cost" in vec_in:
-                            vec_in["direct_replacement_cost"][
-                                "effective_value"
-                            ] = toil_cost
-                        hc["direct_replacement_cost"] = toil_cost
-                        if "hourly_burn_rate" in vec_in:
-                            vec_in["hourly_burn_rate"]["effective_value"] = 0.0
-
-        # Determine loss archetype for this tower
-        # T6: Regulatory & Breach | T8: Capital Inefficiency | T7, T9: Productivity Toil | T1..T5, T10: Availability Outage
-        if code == "T6":
-            arch_label = "Regulatory & Breach (NIS2)"
-        elif code == "T8":
-            arch_label = "Capital Inefficiency (FinOps)"
-        elif code in ("T7", "T9"):
-            arch_label = "Productivity Toil (ITSM/Workplace)"
-        else:
-            arch_label = "Availability Outage (Downtime)"
-
-        # Pure native Open FAIR calibration via ActuarialDowntimeCalibrator
-        if code == "T10":
-            base_hourly_downtime_cost = 5000.0  # Plant weighbridge and dispatch stoppage rate
-        else:
-            base_hourly_downtime_cost = float(profile.annual_revenue) / 8760.0 * 0.10
+                resolved_inputs, telemetry, _ = (
+                    ActuarialInputResolver.resolve_finding_inputs(
+                        hc=hc,
+                        tower_id=code,
+                        pillar_cmmi=overall_cmmi,
+                        zone=zone,
+                        archetype=profile_f.canonical_archetype,
+                        currency_code="EUR",
+                        annual_revenue=float(profile.annual_revenue),
+                        annual_it_opex=float(profile.annual_revenue) * 0.016,
+                        hourly_wage=55.0,
+                    )
+                )
+                hc["actuarial_input_vector"] = {
+                    "inputs": resolved_inputs.model_dump(mode="json")
+                }
         base_h = ARCHETYPE_BASE_HOURS.get(code, 12.0)
         eff_hours = round(base_h * ((5.0 - overall_cmmi) / 2.5), 1)
         p90_h = round(eff_hours * 1.8, 1)

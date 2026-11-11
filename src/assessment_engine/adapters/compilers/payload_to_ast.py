@@ -3105,6 +3105,42 @@ class PayloadToASTBridge:
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
                     logger.warning(f"[AST Bridge Warning] Error reading risks CSV file: {ex}")
 
+        # Synchronize SLE and LEF strictly from authoritative Domain Engine SSOT (Zero Presentation Math)
+        for r_item in risks_data_list:
+            decomp = r_item.get("additive_loss_decomposition") or {}
+            vec_out = (r_item.get("actuarial_input_vector") or {}).get("outputs") or {}
+
+            ssot_sle = (
+                decomp.get("gross_mean_sle")
+                if decomp.get("gross_mean_sle") is not None
+                else (
+                    vec_out.get("mean_sle")
+                    if vec_out.get("mean_sle") is not None
+                    else r_item.get("sle")
+                )
+            )
+            ssot_lef = (
+                decomp.get("mean_lef")
+                if decomp.get("mean_lef") is not None
+                else (
+                    vec_out.get("mean_lef")
+                    if vec_out.get("mean_lef") is not None
+                    else r_item.get("lef")
+                )
+            )
+            ssot_ale = (
+                decomp.get("net_allocated_ale")
+                if decomp.get("net_allocated_ale") is not None
+                else r_item.get("ale")
+            )
+
+            if ssot_sle is not None:
+                r_item["sle"] = round(float(ssot_sle), 2)
+            if ssot_lef is not None:
+                r_item["lef"] = round(float(ssot_lef), 4)
+            if ssot_ale is not None and r_item.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
+                r_item["ale"] = round(float(ssot_ale), 2)
+
         # Build executive risks summary paragraph
         primary_risks = [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"]
         actual_cards_sum = sum(float(r.get("ale") or 0.0) for r in primary_risks)
