@@ -2756,51 +2756,50 @@ class PayloadToASTBridge:
         canonical_tower_id: str,
         meta_lang: str,
     ) -> list[str]:
-        """Dynamically extracts exactly 3 high-impact cross-cutting structural debt patterns
+        """Dynamically synthesizes exactly 3 high-impact cross-cutting structural debt patterns
 
-        from the tenant's runtime payload (prioritizing cross_capabilities_analysis.common_deficiency_patterns,
-        with fallback to lowest-scoring pillar findings).
+        from the tenant's runtime payload, strictly derived from the lowest-scoring pillars
+        and their empirical forensic findings.
         Guarantees 100% zero-hardcoding and zero cross-tenant contamination.
         """
         blueprint_data = ctx.get("blueprint_data") or {}
-        cca = blueprint_data.get("cross_capabilities_analysis") or {}
-        common_patterns = cca.get("common_deficiency_patterns") or []
+        pillars_list = blueprint_data.get("pillars_analysis", [])
+
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+            get_taxonomy_resolver,
+        )
+        resolver = get_taxonomy_resolver()
+
+        sorted_pillars = sorted(
+            pillars_list,
+            key=lambda item: _safe_float(item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE),
+        )
 
         patterns: list[str] = []
-        if isinstance(common_patterns, list) and common_patterns:
-            for p_idx, pat_item in enumerate(common_patterns[:3], 1):
-                clean_pat = str(pat_item).strip()
-                if clean_pat:
-                    if not re.match(r"^\d+\.", clean_pat):
-                        clean_pat = f"{p_idx}. {clean_pat}"
-                    patterns.append(clean_pat)
-
-        # Fallback to weakest pillar findings if common_deficiency_patterns is empty
-        if len(patterns) < 3:
-            pillars_list = blueprint_data.get("pillars_analysis", [])
-            from assessment_engine.domain.taxonomy_resolver import (
-                extract_pillar_identifiers,
-                get_taxonomy_resolver,
-            )
-            resolver = get_taxonomy_resolver()
-
-            sorted_pillars = sorted(
-                pillars_list,
-                key=lambda item: _safe_float(item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE),
+        for p_idx, pillar in enumerate(sorted_pillars, 1):
+            if len(patterns) >= 3:
+                break
+            raw_pid, raw_pname = extract_pillar_identifiers(pillar)
+            p_name = resolver.resolve_pillar_by_any_reference(
+                raw_pid or raw_pname,
+                default=(raw_pname or raw_pid or f"Capability {p_idx}"),
+                locale=meta_lang,
+                tower_id=canonical_tower_id,
             )
 
-            for p_idx, pillar in enumerate(sorted_pillars, len(patterns) + 1):
-                if len(patterns) >= 3:
-                    break
-                raw_pid, raw_pname = extract_pillar_identifiers(pillar)
-                p_name = resolver.resolve_pillar_by_any_reference(
-                    raw_pid or raw_pname,
-                    default=(raw_pname or raw_pid or f"Capability {p_idx}"),
-                    locale=meta_lang,
-                    tower_id=canonical_tower_id,
-                )
+            finding_text = ""
+            # 1. Prioritize real field health check findings
+            hc_list = pillar.get("health_check_asis") or []
+            if isinstance(hc_list, list) and hc_list:
+                for hc in hc_list:
+                    f_cand = str(hc.get("finding") or hc.get("capability") or "").strip()
+                    if f_cand:
+                        finding_text = f_cand
+                        break
 
-                finding_text = ""
+            # 2. Check findings array
+            if not finding_text:
                 findings = pillar.get("findings")
                 if findings and isinstance(findings, list):
                     for f_item in findings:
@@ -2808,28 +2807,29 @@ class PayloadToASTBridge:
                             finding_text = str(f_item["finding"]).strip()
                             break
 
-                if not finding_text:
-                    desc = str(pillar.get("asis_architecture_description") or "").strip()
-                    if desc:
-                        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", desc) if s.strip()]
-                        if len(sentences) > 1:
-                            finding_text = sentences[1]
-                        elif sentences:
-                            finding_text = sentences[0]
+            # 3. Check asis_architecture_description diagnostic sentence
+            if not finding_text:
+                desc = str(pillar.get("asis_architecture_description") or "").strip()
+                if desc:
+                    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", desc) if s.strip()]
+                    if len(sentences) > 1:
+                        finding_text = sentences[1]
+                    elif sentences:
+                        finding_text = sentences[0]
 
-                if not finding_text:
-                    finding_text = t("diag_summary_default", locale=meta_lang)
+            if not finding_text:
+                finding_text = t("diag_summary_default", locale=meta_lang)
 
-                finding_text = finding_text.rstrip(".") + "."
-                patterns.append(f"{p_idx}. {p_name}: {finding_text}")
+            finding_text = finding_text.rstrip(".") + "."
+            patterns.append(f"{len(patterns) + 1}. **{p_name}:** {finding_text}")
 
         # Final safety guarantee of exactly 3 patterns
         while len(patterns) < 3:
             p_idx = len(patterns) + 1
             default_summary = t("diag_summary_default", locale=meta_lang)
-            patterns.append(f"{p_idx}. {t('table_header_pillar', locale=meta_lang)} {p_idx}: {default_summary}")
+            patterns.append(f"{p_idx}. **{t('table_header_pillar', locale=meta_lang)} {p_idx}:** {default_summary}")
 
-        return patterns[:3]
+        return patterns
 
     def _build_maturity_and_benchmarks(self, ctx: dict[str, Any], nodes: List[Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         from assessment_engine.infrastructure.localization import (
@@ -4152,8 +4152,17 @@ class PayloadToASTBridge:
             ),
         )
 
-        # Standalone to Allocated ALE Euler Reconciliation Bridge
-        standalone_base_ale = round(canonical_lef * reconciled_sle) if canonical_lef > 0 else 0
+        # Standalone to Allocated ALE Euler Reconciliation Bridge (guarantees exact mathematical identity)
+        if primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
+            effective_mult_freq = float(est_annual_events)
+        else:
+            effective_mult_freq = calibrated_lef
+
+        standalone_base_ale = (
+            round(effective_mult_freq * reconciled_sle)
+            if effective_mult_freq > 0
+            else 0
+        )
         euler_credit = (
             round(standalone_base_ale - canonical_ale)
             if standalone_base_ale > canonical_ale
