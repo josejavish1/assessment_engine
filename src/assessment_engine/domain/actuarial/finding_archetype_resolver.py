@@ -400,11 +400,8 @@ class PolymorphicFindingClassifier:
         if (
             bool(hc.get("is_synthetic_boilerplate"))
             or str(hc.get("source_type") or "").upper() == "LIKERT_FALLBACK"
+            or not evidence_text
         ):
-            return EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE
-
-        combined = f"{finding_text} | {impact_text} | {evidence_text}"
-        if cls._matches_category(combined, cls._BOILERPLATE_PATTERNS, "boilerplate"):
             return EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE
 
         return EpistemicEvidenceState.VERIFIED_EMPIRICAL
