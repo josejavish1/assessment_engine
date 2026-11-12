@@ -399,16 +399,39 @@ class CanonicalRiskOrchestrator:
                     f_id = hc.get("node_id")
                     if f_id in finding_results:
                         f_res = finding_results[f_id]
+                        inputs_dump = hc.get("actuarial_input_vector", {}).get("inputs", {})
+                        rto_mode = float(inputs_dump.get("rto_hours_mode", {}).get("effective_value", 0.0))
+                        hourly_rate = float(inputs_dump.get("hourly_burn_rate", {}).get("effective_value", 0.0))
+                        alpha = float(inputs_dump.get("blast_radius_alpha", {}).get("effective_value", 1.0))
+                        repl_cost = float(inputs_dump.get("direct_replacement_cost", {}).get("effective_value", 0.0))
+                        sec_loss = float(inputs_dump.get("secondary_loss_mean", {}).get("effective_value", 0.0))
+                        
+                        f_physics = hc.get("loss_physics") or "AVAILABILITY_OUTAGE"
+                        if f_physics in ("FINOPS_RESOURCE_WASTE", "ENGINEERING_VELOCITY_FRICTION"):
+                            expected_downtime = 0.0
+                            if repl_cost <= 0.0:
+                                repl_cost = f_res.mean_sle
+                        elif f_physics == "REGULATORY_AND_BREACH":
+                            expected_downtime = 0.0
+                            if sec_loss <= 0.0:
+                                sec_loss = f_res.mean_sle
+                        else:
+                            expected_downtime = rto_mode * hourly_rate * alpha
+                            if expected_downtime + repl_cost + sec_loss <= 0.0:
+                                expected_downtime = f_res.mean_sle
+
                         tower_findings_for_decomp.append(
                             {
                                 "id": f_id,
                                 "node_id": f_id,
                                 "mean_lef": f_res.mean_lef,
                                 "gross_mean_sle": f_res.mean_sle,
+                                "expected_downtime_loss": expected_downtime,
+                                "expected_replacement_cost": repl_cost,
+                                "expected_secondary_loss": sec_loss,
                                 "gross_standalone_ale": f_res.standalone_ale,
                                 "gross_p90": f_res.var_90,
-                                "loss_physics": hc.get("loss_physics")
-                                or "AVAILABILITY_OUTAGE",
+                                "loss_physics": f_physics,
                                 "epistemic_state": hc.get("epistemic_state")
                                 or "VERIFIED_EMPIRICAL",
                             }

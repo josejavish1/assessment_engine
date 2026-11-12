@@ -103,6 +103,22 @@ class HealthCheckAsIs(BaseModel):
         None,
         description="The calculated maximum loss in the designated currency.",
     )
+    additive_loss_decomposition: Optional[dict[str, Any]] = Field(
+        None, description="Euler-allocated loss breakdown components."
+    )
+    actuarial_input_vector: Optional[dict[str, Any]] = Field(
+        None, description="Raw input vectors driving the actuarial model."
+    )
+    quantification_status: Optional[str] = Field(
+        None, description="Final epistemic status of the actuarial evaluation."
+    )
+    loss_physics: Optional[str] = Field(
+        None,
+        description="Physical loss mechanism (e.g. 'AVAILABILITY_OUTAGE', 'PLATFORM_DEGRADATION', 'FINOPS_RESOURCE_WASTE', 'ENGINEERING_VELOCITY_FRICTION', 'REGULATORY_AND_BREACH', 'ASSET_OBSOLESCENCE_AND_INTEGRITY').",
+    )
+    epistemic_state: Optional[str] = Field(
+        None, description="Epistemic validation state of the finding evidence."
+    )
 
 
 class ArchitecturalGravityProfile(BaseModel):

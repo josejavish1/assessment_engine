@@ -36,6 +36,7 @@ class FindingLossPhysics(StrEnum):
     """Granular finding-level loss mechanics overriding macro-tower defaults."""
 
     AVAILABILITY_OUTAGE = "AVAILABILITY_OUTAGE"
+    PLATFORM_DEGRADATION = "PLATFORM_DEGRADATION"
     FINOPS_RESOURCE_WASTE = "FINOPS_RESOURCE_WASTE"
     ENGINEERING_VELOCITY_FRICTION = "ENGINEERING_VELOCITY_FRICTION"
     REGULATORY_AND_BREACH = "REGULATORY_AND_BREACH"
@@ -45,6 +46,7 @@ class FindingLossPhysics(StrEnum):
         """Maps finding-level physics to canonical Open FAIR loss archetype."""
         mapping = {
             FindingLossPhysics.AVAILABILITY_OUTAGE: LossArchetypeType.AVAILABILITY_OUTAGE,
+            FindingLossPhysics.PLATFORM_DEGRADATION: LossArchetypeType.AVAILABILITY_OUTAGE,
             FindingLossPhysics.FINOPS_RESOURCE_WASTE: LossArchetypeType.CAPITAL_INEFFICIENCY,
             FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION: LossArchetypeType.PRODUCTIVITY_TOIL,
             FindingLossPhysics.REGULATORY_AND_BREACH: LossArchetypeType.REGULATORY_AND_BREACH,
@@ -162,54 +164,91 @@ class AdditiveLossDecomposition:
         }
 
 
-_REGISTERED_PHYSICS_LEXICON: dict[str, Sequence[re.Pattern[str]]] = {}
+ADMISSIBILITY_MATRIX: Final[Mapping[str, Set[FindingLossPhysics]]] = {
+    "T1": {
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+    },
+    "T2": {
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.FINOPS_RESOURCE_WASTE,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+    },
+    "T3": {
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+    },
+    "T4": {
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+    },
+    "T5": {
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+    },
+    "T6": {
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+    },
+    "T7": {
+        FindingLossPhysics.FINOPS_RESOURCE_WASTE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+    },
+    "T8": {
+        FindingLossPhysics.FINOPS_RESOURCE_WASTE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+    },
+    "T9": {
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+    },
+    "T10": {
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+    },
+}
 
-
-def register_physics_lexicon(
-    raw_data: Mapping[str, Sequence[str]],
-) -> None:
-    """Registers multilingual semantic patterns into domain classifier without filesystem I/O."""
-    global _REGISTERED_PHYSICS_LEXICON
-    _REGISTERED_PHYSICS_LEXICON = {
-        key: tuple(
-            re.compile(pat, re.I) for pat in patterns if isinstance(pat, str)
-        )
-        for key, patterns in raw_data.items()
-        if isinstance(patterns, (list, tuple))
-    }
-
-
-def _get_external_physics_lexicon() -> dict[str, Sequence[re.Pattern[str]]]:
-    """Retrieves the registered declarative lexicon, lazily loading from default config if empty."""
-    global _REGISTERED_PHYSICS_LEXICON
-    if not _REGISTERED_PHYSICS_LEXICON:
-        try:
-            import json
-            from pathlib import Path
-
-            current = Path(__file__).resolve()
-            for parent in current.parents:
-                lex_path = (
-                    parent
-                    / "engine_config"
-                    / "taxonomy"
-                    / "finding_physics_lexicon.json"
-                )
-                if lex_path.is_file():
-                    with open(lex_path, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                    register_physics_lexicon(data)
-                    break
-        except Exception:
-            pass
-    return _REGISTERED_PHYSICS_LEXICON
+PILLAR_SUB_ADMISSIBILITY: Final[Mapping[str, Set[FindingLossPhysics]]] = {
+    "T2.P4": {
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+    },
+    "T2.P3": {
+        FindingLossPhysics.FINOPS_RESOURCE_WASTE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+    },
+    "T7.P4": {
+        FindingLossPhysics.FINOPS_RESOURCE_WASTE,
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+    },
+    "T8.P1": {FindingLossPhysics.FINOPS_RESOURCE_WASTE},
+    "T8.P2": {FindingLossPhysics.FINOPS_RESOURCE_WASTE},
+    "T8.P3": {FindingLossPhysics.FINOPS_RESOURCE_WASTE},
+    "T8.P4": {FindingLossPhysics.FINOPS_RESOURCE_WASTE},
+    "T8.P5": {FindingLossPhysics.FINOPS_RESOURCE_WASTE},
+}
 
 
 class PolymorphicFindingClassifier:
-    """Universal semantic and ontology classifier.
+    """Universal neurosymbolic classifier governed by a Topological Admissibility Firewall.
 
-    Eliminates Tower-level archetype blindness and quarantines synthetic survey boilerplate.
-    Contains 100% Technical English patterns in code, augmented by declarative external lexicons.
+    Guarantees that operational toil and governance deficiencies never escalate into
+    catastrophic outages, executing purely on typed contracts and topological priors without NLP regexes.
     """
 
     _PHYSICS_DEFAULTS: Final[Mapping[FindingLossPhysics, PhysicsDefaultSpec]] = {
@@ -229,6 +268,14 @@ class PolymorphicFindingClassifier:
             max_euler_ale_discount_pct=0.10,
             max_euler_var_discount_pct=0.15,
         ),
+        FindingLossPhysics.PLATFORM_DEGRADATION: PhysicsDefaultSpec(
+            allows_downtime_burn=True,
+            allows_secondary_regulatory_fallout=False,
+            default_rto_hours=0.25,
+            default_blast_radius_factor=0.02,
+            max_euler_ale_discount_pct=0.15,
+            max_euler_var_discount_pct=0.20,
+        ),
         FindingLossPhysics.REGULATORY_AND_BREACH: PhysicsDefaultSpec(
             allows_downtime_burn=False,
             allows_secondary_regulatory_fallout=True,
@@ -240,8 +287,8 @@ class PolymorphicFindingClassifier:
         FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY: PhysicsDefaultSpec(
             allows_downtime_burn=True,
             allows_secondary_regulatory_fallout=True,
-            default_rto_hours=4.0,
-            default_blast_radius_factor=0.15,
+            default_rto_hours=2.0,
+            default_blast_radius_factor=0.10,
             max_euler_ale_discount_pct=0.20,
             max_euler_var_discount_pct=0.25,
         ),
@@ -255,81 +302,6 @@ class PolymorphicFindingClassifier:
         ),
     }
 
-    _BOILERPLATE_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"lack\s+of\s+formalized\s+operational\s+controls\s+and\s+continuous\s+(monitoring|supervision)",
-            re.I,
-        ),
-        re.compile(
-            r"generalized\s+deficiency\s+in\s+documentary\s+governance\s+across\s+the\s+pillar",
-            re.I,
-        ),
-    )
-
-    _FINOPS_WASTE_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"\b(idle\s+vm|orphaned\s+vm|zombie\s+vm|unattached\s+(volume|disk|ebs)|"
-            r"decommission(ing)?\s+of\s+(idle|unused|orphaned)|right[- ]?sizing|"
-            r"finops|over[- ]?provisioned|unused\s+(instance|resource|license|compute)|"
-            r"cloud\s+cost\s+optimization|cloud\s+sprawl|license\s+shelfware)\b",
-            re.I,
-        ),
-    )
-
-    _ENGINEERING_FRICTION_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"\b(terraform|ansible|\biac\b|infrastructure\s+as\s+code|"
-            r"ci/cd|gitops|kubernetes\s+csi|helm\s+chart|pipeline\s+automation|"
-            r"manual\s+provisioning|manual\s+deployment|configuration\s+drift|"
-            r"deployment\s+toil|static\s+os\s+imaging|golden\s+image\s+drift|autopilot)\b",
-            re.I,
-        ),
-    )
-
-    _OBSOLESCENCE_EOL_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"\b(centos\s*[45678]?|rhel\s*[456]?|windows\s+server\s+200[38]|"
-            r"oracle\s+10g|oracle\s+11g|forms\s+6i|"
-            r"end[- ]of[- ]life|end[- ]of[- ]support|\beol\b|\beos\b|"
-            r"legacy\s+os|unsupported\s+(os|firmware|database|kernel|runtime))\b",
-            re.I,
-        ),
-    )
-
-    _REGULATORY_BREACH_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"\b(data\s+breach|data\s+exfiltration|unauthorized\s+disclosure|"
-            r"pii|phi|unencrypted\s+(pii|phi|data)|fuga\s+de\s+datos|exfiltraci[o\xf3]n|"
-            r"regulatory\s+fine|statutory\s+penalty|sanci[o\xf3]n\s+regulatoria|"
-            r"multa\s+de\s+privacidad|privacidad\s+de\s+datos)\b",
-            re.I,
-        ),
-    )
-
-    _CATASTROPHIC_OUTAGE_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
-        re.compile(
-            r"\b(single\s+point\s+of\s+failure|\bspof\b|"
-            r"disaster\s+recovery|\bdrp\b|business\s+continuity\s+failure|"
-            r"plant\s+stoppage|production\s+halt|scada\s+outage|blackout|"
-            r"core\s+network\s+outage|ransomware\s+encryption|backup\s+failure|"
-            r"dispatch\s+halt|weighbridge\s+outage|fiber\s+cut|clinical\s+triage\s+outage|"
-            r"geographical\s+diversity|dual[- ]datacenter|datacenter\s+redundancy|campus\s+backbone)\b",
-            re.I,
-        ),
-    )
-
-    @classmethod
-    def _matches_category(
-        cls,
-        corpus: str,
-        builtin_patterns: Sequence[re.Pattern[str]],
-        lexicon_key: str,
-    ) -> bool:
-        if any(p.search(corpus) for p in builtin_patterns):
-            return True
-        ext_patterns = _get_external_physics_lexicon().get(lexicon_key, ())
-        return any(p.search(corpus) for p in ext_patterns)
-
     @classmethod
     def classify_finding(
         cls,
@@ -337,79 +309,77 @@ class PolymorphicFindingClassifier:
         tower_id: str,
     ) -> FindingPhysicsProfile:
         finding_text = str(hc.get("finding") or hc.get("risk_observed") or "").strip()
-        capability_text = str(hc.get("capability") or hc.get("title") or hc.get("name") or "").strip()
         impact_text = str(hc.get("business_risk") or hc.get("primary_impact") or "").strip()
         evidence_text = str(hc.get("evidence") or "").strip()
-        vulnerability_text = str(hc.get("control_vulnerability") or "").strip()
-
-        combined_corpus = " | ".join(
-            filter(None, [finding_text, capability_text, impact_text, evidence_text, vulnerability_text])
-        )
 
         # 1. Epistemic Provenance Evaluation
         epistemic_state = cls._evaluate_epistemic_state(hc, finding_text, impact_text, evidence_text)
 
-        # 2. Explicit Payload Override Check
-        explicit_physics = str(hc.get("loss_physics") or hc.get("loss_archetype") or "").strip().upper()
-        if explicit_physics in FindingLossPhysics.__members__:
-            physics = FindingLossPhysics[explicit_physics]
-            return cls._build_profile(physics, epistemic_state, hc, "Explicit payload loss_physics tag")
+        # 2. Extract proposed physics from finding contract
+        explicit_physics_str = str(
+            hc.get("loss_physics")
+            or hc.get("loss_archetype")
+            or ""
+        ).strip().upper()
 
-        has_catastrophic_outage = cls._matches_category(
-            combined_corpus, cls._CATASTROPHIC_OUTAGE_PATTERNS, "catastrophic_outage"
+        proposed_physics: Optional[FindingLossPhysics] = None
+        if explicit_physics_str in FindingLossPhysics.__members__:
+            proposed_physics = FindingLossPhysics[explicit_physics_str]
+
+        # 3. Determine allowable physics via Topological Admissibility Firewall
+        clean_tower = tower_id.strip().upper()
+        p_id = str(hc.get("pillar_id") or "").strip().upper()
+        
+        allowed_physics = PILLAR_SUB_ADMISSIBILITY.get(
+            p_id,
+            ADMISSIBILITY_MATRIX.get(clean_tower, set(FindingLossPhysics))
         )
 
-        # 3. Semantic Causal Classification (Guarded against masking true catastrophic outages)
-        # Priority A: FinOps / Idle Resource Waste (Only when not describing an operational outage)
-        if not has_catastrophic_outage and cls._matches_category(
-            combined_corpus, cls._FINOPS_WASTE_PATTERNS, "finops_waste"
-        ):
-            return cls._build_profile(
-                FindingLossPhysics.FINOPS_RESOURCE_WASTE,
-                epistemic_state,
-                hc,
-                "Matched FinOps / idle resource waste semantic signature",
-            )
+        # 4. Enforce Semantic Admissibility
+        if proposed_physics is not None:
+            if proposed_physics in allowed_physics:
+                return cls._build_profile(
+                    proposed_physics,
+                    epistemic_state,
+                    hc,
+                    "Explicit typed contract accepted by Topological Firewall",
+                )
+            else:
+                fallback_physics = (
+                    FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
+                    if FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION in allowed_physics
+                    else FindingLossPhysics.FINOPS_RESOURCE_WASTE
+                    if FindingLossPhysics.FINOPS_RESOURCE_WASTE in allowed_physics
+                    else FindingLossPhysics.PLATFORM_DEGRADATION
+                )
+                return cls._build_profile(
+                    fallback_physics,
+                    epistemic_state,
+                    hc,
+                    f"Topological Firewall Downgrade: {proposed_physics} not admissible for {p_id or clean_tower}",
+                )
 
-        # Priority B: Engineering Velocity / IaC / DevOps Friction (Unless causing a catastrophic outage)
-        if not has_catastrophic_outage and cls._matches_category(
-            combined_corpus, cls._ENGINEERING_FRICTION_PATTERNS, "engineering_friction"
-        ):
-            return cls._build_profile(
-                FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
-                epistemic_state,
-                hc,
-                "Matched Engineering / IaC / CI-CD operational friction signature",
-            )
+        # 5. Deterministic Taxonomy Prior Fallback (Zero NLP guesswork)
+        default_physics = (
+            FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION
+            if "P4" in p_id or clean_tower == "T8"
+            else FindingLossPhysics.FINOPS_RESOURCE_WASTE
+            if "FINOPS" in p_id or "TAGGING" in p_id
+            else FindingLossPhysics.PLATFORM_DEGRADATION
+            if clean_tower in {"T2", "T3", "T4", "T9", "T10"}
+            else FindingLossPhysics.REGULATORY_AND_BREACH
+            if clean_tower == "T6"
+            else FindingLossPhysics.AVAILABILITY_OUTAGE
+        )
 
-        # Priority C: Regulatory & Data Breach (Unless primary mechanics involve catastrophic service outage)
-        if not has_catastrophic_outage and cls._matches_category(
-            combined_corpus, cls._REGULATORY_BREACH_PATTERNS, "regulatory_breach"
-        ):
-            return cls._build_profile(
-                FindingLossPhysics.REGULATORY_AND_BREACH,
-                epistemic_state,
-                hc,
-                "Matched Regulatory / Data Breach semantic signature",
-            )
+        if default_physics not in allowed_physics:
+            default_physics = next(iter(allowed_physics))
 
-        # Priority D: Asset Obsolescence & EoL Integrity (Scoped workload blast radius)
-        if not has_catastrophic_outage and cls._matches_category(
-            combined_corpus, cls._OBSOLESCENCE_EOL_PATTERNS, "obsolescence_eol"
-        ):
-            return cls._build_profile(
-                FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
-                epistemic_state,
-                hc,
-                "Matched EoL / Asset Obsolescence semantic signature",
-            )
-
-        # Priority E: True Availability Outage or Tower Default (with scoped blast radius)
         return cls._build_profile(
-            FindingLossPhysics.AVAILABILITY_OUTAGE,
+            default_physics,
             epistemic_state,
             hc,
-            f"Resolved to Availability Outage physics for tower {tower_id}",
+            f"Taxonomy Prior Fallback for {p_id or clean_tower}",
         )
 
     @classmethod
