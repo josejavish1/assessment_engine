@@ -769,27 +769,18 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             "Generate short radar",
         )
 
-        try:
-            from assessment_engine.adapters.compile_asis_docx_from_modules import (
-                compile_docx,
-            )
+        # Phase 1 SOTA: Unified compilation exclusively via Declarative AST Engine
+        from assessment_engine.adapters.compilers.payload_to_ast import (
+            compile_asis_docx_via_ast,
+        )
 
-            compile_docx(str(cfg.case_dir), str(cfg.output_asis_docx))
-        except Exception as ex:
-            logger.warning(
-                f"[Pipeline] In-memory compilation of AS-IS failed: {ex}. Using subprocess fallback..."
-            )
-            await run_step_async(
-                [
-                    cfg.python_bin,
-                    "-m",
-                    "assessment_engine.adapters.compile_asis_docx_from_modules",
-                    str(cfg.case_dir),
-                    str(cfg.output_asis_docx),
-                ],
-                cfg.env,
-                "Compile AS-IS DOCX from Modules",
-            )
+        doc_lang = cfg.env.get("ASSESSMENT_DOC_LANG", "es")
+        compile_asis_docx_via_ast(
+            payload_path=cfg.payload_path,
+            output_docx_path=cfg.output_asis_docx,
+            doc_lang=doc_lang,
+            modules_dir=cfg.case_dir,
+        )
         import shutil
 
         shutil.copyfile(
@@ -801,28 +792,9 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             cfg.case_dir / f"Diagnostico_ASIS_{cfg.tower_id}_{cfg.client_slug}.docx",
         )
 
-        if cfg.env.get("ASSESSMENT_ENABLE_SHADOW_COMPILER", "").strip() == "1":
-            await run_step_async(
-                [
-                    cfg.python_bin,
-                    "-m",
-                    "assessment_engine.application.tools.run_shadow_compilation",
-                    "--blueprint-payload",
-                    str(cfg.blueprint_payload_path),
-                    "--approved-annex",
-                    str(cfg.payload_path),
-                    "--output",
-                    str(
-                        cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"
-                    ),
-                ],
-                cfg.env,
-                "V4 AST Shadow Compilation (Canary)",
-            )
-        else:
-            logger.info(
-                f"⏭️  [Production Mode] AS-IS deliverable certified. Skipping internal shadow AST canary for {cfg.tower_id}."
-            )
+        logger.info(
+            f"[Production Mode] AS-IS deliverable certified via Declarative AST Engine for {cfg.tower_id}."
+        )
 
     async def run_blueprint_flow() -> None:
         if cfg.blueprint_payload_path.exists():

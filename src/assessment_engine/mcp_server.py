@@ -801,6 +801,28 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
 
 
 @mcp.tool()
+def compile_tower_annex_ast(payload_json: str, output_docx: str, doc_lang: str = "es") -> str:
+    """Compiles a tower annex DOCX document directly via the Declarative AST Engine.
+
+    Args:
+        payload_json: Path to the input blueprint payload JSON file.
+        output_docx: Path where the compiled DOCX document will be generated.
+        doc_lang: Document locale code ('es', 'en'). Defaults to 'es'.
+
+    Returns:
+        Confirmation message with output path and file size.
+    """
+    from assessment_engine.adapters.compilers.payload_to_ast import (
+        compile_asis_docx_via_ast,
+    )
+    from pathlib import Path
+
+    out_path = compile_asis_docx_via_ast(payload_json, output_docx, doc_lang=doc_lang)
+    size_bytes = Path(out_path).stat().st_size
+    return f"Tower Document successfully compiled via Declarative AST Engine.\nPath: {out_path} ({size_bytes:,} bytes)"
+
+
+@mcp.tool()
 def generate_radar_chart(global_payload_json: str) -> str:
     """Generates a global radar chart in-process.
 
