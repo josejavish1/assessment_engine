@@ -4070,15 +4070,16 @@ class PayloadToASTBridge:
         vec_inputs = vec.get("inputs") or {}
 
         canonical_ale = float(
-            vec_outputs.get("portfolio_allocated_ale")
+            hc.get("ale")
+            or hc.get("ale_val")
+            or vec_outputs.get("portfolio_allocated_ale")
             or hc.get("fair_ale_score")
-            or hc.get("ale")
             or hc.get("intrinsic_ale")
             or 0.0
         )
         decomp = hc.get("additive_loss_decomposition") or {}
-        canonical_sle = float(decomp.get("gross_mean_sle") or hc.get("sle") or vec_outputs.get("mean_sle") or 0.0)
-        canonical_lef = float(decomp.get("mean_lef") or hc.get("lef") or vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
+        canonical_sle = float(hc.get("sle") or decomp.get("gross_mean_sle") or vec_outputs.get("mean_sle") or 0.0)
+        canonical_lef = float(hc.get("lef") or decomp.get("mean_lef") or vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
         if decomp and decomp.get("rto_hours") is not None:
             eff_recovery_hours = float(decomp["rto_hours"])
         else:
@@ -4340,6 +4341,18 @@ class PayloadToASTBridge:
             ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=2)
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
             displayed_mult_freq = float(f"{calibrated_lef:.2f}")
+
+        # Red Team Rule 4 (Aritmética Transparente de Servilleta para el CTO):
+        # En cada ficha técnica individual, el impacto anualizado visible DEBE coincidir con el producto
+        # de Frecuencia Mostrada * Coste por Incidente (SLE) para evitar aparentes errores de cálculo.
+        if not is_deterministic and reconciled_sle > 0 and displayed_mult_freq > 0:
+            card_direct_ale = round(float(reconciled_sle) * float(displayed_mult_freq))
+            formatted_ale = format_currency(
+                float(card_direct_ale),
+                currency_symbol=currency,
+                locale=meta_lang,
+                decimals=0,
+            )
 
         if metrics.is_deduplicated:
             notice_text = t("actuarial_custody_deduplicated_note", locale=meta_lang).format(
