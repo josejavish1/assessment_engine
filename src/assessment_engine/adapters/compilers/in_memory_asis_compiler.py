@@ -880,8 +880,32 @@ def derive_in_memory_fair_risks(
                 if calc_sle == 0 and calc_lef > 0:
                     calc_sle = round(standalone_ale / calc_lef, 2)
 
+            finding_text_lower = (
+                str(eff_hc.get("finding") or "")
+                + " "
+                + str(eff_hc.get("capability") or "")
+                + " "
+                + str(eff_hc.get("business_risk") or "")
+            ).lower()
+            is_contractual_opex = any(
+                k in finding_text_lower
+                for k in [
+                    "modelo externalizado cautivo",
+                    "operador nos",
+                    "broadcom",
+                    "licenciamiento vmware",
+                    "contrato cautivo",
+                    "gasto fijo de licencias",
+                    "sobrecoste de suscripción",
+                    "autoevaluación proyectaba",
+                ]
+            )
+
             is_deterministic = (
-                physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE
+                is_contractual_opex
+                or eff_hc.get("is_deterministic") is True
+                or eff_hc.get("financial_nature") == "DETERMINISTIC_OPEX"
+                or physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE
                 or (fleet_volume > 1 and physics_profile.loss_physics == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION)
             )
             ledger_type = (

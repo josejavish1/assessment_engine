@@ -9,13 +9,14 @@ class SemanticGatekeeper:
     and cross-domain contamination boundaries across all 10 technology towers.
     """
 
-    MIN_WORDS: int = 220
+    MIN_WORDS_DENSE: int = 220
+    MIN_WORDS_SPARSE: int = 175
     MAX_WORDS: int = 600
 
     # Forbidden cross-domain terms per Tower ID (Case-insensitive boundary matching)
     DEFAULT_CONTAMINATION_MATRIX: Dict[str, List[str]] = {
-        "T1": ["endpoint", "impresora", "vdi", "citrix", "laptop", "mesa de ayuda", "helpdesk"],
-        "T2": ["servidor físico", "rack", "chasis", "fibra oscura", "bgp", "ospf", "mainframe"],
+        "T1": ["endpoint", "impresora", "vdi", "citrix", "laptop", "mesa de ayuda", "helpdesk", "drp", "disaster recovery", "hormigonera", "prefabricados", "camiones", "báscula"],
+        "T2": ["servidor físico", "rack", "chasis", "fibra oscura", "bgp", "ospf", "mainframe", "drp", "disaster recovery", "plan de recuperación ante desastres", "plan de continuidad"],
         "T3": ["laptop", "impresora", "BYOD", "móvil", "licenciamiento office", "sharepoint"],
         "T4": ["cableado estructurado", "planta externa", "ups", "generador", "aire acondicionado"],
         "T5": ["bgp", "mpls", "sd-wan", "switch core", "almacenamiento san", "lun"],
@@ -46,12 +47,13 @@ class SemanticGatekeeper:
         words = re.findall(r'\b\w+\b', text)
         return len(words)
 
-    def _check_word_count(self, text: str) -> int:
+    def _check_word_count(self, text: str, evidence_count: int = 3) -> int:
         count = self._count_words(text)
-        if count < self.MIN_WORDS:
-            deficit = self.MIN_WORDS - count
+        min_required = self.MIN_WORDS_SPARSE if evidence_count <= 2 else self.MIN_WORDS_DENSE
+        if count < min_required:
+            deficit = min_required - count
             raise SemanticQualityError(
-                feedback=f"Semantic Anemia detected: Output is {count} words (Minimum required is {self.MIN_WORDS}). You must expand the forensic analysis by at least {deficit} words, deepening Slot 2 (Failure Mechanics) and Slot 3 (Architectural Risk Debt).",
+                feedback=f"Semantic Anemia detected: Output is {count} words (Minimum required is {min_required}). You must expand the technical analysis by at least {deficit} words, deepening technical dynamics and operational exposure.",
                 failed_text=text
             )
         if count > self.MAX_WORDS:
@@ -73,8 +75,8 @@ class SemanticGatekeeper:
 
         for term in forbidden_terms:
             term_lower = term.lower()
-            # Use word boundary regex to prevent partial substring false positives
-            pattern = rf"\b{re.escape(term_lower)}\b"
+            # Use word boundary regex with optional plural inflection to prevent evasion
+            pattern = rf"\b{re.escape(term_lower)}(?:s|es)?\b"
             if re.search(pattern, text_lower):
                 # Exception: If the term was explicitly present in the raw input evidence for this pillar, allow it
                 if not re.search(pattern, evidence_lower):
@@ -99,7 +101,7 @@ class SemanticGatekeeper:
                         failed_text=text
                     )
 
-    def validate(self, text: str, tower_id: str, allowed_evidence_text: str = "") -> int:
+    def validate(self, text: str, tower_id: str, allowed_evidence_text: str = "", evidence_count: int = 3) -> int:
         """
         Runs all deterministic checks sequentially.
         Returns the verified word count if valid, or raises SemanticQualityError.
@@ -109,6 +111,6 @@ class SemanticGatekeeper:
 
         self._check_structural_and_boilerplate_rules(text)
         self._check_contamination(text, tower_id, allowed_evidence_text)
-        word_count = self._check_word_count(text)
+        word_count = self._check_word_count(text, evidence_count=evidence_count)
 
         return word_count

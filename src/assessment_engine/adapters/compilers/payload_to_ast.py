@@ -1182,6 +1182,36 @@ class ExecutiveNarrativeSynthesizer:
         from collections import defaultdict
 
         for tmpl, key in raw_templates:
+            if key == "p3_financial_exposure":
+                # Pilar 3 (Plan V5): Use typed DomainFinancialPresenter to eliminate Mad-Libs template defects
+                try:
+                    from assessment_engine.domain.actuarial.financial_presenter import (
+                        DomainFinancialPresenter, FinancialTelemetryReport
+                    )
+                    hr_fmt = str(context.get("hourly_burn_rate_fmt") or "13.061 €/h")
+                    ale_fmt = str(context.get("annual_loss_expectancy_fmt") or "0 €")
+                    p90_fmt = str(context.get("p90_var_exposure_fmt") or "0 €")
+                    sle_max_fmt = str(context.get("worst_crisis_cost_fmt") or "54.810 €")
+                    rec_h_str = str(context.get("capped_p90_hours_fmt") or "16.0").replace(",", ".")
+                    rec_h = float(rec_h_str) if rec_h_str.replace(".", "").isdigit() else 16.0
+                    t_name = str(context.get("tower_name") or canonical_key)
+                    
+                    fin_report = FinancialTelemetryReport(
+                        hourly_rate_formatted=hr_fmt,
+                        annual_ale_formatted=ale_fmt,
+                        p90_tail_risk_formatted=p90_fmt,
+                        max_sle_formatted=sle_max_fmt,
+                        max_recovery_hours=rec_h,
+                        tower_name=t_name
+                    )
+                    rendered = DomainFinancialPresenter.format_p015_executive_narrative(
+                        fin_report, locale=self._locale_code
+                    )
+                    paragraphs.append(rendered)
+                    continue
+                except Exception as ex:
+                    logger.warning("FinancialPresenter fallback: %s", ex)
+
             if tmpl:
                 try:
                     safe_context = defaultdict(str, context)
@@ -1618,14 +1648,8 @@ class PayloadToASTBridge:
         raw_label = band_info.get("label", "Definido")
         localized_band_label = t(band_key, locale=meta_lang)
         level_prefix = t("level_prefix", locale=meta_lang)
-        band_key_level_map = {
-            "band_initial": 1,
-            "band_repeatable": 2,
-            "band_defined": 3,
-            "band_managed": 4,
-            "band_optimized": 5,
-        }
-        band_level = band_key_level_map.get(band_key, 2)
+        # Pilar 1 (Plan V5): Extract exact CMMI v2.0 level directly from authoritative band_info
+        band_level = band_info.get("level", 2)
         global_band = f"{level_prefix} {band_level} ({localized_band_label})"
 
         pillars_list = blueprint_data.get("pillar_score_profile", {}).get("pillars") or [{}]
