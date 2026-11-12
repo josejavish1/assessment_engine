@@ -410,9 +410,8 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
         for original_pillar, result in zip(pillars_input, pillar_results):
             updated_pillar = copy.deepcopy(original_pillar)
             if isinstance(result, Exception):
-                # logger.error(f"Failed to synthesize {updated_pillar.get('pillar_id')}: {result}")
-                updated_pillar["asis_architecture_description"] = f"Error generating narrative: {result}"
-                updated_pillar["_synthesis_metadata"] = {"tier1_validated": False}
+                # Never write 'Error generating narrative' to payload. Preserve existing narrative.
+                updated_pillar["_synthesis_metadata"] = {"tier1_validated": False, "error": str(result)}
             else:
                 updated_pillar["asis_architecture_description"] = result.asis_architecture_description
                 updated_pillar["_synthesis_metadata"] = {

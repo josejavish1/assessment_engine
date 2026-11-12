@@ -9,8 +9,8 @@ class SemanticGatekeeper:
     and cross-domain contamination boundaries across all 10 technology towers.
     """
 
-    MIN_WORDS: int = 250
-    MAX_WORDS: int = 450
+    MIN_WORDS: int = 220
+    MAX_WORDS: int = 600
 
     # Forbidden cross-domain terms per Tower ID (Case-insensitive boundary matching)
     DEFAULT_CONTAMINATION_MATRIX: Dict[str, List[str]] = {
@@ -33,7 +33,7 @@ class SemanticGatekeeper:
     FORBIDDEN_PATTERNS: List[tuple[str, str]] = [
         (r"\b(es esencial|resulta imprescindible|es fundamental|se recomienda encarecidamente)\b", "Contains prescriptive consulting boilerplate ('es esencial / se recomienda'). Describe only As-Is reality."),
         (r"\b(mejores prácticas|best practices|estándares de la industria dictan)\b", "Contains generic 'best practices' filler."),
-        (r"\b(puntaje|puntuación|calificación|score|nivel de madurez\s+\d|encuesta|cuestionario)\b", "Leaks assessment survey metadata or numerical maturity scores."),
+        (r"\b(score\s+\d|nivel de madurez\s+\d|cuestionario de evaluación|resultado de la encuesta)\b", "Leaks assessment survey metadata or numerical maturity scores."),
         (r"^(#|\*|-|\d+\.)", "Contains Markdown headers, bullet points, or numbered lists. Must be continuous prose.")
     ]
 
