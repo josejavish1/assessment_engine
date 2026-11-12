@@ -1,7 +1,8 @@
-"""In-Memory Functional Core for AS-IS Deliverable Compilation (RFC-025 / SSOT).
+"""DEPRECATED: Legacy In-Memory Functional Core for AS-IS Deliverable Compilation.
 
-Extracts and structures maturity metrics, FAIR risk scenarios, and narrative sections
-directly from in-memory JSON or Pydantic payloads, eliminating intermediate disk I/O.
+All document generation has converged onto the Declarative AST Engine (RFC-026 / PayloadToASTBridge).
+This module is retained strictly as an internal calculation and extraction provider
+for PayloadToASTBridge and Volume1AsisASTCompiler until Phase 3 modularization.
 """
 
 from __future__ import annotations
@@ -782,9 +783,8 @@ def derive_in_memory_fair_risks(
 
                 # Layer 2: Bow-Tie Control Plane Escalation (T6 PAM / Shared Root)
                 elif topo_profile.architectural_role == ArchitecturalRole.CONTROL_PLANE:
-                    control_burn = 13061.0 if raw_burn_rate < 5000.0 else raw_burn_rate
+                    control_burn = raw_burn_rate if raw_burn_rate > 0 else float(effective_unit_rate or 0.0)
                     effective_unit_rate = round(control_burn)
-                    rto_h = 15.0
                     primary_downtime_loss = int(round(rto_h * effective_unit_rate))
                     sec_weighted_loss = 0
 
@@ -794,24 +794,7 @@ def derive_in_memory_fair_risks(
                     
                 # Layer 4: Operational Resilience Attenuation Model (ORAM) for General DATA_PLANE 
                 elif topo_profile.architectural_role == ArchitecturalRole.DATA_PLANE:
-                    # Apply industrial manual fallback efficacy (e.g. 65% for heavy manufacturing)
-                    # This prevents the "Total Paralysis" Fallacy by scaling the gross revenue to marginal inefficiency
-                    try:
-                        from assessment_engine.domain.actuarial.input_resolver import resolve_attenuated_burn_rate
-                        import json
-                        from pathlib import Path
-                        current = Path(__file__).resolve()
-                        profile_path = next((p for p in current.parents if p.name == "assessment_engine"), current) / "engine_config" / "industry_profiles" / "heavy_manufacturing.json"
-                        if profile_path.exists():
-                            with open(profile_path, "r", encoding="utf-8") as f:
-                                ind_data = json.load(f)
-                            resilience_cfg = ind_data.get("operational_resilience", {})
-                            gross_rev = 13061.0 if raw_burn_rate < 5000.0 else raw_burn_rate
-                            attenuated_rate = resolve_attenuated_burn_rate(gross_rev, rto_h, resilience_cfg)
-                            effective_unit_rate = round(attenuated_rate)
-                            primary_downtime_loss = int(round(rto_h * effective_unit_rate))
-                    except Exception:
-                        pass
+                    primary_downtime_loss = int(round(rto_h * effective_unit_rate))
 
             component_sum_sle = (
                 primary_downtime_loss + repl_cost_loss + sec_weighted_loss

@@ -1,3 +1,11 @@
+"""DEPRECATED: Legacy binary docx template mutator.
+
+Superseded by compile_tower_annex_ast in assessment_engine.mcp_server and compile_asis_docx_via_ast.
+Retained strictly for backward compatibility with existing integration test suites.
+"""
+
+from __future__ import annotations
+
 import json
 import logging
 import os

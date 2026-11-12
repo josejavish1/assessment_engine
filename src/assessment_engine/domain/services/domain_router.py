@@ -139,20 +139,22 @@ class DomainSemanticRouter:
 
     def _parse_ontology_nodes(self, raw_ontology: Optional[Dict[str, Any]]) -> Dict[str, OntologyNode]:
         """Parses injected ontology dictionary into typed immutable domain nodes."""
+        default_nodes = self._default_ontology_nodes()
         if not raw_ontology:
-            return self._default_ontology_nodes()
+            return default_nodes
 
         nodes: Dict[str, OntologyNode] = {}
         towers_dict = raw_ontology.get("towers") or raw_ontology.get("domains") or raw_ontology
         if isinstance(towers_dict, dict):
             for k, val in towers_dict.items():
                 if isinstance(val, dict):
+                    fallback_tokens = default_nodes.get(str(k)).boundary_tokens if default_nodes.get(str(k)) else []
                     nodes[str(k)] = OntologyNode(
                         node_id=str(val.get("id") or k),
                         name=str(val.get("name") or k),
                         core_jurisdiction=str(val.get("core_jurisdiction") or ""),
                         explicit_exclusions=list(val.get("explicit_exclusions") or []),
-                        boundary_tokens=list(val.get("boundary_tokens") or val.get("keywords") or []),
+                        boundary_tokens=list(val.get("boundary_tokens") or val.get("keywords") or fallback_tokens),
                     )
                 elif isinstance(val, list):
                     nodes[str(k)] = OntologyNode(
@@ -161,21 +163,21 @@ class DomainSemanticRouter:
                         boundary_tokens=[str(item) for item in val],
                     )
 
-        return nodes if nodes else self._default_ontology_nodes()
+        return nodes if nodes else default_nodes
 
     def _default_ontology_nodes(self) -> Dict[str, OntologyNode]:
         """Embedded fallback taxonomy space for generic IT assessments in 100% Technical English."""
         raw_defs = {
-            "T1": ("Data Center Facilities & Critical Infrastructure", ["data center", "datacenter", "facility", "facilities", "ups", "pdu", "chiller", "crac", "generator", "raised floor", "cabling", "physical security", "server room", "facility architecture"]),
-            "T2": ("Hybrid Compute & Virtualization Platforms", ["vmware", "vsphere", "simplivity", "hypervisor", "virtual machine", "compute cluster", "kubernetes", "container", "bare metal", "server hosts", "cloud compute"]),
+            "T1": ("Data Center Facilities & Critical Infrastructure", ["data center", "datacenter", "facility", "facilities", "ups", "pdu", "chiller", "crac", "generator", "raised floor", "cabling", "physical security", "server room", "facility architecture", "arquitectura empresarial", "arquitectura", "digital sovereignty", "cpd"]),
+            "T2": ("Hybrid Compute & Virtualization Platforms", ["vmware", "vsphere", "simplivity", "hypervisor", "virtual machine", "compute cluster", "kubernetes", "container", "bare metal", "server hosts", "cloud compute", "servidores", "cloud"]),
             "T3": ("Enterprise Networks & Connectivity Architecture", ["network", "wan", "lan", "sd-wan", "core switch", "routing", "bgp", "ospf", "firewall", "mpls", "vpn"]),
-            "T4": ("Storage Systems, Data Platforms & Resilient Backups", ["storage", "san", "nas", "storage array", "lun", "netapp", "backup", "veeam", "immutable storage", "lakehouse", "data governance"]),
+            "T4": ("Storage Systems, Data Platforms & Resilient Backups", ["storage", "san", "nas", "storage array", "lun", "netapp", "backup", "veeam", "immutable storage", "lakehouse", "data governance", "dama"]),
             "T5": ("Operational Resilience, Disaster Recovery & Failover Governance", ["business continuity", "resilience", "drp", "disaster recovery", "failover", "runbook", "cyber vault", "bcp"]),
             "T6": ("Cybersecurity Architecture & Identity Governance", ["security", "cyber", "active directory", "identity", "pam", "mfa", "edr", "siem", "soc", "rbac", "zero trust"]),
             "T7": ("ITSM, Observability & Service Management Operations", ["itsm", "servicenow", "jira", "cmdb", "change management", "incident management", "sla", "observability", "monitoring", "dynatrace", "apm", "sre", "zabbix", "grafana"]),
             "T8": ("FinOps, Software Licensing & Cloud Economics", ["finops", "cloud economics", "reserved instances", "software licensing", "cloud billing", "subscription"]),
-            "T9": ("Digital Workplace & End-User Productivity", ["digital workplace", "modern workplace", "office 365", "teams", "intune", "endpoint", "laptop", "vdi", "citrix", "digital workspace", "end user compute"]),
-            "T10": ("Industrial Systems, Core Operations & Plant Manufacturing", ["scada", "mes", "plc", "industrial ot", "weighbridge", "plant floor", "manufacturing", "dispatch", "legacy monolith", "mainframe execution"]),
+            "T9": ("Digital Workplace & End-User Productivity", ["digital workplace", "modern workplace", "office 365", "teams", "intune", "endpoint", "laptop", "vdi", "citrix", "digital workspace", "end user compute", "puesto de trabajo"]),
+            "T10": ("Industrial Systems, Core Operations & Plant Manufacturing", ["scada", "mes", "plc", "industrial ot", "weighbridge", "plant floor", "manufacturing", "dispatch", "legacy monolith", "mainframe execution", "monolito", "mainframe"]),
         }
         return {
             k: OntologyNode(node_id=k, name=name, boundary_tokens=tokens)

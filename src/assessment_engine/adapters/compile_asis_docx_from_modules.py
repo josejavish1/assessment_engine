@@ -1,3 +1,11 @@
+"""DEPRECATED: Legacy modular docx compilation engine.
+
+Superseded by compile_asis_docx_via_ast in assessment_engine.adapters.compilers.payload_to_ast.
+Retained strictly for backward compatibility with existing integration test oracles.
+"""
+
+from __future__ import annotations
+
 import logging
 logger = logging.getLogger(__name__)
 import csv

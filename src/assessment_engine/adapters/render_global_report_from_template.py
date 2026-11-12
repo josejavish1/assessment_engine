@@ -1,3 +1,11 @@
+"""DEPRECATED: Legacy global docx template mutator.
+
+Superseded by Volume1AsisASTCompiler in assessment_engine.adapters.compilers.tomo_asis_ast_compiler.
+Retained strictly for backward compatibility with existing integration test suites.
+"""
+
+from __future__ import annotations
+
 import logging
 
 logger = logging.getLogger(__name__)
