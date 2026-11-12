@@ -150,25 +150,32 @@ def _arbitrate_pillar_score(
     pillar_label: Any,
     extra_absence_tokens: Sequence[str] = (),
 ) -> tuple[float, bool]:
-    """Arbitrates survey vs empirical evidence under the Empirical Supremacy Invariant."""
+    """Arbitrates survey vs empirical evidence under the Empirical Supremacy Invariant.
+
+    Enforces that free-text regex patterns never automatically penalize or downgrade
+    canonical survey scores. Overrides only occur when backed by structured, verified
+    empirical audit findings within the same domain.
+    """
     epistemic_state = str(payload_pillar.get("epistemic_state", "")).strip().upper()
-    pillar_text = _extract_pillar_text(payload_pillar)
-    has_absence_evidence = (
-        epistemic_state in {"UNOBSERVED_BLINDSPOT", "EMBRYONIC", "ABSENT"}
-        or _has_empirical_absence_evidence(pillar_text, extra_absence_tokens)
-    )
 
     verified_score_flt = _extract_optional_float(
         payload_pillar, "verified_empirical_score", "empirical_score"
     )
 
+    # Formal audit override (RFC-085 & Universal Epistemic Plan):
+    # Only trigger survey inflation arbitration if:
+    # 1. An explicit structured verified empirical score is provided and diverges > 1.0, OR
+    # 2. An explicit foundational discovery finding (<= 1.59, Level 1 Initial) proves capability absence with delta > 1.0.
+    # Textual keyword matching in LLM prose is strictly prohibited from altering scores.
     is_survey_inflation = (
-        (has_absence_evidence and exact_p_score >= 1.80)
-        or (verified_score_flt is not None and (exact_p_score - verified_score_flt) > 1.0)
+        (verified_score_flt is not None and (exact_p_score - verified_score_flt) > 1.0)
         or (
             old_score_flt is not None
             and (exact_p_score - old_score_flt) > 1.0
-            and (old_score_flt <= 1.59 or has_absence_evidence)
+            and (
+                old_score_flt <= 1.59
+                or epistemic_state in {"UNOBSERVED_BLINDSPOT", "EMBRYONIC", "ABSENT"}
+            )
         )
     )
 
@@ -186,8 +193,6 @@ def _arbitrate_pillar_score(
 
     if verified_score_flt is not None:
         empirical_candidate = verified_score_flt
-    elif has_absence_evidence:
-        empirical_candidate = min(old_score_flt if old_score_flt is not None else 1.25, 1.50)
     else:
         empirical_candidate = old_score_flt if old_score_flt is not None else 1.25
 

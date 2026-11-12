@@ -1,0 +1,5585 @@
+{
+  "title": "Technical Annex - Tower T1",
+  "metadata": {
+    "client_name": "Molins",
+    "tower_name": "Centro de Datos Físico e Instalaciones",
+    "tower_code": "T1",
+    "financial_tier": "Tier 2",
+    "transformation_horizon": "H1: Standardization. Standard fallback.",
+    "language": "es",
+    "doc_lang": "es",
+    "currency": "€",
+    "regulatory_frameworks": [],
+    "annual_revenue": 1144000000.0,
+    "cover_footer_metadata": "INDEPENDENT ASSESSMENT ENTITY  |  Noviembre 2026  |  Versión 1.0  |  Confidencial"
+  },
+  "nodes": [
+    {
+      "type": "spacer",
+      "points": 40
+    },
+    {
+      "type": "paragraph",
+      "text": "Informe de Situación Actual (AS-IS)",
+      "bold": true,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 36.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Anexo Técnico: Centro de Datos Físico e Instalaciones",
+      "bold": true,
+      "italic": false,
+      "style": "cover_subtitle",
+      "space_after": 24,
+      "text_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "align": "JUSTIFY",
+      "font_size": 16.0
+    },
+    {
+      "type": "spacer",
+      "points": 30
+    },
+    {
+      "type": "paragraph",
+      "text": "**Cliente:** MOLINS",
+      "bold": true,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 24,
+      "text_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "align": "JUSTIFY",
+      "font_size": 28.0
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "toc",
+      "title": "Contenido",
+      "entries": [
+        {
+          "title": "Resumen Ejecutivo",
+          "page": "Pág. 3",
+          "level": 1
+        },
+        {
+          "title": "Objetivo, Alcance y Marco Metodológico",
+          "page": "Pág. 4",
+          "level": 1
+        },
+        {
+          "title": "Diagnóstico Técnico de Capacidades",
+          "page": "Pág. 6",
+          "level": 1
+        },
+        {
+          "title": "Evaluación Económica de Riesgos de Infraestructura",
+          "page": "Pág. 8",
+          "level": 1
+        },
+        {
+          "title": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad",
+          "page": "Pág. 16",
+          "level": 1
+        }
+      ],
+      "depth": 2
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "Resumen Ejecutivo",
+      "level": 1,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "PUNTUACIÓN ACTUAL",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "BANDA DE MADUREZ",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN ANUAL ESTIMADA",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "2,61 / 5,00",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Nivel 3 (Definido)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "94.164 € /año",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.33,
+        0.33,
+        0.34
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 14
+    },
+    {
+      "type": "paragraph",
+      "text": "La arquitectura física que respalda las salas técnicas CPD 1 y CPD 2 en el complejo industrial de Sant Vicenç dels Horts ha sostenido históricamente la continuidad de los servicios corporativos y de planta mediante un diseño mecánico robusto y una separación geográfica de quinientos metros. Sin embargo, el dominio presenta un perfil de resiliencia condicionado por su evolución orgánica y la ausencia de instrumentación avanzada. La convergencia de ambos recintos en una acometida eléctrica única, sumada a la carencia generalizada de telemetría energética, ambiental y de control de accesos, supedita la gestión operativa a intervenciones manuales y verificaciones presenciales, limitando severamente la capacidad de respuesta preventiva ante fallos electromecánicos, contingencias ambientales o incidentes de seguridad física.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "El análisis técnico destaca las siguientes áreas prioritarias para reforzar la resiliencia del servicio:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Acoplamiento estructural eléctrico al compartir una única acometida municipal y un enlace subterráneo único de baja tensión, consolidando ambos centros en un mismo dominio de fallo.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Ausencia de telemetría en tiempo real (PDUs inteligentes, monitorización HVAC, detección de fugas bajo falso suelo y plataformas de gestión centralizada), obligando a depender de inspecciones visuales y estimaciones estáticas.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Carencia de controles de acceso electrónicos, registros digitalizados y procedimientos formalizados de autorización o mantenimiento, impidiendo la trazabilidad forense y la validación de mantenibilidad concurrente.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada del servicio conlleva un coste operativo directo de **13.061 €/h** (detallado en la Sección 4.1). En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **Centro de Datos Físico e Instalaciones** representan una **exposición de riesgo latente estimada en 94.164 € anualizados**, cifra que refleja la pérdida media esperada por la fricción operativa e incidencias a lo largo de un año dentro de este dominio.\n\nAdicionalmente, ante un **escenario de estrés financiero severo (Percentil 90 / P90)**, la acumulación estocástica de múltiples contingencias técnicas a lo largo de un ejercicio anual podría elevar las pérdidas agregadas del dominio hasta **155.177 €**. En términos de liquidez operativa inmediata, el impacto económico derivado de la materialización del peor incidente individual aislado (Pérdida Máxima por Evento / Max SLE) se estima en **54.810 €**, con un tiempo de recuperación técnica de hasta **9.4 horas**.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "En conclusión, el diagnóstico del estado actual demuestra que la plataforma cuenta con una base operativa consolidada sobre la cual evolucionar. Mientras que la capacidad más desarrollada alcanza 4,00 sobre 5,0 (Protección Contra Incendios y Seguridad Ambiental), la madurez global del dominio (2,61 sobre 5,0) presenta su mayor margen de avance en Climatización, Refrigeración y Control Ambiental (1,67 sobre 5,0). Mantener la inercia del statu quo prolongaría la dependencia de intervenciones manuales reactivas y elevaría los tiempos de recuperación ante incidencias, por lo que abordar estas oportunidades de automatización permitirá afianzar la continuidad que requiere el negocio.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 10,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "2. Objetivo, Alcance y Marco Metodológico",
+      "level": 1,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "heading",
+      "text": "Objetivo y Alcance",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La presente evaluación audita la resiliencia operativa y la robustez electromecánica de los centros de datos (CPD 1 y CPD 2) de Molins en Sant Vicenç dels Horts. El análisis evalúa la capacidad de las instalaciones físicas para garantizar la continuidad ininterrumpida de las operaciones fabriles, identificando puntos únicos de fallo en la alimentación eléctrica, deficiencias de climatización y riesgos ambientales que amenazan las líneas de ensacado, molienda y expedición.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "heading",
+      "text": "2.2. Descripción de la Plataforma",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La infraestructura evaluada da soporte directo a la actividad industrial y a los servicios corporativos centralizados de Molins. La arquitectura física se distribuye entre dos salas técnicas principales interconectadas por fibra oscura, albergando la plataforma hiperconvergente HPE SimpliVity y el almacenamiento transaccional NetApp. El diagnóstico contrasta las instalaciones frente a los estándares TIA-942-B, ASHRAE TC 9.9 y la norma europea EN 50600.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**El alcance técnico evaluado en esta torre comprende los siguientes componentes y subsistemas clave:**",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Salas técnicas CPD1 y CPD2",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Sistemas SAI y distribución de potencia",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Climatización y control de polvo en suspensión",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Protección contra incendios y monitoreo BMS",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Estándar / Marco Aplicado",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Ámbito de Aplicación en la Infraestructura Evaluada",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Propósito en la Evaluación",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "CMMI for Infrastructure",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Madurez de procesos operativos, control de cambios y disciplina de mantenimiento en salas y plataformas técnicas.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Escala analítica del nivel 1 al 5.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TIA-942-B / ASHRAE TC 9.9",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Envolvente térmica, rangos psicrométricos y dinámica de flujo ambiental según estándares de criticidad.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Prevención de fallos de hardware.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Open FAIR™",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Cuantificación financiera y simulación actuarial de paradas operativas e interrupción de procesos críticos de negocio.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Cálculo probabilístico del ALE y ROI.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.28,
+        0.47,
+        0.25
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "heading",
+      "text": "2.3. Escala Analítica de Madurez CMMI",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La madurez se califica en una escala analítica del 1,00 al 5,00, donde cada nivel determina un estadio de control:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nivel 1 - Inicial (1,00 - 1,59):** Prácticas ad-hoc, reactivas o dependientes del esfuerzo heroico individual.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nivel 2 - Gestionado (1,60 - 2,59):** Procesos operativos básicos establecidos a nivel táctico con inconsistencias interdepartamentales.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nivel 3 - Definido (2,60 - 3,59):** Procesos formalizados y documentados de forma consistente en toda la organización.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nivel 4 - Medido Cuantitativamente (3,60 - 4,59):** Capacidades medidas cuantitativamente y alineadas con el gobierno de TI corporativo.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nivel 5 - Optimizado (4,60 - 5,00):** Modelo operativo de excelencia caracterizado por alta automatización y mejora continua.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 2,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "heading",
+      "text": "2.4. Capacidades Evaluadas y Cálculo del Score",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "El nivel de madurez técnica y el score global de la torre se consolidan mediante el promedio ponderado de las calificaciones obtenidas en las siguientes dimensiones y KPIs evaluados:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Energía y Continuidad Eléctrica (Peso: 24%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como autonomía Eléctrica Garantizada (UPS y Generadores), cadencia de Pruebas de Conmutación y Fallos Controlados, redundancia de Distribución Eléctrica y Eliminación de SPOF y utilización de Capacidad Eléctrica y Gestión de Holgura.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Climatización, Refrigeración y Control Ambiental (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como cumplimiento de Rangos Ambientales y Telemetría Térmica Continua, mitigación de Hotspots Térmicos y Densidad por Rack y resiliencia de Climatización (N+1 / 2N) y Mantenibilidad Concurrente.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Seguridad Física y Control de Accesos (Peso: 16%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como control de Acceso Físico Zonificado y Autenticación Biométrica, protocolos de Acompañamiento, Registro de Accesos y Permisos de Trabajo y cobertura CCTV, Registro de Accesos y Retención Inmutable de Evidencias.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Protección Contra Incendios y Seguridad Ambiental (Peso: 22%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como detección Temprana de Incendios (VESDA) y Sectorización de Salas, extinción Automática por Gas Limpio y Certificación de Descarga y mitigación de Inundación, Detección de Fugas de Agua y Contaminantes.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Operación de Facilities, Monitorización y Mantenimiento (Peso: 18%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como telemetría Continua de Infraestructura (DCIM/BMS) y Gestión de Alarmas, mantenimiento Preventivo, Acuerdos de Nivel de Servicio (SLA) y Repuestos y planificación de Capacidad Física y Ciclo de Vida (Espacio, Energía, Clima).",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 3,
+      "text_color_rgb": [
+        46,
+        64,
+        77
+      ],
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "Diagnóstico Técnico y Cuadro de Mando de Madurez",
+      "level": 1,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La evaluación técnica del dominio de Centro de Datos Físico e Instalaciones sitúa la madurez operativa global en un índice de **2,61 sobre 5,00 (Definido)** bajo el marco internacional CMMI v2.0. El análisis de dispersión entre capacidades evidencia una asimetría de 2.33 puntos: mientras que la mayor solidez se concentra en **Protección Contra Incendios y Seguridad Ambiental** (4,00/5,00), el principal punto de fricción operativa y deuda técnica reside en **Climatización, Refrigeración y Control Ambiental** (1,67/5,00), el cual define el cuello de botella estructural del servicio.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "PUNTUACIÓN AS-IS",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "NIVEL DE MADUREZ CUALITATIVO",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "2,61 / 5,00",
+              "bold": true,
+              "font_size": 16.0,
+              "align": "CENTER",
+              "bg_color": "FFF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Nivel 3 (Definido)",
+              "bold": true,
+              "font_size": 12.0,
+              "align": "CENTER",
+              "bg_color": "FFF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.5,
+        0.5
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Escala CMMI: Nivel 1 - Inicial (1,00-1,59) | Nivel 2 - Gestionado (1,60-2,59) | Nivel 3 - Definido (2,60-3,59) | Nivel 4 - Medido Cuantitativamente (3,60-4,59) | Nivel 5 - Optimizado (4,60-5,00)",
+      "bold": false,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "CENTER",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Con una puntuación técnica de 2,61 sobre 5,0 (Nivel 3 (Definido)), las instalaciones de Molins se sitúan en el límite de tramo del Nivel 3. La solvencia de los sistemas de extinción y redundancia eléctrica (Protección Contra Incendios y Seguridad Ambiental, 4,00/5,0) contrasta con la fragilidad térmica en salas de proceso (Climatización, Refrigeración y Control Ambiental, 1,67/5,0), donde la ausencia de confinamiento de pasillos y el déficit de climatización de precisión en cuartos de planta amenazan la continuidad de los servidores expuestos a partículas fabriles.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Pilar / Capacidad Tecnológica Evaluada",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Score AS-IS",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Estado y Nivel de Desempeño",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Energía y Continuidad Eléctrica",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "2,50",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Definido (C)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Climatización, Refrigeración y Control Ambiental",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "1,67",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Básico (D)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Seguridad Física y Control de Accesos",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "2,33",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Básico (D)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Protección Contra Incendios y Seguridad Ambiental",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "4,00",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Estable (B)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Operación de Facilities, Monitorización y Mantenimiento",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "2,33",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Básico (D)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.48,
+        0.2,
+        0.32
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 16
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Más allá del diagnóstico individual por pilar, la auditoría identifica los principales patrones de fricción operativa y vulnerabilidades físicas en la infraestructura electromecánica:",
+      "bold": false,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "1. **Climatización, Refrigeración y Control Ambiental:** Carencia de controles operativos formalizados y falta de supervisión continua en HVAC Cooling Resiliency (N+1 / 2N) & Concurrent Maintainability.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "2. **Seguridad Física y Control de Accesos:** Ausencia de un procedimiento formalizado y registro digitalizado de autorizaciones para la entrada y ejecución de trabajos de personal externo y contratas de mantenimiento en las salas técnicas CPD 1 y CPD 2, operando bajo autorizaciones verbales y llaves físicas sin trazabilidad de apertura.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "3. **Operación de Facilities, Monitorización y Mantenimiento:** Proximidad física de 500 metros entre CPD 1 y CPD 2 con enlace único subterráneo de baja tensión y acometida municipal compartida, conformando un único dominio de resiliencia ante contingencias mayores de zona.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 4
+    },
+    {
+      "type": "spacer",
+      "points": 11
+    },
+    {
+      "type": "spacer",
+      "points": 16
+    },
+    {
+      "type": "heading",
+      "text": "3.2. Diagnóstico Técnico Detallado por Capacidad",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "A continuación se presenta el desglose técnico y procedimental exhaustivo para cada una de las capacidades evaluadas en este dominio. Cada ficha contrasta la autoevaluación inicial frente a las evidencias empíricas de auditoría, justificando objetivamente la madurez fáctica asignada y estableciendo la trayectoria pragmática de modernización hacia el siguiente nivel.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 12,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "heading",
+      "text": "3.2.1. Energía y Continuidad Eléctrica",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez Operativa:** 2,50 (Definido)",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.0
+    },
+    {
+      "type": "paragraph",
+      "text": "En su configuración actual en producción, la distribución energética hacia los bastidores se articula mediante unidades de distribución de energía (PDU) convencionales que cumplen con la entrega de corriente requerida por el equipamiento alojado, priorizando la simplicidad y robustez física de las instalaciones a lo largo de su ciclo de servicio. Desde una perspectiva de arquitectura electromecánica, la ausencia de unidades PDU inteligentes dotadas de telemetría por toma y capacidades de monitorización de carga en tiempo real en los racks de ambos centros de datos introduce una limitación en la observabilidad granular del consumo",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "A esta realidad física se suma que no consta en el expediente acreditación documental de controles operativos formalizados ni de mecanismos de supervisión continua orientados a la gestión del margen de capacidad planificado y la utilización eléctrica. En consecuencia, el seguimiento de las cargas por fase y por bastidor recae en estimaciones estáticas o mediciones puntuales en lugar de flujos de telemetría automatizados. Esta configuración técnica condiciona directamente la agilidad en el aprovisionamiento de nuevo equipamiento de alta densidad y la resiliencia eléctrica del dominio. Ante escenarios de crecimiento de carga o conmutación entre líneas de suministro, la falta de visibilidad predictiva sobre el margen de potencia disponible incrementa la complejidad operativa para prevenir sobrecargas localizadas, acotando la capacidad de planificación evolutiva de la infraestructura física en ambas salas técnicas",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Los estudios de resiliencia de Uptime Institute señalan que los fallos en la distribución eléctrica originan el 44% de las caídas catastróficas de centros de datos. La distribución de doble rama (2N) activo-activo reduce la probabilidad de caída de servidores en más de un 85% frente a acometidas con puntos únicos de fallo",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "3.2.2. Climatización, Refrigeración y Control Ambiental",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez Operativa:** 1,67 (Gestionado)",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.0
+    },
+    {
+      "type": "paragraph",
+      "text": "La infraestructura de climatización y control ambiental presta servicio a las salas técnicas CPD 1 y CPD 2, emplazadas de forma independiente a una distancia de 500 metros dentro del complejo industrial de Sant Vicenç dels Horts. Esta disposición física distribuida ha respaldado de manera sostenida la operatividad de los sistemas alojados en ambas ubicaciones, priorizando la continuidad de los servicios de planta mediante los recursos de acondicionamiento térmico disponibles en cada recinto",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Según las directrices térmicas de ASHRAE TC 9.9 y los estudios de fiabilidad de IEEE, operar servidores fuera del rango Clase A1/A2 en entornos con polvo industrial eleva los fallos de placas base por migración electroquímica en más de un 300%, mientras que los cortes de climatización originan el 42% de las averías graves de hardware. La gestión de esta capacidad se encuentra en un régimen inicial (1,67 sobre 5,0 - Gestionado). La operativa se ve severamente condicionada por carencia de controles operativos formalizados y falta de supervisión continua en HVAC Cooling Resiliency (N+1 / 2N) & Concurrent Maintainability, lo que exige establecer controles fundacionales y estandarización técnica en el Tomo 2.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "heading",
+      "text": "3.2.3. Seguridad Física y Control de Accesos",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez Operativa:** 2,33 (Gestionado)",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.0
+    },
+    {
+      "type": "paragraph",
+      "text": "La arquitectura de seguridad física y control de accesos en el complejo industrial de Sant Vicenç dels Horts abarca las salas técnicas CPD 1 y CPD 2, situadas a una distancia de 500 metros entre sí. En su configuración actual, la custodia de ambos recintos descansa en mecanismos mecánicos tradicionales basados en llaves físicas y autorizaciones operativas de carácter verbal. Este esquema de acceso ha permitido históricamente agilizar la intervención directa del personal técnico y de las contratas de mantenimiento, priorizando la inmediatez de respuesta y la continuidad operativa de las instalaciones",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "El análisis de la operativa actual refleja que no consta acreditación documental de un procedimiento formalizado para la autorización de trabajos en sala, ni se dispone de un registro digitalizado que consolide el acceso de terceros. Al operar mediante cerraduras convencionales sin control electrónico en dos ubicaciones físicamente separadas, el entorno carece de telemetría de apertura y no genera una traza de auditoría centralizada que vincule el franqueo de las puertas con identidades individuales, franjas horarias o ventanas de mantenimiento autorizadas",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Esta dinámica arquitectónica limita la supervisión en tiempo real y el control administrativo sobre las intervenciones presenciales ejecutadas en ambos centros de datos. En caso de producirse una contingencia física o una manipulación accidental durante las tareas de soporte técnico, la ausencia de trazabilidad de acceso y de protocolización previa expondría a la organización a una visibilidad reducida para reconstruir forensemente la secuencia de eventos y determinar responsabilidades operativas",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "3.2.4. Protección Contra Incendios y Seguridad Ambiental",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez Operativa:** 4,00 (Gestionado Cuantitativamente)",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.0
+    },
+    {
+      "type": "paragraph",
+      "text": "En el ámbito específico de la monitorización ambiental de las instalaciones físicas, el expediente técnico evidencia una cobertura de instrumentación acotada frente a contingencias hídricas asociadas a los subsistemas de refrigeración y tratamiento térmico de las salas. En particular, se constata la ausencia de lazos de cable sensor direccionable destinados a la detección precoz de fugas de agua y acumulación de condensados bajo el falso suelo en el perímetro de las unidades de climatización. Asimismo, no consta acreditación documental en el expediente sobre la topología específica de los sistemas de detección precoz de humos, las tecnologías de extinción automática o el registro de pruebas de estanqueidad en ambos recintos",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Esta configuración responde a un crecimiento orgánico de las salas técnicas, donde la prioridad operativa se centró en el despliegue del equipamiento de producción sin integrar aún una capa de telemetría ambiental granular en el subsuelo. Esta limitación en la visibilidad del plano inferior condiciona la capacidad de respuesta preventiva de los equipos de mantenimiento de instalaciones. Ante una eventual degradación de bandejas de drenaje o rotura de conducciones hidráulicas en los equipos de clima, la carencia de detección perimetral automatizada supedita la identificación del incidente a las rondas de inspección visual presencial, exponiendo el entorno físico bajo el falso suelo a la acumulación inadvertida de fluidos y reduciendo el margen de maniobra para mitigar afecciones sobre las canalizaciones e infraestructuras alojadas en dicho estrato",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Los datos actuariales de prevención de pérdidas de FM Global demuestran que la extinción por agente limpio combinada con detección precoz por aspiración (VESDA) reduce la pérdida colateral de equipamiento electrónico en un 94% frente a sistemas convencionales de rociadores de agua",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "heading",
+      "text": "3.2.5. Operación de Facilities, Monitorización y Mantenimiento",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez Operativa:** 2,33 (Gestionado)",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Esta disposición física ha permitido sostener la continuidad operativa del complejo aprovechando las infraestructuras de planta preexistentes, estableciendo una separación geográfica de quinientos metros entre ambos recintos técnicos para dar servicio a las cargas industriales locales. Desde la perspectiva de la supervisión y el gobierno del entorno físico, la configuración actual presenta un acoplamiento estructural en sus suministros base: ambos centros comparten una única acometida eléctrica municipal y se encuentran interconectados mediante un enlace subterráneo único de baja tensión",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Asimismo, dentro del expediente técnico analizado, no consta acreditación documental relativa a la implantación de plataformas centralizadas de gestión de infraestructuras de centro de datos, telemetría ambiental unificada ni registros formalizados sobre rutinas de mantenimiento preventivo o ensayos de conmutación electromecánica. Esta ausencia de visibilidad инструментаl documentada sugiere una gestión operativa apoyada en la supervisión directa de planta y en el conocimiento empírico de los equipos técnicos locales. Esta topología física e instrumental condiciona directamente el perfil de resiliencia y la capacidad de respuesta ante incidencias en las instalaciones. La convergencia en una acometida única y el trazado compartido a quinientos metros consolidan ambos recintos en un único dominio de fallo físico ante contingencias mayores de zona o incidencias en la canalización subterránea, mientras que la falta de telemetría ambiental documentada limita la detección temprana de desviaciones operativas en las salas",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Los estudios de mercado de Gartner constatan que el despliegue de telemetría DCIM integrada y planificación automatizada de capacidad reduce el espacio y la potencia desaprovechada en un 35%, disminuyendo el tiempo medio de resolución (MTTR) de incidencias de instalaciones en un 48%",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "heading",
+      "text": "4. Evaluación Económica de Riesgos de Infraestructura",
+      "level": 1,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Este diagnóstico técnico aplica el estándar internacional O-FAIR (Factor Analysis of Information Risk) para modelar, cuantificar y priorizar la exposición al riesgo en términos financieros. Los valores mostrados son estimaciones probabilísticas de exposición económica (no facturas contables fijas). El impacto se calcula como: (Horas de parada operativa × Coste de ineficiencia por hora) + Coste directo de reparación.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "heading",
+      "text": "4.1. Coste Estimado por Indisponibilidad y Parada de Servicio",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La exposición actuarial para Centro de Datos Físico e Instalaciones se modela mediante el receptor Open FAIR™ de Indisponibilidad y Parada Operativa, capturando el impacto financiero de la interrupción del servicio.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "*ALE = LEF × (Duración_Parada × Tasa_Erosión_Horaria + Esfuerzo_Recuperación + Penalizaciones_SLA)*",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "CENTER",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Vector Actuarial (Open FAIR™)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Parámetro",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Fundamento Técnico y Operativo de la Estimación",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Exposición Anualizada Estimada (ALE)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Peso",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Pérdida Transaccional Directa y Penalizaciones SLA",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "V_alpha",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Impacto financiero por la inactividad del servicio en activos críticos.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "40.961 €",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "43,5%",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Gabinete de Crisis y Esfuerzo de Recuperación",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "V_beta",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Toil de ingeniería no planificado requerido para restaurar el estado y resolver causas raíz.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "32.204 €",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "34,2%",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Fricción Comercial y Erosión Reputacional",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "V_gamma",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Erosión secundaria derivada de la inestabilidad sistémica prolongada.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "20.999 €",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "22,3%",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Expectativa de Pérdida Anualizada Total (ALE)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "ALE_total",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Base paramétrica estimada aplicada a la duración proyectada (MTTR estimado) de cada escenario de riesgo del catálogo.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "94.164 €",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "100,0%",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "E2F0D9",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.24,
+        0.12,
+        0.4,
+        0.14,
+        0.1
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "**Nota sobre las Estimaciones Económicas:** Las cifras económicas y los tiempos de recuperación presentados en este capítulo son estimaciones objetivas basadas en modelos de riesgo para ayudar a priorizar inversiones técnicas. No representan pérdidas contables ya producidas, sino el impacto potencial que podría generarse si ocurren fallos operativos graves.",
+      "bold": false,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 12,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 8.5
+    },
+    {
+      "type": "paragraph",
+      "text": "*Exposición Operativa de Alta Intensidad (β=0.35): La disponibilidad continua es crítica para evitar la interrupción inmediata de las operaciones de negocio y la pérdida directa de ingresos comerciales.*",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 10,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 8.5
+    },
+    {
+      "type": "heading",
+      "text": "4.2. Matriz de Priorización de Riesgos y Mapa de Calor",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "La siguiente matriz posiciona espacialmente los escenarios de riesgo identificados según su Frecuencia Anual Estimada (TEF) y su Severidad Financiera Proyectada por Evento (SLE Estimado) antes de aplicar las inversiones de mitigación propuestas:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "TEF \\ LM",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "LM 1\n(< 13.000 €)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "LM 2\n(13.000 - 52.000 €)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "LM 3\n(52.000 - 208.000 €)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "LM 4\n(208.000 - 832.000 €)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "LM 5\n(≥ 832.000 €)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 5\n(> 10/año)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 4\n(2,0 - 10/año)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 3\n(0,5 - 2,0/año)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "RVS04",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "RVS01, RVS03, RVS06",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 2\n(0,1 - 0,5/año)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "RVS02",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 1\n(< 0,1/año)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "RVS05",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "*Leyenda de Criterios: Frecuencia de Amenazas (TEF)*",
+      "bold": true,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 8.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Nivel TEF",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Denominación",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Frecuencia Anualizada Estimada",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 1",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Muy Bajo",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "< 0,1 eventos/año (menos de una vez por década)",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 2",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Bajo",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "0,1 - 0,5 eventos/año (frecuencia plurianual baja)",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 3",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Medio",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "0,5 - 2,0 eventos/año (frecuencia anual / moderada)",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 4",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Alto",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "2,0 - 10 eventos/año (frecuencia alta / trimestral)",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF 5",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Muy Alto",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "> 10 eventos/año (frecuencia muy alta / mensual o superior)",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "*Leyenda de Criterios: Magnitud de Pérdida Financiera (LM)*",
+      "bold": true,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 2,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 8.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Nivel LM",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Clasificación de Impacto",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Límite de Pérdida Financiera (€)",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM 1",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Muy Bajo",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "< 13.000 €",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM 2",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Bajo",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "13.000 - 52.000 €",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM 3",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Medio",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "52.000 - 208.000 €",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM 4",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Alto",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "208.000 - 832.000 €",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM 5",
+              "bold": true,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Muy Alto",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "≥ 832.000 €",
+              "bold": false,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "heading",
+      "text": "4.3 Concentración y Priorización de Riesgos del Dominio",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "El inventario de riesgos técnicos identificados en el dominio de Centro de Datos Físico e Instalaciones arroja una exposición económica anualizada total estimada en 94.164 €/año. A efectos de dimensionar la concentración del riesgo en el estado actual (AS-IS), la exposición se agrupa en tres niveles de criticidad financiera sin considerar planes de implantación futuros:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Nivel de Exposición Financiera (AS-IS)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Hallazgos",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Exposición Anualizada (ALE)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Criterio de Clasificación Actuarial (AS-IS)",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Nivel 1 - Riesgos Críticos y de Alto Impacto",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FADBD8",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "3",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "85.366 €/año (91%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Climate Control & Environmental Resilience, Power & Electrical Continuity, Resiliencia de Campus y Separación Geográfica Inter-CPD.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Nivel 2 - Riesgos de Impacto Moderado",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FCF3CF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "2",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "8.263 €/año",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Supervisión de Accesos y Permisos a Contratas Externas en CPDs, Monitorización de Potencia y Capacidad Eléctrica (PDUs).",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Nivel 3 - Riesgos Residuales o Menores",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "1",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "535 €/año",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Detección de Fugas de Agua y Humedad Bajo Falso Suelo.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Subtotal Exposición Directa (Suma Fichas 4.4)**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**6**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**109.876 €/año**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Base de riesgo directo evaluada por separado",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "*Corrección por Paradas Solapadas y Dependencias IT*",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "—",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "*-15.712 €/año (-14.3%)*",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Evita duplicar horas de parada fabril en fallos simultáneos",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**EXPOSICIÓN NETA CONSOLIDADA (Tomo 1 / Cartera)**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "EAECEE",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**6**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "EAECEE",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**94.164 €/año**",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "EAECEE",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Presupuesto de riesgo neto asignado en balance",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "EAECEE",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.28,
+        0.08,
+        0.24,
+        0.4
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "heading",
+      "text": "Escenario de Fallo Grave y Tiempo Máximo de Recuperación (P90)",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Para evaluar el límite real de resistencia operativa de esta torre, se ha simulado un escenario extremo pero plausible en el que coinciden varios fallos críticos de forma simultánea (pérdida simultánea de acometidas eléctricas redundantes y degradación térmica por colapso de climatización). A diferencia de las incidencias aisladas del día a día, este supuesto analiza qué ocurre cuando fallan a la vez el sistema principal y sus mecanismos de respaldo.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.0
+    },
+    {
+      "type": "paragraph",
+      "text": "En una situación de esta magnitud, la recuperación no consiste simplemente en reiniciar los equipos, sino en reconstruir la operativa paso a paso y comprobar que ningún dato crítico se haya corrompido. Bajo las condiciones técnicas actuales, restablecer el servicio por completo y verificar la integridad de la información requeriría un tiempo estimado de hasta 9,4 horas.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.0
+    },
+    {
+      "type": "paragraph",
+      "text": "El impacto económico total de este escenario ascendería a 155.177 €. Esta cifra se divide de forma clara en dos conceptos: 122.394 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 32.783 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.0
+    },
+    {
+      "type": "heading",
+      "text": "4.4. Fichas de Riesgos Técnicos Cuantificados",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "A continuación se presenta el desglose técnico-actuarial exhaustivo para cada uno de los 6 escenarios de riesgo modelados en el alcance de evaluación. Cada ficha integra la trazabilidad causal (Bow-Tie) y la ecuación de cuantificación financiera estimada:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 12,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "heading",
+      "text": "Cartera Tier 1 - Prioridad de Modernización Crítica (Impacto Existencial en Producción)",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Subtotal Cartera: 85.366 € / año (91% de la Exposición Total)",
+      "bold": true,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS03] Climatización, Refrigeración y Control Ambiental",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (38,2%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n35.941 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n38.530 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1,17 eventos/año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nExisten desviaciones frecuentes y no hay métricas consolidadas.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: Al fallar la alimentación eléctrica o refrigeración del CPD, se apagan los servidores que gestionan el pesaje y expedición. Se forman colas de camiones en las entradas de fábrica y se detiene la emisión de albaranes y salida de material durante 8.0 horas. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 8.0 horas con un impacto por evento de 38,530 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 1.1 años, la exposición anualizada se cuantifica en 35,941 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (8,0h a 1.650 €/h): 13.200 €\n - Costes directos de reemplazo y respuesta técnica: +25.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 38.530 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,17 eventos/año\n - Exposición anualizada standalone (1,17 eventos/año × 38.530 €): 45.080 €/año\n - euler_credit_label: -9.139 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 35.941 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS01] Energía y Continuidad Eléctrica",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (26,7%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n25.152 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n38.530 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1 cada 1,2 años (0,82/año)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nLa autonomía eléctrica es desconocida o inferior a 10 minutos y no existen pruebas documentadas.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: Un corte imprevisto de suministro donde los SAIs no mantengan la sala apaga los servidores en frío. Durante las 8.0 horas de recuperación, las básculas deben operar de forma manual con albaranes en papel hasta comprobar la integridad de las bases de datos y cabinas. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 8.0 horas con un impacto por evento de 38,530 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 1.5 años, la exposición anualizada se cuantifica en 25,152 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (8,0h a 1.650 €/h): 13.200 €\n - Costes directos de reemplazo y respuesta técnica: +25.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 38.530 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,2 años (0,82/año)\n - Exposición anualizada standalone (1 cada 1,2 años (0,82/año) × 38.530 €): 31.595 €/año\n - euler_credit_label: -6.443 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 25.152 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS06] Resiliencia de Campus y Separación Geográfica Inter-CPD",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (25,8%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n24.273 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n38.590 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1 cada 1,6 años (0,63/año)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nProximidad física de 500 metros entre CPD 1 y CPD 2 con enlace único subterráneo de baja tensión y acometida municipal compartida, conformando un único dominio de resiliencia ante contingencias mayores de zona.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: La caída del enlace monofibra en canteras o plantas satélite deja sin comunicaciones a las básculas remotas, obligando a registrar pesajes en local o en papel hasta el restablecimiento del servicio por la operadora. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 8.0 horas con un impacto por evento de 38,590 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 1.6 años, la exposición anualizada se cuantifica en 24,273 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (8,0h a 1.650 €/h): 13.200 €\n - Costes directos de reemplazo y respuesta técnica: +25.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +390 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 38.590 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,6 años (0,63/año)\n - Exposición anualizada standalone (1 cada 1,6 años (0,63/año) × 38.590 €): 24.312 €/año\n - euler_credit_label: -39 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 24.273 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "heading",
+      "text": "Cartera Tier 2 - Optimización Operativa y Resiliencia (Redundancia N+1 y Telemetría)",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Subtotal Cartera: 8.263 € / año (9% de la Exposición Total)",
+      "bold": true,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS04] Supervisión de Accesos y Permisos a Contratas Externas en CPDs",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (4,6%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n4.298 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n6.070 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1 cada 1,4 años (0,71/año)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nAusencia de un procedimiento formalizado y registro digitalizado de autorizaciones para la entrada y ejecución de trabajos de personal externo y contratas de mantenimiento en las salas técnicas CPD 1 y CPD 2, operando bajo autorizaciones verbales y llaves físicas sin trazabilidad de apertura.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: Al fallar la alimentación eléctrica o refrigeración del CPD, se apagan los servidores que gestionan el pesaje y expedición. Se forman colas de camiones en las entradas de fábrica y se detiene la emisión de albaranes y salida de material durante 2.0 horas. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 2.0 horas con un impacto por evento de 6,070 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 1.4 años, la exposición anualizada se cuantifica en 4,298 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (2,0h a 1.650 €/h): 3.300 €\n - Costes directos de reemplazo y respuesta técnica: +2.500 €\n - Pérdida secundaria ponderada (SLA / contingencia): +270 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 6.070 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,4 años (0,71/año)\n - Exposición anualizada standalone (1 cada 1,4 años (0,71/año) × 6.070 €): 4.310 €/año\n - euler_credit_label: -12 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 4.298 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS02] Monitorización de Potencia y Capacidad Eléctrica (PDUs)",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (4,2%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n3.965 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n15.370 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1 cada 3,9 años (0,26/año)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nAusencia de unidades de distribución de energía (PDU) inteligentes con telemetría por toma y monitorización de carga en tiempo real en los racks de ambos CPDs (Sant Vicenç), impidiendo la gestión predictiva de capacidad eléctrica.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: Un corte imprevisto de suministro donde los SAIs no mantengan la sala apaga los servidores en frío. Durante las 4.0 horas de recuperación, las básculas deben operar de forma manual con albaranes en papel hasta comprobar la integridad de las bases de datos y cabinas. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 4.0 horas con un impacto por evento de 15,370 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 3.9 años, la exposición anualizada se cuantifica en 3,965 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +8.500 €\n - Pérdida secundaria ponderada (SLA / contingencia): +270 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 15.370 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 3,9 años (0,26/año)\n - Exposición anualizada standalone (1 cada 3,9 años (0,26/año) × 15.370 €): 3.996 €/año\n - euler_credit_label: -31 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 3.965 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "heading",
+      "text": "Cartera Tier 3 - Backlog de Mantenimiento y Gobernanza (Procedimientos y Ciclo de Vida)",
+      "level": 3,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": false
+    },
+    {
+      "type": "paragraph",
+      "text": "Subtotal Cartera: 535 € / año (1% de la Exposición Total)",
+      "bold": true,
+      "italic": true,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "[RVS05] Detección de Fugas de Agua y Humedad Bajo Falso Suelo",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "LEFT",
+              "bg_color": "1B263B",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 9,
+              "v_merge": null,
+              "width_dxa": 7020,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "EXPOSICIÓN MODERADA (0,6%)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "B45309",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 3,
+              "v_merge": null,
+              "width_dxa": 2340,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n535 € / año",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": [
+                0,
+                114,
+                188
+              ],
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**PÉRDIDA POR EVENTO (SLE)**\n9.720 €",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada**\n1 cada 18,2 años (0,055/año)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 4,
+              "v_merge": null,
+              "width_dxa": 3120,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia de lazos de cable sensor direccionable para la detección precoz de fugas de agua y condensados bajo el falso suelo perimetral a las unidades de climatización en las salas técnicas.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "E63946",
+              "border_left_size": 24
+            },
+            {
+              "text": "**Impacto en la Operación y Continuidad:**\n• Impacto en la Operación: Al fallar la alimentación eléctrica o refrigeración del CPD, se apagan los servidores que gestionan el pesaje y expedición. Se forman colas de camiones en las entradas de fábrica y se detiene la emisión de albaranes y salida de material durante 3.0 horas. • Justificación del Coste Económico: Ante una contingencia imprevista, se estima una parada técnica de unas 3.0 horas con un impacto por evento de 9,720 € (combinando horas de recuperación técnica y sobrecostes de operativa degradada en planta). Al estimarse una recurrencia estadística de aproximadamente 1 vez cada 18.2 años, la exposición anualizada se cuantifica en 535 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 6,
+              "v_merge": null,
+              "width_dxa": 4680,
+              "border_left_color": "2A9D8F",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (3,0h a 1.650 €/h): 4.950 €\n - Costes directos de reemplazo y respuesta técnica: +4.500 €\n - Pérdida secundaria ponderada (SLA / contingencia): +270 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 9.720 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 18,2 años (0,055/año)\n - Exposición anualizada standalone (1 cada 18,2 años (0,055/año) × 9.720 €): 583 €/año\n - euler_credit_label: -48 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 535 €/año.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8F9FA",
+              "text_color_rgb": null,
+              "grid_span": 12,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": "1D3557",
+              "border_left_size": 24
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": null,
+      "column_widths_dxa": [
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780,
+        780
+      ],
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "heading",
+      "text": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad",
+      "level": 1,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": true
+    },
+    {
+      "type": "heading",
+      "text": "Lista de Abreviaturas",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": true
+    },
+    {
+      "type": "paragraph",
+      "text": "A continuación, se define el glosario de términos técnicos y acrónimos utilizados en este diagnóstico técnico actual:",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 6
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Abreviatura",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Significado / Descripción Técnica",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "ALE",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Annual Loss Exposure (La expectativa de coste anualizado resultante del riesgo: TEF x LM).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "AS-IS",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Situación actual encontrada durante la fase de auditoría técnica.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "ASHRAE",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "American Society of Heating, Refrigerating and Air-Conditioning Engineers (Estándar global TC 9.9 de envolvente térmica para Data Centers).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "ATS",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Automatic Transfer Switch (Conmutador de transferencia automática entre red pública y grupo electrógeno).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "BMS",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Building Management System (Sistema centralizado de monitorización y control de instalaciones técnicas).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "CPD",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Centro de Proceso de Datos (Sede física o técnica de los servidores).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "FAIR",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Factor Analysis of Information Risk (Estándar internacional de gestión cuantitativa de riesgo).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "LM",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "NIS2",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Directiva de la Unión Europea sobre Ciberresiliencia y Seguridad de Redes y Sistemas de Información para Entidades Críticas.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "TEF",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Threat Event Frequency (Frecuencia estimada anual de ocurrencia del riesgo).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.18,
+        0.82
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 14
+    },
+    {
+      "type": "heading",
+      "text": "Cláusula de Limitación de Responsabilidad",
+      "level": 2,
+      "primary_color_rgb": [
+        0,
+        114,
+        188
+      ],
+      "is_appendix": true
+    },
+    {
+      "type": "paragraph",
+      "text": "El presente informe técnico constituye una evaluación diagnóstica elaborada con carácter estrictamente confidencial para uso interno exclusivo de la organización cliente. El análisis, conclusiones y estimaciones económicas se fundamentan de manera única en la información cualitativa, explicaciones de arquitectura y declaraciones operativas facilitadas por el personal de MOLINS durante las entrevistas y cuestionarios técnicos de autoevaluación cumplimentados. Independent Assessment Entity no ha llevado a cabo auditorías de campo, inspección de configuraciones, revisión de código fuente ni captura de telemetría de red, no asumiendo deber ni obligación de verificar la exactitud, integridad o vigencia de dichas manifestaciones, y quedando expresamente exonerada de cualquier responsabilidad derivada de omisiones, desactualizaciones o inexactitudes en la información declarada por el cliente.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Las proyecciones de impacto financiero, simulaciones estocásticas de Monte Carlo y valores de Expectativa de Pérdida Anualizada (ALE / P90 / CVaR) calculados bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk) representan modelos matemáticos de probabilidad basados en distribuciones de incertidumbre. Dichas valoraciones constituyen herramientas analíticas exclusivas para la priorización estratégica de inversiones técnicas (CAPEX/OPEX) y la justificación del coste de inacción (Business Case); en ningún caso deben interpretarse ni utilizarse como auditorías contables de balance, provisiones de pasivos contables, garantías de impacto directo o indirecto, ni compromisos de pasivos exigibles legal o judicialmente.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Cualquier referencia contenida en este informe a normativas sectoriales, esquemas de certificación o marcos legales y de cumplimiento (incluyendo, a título enunciativo, directivas NIS2, DORA, marcos ISO/IEC o regulaciones de protección de datos) se expone con un propósito estrictamente ilustrativo de ingeniería y buenas prácticas tecnológicas. Dichas menciones no constituyen, bajo ningún concepto, asesoramiento legal, jurídico, fiscal o regulatorio formal. La interpretación e implantación final de las obligaciones normativas y requerimientos legales aplicables recaen de manera estricta, directa e intransferible en los administradores, asesores legales, oficiales de cumplimiento y directivos de la organización cliente.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Queda expresamente prohibido distribuir, divulgar, reproducir, citar o facilitar el acceso a este informe, de forma total o parcial, a cualquier tercero ajeno a la organización cliente sin la autorización previa y por escrito de Independent Assessment Entity. Independent Assessment Entity no asume obligación ni responsabilidad alguna, contractual o extracontractual, frente a terceros que accedan al contenido del informe o adopten decisiones fundamentadas en el mismo, asumiendo dichos terceros el riesgo de forma exclusiva. La organización cliente se compromete a mantener indemne a Independent Assessment Entity, sus socios, consultores y empleados frente a cualquier reclamación, demanda, daño, coste o perjuicio derivado de la divulgación, uso inapropiado o cesión no autorizada de este informe a terceros.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "En la máxima medida permitida por la legislación aplicable, Independent Assessment Entity no será responsable en ningún caso, bajo ninguna teoría contractual o extracontractual, por daños indirectos, incidentales, punitivos, especiales o consecuenciales, incluyendo de manera enunciativa pero no limitativa, lucro cesante, pérdida de ingresos, paradas de planta, interrupción de negocio, pérdidas de datos o daños reputacionales derivados directa o indirectamente de la aplicación o no aplicación de las recomendaciones técnicas contenidas en este informe.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 10.5
+    },
+    {
+      "type": "spacer",
+      "points": 8
+    }
+  ]
+}
