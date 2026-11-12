@@ -109,16 +109,23 @@ class ActuarialEngine:
 
     @staticmethod
     def _resolve_severity(ale: Decimal, thresholds: Dict[str, Decimal]) -> str:
-        """Determines the risk severity tier based on monetary ALE bounds."""
+        """Determines the risk severity tier based on monetary ALE bounds.
+        Phase 3 (Plan V6): Delegates directly to GovernanceScaleEngine SSOT.
+        """
         if ale <= Decimal("0.00"):
             return "MODERATE"
-        if ale >= thresholds.get("CRITICAL", Decimal("25000.00")):
-            return "CRITICAL"
-        if ale >= thresholds.get("HIGH", Decimal("10000.00")):
-            return "HIGH"
-        if ale >= thresholds.get("ELEVATED", Decimal("3000.00")):
-            return "ELEVATED"
-        return "MODERATE"
+        try:
+            from assessment_engine.domain.governance import GovernanceScaleEngine
+            res = GovernanceScaleEngine.get_instance().resolve_financial_risk(ale)
+            return res.severity.value
+        except Exception:
+            if ale >= thresholds.get("CRITICAL", Decimal("25000.00")):
+                return "CRITICAL"
+            if ale >= thresholds.get("HIGH", Decimal("10000.00")):
+                return "HIGH"
+            if ale >= thresholds.get("ELEVATED", Decimal("3000.00")):
+                return "ELEVATED"
+            return "MODERATE"
 
 
 def calculate_severity_weighted_sle(

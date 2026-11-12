@@ -220,8 +220,10 @@ def _generate_canonical_kpi_finding(
                     )
 
                     from assessment_engine.infrastructure.localization import t
+                    from assessment_engine.domain.governance import GovernanceScaleEngine
 
-                    severity = "HIGH" if latent.annual_loss_expectancy > 150000.0 else "MEDIUM"
+                    risk_res = GovernanceScaleEngine.get_instance().resolve_financial_risk(latent.annual_loss_expectancy)
+                    severity = risk_res.severity.value
                     finding_text = t(
                         "calib_fallback_neg_template",
                         locale=doc_lang,

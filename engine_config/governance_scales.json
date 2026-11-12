@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "cmmi_maturity_scale": {
+    "quantization_decimals": 2,
+    "bands": [
+      {
+        "level": 1,
+        "code": "INITIAL",
+        "upper_bound_exclusive": 1.50,
+        "label_es": "Inicial",
+        "label_en": "Initial",
+        "ui_token": "status-critical"
+      },
+      {
+        "level": 2,
+        "code": "REPEATABLE",
+        "upper_bound_exclusive": 2.50,
+        "label_es": "Gestionado",
+        "label_en": "Managed",
+        "ui_token": "status-warning"
+      },
+      {
+        "level": 3,
+        "code": "DEFINED",
+        "upper_bound_exclusive": 3.50,
+        "label_es": "Definido",
+        "label_en": "Defined",
+        "ui_token": "status-neutral"
+      },
+      {
+        "level": 4,
+        "code": "MANAGED",
+        "upper_bound_exclusive": 4.50,
+        "label_es": "Gestionado Cuantitativamente",
+        "label_en": "Quantitatively Managed",
+        "ui_token": "status-good"
+      },
+      {
+        "level": 5,
+        "code": "OPTIMIZED",
+        "upper_bound_exclusive": 5.0001,
+        "label_es": "Optimizado",
+        "label_en": "Optimizing",
+        "ui_token": "status-excellent"
+      }
+    ]
+  },
+  "open_fair_alometric_severity": {
+    "beta_elasticity": 0.75,
+    "default_fallback_revenue_eur": 50000000.0,
+    "geometric_factor": 4.0,
+    "tiers": [
+      {
+        "lm_code": "LM1",
+        "severity": "LOW",
+        "label_es": "Muy Bajo",
+        "label_en": "Very Low",
+        "floor_eur": 3000.0,
+        "alpha": 0.0016098069,
+        "ui_token": "severity-low"
+      },
+      {
+        "lm_code": "LM2",
+        "severity": "MODERATE",
+        "label_es": "Bajo",
+        "label_en": "Low",
+        "floor_eur": 12000.0,
+        "alpha": 0.0064392275,
+        "ui_token": "severity-moderate"
+      },
+      {
+        "lm_code": "LM3",
+        "severity": "ELEVATED",
+        "label_es": "Medio",
+        "label_en": "Medium",
+        "floor_eur": 48000.0,
+        "alpha": 0.0257569101,
+        "ui_token": "severity-elevated"
+      },
+      {
+        "lm_code": "LM4",
+        "severity": "HIGH",
+        "label_es": "Alto",
+        "label_en": "High",
+        "floor_eur": 192000.0,
+        "alpha": 0.1030276405,
+        "ui_token": "severity-high"
+      },
+      {
+        "lm_code": "LM5",
+        "severity": "CRITICAL",
+        "label_es": "Muy Alto",
+        "label_en": "Very High",
+        "floor_eur": 768000.0,
+        "alpha": 0.4121105620,
+        "ui_token": "severity-critical"
+      }
+    ]
+  }
+}

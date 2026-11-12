@@ -82,12 +82,15 @@ def get_canonical_scale_intervals() -> tuple[MaturityInterval, ...]:
     """Return the immutable sequence of canonical CMMI scale intervals."""
     return _CANONICAL_INTERVALS
 
-
 def resolve_maturity_interval(score: float) -> MaturityInterval:
-    """Resolve a numerical maturity score into its authoritative MaturityInterval."""
-    clamped_score = max(1.00, min(5.00, float(score)))
+    """Resolve a numerical maturity score into its authoritative MaturityInterval.
+    Phase 3 (Plan V6): Delegates directly to GovernanceScaleEngine SSOT.
+    """
+    from assessment_engine.domain.governance import GovernanceScaleEngine
+    res = GovernanceScaleEngine.get_instance().resolve_maturity(score)
     for interval in _CANONICAL_INTERVALS:
-        if interval.min_score <= clamped_score <= interval.max_score:
+        if interval.level == res.level:
             return interval
+    return _CANONICAL_INTERVALS[0]
     # Fallback to level 5 if boundary rounding produces 5.00+
     return _CANONICAL_INTERVALS[-1]

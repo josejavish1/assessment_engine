@@ -84,6 +84,32 @@ def resolve_maturity_band(
     if not band_list:
         raise DomainValidationError("At least one maturity band is required.")
 
+    # Phase 3 (Plan V6): If resolving against ANNEX_MATURITY_BANDS, delegate directly to GovernanceScaleEngine SSOT
+    if band_list == ANNEX_MATURITY_BANDS:
+        from assessment_engine.domain.governance import GovernanceScaleEngine
+        loc = "es" if locale and str(locale).startswith("es") else "en"
+        res_mat = GovernanceScaleEngine.get_instance().resolve_maturity(score, locale=loc)
+        band_key_map = {
+            1: "band_initial",
+            2: "band_managed",
+            3: "band_defined",
+            4: "band_quantitatively_managed",
+            5: "band_optimized",
+        }
+        b_key = band_key_map.get(res_mat.level, "band_defined")
+        lbl = res_mat.label
+        if locale and translator is not None:
+            trans_lbl = translator(b_key, locale=locale, default=lbl)
+            if trans_lbl:
+                lbl = trans_lbl
+        return {
+            "level": res_mat.level,
+            "label": lbl,
+            "band_key": b_key,
+            "min": float(res_mat.level - 0.5) if res_mat.level > 1 else float("-inf"),
+            "max": float(res_mat.level + 0.5) if res_mat.level < 5 else float("inf"),
+        }
+
     normalized_score = (
         round(score, score_precision) if score_precision is not None else score
     )

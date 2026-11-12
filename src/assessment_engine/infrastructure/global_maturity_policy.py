@@ -79,9 +79,11 @@ def band_for_score(score: float, doc_lang: str | None = None) -> str:
 
 
 def status_color_for_score(score: float) -> str:
-    """Map a numerical maturity score to its corresponding status color."""
-    if score < 2.6:
+    """Map a numerical maturity score to its corresponding status color via GovernanceScaleEngine."""
+    from assessment_engine.domain.governance import GovernanceScaleEngine
+    res = GovernanceScaleEngine.get_instance().resolve_maturity(score)
+    if res.level <= 2:
         return LOW_MATURITY_COLOR
-    if score < 3.4:
+    if res.level == 3:
         return MEDIUM_MATURITY_COLOR
     return HIGH_MATURITY_COLOR
