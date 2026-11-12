@@ -1,7 +1,8 @@
 """Canonical Domain Primitives for SSOT Governance (CMMI & Open FAIR).
 
-Defines immutable Value Objects, enums, and numerical quantization sanitizers
-to eliminate Split-Brain discrepancies across compilers, calculators, and presentation layers.
+Defines immutable Value Objects, enums, and numerical quantization sanitizers.
+Strictly decoupled from specific currencies, static monetary values, or natural languages.
+Written in 100% Technical English.
 """
 
 from __future__ import annotations
@@ -38,26 +39,28 @@ class ResolvedMaturity(BaseModel):
     normalized_score: Decimal = Field(..., ge=Decimal("0.0"), le=Decimal("5.0"))
     level: int = Field(..., ge=1, le=5)
     band_code: MaturityBandCode
+    label_token: str
     label: str
     ui_semantic_token: str
 
     @property
     def display_tag(self) -> str:
-        """Formatted display tag: e.g. 'Nivel 2 (Gestionado)'."""
-        return f"Nivel {self.level} ({self.label})"
+        """Formatted display tag: e.g. 'Level 2 (Managed)'."""
+        return f"Level {self.level} ({self.label})"
 
 
 class ResolvedFinancialRisk(BaseModel):
     """Authoritative, immutable quantitative risk classification under Open FAIR."""
     model_config = {"frozen": True}
 
-    ale_eur: Decimal = Field(..., ge=Decimal("0.0"))
-    reference_revenue_eur: Decimal = Field(..., ge=Decimal("0.0"))
+    ale_amount: Decimal = Field(..., ge=Decimal("0.0"))
+    hourly_burn_rate: Decimal = Field(..., ge=Decimal("0.0"))
     severity: FinancialSeverityCode
     open_fair_lm: str = Field(..., pattern=r"^LM[1-5]$")
+    label_token: str
     label: str
     ui_semantic_token: str
-    threshold_applied_eur: Decimal
+    threshold_applied: Decimal
     model_provenance: str = Field(..., description="SR 11-7 model calibration signature")
 
 
