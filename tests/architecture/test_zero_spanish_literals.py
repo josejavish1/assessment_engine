@@ -105,6 +105,7 @@ def _collect_src_python_files() -> List[Path]:
         "reverse_traceability.py",
         "evidence_governance.py",
         "docx_render_utils.py",
+        "plain_language_narrative.py",
         "apex_sentinel.py",
         "auditor",
         "evolution",

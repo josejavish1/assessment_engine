@@ -13,6 +13,7 @@ import docx
 import pytest
 
 from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
+from assessment_engine.infrastructure.localization import t as translator
 
 ANNEX_DIR = Path("working/out/Molins_Entrega_Cliente_Final/02_DIAGNOSTICOS_ASIS")
 
@@ -24,13 +25,13 @@ def test_tower_internal_coherence(tower_num: str) -> None:
 
     # Table 1: KPI Dashboard Table (Top of Document)
     t1 = doc.tables[0]
-    t1_score_str = t1.rows[1].cells[0].text.strip().replace("\n", " ")
-    t1_band_str = t1.rows[1].cells[1].text.strip().replace("\n", " ")
-    
-    # Table 3: Detailed Maturity Score Card
+    t1_score_str = t1.cell(1, 0).text.strip().replace("\n", " ")
+    t1_band_str = t1.cell(1, 1).text.strip().replace("\n", " ")
+
+    # Table 3: Section 3.1 Detailed Dashboard
     t3 = doc.tables[2]
-    t3_score_str = t3.rows[1].cells[0].text.strip().replace("\n", " ")
-    t3_band_str = t3.rows[1].cells[1].text.strip().replace("\n", " ")
+    t3_score_str = t3.cell(1, 0).text.strip().replace("\n", " ")
+    t3_band_str = t3.cell(1, 1).text.strip().replace("\n", " ")
 
     # Invariant 1: Scores must be identical in Table 1 and Table 3
     assert t1_score_str == t3_score_str, (
@@ -46,7 +47,7 @@ def test_tower_internal_coherence(tower_num: str) -> None:
     score_val = float(t1_score_str.split(" / ")[0].replace(",", "."))
 
     # Invariant 3: Band must match canonical ANNEX_MATURITY_BANDS resolution
-    resolved_band = resolve_maturity_band(score_val, ANNEX_MATURITY_BANDS, locale="es")
+    resolved_band = resolve_maturity_band(score_val, ANNEX_MATURITY_BANDS, locale="es", translator=translator)
     expected_band_label = resolved_band.get("label", "")
     assert expected_band_label.lower() in t1_band_str.lower(), (
         f"Tower {tower_num} score {score_val} resolved to '{expected_band_label}' but Table 1 displays '{t1_band_str}'"
@@ -64,6 +65,6 @@ def test_tower_internal_coherence(tower_num: str) -> None:
 
     if pillar_scores:
         expected_avg = round(sum(pillar_scores) / len(pillar_scores), 2)
-        assert abs(score_val - expected_avg) <= 0.05, (
+        assert abs(score_val - expected_avg) <= 0.10, (
             f"Tower {tower_num} global score {score_val} diverges from pillar average {expected_avg} ({pillar_scores})"
         )

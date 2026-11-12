@@ -614,7 +614,7 @@ def derive_in_memory_fair_risks(
 
             # If finding is survey boilerplate, infer concrete technical failure from universal question rubrics
             if physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE:
-                from assessment_engine.domain.actuarial.question_risk_inferrer import (
+                from assessment_engine.application.services.question_risk_inferrer import (
                     QuestionRiskInferrer,
                 )
 
@@ -875,6 +875,11 @@ def derive_in_memory_fair_risks(
             else:
                 standalone_ale = int(round(calc_lef * calc_sle))
 
+            if standalone_ale == 0 and (eff_hc.get("fair_ale_score") or eff_hc.get("fair_ale") or eff_hc.get("ale")):
+                standalone_ale = int(round(float(eff_hc.get("fair_ale_score") or eff_hc.get("fair_ale") or eff_hc.get("ale") or 0)))
+                if calc_sle == 0 and calc_lef > 0:
+                    calc_sle = round(standalone_ale / calc_lef, 2)
+
             is_deterministic = (
                 physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE
                 or (fleet_volume > 1 and physics_profile.loss_physics == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION)
@@ -923,7 +928,11 @@ def derive_in_memory_fair_risks(
                     )
 
             intrinsic_ale = float(net_ale_int)
-            intrinsic_p90 = float(round(net_ale_int * 1.55))
+            intrinsic_p90 = float(
+                eff_hc.get("fair_p90_score")
+                or eff_hc.get("fair_p90")
+                or round(net_ale_int * 1.55)
+            )
 
             calibrated_ale = 0.0 if is_tangential else intrinsic_ale
             calibrated_p90 = 0.0 if is_tangential else intrinsic_p90

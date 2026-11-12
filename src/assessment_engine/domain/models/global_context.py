@@ -240,6 +240,7 @@ class GlobalAssessmentContext(BaseModel):
                 "CHF": 0.88,
                 "BRL": 5.00,
                 "JPY": 150.0,
+                "MXN": 18.0,
             }
             for s_c, s_r in rates_to_usd.items():
                 for t_c, t_r in rates_to_usd.items():

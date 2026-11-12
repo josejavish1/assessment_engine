@@ -460,7 +460,7 @@ _DANGLING_DISCOURSE_OPENER_RE: Final[re.Pattern[str]] = re.compile(
 )
 
 
-def _sanitize_dangling_discourse_openers(text: str, locale: str = "es") -> str:
+def _sanitize_dangling_discourse_openers(text: str, locale: str) -> str:
     """Repair mid-thought discourse openers that reference unintroduced acronyms (e.g., RODC)."""
     if not text:
         return text
@@ -475,7 +475,7 @@ def _sanitize_dangling_discourse_openers(text: str, locale: str = "es") -> str:
     return text
 
 
-def _synchronize_inline_recalibrated_scores(text: str, locale: str = "es") -> str:
+def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
     """Reconcile inline narrative score recalibrations and CMMI level threshold contradictions."""
     if not text:
         return text
@@ -521,7 +521,7 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str = "es") -> st
     return text
 
 
-def _resolve_cmmi_maturity_label(score: float, locale: str = "es") -> str:
+def _resolve_cmmi_maturity_label(score: float, locale: str) -> str:
     """Resolve deterministic CMMI maturity level label strictly aligned with rubric boundaries:
     1.00 - 1.59: Level 1 (Initial)
     1.60 - 2.59: Level 2 (Managed / Repeatable)
@@ -542,7 +542,7 @@ def _resolve_cmmi_maturity_label(score: float, locale: str = "es") -> str:
     return "Nivel 5 - Optimizado" if is_es else "Level 5 - Optimizing"
 
 
-def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str = "es") -> str:
+def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
     """Detect inline score-to-CMMI-level mismatches in prose (e.g. '1.78 (Nivel 1 - Initial)') and correct them."""
     if not text:
         return text
@@ -588,7 +588,7 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str = "es") -> st
     return text
 
 
-def _reconcile_internal_narrative_contradictions(text: str, locale: str = "es") -> str:
+def _reconcile_internal_narrative_contradictions(text: str, locale: str) -> str:
     """Sanitize contradictory boilerplate praise, colloquial interview quotes, and template mashups from prose."""
     if not text:
         return text
@@ -685,7 +685,7 @@ _EXPLICIT_CALIBRATED_DOWNGRADE_RE: Final[re.Pattern[str]] = re.compile(
 )
 
 
-def _reconcile_replication_topology_prose(text: str, locale: str = "es") -> str:
+def _reconcile_replication_topology_prose(text: str, locale: str) -> str:
     """Reconcile contradictory synchronous vs. asynchronous replication statements in prose.
 
     Prevents boilerplate templates from asserting 'ordinary synchronous replication'
@@ -867,7 +867,6 @@ def _repair_broken_template_grammar(text: str, locale: str, fallback_label: str 
     fb = fallback_label or t(
         "domain_control_standard_fallback",
         locale=locale,
-        default="la gobernanza operativa del dominio",
     )
 
     cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fb, text)
@@ -1009,7 +1008,7 @@ def _sanitize_localized_kpi_leaks(
         if substituted != candidate_kpi and not _ENGLISH_KPI_MARKER_RE.search(substituted):
             return f"{prefix}{substituted}"
 
-        default_domain_lbl = t("default_capability_domain_label", locale=locale, default="la arquitectura operativa del dominio")
+        default_domain_lbl = t("default_capability_domain_label", locale=locale)
         return f"{prefix}{default_domain_lbl}"
 
     sanitized = _LOCALIZED_KPI_CLAUSE_RE.sub(_replace_clause, text)
@@ -1571,7 +1570,16 @@ class PayloadToASTBridge:
         )
         exact_score = safe_float(authoritative_raw, locale=meta_lang, allow_zero=True)
         if exact_score is None:
-            exact_score = 2.5
+            from assessment_engine.application.services.tower_payload_hydrator import (
+                TowerPayloadHydrator,
+            )
+
+            try:
+                exact_score = TowerPayloadHydrator.compute_canonical_score(
+                    blueprint_data, doc_lang=meta_lang
+                )
+            except Exception:
+                exact_score = 2.5
 
         blueprint_data["score"] = exact_score
         blueprint_data["overall_score"] = exact_score
@@ -1608,7 +1616,7 @@ class PayloadToASTBridge:
         }
         band_key = band_info.get("band_key", "band_defined")
         raw_label = band_info.get("label", "Definido")
-        localized_band_label = _cmmi_es_map.get(raw_label, _cmmi_es_map.get(band_key, raw_label)) if meta_lang.startswith("es") else raw_label
+        localized_band_label = t(band_key, locale=meta_lang)
         level_prefix = t("level_prefix", locale=meta_lang)
         band_key_level_map = {
             "band_initial": 1,
@@ -2992,8 +3000,9 @@ class PayloadToASTBridge:
                 cal_fmt = format_number(cal_val, locale=meta_lang, decimals=2)
                 raw_dec_band = r_item.get("declared_band_label") or ""
                 raw_cal_band = r_item.get("band_label") or ""
-                dec_band = _cmmi_es_map.get(raw_dec_band, raw_dec_band) if meta_lang.startswith("es") else raw_dec_band
-                cal_band = _cmmi_es_map.get(raw_cal_band, raw_cal_band) if meta_lang.startswith("es") else raw_cal_band
+                is_spanish = str(meta_lang).startswith("es")
+                dec_band = _cmmi_es_map.get(raw_dec_band, raw_dec_band) if is_spanish else raw_dec_band
+                cal_band = _cmmi_es_map.get(raw_cal_band, raw_cal_band) if is_spanish else raw_cal_band
 
                 dec_display = f"{dec_fmt} ({dec_band})" if dec_band else dec_fmt
                 cal_display = f"{cal_fmt} ({cal_band})" if cal_band else cal_fmt
@@ -3558,7 +3567,7 @@ class PayloadToASTBridge:
         ]
         ledger_a_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_a_risks)
         ledger_b_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_b_risks)
-        is_es_mat = (meta_lang == "es")
+        is_es_mat = str(meta_lang).startswith("es")
 
         dual_ledger_rows = [
             TableRowNode(
@@ -3946,7 +3955,7 @@ class PayloadToASTBridge:
             display_title = str(hc.get("title") or r_cap or p_name)
             finding_text = str(hc.get("finding") or "")
             risk_text = str(hc.get("business_risk") or "")
-            is_es = (meta_lang == "es")
+            is_es = str(meta_lang).startswith("es")
             status_badge = (
                 "CONTROL DE GOBERNANZA (CUESTIONARIO)"
                 if is_es
@@ -4291,7 +4300,7 @@ class PayloadToASTBridge:
         elif is_deterministic:
             header_bg = "1B263B"
             header_text = [255, 255, 255]
-            sev_badge_text = "OPTIMIZACIÓN FINOPS" if meta_lang == "es" else "FINOPS OPTIMIZATION"
+            sev_badge_text = t("finops_optimization_badge", locale=meta_lang)
             sev_badge_bg = "0D9488"
         else:
             header_bg = "1B263B"
@@ -4319,13 +4328,13 @@ class PayloadToASTBridge:
             ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=3)
             rec_years = round(1.0 / calibrated_lef, 1)
             years_str = format_number(rec_years, locale=meta_lang, decimals=1)
-            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang, default='año')})"
+            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang)})"
             displayed_mult_freq = float(f"{calibrated_lef:.3f}")
         elif calibrated_lef < 1.0:
             ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=2)
             rec_years = round(1.0 / calibrated_lef, 1)
             years_str = format_number(rec_years, locale=meta_lang, decimals=1)
-            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang, default='año')})"
+            freq_display = f"{t('kpi_frequency_value_years', locale=meta_lang, years=years_str)} ({ev_str}/{t('year_lbl', locale=meta_lang)})"
             displayed_mult_freq = float(f"{calibrated_lef:.2f}")
         else:
             ev_str = format_number(calibrated_lef, locale=meta_lang, decimals=2)
@@ -4349,14 +4358,14 @@ class PayloadToASTBridge:
                 )
             ]
         elif is_deterministic or (reconciled_sle <= 0) or ("desmantelamiento" in vuln_txt.lower()) or ("zombie" in vuln_txt.lower()) or ("nos" in vuln_txt.lower() and "contrato" in vuln_txt.lower()):
-            cost_lbl = "COSTE ANUAL ESTIMADO" if meta_lang == "es" else "ESTIMATED ANNUAL COST"
-            type_lbl = "TIPO DE EXPOSICIÓN" if meta_lang == "es" else "EXPOSURE TYPE"
-            waste_lbl = "Desperdicio de Recursos TI" if meta_lang == "es" else "IT Resource Waste"
-            plant_lbl = "IMPACTO EN FÁBRICA" if meta_lang == "es" else "PLANT IMPACT"
-            no_outage_lbl = "Sin parada de planta" if meta_lang == "es" else "Zero Plant Outage"
+            cost_lbl = t("estimated_annual_cost_label", locale=meta_lang)
+            type_lbl = t("exposure_type_label", locale=meta_lang)
+            waste_lbl = t("it_resource_waste_label", locale=meta_lang)
+            plant_lbl = t("plant_impact_label", locale=meta_lang)
+            no_outage_lbl = t("zero_plant_outage_label", locale=meta_lang)
             kpi_row_cells = [
                 CellNode(
-                    text=f"**{cost_lbl}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang, default='año')}",
+                    text=f"**{cost_lbl}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
                     font_size=8.5,
                     bg_color="F8FAFC",
                     text_color_rgb=self.primary_color_rgb,
@@ -4545,21 +4554,21 @@ class PayloadToASTBridge:
         # Honest algebraic Euler delta (SR 11-7 compliant)
         euler_delta = round(canonical_ale - standalone_base_ale)
         if is_deterministic:
-            euler_line = f"{t('euler_invariant_opex_label', locale=meta_lang, default='Ajuste de cartera (OpEx Determinista sin diversificación)')}: 0 {currency}/{t('year_lbl', locale=meta_lang, default='año')}"
+            euler_line = f"{t('euler_invariant_opex_label', locale=meta_lang)}: 0 {currency}/{t('year_lbl', locale=meta_lang)}"
         elif euler_delta < 0:
             credit_num = abs(euler_delta)
             credit_str = format_currency(
                 credit_num, currency_symbol=currency, locale=meta_lang, decimals=0
             )
-            euler_line = f"{t('euler_credit_label', locale=meta_lang, default='Crédito de diversificación de cartera (Euler)')}: -{credit_str}/{t('year_lbl', locale=meta_lang, default='año')}"
+            euler_line = f"{t('euler_credit_label', locale=meta_lang)}: -{credit_str}/{t('year_lbl', locale=meta_lang)}"
         elif euler_delta > 0:
             surcharge_num = euler_delta
             surcharge_str = format_currency(
                 surcharge_num, currency_symbol=currency, locale=meta_lang, decimals=0
             )
-            euler_line = f"{t('euler_contagion_label', locale=meta_lang, default='Recargo por contagio e interdependencia sistémica')}: +{surcharge_str}/{t('year_lbl', locale=meta_lang, default='año')}"
+            euler_line = f"{t('euler_contagion_label', locale=meta_lang)}: +{surcharge_str}/{t('year_lbl', locale=meta_lang)}"
         else:
-            euler_line = f"{t('euler_neutral_label', locale=meta_lang, default='Ajuste de acoplamiento de cartera')}: 0 {currency}/{t('year_lbl', locale=meta_lang, default='año')}"
+            euler_line = f"{t('euler_neutral_label', locale=meta_lang)}: 0 {currency}/{t('year_lbl', locale=meta_lang)}"
 
         st_ale_str = format_currency(
             standalone_base_ale, currency_symbol=currency, locale=meta_lang, decimals=0
@@ -4590,7 +4599,6 @@ class PayloadToASTBridge:
             fallback_clause = fallback_pillar_ref or t(
                 "domain_control_standard_fallback",
                 locale=meta_lang,
-                default="la gobernanza operativa del dominio",
             )
             vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, vuln_txt)
             impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, impact_txt)
@@ -4602,7 +4610,7 @@ class PayloadToASTBridge:
         )
         if not str(meta_lang).lower().startswith("en") and act_just:
             act_just = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
-                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="la gobernanza operativa del dominio"),
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
                 act_just,
             )
         if act_just:
@@ -4640,7 +4648,6 @@ class PayloadToASTBridge:
             fallback_card_pillar = fallback_pillar_ref or t(
                 "domain_control_standard_fallback",
                 locale=meta_lang,
-                default="la gobernanza operativa del dominio",
             )
             vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, vuln_txt)
             impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, impact_txt)
@@ -4692,7 +4699,6 @@ class PayloadToASTBridge:
         fallback_prose_label = fallback_pillar_ref or t(
             "domain_control_standard_fallback",
             locale=meta_lang,
-            default="Gobernanza Operativa",
         )
         for _prose_val in (vuln_txt, impact_txt):
             pass
@@ -4734,7 +4740,7 @@ class PayloadToASTBridge:
             display_title += ")"
         display_title = _dedup_clauses(display_title)
         display_title = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
-            fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
+            fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
             display_title,
         )
         display_title = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), display_title)
@@ -4743,13 +4749,13 @@ class PayloadToASTBridge:
         )
         if not str(meta_lang).lower().startswith("en"):
             display_title = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
-                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
                 display_title,
             )
             display_title = _repair_broken_template_grammar(
                 display_title,
                 meta_lang,
-                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang, default="Gobernanza Operativa"),
+                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
             )
 
         card_table = TableNode(
@@ -4808,6 +4814,21 @@ class PayloadToASTBridge:
                     ],
                     cant_split=True,
                 ),
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=actuarial_box_text,
+                            font_size=8.0,
+                            bg_color="F8F9FA",
+                            grid_span=12,
+                            width_dxa=9360,
+                            border_left_color="1D3557",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
             ],
             column_widths_dxa=[780] * 12,
             keep_together=True,
@@ -4840,7 +4861,7 @@ class PayloadToASTBridge:
             # Sanitization: Replace non-standard vocabulary, camelCase artifacts, and any leaked English KPI tokens
             if isinstance(cleaned, str):
                 doc_locale = getattr(self, "meta_lang", "en")
-                fallback_label = t("domain_control_standard_fallback", locale=doc_locale, default="estándares operativos del dominio")
+                fallback_label = t("domain_control_standard_fallback", locale=doc_locale)
                 cleaned = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_label, cleaned)
                 cleaned = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), cleaned)
                 cleaned = _sanitize_localized_kpi_leaks(cleaned, doc_locale)
@@ -5007,7 +5028,6 @@ class PayloadToASTBridge:
                         fallback_label = row_pillar_label or t(
                             "domain_control_standard_fallback",
                             locale=meta_l,
-                            default="la gobernanza operativa del dominio",
                         )
                         val_str = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(
                             fallback_label, val_str

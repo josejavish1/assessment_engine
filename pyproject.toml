@@ -21,7 +21,7 @@ dependencies = [
     "jinja2",
     "lxml",
     "matplotlib",
-    "mcp",
+    "mcp<2",
     "networkx",
     "numpy",
     "openpyxl",

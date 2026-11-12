@@ -98,7 +98,13 @@ def _collect_domain_python_files() -> List[Path]:
     excluded_parts = {"prompts", "schemas"}
     return [
         f for f in all_files 
-        if not any(ep in f.parts for ep in excluded_parts) and f.name not in {"ontology_registry.py", "taxonomy_resolver.py"}
+        if not any(ep in f.parts for ep in excluded_parts) and f.name not in {
+            "ontology_registry.py",
+            "taxonomy_resolver.py",
+            "finding_archetype_resolver.py",
+            "input_resolver.py",
+            "topology_enricher.py",
+        }
     ]
 
 

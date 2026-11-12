@@ -34,6 +34,8 @@ class SemanticGatekeeper:
         (r"\b(es esencial|resulta imprescindible|es fundamental|se recomienda encarecidamente)\b", "Contains prescriptive consulting boilerplate ('es esencial / se recomienda'). Describe only As-Is reality."),
         (r"\b(mejores prácticas|best practices|estándares de la industria dictan)\b", "Contains generic 'best practices' filler."),
         (r"\b(score\s+\d|nivel de madurez\s+\d|cuestionario de evaluación|resultado de la encuesta)\b", "Leaks assessment survey metadata or numerical maturity scores."),
+        (r"(considerando su escala operativa global|considerando su facturación de|abarcando una facturación de)", "Contains repetitive formulaic firmographic parrot. Conclude organically within the technical domain."),
+        (r"\b(inmadurez severa|incompetencia|negligencia|falta de rigor de los equipos|incapacidad de los equipos)\b", "Contains accusatory/punitive tone blaming client personnel. Frame technical debt constructively as natural architectural evolution."),
         (r"^(#|\*|-|\d+\.)", "Contains Markdown headers, bullet points, or numbered lists. Must be continuous prose.")
     ]
 

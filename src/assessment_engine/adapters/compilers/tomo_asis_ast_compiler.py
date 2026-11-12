@@ -61,6 +61,7 @@ DEFAULT_OPERATING_HOURS_PER_YEAR: Final[float] = 8760.0
 DEFAULT_FACILITY_REVENUE_SHARE: Final[float] = 0.35
 DEFAULT_BASELINE_RISK_FACTOR: Final[float] = 0.001
 DEFAULT_TAIL_RISK_MULTIPLIER: Final[float] = 2.50
+DEFAULT_CORPORATE_ALE: Final[float] = 0.0
 STRATEGIC_HORIZON_YEARS: Final[float] = 3.0
 TAIL_STRESS_HORIZON_FACTOR: Final[float] = 1.5
 DOMAIN_HIGH_EXPOSURE_SHARE_RATIO: Final[float] = 0.15
@@ -1546,7 +1547,7 @@ class Volume1AsisASTCompiler:
             TableRowNode(
                 cells=[
                     CellNode(text=adj_lbl, bold=True, font_size=8.0, bg_color="F9FAFC"),
-                    CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
+                    CellNode(text=format_number(global_score, locale=doc_lang, decimals=2), font_size=8.0, align="CENTER", bg_color="F9FAFC"),
                     CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
                     CellNode(text=f"{copula_adj_str} {badge_overlap}", bold=True, font_size=8.0, align="RIGHT", bg_color="F9FAFC"),
                     CellNode(text=symbol_na, font_size=8.0, align="CENTER", bg_color="F9FAFC"),
@@ -1634,7 +1635,7 @@ class Volume1AsisASTCompiler:
         t2_str = format_currency(t2_val, currency_symbol=currency, locale=doc_lang, decimals=0)
         t3_str = format_currency(t3_val, currency_symbol=currency, locale=doc_lang, decimals=0)
 
-        tier_pct_pairs = [("tier1", Decimal(str(t1_val))), ("tier2", Decimal(str(t2_val))), ("tier3", Decimal(str(t3_val)))]
+        tier_pct_pairs = [("tier1", Decimal(str(t1_val))), ("tier2", Decimal(str(t2_val))), ("tier3", Decimal(str(t3_val)))] if (t1_val + t2_val + t3_val) > 0 else tier_ale_pairs
         reconciled_tier_pcts = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=100,
             domain_raw_exposures=tier_pct_pairs,

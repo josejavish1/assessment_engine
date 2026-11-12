@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import uuid
 import zipfile
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -271,7 +272,9 @@ class DeterministicTocPageResolver:
 
     @staticmethod
     def _repack_docx(extract_dir: Path, target_docx: Path) -> None:
-        temp_docx = target_docx.with_suffix(".tmp.docx")
+        temp_docx = target_docx.with_name(
+            f"{target_docx.stem}.tmp_{os.getpid()}_{uuid.uuid4().hex[:8]}.docx"
+        )
         try:
             with zipfile.ZipFile(temp_docx, "w", zipfile.ZIP_DEFLATED) as zf:
                 for root_dir, _, files in os.walk(extract_dir):
@@ -281,4 +284,9 @@ class DeterministicTocPageResolver:
                         zf.write(full_path, rel_path.as_posix())
             temp_docx.replace(target_docx)
         except OSError as exc:
+            if temp_docx.exists():
+                try:
+                    temp_docx.unlink()
+                except OSError:
+                    pass
             raise TocSynchronizationError(f"Failed to repack DOCX archive: {exc}") from exc

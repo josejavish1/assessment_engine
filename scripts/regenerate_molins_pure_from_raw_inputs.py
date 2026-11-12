@@ -177,6 +177,24 @@ def main() -> None:
                         p["score"] = round(float(pillar_map[pid]), 2)
                         p["exact_score"] = round(float(pillar_map[pid]), 2)
 
+        # Enforce mathematical dot-product consistency between pillars and tower score (zero split-brain)
+        weighted_sum = Decimal("0.0")
+        total_w = Decimal("0.0")
+        for pi in bp.get("pillars_analysis", []):
+            s_val = Decimal(str(pi.get("score") or 0.0))
+            w_val = Decimal(str(pi.get("weight") if pi.get("weight") is not None else (pi.get("weight_pct") or 0.0)))
+            weighted_sum += s_val * w_val
+            total_w += w_val
+        if total_w > Decimal("10.0"):
+            overall_cmmi = float((weighted_sum / total_w).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+        else:
+            overall_cmmi = float(weighted_sum.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+        bp["score"] = overall_cmmi
+        bp["overall_score"] = overall_cmmi
+        bp["exact_score"] = overall_cmmi
+        bp["maturity_score"] = overall_cmmi
+
         # Determine loss archetype for this tower
         # T6: Regulatory & Breach | T8: Capital Inefficiency | T7, T9: Productivity Toil | T1..T5, T10: Availability Outage
         if code == "T6":

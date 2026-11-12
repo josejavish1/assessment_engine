@@ -152,13 +152,13 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
         header_text_color = [255, 255, 255]
 
         # Localized Column Headers with Universal Defaults
-        col_vector = t("ch4_lineage_col_vector", locale=ctx.meta_lang, default="Loss Vector")
-        col_code = t("ch4_lineage_col_code", locale=ctx.meta_lang, default="Component")
-        col_desc = t("ch4_lineage_col_desc", locale=ctx.meta_lang, default="Description")
-        col_rate = t("ch4_lineage_col_rate", locale=ctx.meta_lang, default="Annual Exposure")
-        col_share = t("ch4_lineage_col_share", locale=ctx.meta_lang, default="% Share")
-        row_tot_name = t("ch4_lineage_row_total_ale", locale=ctx.meta_lang, default="Total Annualized Loss Expectancy (ALE)")
-        row_tot_desc = t("ch4_lineage_row_total_desc", locale=ctx.meta_lang, default="Expected annualized financial exposure.")
+        col_vector = t("ch4_lineage_col_vector", locale=ctx.meta_lang)
+        col_code = t("ch4_lineage_col_code", locale=ctx.meta_lang)
+        col_desc = t("ch4_lineage_col_desc", locale=ctx.meta_lang)
+        col_rate = t("ch4_lineage_col_rate", locale=ctx.meta_lang)
+        col_share = t("ch4_lineage_col_share", locale=ctx.meta_lang)
+        row_tot_name = t("ch4_lineage_row_total_ale", locale=ctx.meta_lang)
+        row_tot_desc = t("ch4_lineage_row_total_desc", locale=ctx.meta_lang)
 
         lineage_rows = [
             TableRowNode(

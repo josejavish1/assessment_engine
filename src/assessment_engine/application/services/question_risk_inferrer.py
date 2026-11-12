@@ -80,7 +80,7 @@ class QuestionRiskInferrer:
                 failure_desc = matched_q.get("level_2_vulnerability") or matched_q.get("level_1_failure_mode")
             q_context = matched_q.get("question_text") or ""
         else:
-            failure_desc = f"Inexistencia de controles técnicos y monitorización en {kpi_name}."
+            failure_desc = f"Absence of technical controls and automated monitoring in {kpi_name}."
             q_context = ""
 
         # Compute Bayesian latent actuarial metrics

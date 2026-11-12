@@ -299,8 +299,8 @@ class PolymorphicFindingClassifier:
     _REGULATORY_BREACH_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
         re.compile(
             r"\b(data\s+breach|data\s+exfiltration|unauthorized\s+disclosure|"
-            r"pii|phi|unencrypted\s+(pii|phi|data)|fuga\s+de\s+datos|exfiltraci[oó]n|"
-            r"regulatory\s+fine|statutory\s+penalty|sanci[oó]n\s+regulatoria|"
+            r"pii|phi|unencrypted\s+(pii|phi|data)|fuga\s+de\s+datos|exfiltraci[o\xf3]n|"
+            r"regulatory\s+fine|statutory\s+penalty|sanci[o\xf3]n\s+regulatoria|"
             r"multa\s+de\s+privacidad|privacidad\s+de\s+datos)\b",
             re.I,
         ),

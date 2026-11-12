@@ -1,3 +1,17 @@
+---
+status: Verified
+owner: docs-governance
+source_of_truth:
+- ../../docs/SYSTEM_ARCHITECTURE.md
+- ../../src/assessment_engine/domain/
+last_verified_against: 2026-06-26
+applies_to:
+- humans
+- ai-agents
+doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
+---
 # Master Remediation Plan: Universal Epistemic & Institutional Risk Engine (SR 11-7 / Open FAIR / IFRS)
 
 ## Executive Summary

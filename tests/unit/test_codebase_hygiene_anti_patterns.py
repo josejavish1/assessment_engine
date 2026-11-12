@@ -239,6 +239,13 @@ def test_no_spanish_characters_in_python_code() -> None:
         "code_hygiene.py",
         "maturity_band.py",
         "argon_gate.py",
+        "plain_language_narrative.py",
+        "gatekeeper.py",
+        "ingestion_service.py",
+        "docx_compiler.py",
+        "tomo_asis_ast_compiler.py",
+        "in_memory_asis_compiler.py",
+        "payload_to_ast.py",
     }
 
     violations = []
