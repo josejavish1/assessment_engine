@@ -80,3 +80,28 @@ def test_cross_domain_contamination_rejected(gatekeeper: SemanticGatekeeper) -> 
     )
     with pytest.raises(SemanticQualityError, match="Cross-Domain Contamination in Tower T1"):
         gatekeeper.validate(contaminated_text, tower_id="T1", allowed_evidence_text="rack SAI generador", evidence_count=3)
+
+
+def test_empty_custom_contamination_matrix_disables_contamination_check() -> None:
+    """Verify that passing custom_contamination_matrix={} does not revert to defaults."""
+    lenient_gatekeeper = SemanticGatekeeper(custom_contamination_matrix={})
+    assert lenient_gatekeeper.contamination_matrix == {}
+
+    text_with_out_of_domain = (
+        ("Palabra " * 120)
+        + "Se constata la presencia de impresoras y laptops en la sala de servidores. "
+        + ("Palabra " * 120)
+    )
+    # Should not raise Cross-Domain Contamination error because matrix is empty
+    count = lenient_gatekeeper.validate(text_with_out_of_domain, tower_id="T1", allowed_evidence_text="", evidence_count=3)
+    assert count >= 220
+
+
+def test_english_consulting_boilerplate_rejected(gatekeeper: SemanticGatekeeper) -> None:
+    english_boilerplate_text = (
+        ("Word " * 120)
+        + "It is essential to implement modern best practices across all datacenter environments. "
+        + ("Word " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="prescriptive consulting boilerplate"):
+        gatekeeper.validate(english_boilerplate_text, tower_id="T1", allowed_evidence_text="", evidence_count=3)

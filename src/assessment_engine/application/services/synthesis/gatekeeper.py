@@ -15,33 +15,37 @@ class SemanticGatekeeper:
 
     # Forbidden cross-domain terms per Tower ID (Case-insensitive boundary matching)
     DEFAULT_CONTAMINATION_MATRIX: Dict[str, List[str]] = {
-        "T1": ["endpoint", "impresora", "vdi", "citrix", "laptop", "mesa de ayuda", "helpdesk", "drp", "disaster recovery", "hormigonera", "prefabricados", "camiones", "báscula"],
-        "T2": ["servidor físico", "rack", "chasis", "fibra oscura", "bgp", "ospf", "mainframe", "drp", "disaster recovery", "plan de recuperación ante desastres", "plan de continuidad"],
-        "T3": ["laptop", "impresora", "BYOD", "móvil", "licenciamiento office", "sharepoint"],
-        "T4": ["cableado estructurado", "planta externa", "ups", "generador", "aire acondicionado"],
-        "T5": ["bgp", "mpls", "sd-wan", "switch core", "almacenamiento san", "lun"],
-        "T6": ["routing", "switching", "spanning-tree", "vlan trunk", "frecuencia de radio"],
-        "T7": ["cinta lto", "hidratación de datos", "sql injection", "xss", "desarrollo ágil"],
-        "T8": ["cooler", "pdu", "fibra óptica", "transceiver", "patch panel"],
+        "T1": ["endpoint", "impresora", "printer", "vdi", "citrix", "laptop", "mesa de ayuda", "helpdesk", "service desk", "drp", "disaster recovery"],
+        "T2": ["servidor físico", "physical server", "rack", "chasis", "fibra oscura", "dark fiber", "bgp", "ospf", "mainframe", "drp", "disaster recovery", "plan de recuperación ante desastres", "plan de continuidad", "business continuity plan"],
+        "T3": ["laptop", "impresora", "printer", "BYOD", "móvil", "mobile", "licenciamiento office", "office licensing", "sharepoint"],
+        "T4": ["cableado estructurado", "structured cabling", "planta externa", "outside plant", "ups", "generador", "generator", "aire acondicionado", "hvac"],
+        "T5": ["bgp", "mpls", "sd-wan", "switch core", "core switch", "almacenamiento san", "san storage", "lun"],
+        "T6": ["routing", "switching", "spanning-tree", "vlan trunk", "frecuencia de radio", "radio frequency"],
+        "T7": ["cinta lto", "lto tape", "hidratación de datos", "sql injection", "xss", "desarrollo ágil", "agile development"],
+        "T8": ["cooler", "pdu", "fibra óptica", "optical fiber", "transceiver", "patch panel"],
         "T9": [
-            "servidor físico", "san", "nas", "netapp", "bgp", "ospf", "mpls",
-            "data center", "racks", "mainframe", "fibra oscura", "core switch", "lun", "raid"
+            "servidor físico", "physical server", "san", "nas", "netapp", "bgp", "ospf", "mpls",
+            "data center", "racks", "mainframe", "fibra oscura", "dark fiber", "core switch", "lun", "raid"
         ],
-        "T10": ["parcheo de cables", "configuración bgp", "reemplazo de discos", "tinta", "tóner"]
+        "T10": ["parcheo de cables", "cable patching", "configuración bgp", "bgp routing", "reemplazo de discos", "disk replacement", "tinta", "tóner", "printer toner"]
     }
 
-    # Regex patterns for forbidden consulting boilerplate and score leakage
+    # Regex patterns for forbidden consulting boilerplate and score leakage (Bilingual EN/ES)
     FORBIDDEN_PATTERNS: List[tuple[str, str]] = [
-        (r"\b(es esencial|resulta imprescindible|es fundamental|se recomienda encarecidamente)\b", "Contains prescriptive consulting boilerplate ('es esencial / se recomienda'). Describe only As-Is reality."),
-        (r"\b(mejores prácticas|best practices|estándares de la industria dictan)\b", "Contains generic 'best practices' filler."),
-        (r"\b(score\s+\d|nivel de madurez\s+\d|cuestionario de evaluación|resultado de la encuesta)\b", "Leaks assessment survey metadata or numerical maturity scores."),
-        (r"(considerando su escala operativa global|considerando su facturación de|abarcando una facturación de)", "Contains repetitive formulaic firmographic parrot. Conclude organically within the technical domain."),
-        (r"\b(inmadurez severa|incompetencia|negligencia|falta de rigor de los equipos|incapacidad de los equipos)\b", "Contains accusatory/punitive tone blaming client personnel. Frame technical debt constructively as natural architectural evolution."),
+        (r"\b(es esencial|resulta imprescindible|es fundamental|se recomienda encarecidamente|it is essential|it is crucial|it is recommended|strongly recommended)\b", "Contains prescriptive consulting boilerplate ('is essential / is recommended'). Describe only As-Is reality."),
+        (r"\b(mejores prácticas|best practices|estándares de la industria dictan|industry standards dictate)\b", "Contains generic 'best practices' filler."),
+        (r"\b(score\s+\d|nivel de madurez\s+\d|maturity level\s+\d|cuestionario de evaluación|resultado de la encuesta|survey questionnaire|survey result)\b", "Leaks assessment survey metadata or numerical maturity scores."),
+        (r"(considerando su escala operativa global|considerando su facturación de|abarcando una facturación de|considering its global operational scale|considering its revenue of)", "Contains repetitive formulaic firmographic parrot. Conclude organically within the technical domain."),
+        (r"\b(inmadurez severa|incompetencia|negligencia|falta de rigor de los equipos|incapacidad de los equipos|severe immaturity|incompetence|negligence|team incompetence)\b", "Contains accusatory/punitive tone blaming client personnel. Frame technical debt constructively as natural architectural evolution."),
         (r"^(#|\*|-|\d+\.)", "Contains Markdown headers, bullet points, or numbered lists. Must be continuous prose.")
     ]
 
     def __init__(self, custom_contamination_matrix: Dict[str, List[str]] | None = None):
-        self.contamination_matrix = custom_contamination_matrix or self.DEFAULT_CONTAMINATION_MATRIX
+        self.contamination_matrix = (
+            custom_contamination_matrix
+            if custom_contamination_matrix is not None
+            else self.DEFAULT_CONTAMINATION_MATRIX
+        )
 
     def _count_words(self, text: str) -> int:
         words = re.findall(r'\b\w+\b', text)

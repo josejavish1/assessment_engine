@@ -574,6 +574,8 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
 
         return {
             "client_name": data.get("client_name", ""),
+            "annual_revenue": profile.get("annual_revenue") or profile.get("consolidated_annual_revenue"),
+            "profile": profile,
             "industry": profile.get("industry", ""),
             "financial_tier": profile.get("financial_tier", "Tier 2"),
             "regulatory_frameworks": [

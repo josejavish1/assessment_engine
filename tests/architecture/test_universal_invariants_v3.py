@@ -55,8 +55,43 @@ def test_domain_semantic_router_physical_environment_and_process_overrides() -> 
 
 def test_two_tier_table_8_mathematical_closure() -> None:
     """Invariant 5: Table 8 two-tier financial reconciliation balances exactly: Standalone - Simultaneity = Net."""
-    standalone_sum = 174460
-    simultaneity_adj = -17061
-    expected_net = 157399
+    from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
 
-    assert standalone_sum + simultaneity_adj == expected_net, "Two-tier table math must close to the exact cent."
+    standalone_towers = {
+        "T1": 42000.0,
+        "T2": 58460.0,
+        "T3": 31000.0,
+        "T5": 43000.0,
+    }
+    target_net_portfolio = 157399.0
+
+    res = EulerPortfolioAllocator.allocate_portfolio(
+        standalone_ales=standalone_towers,
+        total_portfolio_ale=target_net_portfolio,
+        currency_iso="EUR",
+    )
+
+    # 1. Exact Gross Sum Invariance
+    assert res.subtotal_gross_undiversified_ale == 174460
+
+    # 2. Copula Diversification Delta Invariance
+    assert res.actuarial_copula_adjustment_ale == -17061
+
+    # 3. Exact Consolidated Net Portfolio Exposure
+    assert res.total_net_consolidated_ale == 157399
+
+    # 4. Global Bridge Conservation: Standalone + Diversification == Net
+    assert (
+        res.subtotal_gross_undiversified_ale + res.actuarial_copula_adjustment_ale
+        == res.total_net_consolidated_ale
+    ), "Global Euler identity violated: Gross + Delta != Net"
+
+    # 5. Row-level conservation across each individual domain
+    for alloc in res.allocations:
+        assert (
+            alloc.standalone_ale + alloc.diversification_adjustment
+            == alloc.euler_net_contribution
+        ), f"Per-domain conservation failed for {alloc.tower_id}"
+
+    # 6. Hare-Niemeyer percentage allocation exact closure
+    assert sum(a.portfolio_weight_pct for a in res.allocations) == 100.0
