@@ -674,7 +674,7 @@
       "Palanca 3 - Coste de Demora de Proyectos (Demora de Proyectos): La pérdida económica indirecta que sufre el negocio debido a que los proyectos estratégicos se retrasan semanas esperando el aprovisionamiento o la configuración manual de Sistemas.",
       "Palanca 4 - Eliminación de Desperdicio de Infraestructura (Capacity Waste): El sobrecoste derivado de la sobredimensión de almacenamiento o servidores 'por si acaso' en procesos manuales, así como la acumulación de recursos huérfanos encendidos.",
       "Palanca 5 - Evitación de Costes de Soporte por Obsolescencia: El sobreprecio extraordinario de mantenimiento (Extended Support) que se paga a fabricantes para mantener con vida asistida hardware o software legacy que carece de soporte estándar.",
-      "Palanca 6 - Mitigación de Riesgos de Cola de Balance: La reducción real de la probabilidad de sufrir incidentes catastróficos por error humano (causa del 80% de caídas de red) o severas sanciones legales por negligencia regulatoria bajo NIS2 (CVaR P99)."
+      "Palanca 6 - Mitigación de Riesgos de Cola de Balance: Reducción de la probabilidad de interrupciones no programadas de alto impacto y blindaje del cumplimiento normativo ante auditorías regulatorias como NIS2 (CVaR P99)."
     ],
     "fair_heatmap_sec_p1": "Para consolidar visualmente los riesgos analizados en el inventario anterior y guiar su gobernanza, la siguiente Matriz Cuantitativa de Calor (5x5) distribuye cada vulnerabilidad (RVS) en función de su Frecuencia Estimada (TEF) y su Severidad de Impacto (LM):",
     "fair_heatmap_sec_p2": "Esta representación permite a los responsables técnicos y operativos identificar de forma inmediata qué componentes presentan una criticidad urgente (cuadrantes superiores) frente a aquellos que requieren mantenimiento programado o monitorización periódica.",
@@ -688,7 +688,7 @@
     "fair_guide_intro": "Adicionalmente, para facilitar la lectura y comprensión del impacto financiero en las fichas detalladas, las métricas de exposición proyectada representan:",
     "fair_guide_bullets": [
       "Pérdida Anualizada (ALE): El coste económico promedio esperado cada año. Constituye el valor base del coste de inacción operativo.",
-      "Peor Caso (CVaR): El promedio económico del 10% de los peores escenarios posibles. Indica la magnitud del desastre financiero si las amenazas más graves se materializan de forma simultánea en un mismo año.",
+      "Peor Caso (CVaR): El promedio económico del 10% de los escenarios de mayor severidad. Indica el impacto financiero proyectado si varias incidencias críticas coinciden en un mismo ejercicio.",
       "Rango Probabilístico: El abanico estadístico de pérdidas posibles, desde un impacto menor hasta el máximo teórico si se detonan sanciones regulatorias o incumplimientos de SLA."
     ],
     "tier1_portfolio_title": "Tier 1: Prioridad de Modernización",
@@ -747,7 +747,7 @@
     "appendix_fair_rationale_p": "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** (reconocida por The Open Group e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo.",
     "appendix_fair_dual_layer_p": "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el balance de la compañía, resulta de gran utilidad seguir paso a paso la cronología de un único evento de amenaza. A este recorrido lo denominamos 'La Biografía del Incidente'. Imaginemos, a modo de ejemplo ilustrativo, un incidente donde un fallo en la infraestructura de copia de seguridad o una brecha de ransomware afecta a un repositorio crítico de la plataforma. El modelo divide las consecuencias en dos capas claramente diferenciadas:",
     "appendix_fair_dual_layer_b1": "Capa 1: Modelado de Vulnerabilidad (Garantía FAIR-CAM™) - Calibración Estocástica de Eficacia Defensiva: El incidente se inicia con la materialización de un evento de amenaza. La probabilidad de que la amenaza supere las salvaguardas y cause una pérdida real se define técnicamente como Vulnerabilidad (_VULN_). Nuestro motor aplica el estándar **FAIR-CAM™ (Control Analytics Model)** para calibrar esta probabilidad en función de la madurez real auditada. Las pérdidas primarias (costes de respuesta de emergencia y restauración) se modelan estocásticamente mediante curvas lognormales continuas con límites estrictos de OPEX para ineficiencias de proceso.",
-    "appendix_fair_dual_layer_b2": "Capa 2: Exposición Secundaria y Diligencia Debida (Garantía FAIR-MAM™) - Propagación Condicional de la Exposición Reguladora: Una vez materializada la pérdida primaria, se activa de forma secuencial una segunda capa de exposición reguladora y contractual basada en la demostración de la 'diligencia debida'. Utilizando la metodología **FAIR-MAM™ (Materiality Analytics Model)**, el motor simula el desencadenamiento de **Pérdidas Secundarias** catastróficas (sanciones bajo {reg_name} de hasta {reg_fine_limit} o reclamaciones por incumplimiento severo de SLAs) mediante una curva logística anclada en el nivel de madurez.",
+    "appendix_fair_dual_layer_b2": "Capa 2: Exposición Secundaria y Diligencia Debida (Garantía FAIR-MAM™) - Propagación Condicional de la Exposición Reguladora: Una vez materializada la pérdida primaria, se activa de forma secuencial una segunda capa de exposición reguladora y contractual basada en la demostración de la 'diligencia debida'. Utilizando la metodología **FAIR-MAM™ (Materiality Analytics Model)**, el motor simula el desencadenamiento de **Pérdidas Secundarias** de alto impacto (requerimientos bajo {reg_name} de hasta {reg_fine_limit} o reclamaciones por incumplimiento severo de SLAs) mediante una curva logística anclada en el nivel de madurez.",
     "appendix_fair_sim_kernel_p": "Más allá de la lógica conceptual, el verdadero valor diferencial de este diagnóstico reside en su arquitectura matemática. El motor de riesgo no emplea promedios estáticos, sino que ejecuta una **Simulación de Monte Carlo de 10.000 iteraciones** impulsada por un **Proceso de Riesgo Colectivo Compuesto de Dos Etapas**. Este núcleo de cálculo, diseñado bajo los estándares de la banca de inversión (Basilea III), modela la complejidad real del ciberespacio:",
     "appendix_fair_sim_bullets": [
       "La Elicitación de Expertos (Consenso Adversarial Multi-Agente): Proceso de actualización bayesiana mediante panel IA adversarial que calibra priors y evita doble conteo antes del cómputo estocástico.",
@@ -805,7 +805,7 @@
       [
         "[DIRECTIVA-NIS2]",
         "Directiva (UE) 2022/2555 (NIS2)",
-        "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad en toda la Unión, utilizada para calibrar el límite máximo legal de sanciones administrativas por negligencia (pérdidas secundarias)."
+        "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad en toda la Unión, utilizada para calibrar el marco regulatorio de sanciones administrativas por no conformidad en ciberseguridad (pérdidas secundarias)."
       ],
       [
         "[ISO-27001]",
@@ -1333,8 +1333,8 @@
       "**2. Reducción del Coste de Demora (Cost of Delay):** Aceleración en el aprovisionamiento de capacidad e integración fluida de infraestructuras corporativas procedentes de adquisiciones (M&A).",
       "**3. Optimización de Capacidad y Eficiencia Operativa:** Eliminación de cuellos de botella, sobreaprovisionamiento y desperdicio de recursos, reduciendo costes operativos y consumo energético de plataforma hasta un 28%.",
       "**4. Evitación de Costes de Soporte por Obsolescencia:** Reemplazo programado de activos al final de ciclo de vida (EoL), evitando tarifas punitivas de mantenimiento extendido fuera de garantía.",
-      "**5. Mitigación de Pérdidas de Balance y Riesgo de Cola (CVaR):** Blindaje contra eventos catastróficos de indisponibilidad prolongada que amenazan los ingresos diarios y la continuidad de las operaciones.",
-      "**6. Aseguramiento de Cumplimiento Regulatorio y de Gobernanza:** Trazabilidad documental y técnica continua que garantiza la alineación con marcos internacionales de resiliencia y evita sanciones administrativas severas."
+      "**5. Mitigación de Pérdidas de Balance y Riesgo de Cola (CVaR):** Protección frente a interrupciones mayores no planificadas de larga duración que comprometen la facturación diaria y la continuidad del servicio.",
+      "**6. Aseguramiento de Cumplimiento Regulatorio y de Gobernanza:** Trazabilidad documental y técnica continua que garantiza la alineación con marcos internacionales de resiliencia y previene no conformidades administrativas."
     ],
     "risk_portfolio_tiers_title": "Estructuración del Inventario de Riesgos en Tres Carteras de Inversión",
     "risk_portfolio_tiers_intro": "Para facilitar la toma de decisiones presupuestarias, los {num_total} escenarios evaluados se clasifican en tres carteras estratégicas de prioridad directiva según su impacto financiero esperado:",
@@ -1452,7 +1452,7 @@
     "lm_desc_2": "Menor",
     "lm_desc_3": "Moderada",
     "lm_desc_4": "Grave",
-    "lm_desc_5": "Crítica / Catastrófica",
+    "lm_desc_5": "Severidad Máxima (Impacto Crítico)",
     "defensibility_formula_marker": "Fórmula de Defendibilidad",
     "risk_card_ale_label": "PÉRDIDA ANUALIZADA (ALE)",
     "risk_card_sle_label": "PÉRDIDA POR EVENTO (SLE)",

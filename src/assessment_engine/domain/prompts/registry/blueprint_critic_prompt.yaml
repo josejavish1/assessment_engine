@@ -36,7 +36,8 @@ review_objectives:
 - Ensure each project_todo clearly links to and resolves one or more AS-IS findings.
 - Maintain an executive-technical, actionable, and concrete transformation tone.
 - Do not invent fields or modify the JSON schema structure.
-- 'CORPORATE DIPLOMACY: If you detect aggressive or accusatory language toward current client operations, soften the tone into constructive strategic modernization opportunities.'
+- 'BLAMELESS SYSTEMS ENFORCEMENT: If you detect aggressive, accusatory, or alarmist language toward current client operations or personnel (e.g., negligence, chaos, incompetence, shoddy, disaster), rewrite the prose into constructive, objective structural technical debt that empowers the Head of IT.'
+- 'PLAIN BUSINESS LANGUAGE ENFORCEMENT: If you detect pompous, bureaucratic, or pedantic phrasing, simplify it into direct, natural, and fluid business language (Subject + Verb + Object) that is effortless to read.'
 - 'STRATEGIC VENDOR ALIGNMENT: Align recommendations with the client dominant cloud hyperscaler and strategic enterprise ecosystem.'
 - 'OUTPUT LANGUAGE MANDATE: You MUST ensure the corrected JSON is written EXCLUSIVELY in the target language ({target_language}).'
 handover_instruction: Return exclusively the final corrected JSON.

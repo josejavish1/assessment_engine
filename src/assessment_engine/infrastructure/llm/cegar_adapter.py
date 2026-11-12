@@ -78,9 +78,11 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
             f"2. Ensure exact accounting identities: total_cost_of_ownership == capex_allocation + opex_allocation.\n"
             f"3. Ensure FAIR risk monotonicity: risk_exposure_p10 <= risk_exposure_p50 <= risk_exposure_p90.\n"
             f"4. Ensure sum of allocated_budget across execution_roadmap equals the selected option's total_cost_of_ownership.\n"
-            f"5. All evidentiary citations MUST strictly match IDs present in 'valid_evidence_ids'.\n"
-            f"6. Emit output conforming strictly to the requested JSON schema.\n"
-            f"7. Write all narrative and descriptive string fields strictly in the language specified by TARGET LANGUAGE / LOCALE ({context.target_locale}), "
+            f"5. BLAMELESS SYSTEMS TONE: Frame operational debt as structural technical debt from business growth, not personnel negligence. Strictly avoid accusatory, alarmist, or condescending vocabulary.\n"
+            f"6. PLAIN BUSINESS LANGUAGE: Write in direct, natural, and fluid business language using clean active sentences. Strictly prohibit pompous, bureaucratic, or pedantic phrasing.\n"
+            f"7. All evidentiary citations MUST strictly match IDs present in 'valid_evidence_ids'.\n"
+            f"8. Emit output conforming strictly to the requested JSON schema.\n"
+            f"9. Write all narrative and descriptive string fields strictly in the language specified by TARGET LANGUAGE / LOCALE ({context.target_locale}), "
             f"tailored to the scale and domain of INDUSTRY ISIC CODE ({context.target_isic_code}), while keeping all JSON property keys and enum identifiers in exact English schema format."
         )
 
