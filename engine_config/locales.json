@@ -3038,11 +3038,11 @@
     "tomo_table5_col_euler_net": "Contribución Neta al Portafolio (Euler ALE)",
     "tomo_table5_col_share_pct": "% del Riesgo Total",
     "tomo_table5_row_subtotal_gross": "SUBTOTAL EXPOSICIÓN BRUTA NO DIVERSIFICADA",
-    "tomo_table5_row_copula_adjustment": "AJUSTE ACTUARIAL (DIVERSIFICACIÓN CÓPULA)",
-    "tomo_table5_badge_copula_overlap": "[-{overlap_pct}% Correlación Cópula]",
+    "tomo_table5_row_copula_adjustment": "AJUSTE POR SIMULTANEIDAD Y DEPENDENCIAS IT",
+    "tomo_table5_badge_copula_overlap": "[-{overlap_pct}% Solapamiento de Caídas]",
     "tomo_table5_row_total_net": "TOTAL CONSOLIDADO DEL GRUPO",
     "tomo_table5_symbol_na": "—",
-    "tomo_table5_bridge_explanation": "Conciliación Actuarial de Portafolio: Las exposiciones independientes evalúan cada dominio de forma aislada. El Ajuste por Solapamiento y Capacidad de Absorción (Cópula) modela la correlación multirriesgo y los límites de absorción corporativos, derivando la Contribución Neta al Portafolio (asignación de Euler) donde la suma de pesos relativos totaliza exactamente el 100,0%.",
+    "tomo_table5_bridge_explanation": "Conciliación de Riesgo de Portafolio: La exposición independiente evalúa cada dominio técnico por separado. El Ajuste por Simultaneidad evita contabilizar dos veces el coste de inactividad de las fábricas cuando múltiples fallos de infraestructura coinciden en la misma ventana de parada operativa, derivando la Contribución Neta al Portafolio donde la suma de pesos relativos totaliza exactamente el 100,0%.",
     "annex_ch4_receptors": {
       "AVAILABILITY_OUTAGE": {
         "methodology_intro": "La exposición actuarial para {domain_name} se modela mediante el receptor Open FAIR™ de Indisponibilidad y Parada Operativa, capturando el impacto financiero de la interrupción del servicio.",
