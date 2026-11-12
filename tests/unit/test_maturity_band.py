@@ -49,7 +49,8 @@ def test_resolve_maturity_band_uses_first_matching_range_and_last_fallback() -> 
 def test_resolve_maturity_band_supports_shared_annex_and_global_policies() -> None:
     # Baseline English
     assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS)["label"] == "Initial"
-    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS)["label"] == "Managed"
+    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS)["label"] == "Quantitatively Managed"
+    assert resolve_maturity_band(2.1, ANNEX_MATURITY_BANDS)["label"] == "Managed"
     assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS)["label"] == "Basic"
     assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS)["label"] == "Optimized"
 
@@ -57,9 +58,10 @@ def test_resolve_maturity_band_supports_shared_annex_and_global_policies() -> No
     from assessment_engine.infrastructure.localization import t
 
     assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Inicial"
-    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Gestionado"
+    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Gestionado Cuantitativamente"
+    assert resolve_maturity_band(2.1, ANNEX_MATURITY_BANDS, locale="es", translator=t)["label"] == "Gestionado"
     assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS, locale="es", translator=t)["label"] in ("Inicial", "Básica", "Basica")
-    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS, locale="es", translator=t)["label"] in ("Optimizado", "Optimizada")
+    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS, locale="es", translator=t)["label"] in ("Optimizado", "Optimizada", "En Optimización")
 
 
 def test_resolve_maturity_band_requires_at_least_one_band() -> None:

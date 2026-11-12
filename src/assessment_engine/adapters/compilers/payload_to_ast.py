@@ -2341,32 +2341,46 @@ class PayloadToASTBridge:
         )
         ch3_archetype = resolve_domain_archetype(domain_id=canonical_tower_id, blueprint_data=blueprint_data)
 
-        raw_domain_intro = blueprint_data.get("domain_introduction")
-        tenant_domain_intro = ""
-        if isinstance(raw_domain_intro, dict):
-            intro_p = str(raw_domain_intro.get("introduction_paragraph") or "").strip()
-            obj_p = str(raw_domain_intro.get("domain_objective") or "").strip()
-            if intro_p and obj_p and intro_p != obj_p:
-                tenant_domain_intro = f"{obj_p} {intro_p}".strip()
+        # Phase 2 (DEF-04): Decoupled Analytical Maturity Introduction (Zero Paragraph Cloning)
+        # Synthesizes an analytical overview based on actual evaluated dimensions
+        pillars_list = blueprint_data.get("pillars_analysis") or []
+        scored_pillars = [
+            p for p in pillars_list
+            if isinstance(p, dict) and p.get("score") is not None
+        ]
+        if scored_pillars:
+            sorted_p = sorted(scored_pillars, key=lambda x: float(x.get("score", 0.0)))
+            weakest_p = sorted_p[0]
+            strongest_p = sorted_p[-1]
+            weakest_name = weakest_p.get("pillar_name") or weakest_p.get("pillar_id")
+            strongest_name = strongest_p.get("pillar_name") or strongest_p.get("pillar_id")
+            weakest_score = float(weakest_p.get("score", 0.0))
+            strongest_score = float(strongest_p.get("score", 0.0))
+            spread = round(strongest_score - weakest_score, 2)
+            
+            from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
+            gs_band = resolve_maturity_band(float(gs_val), ANNEX_MATURITY_BANDS, locale=meta_lang, translator=t)
+            band_lbl = gs_band.get("label", "")
+            
+            if str(meta_lang).startswith("es"):
+                intro_ch3 = (
+                    f"La evaluación técnica del dominio de {tower_name} sitúa la madurez operativa global en un índice de "
+                    f"**{format_number(gs_val, locale=meta_lang, decimals=2)} sobre 5,00 ({band_lbl})** bajo el marco internacional CMMI v2.0. "
+                    f"El análisis de dispersión entre capacidades evidencia una asimetría de {spread:.2f} puntos: "
+                    f"mientras que la mayor solidez se concentra en **{strongest_name}** ({format_number(strongest_score, locale=meta_lang, decimals=2)}/5,00), "
+                    f"el principal punto de fricción operativa y deuda técnica reside en **{weakest_name}** ({format_number(weakest_score, locale=meta_lang, decimals=2)}/5,00), "
+                    f"el cual define el cuello de botella estructural del servicio."
+                )
             else:
-                tenant_domain_intro = (intro_p or obj_p).strip()
-        elif isinstance(raw_domain_intro, str):
-            tenant_domain_intro = raw_domain_intro.strip()
-
-        if tenant_domain_intro:
-            intro_ch3 = tenant_domain_intro
+                intro_ch3 = (
+                    f"The technical diagnostic for {tower_name} positions the overall operational maturity at an index of "
+                    f"**{format_number(gs_val, locale=meta_lang, decimals=2)} out of 5.00 ({band_lbl})** under the international CMMI v2.0 standard. "
+                    f"Dispersion analysis across evaluated dimensions reveals an asymmetry of {spread:.2f} points: "
+                    f"while the strongest posture is achieved in **{strongest_name}** ({format_number(strongest_score, locale=meta_lang, decimals=2)}/5.00), "
+                    f"the primary operational bottleneck and technical debt concentrates in **{weakest_name}** ({format_number(weakest_score, locale=meta_lang, decimals=2)}/5.00)."
+                )
         else:
-            ch3_intros_by_tower = loc_branch.get("ch3_intro_by_tower", {})
-            tower_intro_tmpl = ch3_intros_by_tower.get(canonical_tower_id)
-            if tower_intro_tmpl:
-                intro_ch3 = tower_intro_tmpl.format(tower_title=tower_name, tower_name=tower_name, client_name=client_name)
-            else:
-                ch3_intros = loc_branch.get("ch3_intro_archetypes", {})
-                arch_intro_tmpl = ch3_intros.get(ch3_archetype)
-                if arch_intro_tmpl:
-                    intro_ch3 = arch_intro_tmpl.format(tower_title=tower_name, tower_name=tower_name, client_name=client_name)
-                else:
-                    intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
+            intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
@@ -2975,10 +2989,12 @@ class PayloadToASTBridge:
             )
 
             _cmmi_es_map = {
-                "Initial": "Inicial", "Repeatable": "Repetible", "Defined": "Definido",
-                "Managed": "Gestionado", "Optimized": "Optimizado",
-                "Inicial": "Inicial", "Repetible": "Repetible", "Definido": "Definido",
-                "Gestionado": "Gestionado", "Optimizado": "Optimizado",
+                "Initial": "Inicial", "Repeatable": "Gestionado (Repetible)", "Defined": "Definido",
+                "Managed": "Gestionado", "Quantitatively Managed": "Gestionado Cuantitativamente",
+                "Optimized": "En Optimización", "Optimizing": "En Optimización",
+                "Inicial": "Inicial", "Repetible": "Gestionado (Repetible)", "Definido": "Definido",
+                "Gestionado": "Gestionado", "Gestionado Cuantitativamente": "Gestionado Cuantitativamente",
+                "Optimizado": "En Optimización",
             }
 
             for p_idx, r_item in enumerate(in_mem_rows, 1):
@@ -3643,6 +3659,20 @@ class PayloadToASTBridge:
         # Dual Ledger table removed for clarity
         nodes.append(SpacerNode(points=10))
 
+        # Two-Tier Financial Reconciliation Bridge (Red Team Rule 4 & DEF-02)
+        # Calculates the direct standalone sum of the risk cards to guarantee 100% mathematical closure
+        total_eval_risks = [
+            r for r in risks_data_list
+            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        ]
+        card_direct_sum = sum(
+            round(float(r.get("sle") or 0.0) * float(f"{float(r.get('lef') or 0.0):.2f}"))
+            if not r.get("is_deterministic") and float(r.get("sle") or 0.0) > 0.0 and float(r.get("lef") or 0.0) > 0.0
+            else float(r.get("ale") or r.get("ale_val") or 0.0)
+            for r in total_eval_risks
+        )
+        simultaneity_delta = round(float(total_fair_ale) - float(card_direct_sum))
+
         tier_summary_rows = [
             TableRowNode(
                 cells=[
@@ -3678,6 +3708,64 @@ class PayloadToASTBridge:
                 ]
             ),
         ]
+
+        # Add explicit closing rows for two-tier reconciliation if simultaneity delta exists
+        is_es_rpt = str(meta_lang).startswith("es")
+        if abs(simultaneity_delta) > 5.0 and card_direct_sum > 0:
+            adj_pct = round((simultaneity_delta / card_direct_sum) * 100.0, 1)
+            tier_summary_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text="**Subtotal Exposición Directa (Suma Fichas 4.4)**" if is_es_rpt else "**Direct Exposure Subtotal (Cards Sum 4.4)**",
+                            bold=True, bg_color="F8FAFC", font_size=8.5
+                        ),
+                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
+                        CellNode(text=f"**{format_number(card_direct_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
+                        CellNode(text="Base de riesgo directo evaluada por separado" if is_es_rpt else "Direct standalone risk base evaluated in isolation", bg_color="F8FAFC", font_size=8.0, italic=True),
+                    ]
+                )
+            )
+            tier_summary_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text="*Corrección por Paradas Solapadas y Dependencias IT*" if is_es_rpt else "*Adjustment for Overlapping Downtime & IT Dependencies*",
+                            bg_color="F8FAFC", font_size=8.5, italic=True
+                        ),
+                        CellNode(text="—", align="CENTER", bg_color="F8FAFC", font_size=8.5),
+                        CellNode(text=f"*{format_number(simultaneity_delta, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({adj_pct:+.1f}%)*", align="CENTER", bg_color="F8FAFC", font_size=8.5, italic=True),
+                        CellNode(text="Evita duplicar horas de parada fabril en fallos simultáneos" if is_es_rpt else "Avoids double-counting plant downtime during concurrent outages", bg_color="F8FAFC", font_size=8.0, italic=True),
+                    ]
+                )
+            )
+            tier_summary_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text="**EXPOSICIÓN NETA CONSOLIDADA (Tomo 1 / Cartera)**" if is_es_rpt else "**CONSOLIDATED NET EXPOSURE (Volume 1 / Portfolio)**",
+                            bold=True, bg_color="EAECEE", font_size=8.5
+                        ),
+                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
+                        CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
+                        CellNode(text="Presupuesto de riesgo neto asignado en balance" if is_es_rpt else "Net risk budget allocated on balance sheet", bg_color="EAECEE", font_size=8.0, bold=True),
+                    ]
+                )
+            )
+        else:
+            tier_summary_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text="**TOTAL EXPOSICIÓN ANUALIZADA (ALE)**" if is_es_rpt else "**TOTAL ANNUALIZED EXPOSURE (ALE)**",
+                            bold=True, bg_color="EAECEE", font_size=8.5
+                        ),
+                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
+                        CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
+                        CellNode(text="Costes y riesgos acumulados directamente" if is_es_rpt else "Directly accumulated costs and risks", bg_color="EAECEE", font_size=8.0, bold=True),
+                    ]
+                )
+            )
         nodes.append(TableNode(rows=tier_summary_rows, autofit=True, col_widths=[0.28, 0.08, 0.24, 0.40]))
         nodes.append(SpacerNode(points=10))
 
@@ -4349,6 +4437,13 @@ class PayloadToASTBridge:
             card_direct_ale = round(float(reconciled_sle) * float(displayed_mult_freq))
             formatted_ale = format_currency(
                 float(card_direct_ale),
+                currency_symbol=currency,
+                locale=meta_lang,
+                decimals=0,
+            )
+        else:
+            formatted_ale = format_currency(
+                float(canonical_ale),
                 currency_symbol=currency,
                 locale=meta_lang,
                 decimals=0,
