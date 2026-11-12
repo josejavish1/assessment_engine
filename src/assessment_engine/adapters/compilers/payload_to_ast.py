@@ -2460,11 +2460,32 @@ class PayloadToASTBridge:
             )
         )
         nodes.append(SpacerNode(points=5))
+        
+        # Dynamic CMMI scale legend matching GovernanceScaleEngine SSOT
+        from assessment_engine.domain.governance import GovernanceScaleEngine
+        gov_engine = GovernanceScaleEngine.get_instance()
+        gov_bands = gov_engine.config.get("cmmi_maturity_scale", {}).get("bands", [])
+        legend_parts = []
+        prev_b = 1.00
+        lvl_prefix = t("level_prefix", locale=meta_lang, default="Nivel" if meta_lang.startswith("es") else "Level")
+        for idx, b in enumerate(gov_bands):
+            l_num = b["level"]
+            u_b = float(b["upper_bound_exclusive"])
+            min_s = 1.00 if idx == 0 else prev_b
+            max_s = 5.00 if idx == len(gov_bands) - 1 else round(u_b - 0.01, 2)
+            prev_b = u_b
+            min_f = format_number(min_s, locale=meta_lang, decimals=2)
+            max_f = format_number(max_s, locale=meta_lang, decimals=2)
+            b_lbl = "Administrado" if meta_lang.startswith("es") and l_num == 2 else t(b.get("label_token", ""), locale=meta_lang, default=b.get("default_label", ""))
+            legend_parts.append(f"{lvl_prefix} {l_num} - {b_lbl} ({min_f}-{max_f})")
+        
+        scale_title_prefix = t("cmmi_scale_title", locale=meta_lang, default="Escala CMMI" if meta_lang.startswith("es") else "CMMI Scale")
         nodes.append(
             ParagraphNode(
-                text=t("maturity_scale_legend", locale=meta_lang),
+                text=f"{scale_title_prefix}: " + " | ".join(legend_parts),
                 align="CENTER",
                 italic=True,
+                font_size=8.5,
             )
         )
         nodes.append(SpacerNode(points=8))

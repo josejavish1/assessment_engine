@@ -63,11 +63,41 @@ def build_cmmi_methodology_and_capabilities(
             text_color_rgb=[46, 64, 77],
         )
     )
-    levels = get_localized_list("maturity_scale_levels", locale=meta_lang)
-    for lvl in levels:
+    from assessment_engine.domain.governance import GovernanceScaleEngine
+    from assessment_engine.infrastructure.localization import format_number
+
+    engine = GovernanceScaleEngine.get_instance()
+    bands = engine.config.get("cmmi_maturity_scale", {}).get("bands", [])
+
+    prev_bound = 1.00
+    for idx, b in enumerate(bands):
+        level_num = b["level"]
+        upper_bound = float(b["upper_bound_exclusive"])
+        min_score = 1.00 if idx == 0 else prev_bound
+        max_score = 5.00 if idx == len(bands) - 1 else round(upper_bound - 0.01, 2)
+        prev_bound = upper_bound
+
+        min_fmt = format_number(min_score, locale=meta_lang, decimals=2)
+        max_fmt = format_number(max_score, locale=meta_lang, decimals=2)
+
+        band_token = b.get("label_token", f"band_{level_num}")
+        level_prefix = t("level_prefix", locale=meta_lang, default="Nivel" if meta_lang.startswith("es") else "Level")
+
+        if meta_lang.startswith("es") and level_num == 2:
+            band_label = "Administrado"
+        else:
+            band_label = t(band_token, locale=meta_lang, default=b.get("default_label", ""))
+
+        desc = t(f"cmmi_desc_level_{level_num}", locale=meta_lang, default="")
+
+        bullet_text = (
+            f"**{level_prefix} {level_num} - {band_label} ({min_fmt} - {max_fmt}):** {desc}"
+            if desc
+            else f"**{level_prefix} {level_num} - {band_label} ({min_fmt} - {max_fmt})**"
+        )
         nodes.append(
             ParagraphNode(
-                text=lvl,
+                text=bullet_text,
                 style="List Bullet",
                 space_after=2,
                 font_size=10.5,
