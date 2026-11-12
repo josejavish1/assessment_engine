@@ -116,6 +116,10 @@ async def test_run_tower_blueprint_lifecycle(tmp_path: Path):
         ), patch(
             "assessment_engine.application.run_tower_blueprint_engine.sync_findings_to_graph",
         ), patch(
+            "assessment_engine.application.services.synthesis_facade.PolymorphicSynthesisFacade.synthesize",
+            new_callable=AsyncMock,
+            return_value={"provenance": {"engine": "CEGAR_VERIFIED_V1"}},
+        ), patch(
             "assessment_engine.infrastructure.policy_engine.SovereignPolicyEngine.compile",
             side_effect=lambda payload: payload,
         ), patch(

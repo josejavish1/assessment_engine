@@ -1217,6 +1217,9 @@ async def run_tower_blueprint(
                     blueprint_payload.update(synthesis_result)
     except Exception as consensus_err:
         logger.error("Error executing strategic synthesis facade: %s", consensus_err, exc_info=True)
+        raise RuntimeError(
+            f"Strategic synthesis facade failed for tower {tower_id}: {consensus_err}"
+        ) from consensus_err
     finally:
         if facade_instance is not None:
             await facade_instance.shutdown()
@@ -1287,9 +1290,9 @@ async def run_tower_blueprint(
         from assessment_engine.domain.validation.mathematical_integrity import (
             assert_tower_mathematical_integrity,
         )
-        from assessment_engine.infrastructure.runtime_paths import prepare_case_runtime
+        from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
 
-        case_dir = prepare_case_runtime(os.environ, client_id=client_name, tower_id=tower_id)
+        case_dir = resolve_case_dir(default_client=client_name, default_tower=tower_id)
         scoring_file = case_dir / "scoring_output.json"
         if scoring_file.exists():
             with open(scoring_file, "r", encoding="utf-8-sig") as scf:
@@ -1297,10 +1300,34 @@ async def run_tower_blueprint(
             blueprint_payload = reconcile_tower_scores(blueprint_payload, scoring_ssot)
             assert_tower_mathematical_integrity(blueprint_payload)
     except Exception as recon_err:
-        logger.warning(
-            "[Pipeline Gatekeeper] SSOT score reconciliation skipped or raised warning: %s",
+        logger.error(
+            "[Pipeline Gatekeeper] Critical failure in SSOT score reconciliation: %s",
             recon_err,
+            exc_info=True,
         )
+        raise RuntimeError(
+            f"SSOT score reconciliation or mathematical integrity failed for tower {tower_id}: {recon_err}"
+        ) from recon_err
+
+    # Phase 8.2: Financial SSOT Monism Gatekeeper
+    # Guarantees that total_fair_ale is strictly the exact sum of all active finding cards,
+    # preventing split-brain discrepancies across the document and summary views.
+    active_cards_sum = sum(
+        float(hc.get("fair_ale_score") or 0.0)
+        for pillar in blueprint_payload.get("pillars_analysis", [])
+        for hc in pillar.get("health_check_asis", [])
+        if isinstance(hc, dict) and hc.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+    )
+    if active_cards_sum > 0.0:
+        active_ale_rounded = round(active_cards_sum, 2)
+        blueprint_payload["total_fair_ale"] = active_ale_rounded
+        blueprint_payload["annualized_loss_expectancy"] = active_ale_rounded
+        if isinstance(blueprint_payload.get("executive_summary"), dict):
+            blueprint_payload["executive_summary"]["total_fair_ale"] = active_ale_rounded
+        if isinstance(blueprint_payload.get("executive_snapshot"), dict):
+            blueprint_payload["executive_snapshot"]["total_fair_ale"] = active_ale_rounded
+        if isinstance(blueprint_payload.get("fair_risk_profile"), dict):
+            blueprint_payload["fair_risk_profile"]["total_ale"] = active_ale_rounded
 
     try:
         blueprint_payload["_generation_metadata"] = {
