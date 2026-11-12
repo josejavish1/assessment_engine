@@ -148,7 +148,22 @@ def _format_pillars_description(tower_definition: dict[str, Any], tower_code: st
 
 
 class UniversalTowerSynthesizer:
-    """Universal synthesis engine orchestrating dynamic meta-prompts and structured validation."""
+    """
+    Orchestrates complete technology tower synthesis using an Atomic Map-Reduce architecture.
+    """
+
+    MAX_CONCURRENT_PILLARS: int = 5  # Protects upstream LLM rate limits per tower
+
+    def __init__(self, llm_client: Any = None, custom_contamination_matrix: dict[str, list[str]] | None = None):
+        import asyncio
+        from assessment_engine.application.services.synthesis.gatekeeper import SemanticGatekeeper
+        from assessment_engine.application.services.synthesis.pillar_synthesizer import PillarForensicSynthesizer
+        self.llm = llm_client
+        self.gatekeeper = SemanticGatekeeper(custom_contamination_matrix=custom_contamination_matrix)
+        self.pillar_synthesizer = PillarForensicSynthesizer(
+            llm_client=self.llm,
+            gatekeeper=self.gatekeeper
+        )
 
     def build_synthesis_prompt(
         self,
@@ -346,3 +361,146 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                 hc["quantification_status"] = "DRAFT"
 
         return validated
+
+    async def synthesize_tower(
+        self,
+        tower_payload: dict[str, Any],
+        firmographics: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Executes the Map-Reduce synthesis pipeline for a single Technology Tower.
+
+        :param tower_payload: Dict containing `tower_id`, `tower_name`, `adjacent_evidence_summary`, and `pillars` list.
+        :param firmographics: Organization profile dictionary.
+        :return: Completed Tower dictionary with guaranteed Tier-1 `asis_architecture_description` per pillar.
+        """
+        import asyncio
+        tower_id: str = tower_payload["tower_id"]
+        tower_name: str = tower_payload.get("tower_name", tower_id)
+        pillars_input: list[dict[str, Any]] = tower_payload.get("pillars", [])
+
+        tower_context = {
+            "adjacent_evidence_summary": tower_payload.get("adjacent_evidence_summary", "")
+        }
+
+        semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_PILLARS)
+
+        # logger.info(f"[{tower_id}] Starting Atomic Map-Reduce synthesis for {len(pillars_input)} pillars.")
+
+        # =========================================================================
+        # PHASE 1 (MAP): Concurrent Atomic Pillar Synthesis
+        # =========================================================================
+        tasks = [
+            self.pillar_synthesizer.synthesize_pillar(
+                tower_id=tower_id,
+                tower_name=tower_name,
+                pillar_data=pillar,
+                tower_context=tower_context,
+                firmographics=firmographics,
+                max_retries=3,
+                semaphore=semaphore
+            )
+            for pillar in pillars_input
+        ]
+
+        pillar_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Merge validated narratives back into the pillar data structures
+        synthesized_pillars: list[dict[str, Any]] = []
+        for original_pillar, result in zip(pillars_input, pillar_results):
+            updated_pillar = copy.deepcopy(original_pillar)
+            if isinstance(result, Exception):
+                # logger.error(f"Failed to synthesize {updated_pillar.get('pillar_id')}: {result}")
+                updated_pillar["asis_architecture_description"] = f"Error generating narrative: {result}"
+                updated_pillar["_synthesis_metadata"] = {"tier1_validated": False}
+            else:
+                updated_pillar["asis_architecture_description"] = result.asis_architecture_description
+                updated_pillar["_synthesis_metadata"] = {
+                    "word_count": result.word_count,
+                    "attempts_taken": result.attempts_taken,
+                    "tier1_validated": True
+                }
+            synthesized_pillars.append(updated_pillar)
+
+        # =========================================================================
+        # PHASE 2 (REDUCE): Tower-Level Executive Synthesis from Verified Pillars
+        # =========================================================================
+        tower_executive_summary = await self._synthesize_tower_executive_narrative(
+            tower_id=tower_id,
+            tower_name=tower_name,
+            synthesized_pillars=synthesized_pillars,
+            firmographics=firmographics
+        )
+
+        return {
+            "tower_id": tower_id,
+            "tower_name": tower_name,
+            "executive_summary": tower_executive_summary,
+            "pillars": synthesized_pillars
+        }
+
+    async def _synthesize_tower_executive_narrative(
+        self,
+        tower_id: str,
+        tower_name: str,
+        synthesized_pillars: list[dict[str, Any]],
+        firmographics: dict[str, Any]
+    ) -> str:
+        """
+        Reduces the atomic pillar narratives into a cohesive Tower-level Executive Summary.
+        """
+        import json
+        compiled_pillar_narratives = "\n\n".join(
+            f"### PILLAR [{p.get('pillar_id')}] {p.get('pillar_name')}:\n{p.get('asis_architecture_description')}"
+            for p in synthesized_pillars
+        )
+
+        system_prompt = (
+            "You are a Principal Enterprise Architect. Synthesize an authoritative Tower Executive Summary "
+            "strictly derived from the underlying verified pillar narratives. Do not introduce external vendors "
+            "or contradict the pillar findings. Output MUST be valid JSON matching:\n"
+            "{\n"
+            "  \"bottom_line\": \"A single cohesive paragraph (80-120 words)...\",\n"
+            "  \"operational_benefits\": [\"Strength 1\", \"Strength 2\", \"Strength 3\"],\n"
+            "  \"structural_risks\": [\"Risk 1\", \"Risk 2\", \"Risk 3\"]\n"
+            "}\n"
+        )
+        user_prompt = (
+            f"Tower: [{tower_id}] {tower_name}\n"
+            f"Firmographics: {firmographics}\n\n"
+            f"Verified Pillar Narratives:\n{compiled_pillar_narratives}\n\n"
+            "Write the executive synthesis of the overall tower posture in Spanish."
+        )
+
+        try:
+            if hasattr(self.llm, "models") and hasattr(self.llm.models, "generate_content"):
+                from assessment_engine.infrastructure.genai_client import ModelTier, get_model
+                model_name = get_model(ModelTier.REASONING)
+                response = self.llm.models.generate_content(
+                    model=model_name,
+                    contents=f"{system_prompt}\n\n{user_prompt}"
+                )
+                raw_summary = response.text
+            else:
+                raw_summary = await self.llm.generate_text(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    temperature=0.2
+                )
+            
+            # Clean JSON
+            clean_json = raw_summary.strip()
+            if clean_json.startswith("```json"):
+                clean_json = clean_json[7:]
+            if clean_json.startswith("```"):
+                clean_json = clean_json[3:]
+            if clean_json.endswith("```"):
+                clean_json = clean_json[:-3]
+            clean_json = clean_json.strip()
+            return json.loads(clean_json)
+        except Exception as e:
+            return {
+                "bottom_line": f"Error synthesizing executive summary: {e}",
+                "operational_benefits": [],
+                "structural_risks": []
+            }
