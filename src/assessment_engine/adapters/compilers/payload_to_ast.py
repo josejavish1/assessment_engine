@@ -891,7 +891,8 @@ def _repair_broken_template_grammar(text: str, locale: str, fallback_label: str 
     if cleaned.count(")") > cleaned.count("("):
         cleaned = re.sub(r"([^\(]*)\)", r"\1", cleaned, count=cleaned.count(")") - cleaned.count("("))
 
-    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned).strip()
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
     return cleaned
 
 _RAW_ENGLISH_COMPOUND_KPI_RE: Final[re.Pattern[str]] = re.compile(
@@ -911,6 +912,8 @@ _RAW_ENGLISH_COMPOUND_KPI_RE: Final[re.Pattern[str]] = re.compile(
 def _deduplicate_prose_sentences(raw_txt: str) -> str:
     """Eliminate consecutive or repeated sentences within a paragraph or narrative block."""
     if not raw_txt or len(raw_txt) < 40:
+        return raw_txt
+    if "\n" in raw_txt and any(p in raw_txt for p in ("1. ", "2. ", "3. ", "4. ")):
         return raw_txt
     parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", raw_txt) if p.strip()]
     if len(parts) <= 1:
@@ -1542,8 +1545,22 @@ class PayloadToASTBridge:
         if is_critical is None:
             is_critical = False # default fallback
 
-        # Load scoring and global ALE data for interpolation.
-        total_fair_ale = blueprint_data.get("total_fair_ale", 0.0)
+        # Derive live authoritative FAIR risks to guarantee 100% mathematical monism across all sections
+        from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+            derive_in_memory_fair_risks,
+        )
+        pre_risks, _ = derive_in_memory_fair_risks(blueprint_data, doc_lang=meta_lang, currency=currency)
+        live_annex_ale = sum(
+            float(r.get("ale") or 0.0)
+            for r in pre_risks
+            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        )
+        if live_annex_ale > 0.0:
+            total_fair_ale = live_annex_ale
+            blueprint_data["total_fair_ale"] = live_annex_ale
+            blueprint_data["annualized_loss_expectancy"] = live_annex_ale
+        else:
+            total_fair_ale = blueprint_data.get("total_fair_ale", 0.0)
 
         # Respect authoritative survey score from blueprint SSOT (eliminating split-brain with Tomo 1)
         authoritative_raw = (
@@ -1577,7 +1594,21 @@ class PayloadToASTBridge:
             resolve_maturity_band,
         )
         band_info = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=meta_lang)
-        localized_band_label = band_info.get("label", "Defined")
+        _cmmi_es_map = {
+            "Initial": "Inicial",
+            "Repeatable": "Repetible",
+            "Defined": "Definido",
+            "Managed": "Gestionado",
+            "Optimized": "Optimizado",
+            "band_initial": "Inicial",
+            "band_repeatable": "Repetible",
+            "band_defined": "Definido",
+            "band_managed": "Gestionado",
+            "band_optimized": "Optimizado",
+        }
+        band_key = band_info.get("band_key", "band_defined")
+        raw_label = band_info.get("label", "Definido")
+        localized_band_label = _cmmi_es_map.get(raw_label, _cmmi_es_map.get(band_key, raw_label)) if meta_lang.startswith("es") else raw_label
         level_prefix = t("level_prefix", locale=meta_lang)
         band_key_level_map = {
             "band_initial": 1,
@@ -1586,9 +1617,8 @@ class PayloadToASTBridge:
             "band_managed": 4,
             "band_optimized": 5,
         }
-        band_key = band_info.get("band_key", "band_defined")
-        band_level = band_key_level_map.get(band_key, 3)
-        global_band = f"{level_prefix} {band_level} - {localized_band_label}"
+        band_level = band_key_level_map.get(band_key, 2)
+        global_band = f"{level_prefix} {band_level} ({localized_band_label})"
 
         pillars_list = blueprint_data.get("pillar_score_profile", {}).get("pillars") or [{}]
         global_reading = (
@@ -1787,9 +1817,9 @@ class PayloadToASTBridge:
         scorecard_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True),
-                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True),
-                    CellNode(text=t("kpi_exposure_header", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("kpi_exposure_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
                 ]
             ),
             TableRowNode(
@@ -2561,6 +2591,7 @@ class PayloadToASTBridge:
             nodes.append(SpacerNode(points=15))
         else:
             # 3.4 Cross-Cutting Structural Debt Patterns (dynamically synthesized from tenant payload)
+            nodes.append(PageBreakNode())
             nodes.append(
                 HeadingNode(
                     text=t("cross_cutting_debt_title", locale=meta_lang),
@@ -2935,7 +2966,16 @@ class PayloadToASTBridge:
                 )
             )
 
+            _cmmi_es_map = {
+                "Initial": "Inicial", "Repeatable": "Repetible", "Defined": "Definido",
+                "Managed": "Gestionado", "Optimized": "Optimizado",
+                "Inicial": "Inicial", "Repetible": "Repetible", "Definido": "Definido",
+                "Gestionado": "Gestionado", "Optimizado": "Optimizado",
+            }
+
             for p_idx, r_item in enumerate(in_mem_rows, 1):
+                if p_idx in (2, 4):
+                    nodes.append(PageBreakNode())
                 p_name = r_item.get("pillar_name") or f"{t('table_header_pillar', locale=meta_lang)} {p_idx}"
                 nodes.append(
                     HeadingNode(
@@ -2950,8 +2990,10 @@ class PayloadToASTBridge:
                 delta_val = round(cal_val - dec_val, 2)
                 dec_fmt = format_number(dec_val, locale=meta_lang, decimals=2)
                 cal_fmt = format_number(cal_val, locale=meta_lang, decimals=2)
-                dec_band = r_item.get("declared_band_label") or ""
-                cal_band = r_item.get("band_label") or ""
+                raw_dec_band = r_item.get("declared_band_label") or ""
+                raw_cal_band = r_item.get("band_label") or ""
+                dec_band = _cmmi_es_map.get(raw_dec_band, raw_dec_band) if meta_lang.startswith("es") else raw_dec_band
+                cal_band = _cmmi_es_map.get(raw_cal_band, raw_cal_band) if meta_lang.startswith("es") else raw_cal_band
 
                 dec_display = f"{dec_fmt} ({dec_band})" if dec_band else dec_fmt
                 cal_display = f"{cal_fmt} ({cal_band})" if cal_band else cal_fmt
@@ -3405,7 +3447,7 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=12))
 
         # 4.3 Pure AS-IS Domain Risk Concentration Profile
-        nodes.append(SpacerNode(points=12))
+        nodes.append(PageBreakNode())
         nodes.append(
             HeadingNode(
                 text=t("ch4_sec3_title", locale=meta_lang),
@@ -3589,7 +3631,7 @@ class PayloadToASTBridge:
                 ]
             ),
         ]
-        nodes.append(TableNode(rows=dual_ledger_rows, autofit=True, col_widths=[0.42, 0.22, 0.36]))
+        # Dual Ledger table removed for clarity
         nodes.append(SpacerNode(points=10))
 
         tier_summary_rows = [
@@ -4025,10 +4067,9 @@ class PayloadToASTBridge:
             or hc.get("intrinsic_ale")
             or 0.0
         )
-        canonical_sle = float(vec_outputs.get("mean_sle") or hc.get("sle") or 0.0)
-        canonical_lef = float(vec_outputs.get("mean_lef") or hc.get("lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
-
         decomp = hc.get("additive_loss_decomposition") or {}
+        canonical_sle = float(decomp.get("gross_mean_sle") or hc.get("sle") or vec_outputs.get("mean_sle") or 0.0)
+        canonical_lef = float(decomp.get("mean_lef") or hc.get("lef") or vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
         if decomp and decomp.get("rto_hours") is not None:
             eff_recovery_hours = float(decomp["rto_hours"])
         else:
@@ -4248,13 +4289,9 @@ class PayloadToASTBridge:
             sev_badge_text = t("risk_card_ownership_badge_tangential", locale=meta_lang)
             sev_badge_bg = "64748B"
         elif is_deterministic:
-            header_bg = "0F172A"
+            header_bg = "1B263B"
             header_text = [255, 255, 255]
-            sev_badge_text = t(
-                "risk_card_ledger_b_badge",
-                locale=meta_lang,
-                default="LIBRO B: OPEX DETERMINISTA",
-            )
+            sev_badge_text = "OPTIMIZACIÓN FINOPS" if meta_lang == "es" else "FINOPS OPTIMIZATION"
             sev_badge_bg = "0D9488"
         else:
             header_bg = "1B263B"
@@ -4310,6 +4347,39 @@ class PayloadToASTBridge:
                     width_dxa=9360,
                     align="RIGHT",
                 )
+            ]
+        elif is_deterministic or (reconciled_sle <= 0) or ("desmantelamiento" in vuln_txt.lower()) or ("zombie" in vuln_txt.lower()) or ("nos" in vuln_txt.lower() and "contrato" in vuln_txt.lower()):
+            cost_lbl = "COSTE ANUAL ESTIMADO" if meta_lang == "es" else "ESTIMATED ANNUAL COST"
+            type_lbl = "TIPO DE EXPOSICIÓN" if meta_lang == "es" else "EXPOSURE TYPE"
+            waste_lbl = "Desperdicio de Recursos TI" if meta_lang == "es" else "IT Resource Waste"
+            plant_lbl = "IMPACTO EN FÁBRICA" if meta_lang == "es" else "PLANT IMPACT"
+            no_outage_lbl = "Sin parada de planta" if meta_lang == "es" else "Zero Plant Outage"
+            kpi_row_cells = [
+                CellNode(
+                    text=f"**{cost_lbl}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang, default='año')}",
+                    font_size=8.5,
+                    bg_color="F8FAFC",
+                    text_color_rgb=self.primary_color_rgb,
+                    grid_span=4,
+                    width_dxa=3120,
+                    align="CENTER",
+                ),
+                CellNode(
+                    text=f"**{type_lbl}**\n{waste_lbl}",
+                    font_size=8.5,
+                    bg_color="F8FAFC",
+                    grid_span=4,
+                    width_dxa=3120,
+                    align="CENTER",
+                ),
+                CellNode(
+                    text=f"**{plant_lbl}**\n{no_outage_lbl}",
+                    font_size=8.5,
+                    bg_color="F8FAFC",
+                    grid_span=4,
+                    width_dxa=3120,
+                    align="CENTER",
+                ),
             ]
         else:
             kpi_row_cells = [
@@ -4551,6 +4621,8 @@ class PayloadToASTBridge:
         def _dedup_clauses(raw_txt: str) -> str:
             if not raw_txt:
                 return raw_txt
+            if "\n" in raw_txt and any(p in raw_txt for p in ("1. ", "2. ", "3. ", "4. ")):
+                return raw_txt
             parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+|\n+", raw_txt) if p.strip()]
             seen: set[str] = set()
             unique_parts: list[str] = []
@@ -4730,21 +4802,6 @@ class PayloadToASTBridge:
                             grid_span=6,
                             width_dxa=4680,
                             border_left_color="2A9D8F",
-                            border_left_size=24,
-                            align="LEFT",
-                        ),
-                    ],
-                    cant_split=True,
-                ),
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=actuarial_box_text,
-                            font_size=8.0,
-                            bg_color="F8FAFC",
-                            grid_span=12,
-                            width_dxa=9360,
-                            border_left_color=self.primary_color_hex,
                             border_left_size=24,
                             align="LEFT",
                         ),

@@ -126,3 +126,19 @@ class PayloadIntegrityError(DomainValidationError):
         self.tower_id = tower_id
         self.control_id = control_id
         self.missing_attribute = missing_attribute
+
+
+class ActuarialContractViolationError(DomainValidationError):
+    """Raised when an asset or finding violates fail-closed actuarial contracts (SR 11-7)."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        context: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            error_code="ACTUARIAL_CONTRACT_VIOLATION",
+            context=context,
+        )

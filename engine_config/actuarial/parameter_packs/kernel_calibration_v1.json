@@ -8,7 +8,7 @@
   "kappa": 0.35,
   "copula_df": 4,
   "intra_tower_boost": 0.25,
-  "secondary_loss_cv": 0.50,
+  "secondary_loss_cv": 0.5,
   "spof_cmmi_penalty": 1,
   "max_dependence_loading": 0.35,
   "max_copula_correlation": 0.85,
@@ -18,5 +18,5 @@
   "baseline_horizon_years": 3,
   "tail_collapse_metric": "CVAR_90",
   "tail_collapse_threshold_frequency": 0.105,
-  "secondary_loss_event_probability": 0.10
+  "secondary_loss_event_probability": 0.1
 }

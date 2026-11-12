@@ -180,7 +180,28 @@ def register_physics_lexicon(
 
 
 def _get_external_physics_lexicon() -> dict[str, Sequence[re.Pattern[str]]]:
-    """Retrieves the registered declarative lexicon."""
+    """Retrieves the registered declarative lexicon, lazily loading from default config if empty."""
+    global _REGISTERED_PHYSICS_LEXICON
+    if not _REGISTERED_PHYSICS_LEXICON:
+        try:
+            import json
+            from pathlib import Path
+
+            current = Path(__file__).resolve()
+            for parent in current.parents:
+                lex_path = (
+                    parent
+                    / "engine_config"
+                    / "taxonomy"
+                    / "finding_physics_lexicon.json"
+                )
+                if lex_path.is_file():
+                    with open(lex_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    register_physics_lexicon(data)
+                    break
+        except Exception:
+            pass
     return _REGISTERED_PHYSICS_LEXICON
 
 
@@ -277,10 +298,10 @@ class PolymorphicFindingClassifier:
 
     _REGULATORY_BREACH_PATTERNS: Final[Sequence[re.Pattern[str]]] = (
         re.compile(
-            r"\b(gdpr|lgpd|hipaa|pci[- ]dss|sox|nis2|dora|nerc[- ]cip|rgpd|"
-            r"data\s+breach|data\s+exfiltration|unauthorized\s+disclosure|"
-            r"pii|phi|unencrypted\s+data|regulatory\s+fine|statutory\s+penalty|"
-            r"shared\s+privileged\s+account|shared\s+root)\b",
+            r"\b(data\s+breach|data\s+exfiltration|unauthorized\s+disclosure|"
+            r"pii|phi|unencrypted\s+(pii|phi|data)|fuga\s+de\s+datos|exfiltraci[oó]n|"
+            r"regulatory\s+fine|statutory\s+penalty|sanci[oó]n\s+regulatoria|"
+            r"multa\s+de\s+privacidad|privacidad\s+de\s+datos)\b",
             re.I,
         ),
     )
@@ -291,7 +312,8 @@ class PolymorphicFindingClassifier:
             r"disaster\s+recovery|\bdrp\b|business\s+continuity\s+failure|"
             r"plant\s+stoppage|production\s+halt|scada\s+outage|blackout|"
             r"core\s+network\s+outage|ransomware\s+encryption|backup\s+failure|"
-            r"dispatch\s+halt|weighbridge\s+outage|fiber\s+cut|clinical\s+triage\s+outage)\b",
+            r"dispatch\s+halt|weighbridge\s+outage|fiber\s+cut|clinical\s+triage\s+outage|"
+            r"geographical\s+diversity|dual[- ]datacenter|datacenter\s+redundancy|campus\s+backbone)\b",
             re.I,
         ),
     )

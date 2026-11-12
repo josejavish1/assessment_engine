@@ -1,32 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "assessment-engine"
 version = "0.1.0"
 description = "AI Assessment Engine for Technology Architecture"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 dependencies = [
-    "jinja2",
-    "google-cloud-aiplatform",
+    "fastapi",
     "google-adk",
+    "google-api-core",
+    "google-auth",
+    "google-cloud-aiplatform",
+    "google-cloud-discoveryengine",
+    "google-cloud-documentai",
+    "google-cloud-secret-manager",
     "google-genai",
-    "pydantic",
-    "pydantic-settings",
-    "python-docx",
+    "httpx",
+    "jinja2",
+    "lxml",
     "matplotlib",
-    "python-dotenv",
-    "python-json-logger",
+    "mcp",
+    "networkx",
+    "numpy",
+    "openpyxl",
     "opentelemetry-distro",
     "opentelemetry-instrumentation",
     "opentelemetry-instrumentation-fastapi",
     "opentelemetry-instrumentation-logging",
-    "networkx",
+    "pydantic",
+    "pydantic-settings",
+    "python-dateutil",
+    "python-docx",
+    "python-dotenv",
+    "python-json-logger",
+    "pyyaml",
+    "requests",
     "rich",
-    "tree_sitter",
-    "tree_sitter_python",
-    "mcp",
+    "scipy",
+    "starlette",
     "tenacity",
     "vertexai",
-    "google-api-core",
-    "libcst"
+]
+
+[dependency-groups]
+dev = [
+    "duckduckgo-search>=8.0.0",
+    "hypothesis>=6.100.0",
+    "libcst>=1.4.0",
+    "mypy>=1.10.0",
+    "playwright>=1.45.0",
+    "pre-commit>=3.7.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-mock>=3.14.0",
+    "pytest-xdist>=3.5.0",
+    "ruff>=0.5.0",
 ]
 
 [project.scripts]

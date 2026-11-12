@@ -807,9 +807,24 @@ class FairRiskPolicy(BaseSovereignPolicy):
             consolidated_losses = np.maximum(all_primary_lms, all_sec_losses) + (all_primary_lms * 0.1)
 
             loss_per_run = np.bincount(event_run_ids, weights=consolidated_losses, minlength=size)
+        else:
+            loss_per_run = np.zeros(size)
+
+        empirical_losses = np.minimum(loss_per_run, 500_000_000.0)
         finding["threat_event_frequency"] = tef
         finding["vulnerability_level"] = vuln
         finding["loss_magnitude"] = lm
+        finding["fair_ale_score"] = round(float(np.mean(empirical_losses)), 2)
+        finding["fair_p90_score"] = round(
+            float(np.percentile(empirical_losses, 90.0)) if len(empirical_losses) > 0 else 0.0,
+            2,
+        )
+        finding["fair_min_score"] = round(
+            float(np.min(empirical_losses)) if len(empirical_losses) > 0 else 0.0, 2
+        )
+        finding["fair_max_score"] = round(
+            float(np.max(empirical_losses)) if len(empirical_losses) > 0 else 0.0, 2
+        )
 
         # standard Enterprise Actuarial Auditing: Attach Physical Accounting Breakdown to finding
         hourly_val = float(hourly_cost) if hourly_cost is not None else 500.0

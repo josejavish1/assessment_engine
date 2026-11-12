@@ -3,16 +3,16 @@
   "methodology_baseline": "Composite Clinical Infrastructure Baseline (HITRUST, HIPAA, NIS2 Healthcare Cohort)",
   "effective_date": "2026-Q1",
   "benchmarks": {
-    "T1": 4.00,
-    "T2": 3.80,
+    "T1": 4.0,
+    "T2": 3.8,
     "T3": 3.75,
-    "T4": 3.90,
-    "T5": 4.10,
+    "T4": 3.9,
+    "T5": 4.1,
     "T6": 4.15,
     "T7": 3.85,
     "T8": 3.95,
-    "T9": 3.80,
-    "T10": 3.70
+    "T9": 3.8,
+    "T10": 3.7
   },
   "justifications": {
     "default": "Healthcare infrastructure benchmarks prioritize patient safety, life-critical system continuity, and protected health information (PHI) confidentiality. Hospital information systems (HIS), picture archiving (PACS), and electronic health records (EHR) demand continuous availability, isolated biomedical device VLANs, and disaster recovery architectures capable of operating during external telecom outages.",
@@ -28,13 +28,44 @@
     "T10": "Clinical IT governance and medical device software lifecycle management (3.70)."
   },
   "workforce_digital_profile": {
-    "corporate_seat_ratio": 0.20,
+    "corporate_seat_ratio": 0.2,
     "shared_operational_edge_ratio": 0.65,
     "deskless_field_ratio": 0.15,
     "primary_disruption_driver": "CLINICAL_FLOW_AND_TRIAGE",
-    "work_make_up_elasticity": 0.10,
+    "work_make_up_elasticity": 0.1,
     "annual_endpoint_refresh_rate": 0.25,
     "hours_per_manual_refresh": 3.0,
     "typical_it_support_hourly_rate": 50.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 1.0,
+    "manual_fallback_efficacy_eta": 0.4,
+    "physical_buffer_horizon_hours": 4.0,
+    "post_buffer_decay_lambda": 0.2,
+    "reconciliation_friction_omega": 0.1,
+    "fallback_mechanism_description": "paper charting and manual clinical triage"
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

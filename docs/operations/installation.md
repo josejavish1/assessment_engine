@@ -31,11 +31,10 @@ Este documento describe y formaliza el protocolo estándar de instalación, conf
 El procedimiento estándar para el aprovisionamiento y despliegue del entorno virtual local se ejecuta de la siguiente manera:
 
 ```bash
-python3.11 -m venv .venv
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+uv sync --all-groups
 ```
+
+Este comando inicializa `.venv/` en Python 3.11, resuelve el árbol de dependencias desde `uv.lock` de forma determinista e instala el paquete `assessment-engine` en modo editable.
 
 ## Justificación del Modo de Instalación Editable (`-e .`)
 

@@ -3,13 +3,13 @@
   "methodology_baseline": "Composite IT/OT Industrial Benchmark (Gartner Industrial Cohort, CMMI v2.0, NIST CSF 2.0)",
   "effective_date": "2026-Q1",
   "benchmarks": {
-    "T1": 3.80,
+    "T1": 3.8,
     "T2": 3.65,
     "T3": 3.65,
     "T4": 3.55,
     "T5": 3.05,
     "T6": 3.35,
-    "T7": 3.40,
+    "T7": 3.4,
     "T8": 3.55,
     "T9": 3.75,
     "T10": 3.25
@@ -30,11 +30,42 @@
   "workforce_digital_profile": {
     "corporate_seat_ratio": 0.25,
     "shared_operational_edge_ratio": 0.15,
-    "deskless_field_ratio": 0.60,
+    "deskless_field_ratio": 0.6,
     "primary_disruption_driver": "PLANT_DISPATCH_AND_LOGISTICS",
-    "work_make_up_elasticity": 0.30,
+    "work_make_up_elasticity": 0.3,
     "annual_endpoint_refresh_rate": 0.285,
     "hours_per_manual_refresh": 3.5,
     "typical_it_support_hourly_rate": 45.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 0.85,
+    "manual_fallback_efficacy_eta": 0.65,
+    "physical_buffer_horizon_hours": 12.0,
+    "post_buffer_decay_lambda": 0.15,
+    "reconciliation_friction_omega": 0.05,
+    "fallback_mechanism_description": "Local PLC/SCADA autonomous loop operation, manual batching, and paper-based weighbridge/dispatch ticketing buffered by physical silo capacity."
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

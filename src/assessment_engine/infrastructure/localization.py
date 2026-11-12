@@ -146,9 +146,15 @@ def format_number(value: float, locale: str = "en", decimals: int = 2) -> str:
     norm_loc, base_loc = normalize_locale(locale)
     val_float = float(value)
     abs_val = abs(val_float)
-    integer_part = int(abs_val)
-    decimal_part = f"{abs_val - integer_part:.{decimals}f}"[2:] if decimals > 0 else ""
     sign = "-" if val_float < 0 else ""
+
+    if decimals > 0:
+        formatted_str = f"{abs_val:.{decimals}f}"
+        int_part_str, decimal_part = formatted_str.split(".", 1)
+        integer_part = int(int_part_str)
+    else:
+        integer_part = int(round(abs_val))
+        decimal_part = ""
 
     # Group integer part into thousands
     int_str = str(integer_part)

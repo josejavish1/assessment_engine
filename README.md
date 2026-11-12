@@ -38,39 +38,32 @@ La base de código está encapsulada bajo el espacio de nombres unificado de Pyt
 
 ## 2. Onboarding e Instalación Local
 
-### Requisitos Previos:
-*   Python 3.11 instalado en el sistema operativo.
-*   Acceso a la línea de comandos (Terminal/Bash).
+### Prerequisites:
+*   Python 3.11 installed.
+*   `uv` package manager (`https://docs.astral.sh/uv/`).
 
-### Configuración del Entorno:
-1.  **Crear el entorno virtual de Python:**
+### Environment Setup:
+1.  **Sync environment and dependencies:**
     ```bash
-    python -m venv .venv
+    uv sync --all-groups
     ```
-2.  **Activar el entorno virtual:**
+2.  **Activate virtual environment (optional, or use `uv run`):**
     ```bash
     source .venv/bin/activate
     ```
-3.  **Instalar dependencias y paquete local en modo editable:**
+3.  **Install Git pre-commit hooks:**
     ```bash
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-    pip install -e .
-    ```
-4.  **Instalar la suite de ganchos Git (Pre-commit hooks):**
-    ```bash
-    pip install pre-commit
-    pre-commit install
+    uv run pre-commit install
     ```
 
 ---
 
-## 3. Validación y Ejecución de Pruebas
+## 3. Validation and Testing
 
-Para garantizar la estabilidad del motor tras realizar cualquier modificación, ejecuta la batería completa de pruebas unitarias e integrales locales:
+To verify engine stability:
 
 ```bash
-PYTHONPATH=src .venv/bin/pytest
+uv run pytest tests/
 ```
 
 La suite de pruebas contiene 105 tests y está configurada en `pyproject.toml` para ignorar advertencias cruzadas y evitar el descubrimiento de directorios de trabajo efímeros (`working/`).

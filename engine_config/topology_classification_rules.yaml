@@ -1,0 +1,151 @@
+# Topology and Architectural Classification Rules (Fail-Closed, SR 11-7)
+schema_version: "2.0.0-SR117"
+
+environment_tier_rules:
+  - rule_id: "ENV-LAB-DEV-TEST"
+    assign_value: "LAB_DEV_TEST"
+    priority: 10
+    criteria:
+      name_or_finding:
+        - "lab"
+        - "laboratorio"
+        - "sandbox"
+        - "experimental"
+        - "dev-cluster"
+        - "test environment"
+        - "future cluster"
+        - "future workload"
+        - "futuros cluster"
+        - "futuras carga"
+        - "roadmap opportunity"
+        - "oportunidad de implementar"
+        - "oportunidad de"
+        - "hoja de ruta"
+        - "roadmap"
+        - "fase inicial en la formalizacion"
+        - "adopcion temprana"
+
+  - rule_id: "ENV-STAGING-UAT"
+    assign_value: "STAGING_UAT"
+    priority: 20
+    criteria:
+      name_or_finding:
+        - "staging"
+        - "pre-produccion"
+        - "preproduccion"
+        - "pre-prod"
+        - "uat"
+        - "homologacion"
+
+  - rule_id: "ENV-PROD-SUPPORT"
+    assign_value: "PROD_SUPPORT"
+    priority: 30
+    criteria:
+      name_or_finding:
+        - "auxiliary"
+        - "peripheral"
+        - "periferic"
+        - "office"
+        - "campus"
+        - "backup site"
+        - "sede periferica"
+        - "delegacion periferica"
+
+  - rule_id: "ENV-PROD-CRITICAL"
+    assign_value: "PROD_CRITICAL"
+    priority: 40
+    criteria:
+      name_or_finding:
+        - "core"
+        - "produccion"
+        - "productiv"
+        - "production"
+        - "horno"
+        - "planta principal"
+        - "cpd principal"
+        - "bascula"
+        - "expedicion"
+        - "prenet"
+        - "sap"
+        - "transaccional"
+        - "mision critica"
+        - "mission critical"
+
+architectural_role_rules:
+  - rule_id: "ROLE-CONTROL-PLANE"
+    assign_value: "CONTROL_PLANE"
+    priority: 10
+    criteria:
+      name_or_finding:
+        - "pam"
+        - "privileged access"
+        - "root compartido"
+        - "shared root"
+        - "active directory"
+        - "domain controller"
+        - "rodc"
+        - "vcenter"
+        - "esxi cluster manager"
+        - "core switch"
+        - "firewall perimetral"
+        - "boveda de credenciales"
+        - "key vault"
+        - "identity provider"
+
+  - rule_id: "ROLE-TELEMETRY-LOGGING"
+    assign_value: "TELEMETRY_LOGGING"
+    priority: 20
+    criteria:
+      name_or_finding:
+        - "log"
+        - "rotacion de log"
+        - "siem"
+        - "syslog"
+        - "monitorizacion"
+        - "monitoring"
+        - "splunk"
+        - "elastic"
+        - "var/log"
+
+  - rule_id: "ROLE-STANDALONE-ENDPOINT"
+    assign_value: "STANDALONE_ENDPOINT"
+    priority: 30
+    criteria:
+      name_or_finding:
+        - "portatil"
+        - "laptop"
+        - "endpoint"
+        - "puesto de trabajo"
+        - "impresora"
+        - "workplace"
+        - "autopilot"
+        - "usb"
+        - "armario estanco"
+        - "caseta"
+        - "periferic"
+        - "satelite"
+
+  - rule_id: "ROLE-DATA-PLANE"
+    assign_value: "DATA_PLANE"
+    priority: 40
+    criteria:
+      name_or_finding:
+        - "database"
+        - "base de datos"
+        - "oracle"
+        - "sql server"
+        - "storage"
+        - "almacenamiento"
+        - "netapp"
+        - "simplivity"
+        - "servidor de aplicaciones"
+        - "erp"
+        - "scada"
+        - "plc"
+        - "compute cluster"
+        - "nodo de computo"
+        - "kubernetes"
+        - "k8s"
+        - "container"
+        - "contenedor"
+        - "csi"

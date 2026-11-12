@@ -50,10 +50,10 @@
   },
   "T8": {
     "canonical_code": "T8",
-    "primary_engineering_standard": "DAMA-DMBOK2 / ISO/IEC 38505-1",
-    "regulatory_compliance_framework": "ISO/IEC 42001 / GDPR",
-    "standard_description_key": "norm_row_dama_desc",
-    "standard_purpose_key": "norm_row_dama_purp"
+    "primary_engineering_standard": "FinOps Foundation Framework / COBIT 2019",
+    "regulatory_compliance_framework": "ISO/IEC 19770 (ITAM) / CSRD IT Transparency",
+    "standard_description_key": "norm_row_finops_desc",
+    "standard_purpose_key": "norm_row_finops_purp"
   },
   "T9": {
     "canonical_code": "T9",

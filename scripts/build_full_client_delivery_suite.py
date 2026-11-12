@@ -166,7 +166,7 @@ def main() -> None:
             REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
             REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
             REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         ]:
             if mirror_dest.parent.exists():
                 shutil.copy2(tomo1_out, mirror_dest)
@@ -209,7 +209,7 @@ def main() -> None:
         REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
     ]:
         if mirror_dest.parent.exists():
             shutil.copy2(tomo1_out, mirror_dest)

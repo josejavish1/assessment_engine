@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Dict, Literal
+from typing import Any, Dict, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -124,6 +124,7 @@ class ActuarialParameterPack(BaseModel):
     pert_dispersion: PertDispersionSpec = Field(default_factory=PertDispersionSpec)
     operational_zones: Dict[str, OperationalZoneSpec]
     towers: Dict[str, TowerDefaultSpec]
+    physics_archetype_priors: Optional[Dict[str, Any]] = None
     pack_sha256: str = Field(default="")
 
     def compute_canonical_sha256(self) -> str:

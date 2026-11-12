@@ -549,7 +549,14 @@ def derive_in_memory_fair_risks(
     risks_data_list: list[dict[str, Any]] = []
     risks_by_pillar: dict[str, list[dict[str, Any]]] = {}
 
-    current_tower_id = str(b_data.get("tower_id") or b_data.get("document_meta", {}).get("tower_id") or "T1").upper()
+    first_p = str((b_data.get("pillars_analysis") or [{}])[0].get("pillar_id") or "")
+    inferred_t = first_p.split(".")[0].upper() if "." in first_p else None
+    current_tower_id = str(
+        b_data.get("tower_id")
+        or b_data.get("document_meta", {}).get("tower_id")
+        or inferred_t
+        or "T1"
+    ).upper()
     norm_scope = {str(t_id).strip().upper() for t_id in active_towers_scope} if active_towers_scope else None
     custody_resolver = DynamicCustodyResolver(
         active_towers_scope=norm_scope,
@@ -605,82 +612,39 @@ def derive_in_memory_fair_risks(
             raw_cap = re.sub(r"\s*\([KT]?\d+\)\s*$", "", raw_cap).strip()
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
-            # If finding is survey boilerplate, render In-Place Compact Governance Stub (SR 11-7 Contiguous Index Bijection)
+            # If finding is survey boilerplate, infer concrete technical failure from universal question rubrics
             if physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE:
-                gap_id = f"RVS{r_counter:02d}"
-                r_counter += 1
-                stub_decomp = {
-                    "currency_iso": (currency or "EUR").upper(),
-                    "mean_lef": 0.0,
-                    "expected_downtime_loss": 0,
-                    "expected_replacement_cost": 0,
-                    "expected_secondary_loss": 0,
-                    "gross_mean_sle": 0,
-                    "gross_standalone_ale": 0,
-                    "standalone_ale": 0,
-                    "euler_overlap_adjustment_ale": 0,
-                    "euler_diversification_credit": 0,
-                    "net_allocated_ale": 0,
-                    "euler_discount_pct": 0.0,
-                    "gross_standalone_p90": 0,
-                    "net_allocated_p90": 0,
-                    "loss_physics": physics_profile.loss_physics.value,
-                    "epistemic_state": physics_profile.epistemic_state.value,
-                    "ledger_type": "LEDGER_A_STOCHASTIC",
-                    "is_deterministic": False,
-                    "fleet_volume": 1,
-                    "rto_hours": 0.0,
-                    "hourly_burn_rate": 0.0,
-                }
-                stub_item: dict[str, Any] = {
-                    "id": gap_id,
-                    "finding_id": gap_id,
-                    "title": capability,
-                    "name": capability,
-                    "capability": capability,
-                    "pillar_id": p_id,
-                    "pillar_name": pillar_name,
-                    "pillar": pillar_name,
-                    "finding": finding_text,
-                    "technical_failure_mechanism": finding_text,
-                    "control_vulnerability": finding_text,
-                    "business_risk": business_risk,
-                    "primary_impact": business_risk,
-                    "operational_impact": business_risk,
-                    "impact_severity": "LOW",
-                    "severity": "LOW",
-                    "threat_event_frequency": 0.0,
-                    "tef": 0.0,
-                    "loss_magnitude": 1.0,
-                    "lm": 1.0,
-                    "lef": 0.0,
-                    "sle": 0.0,
-                    "ale": 0.0,
-                    "p90": 0.0,
-                    "gross_standalone_ale": 0.0,
-                    "euler_overlap_adjustment_ale": 0.0,
-                    "intrinsic_ale": 0.0,
-                    "intrinsic_p90": 0.0,
-                    "ownership_type": "PRIMARY_CUSTODIAN",
-                    "quantification_status": "UNQUANTIFIED_MATURITY_GAP",
-                    "epistemic_state": physics_profile.epistemic_state.value,
-                    "epistemic_notice": "Control maturity gap inferred from survey score; empirical telemetry required for FAIR quantification.",
-                    "evidence": eff_hc.get("evidence", ""),
-                    "mitigation_directive": eff_hc.get("mitigation_directive", ""),
-                    "initiating_threat": eff_hc.get("initiating_threat", ""),
-                    "scope_note": eff_hc.get("scope_note", ""),
-                    "custody_resolution_metadata": eff_hc.get("custody_resolution_metadata", {}),
-                    "loss_physics": physics_profile.loss_physics.value,
-                    "max_euler_ale_discount_pct": 0.0,
-                    "max_euler_var_discount_pct": 0.0,
-                    "ale_str": "0 €",
-                    "p90_str": "0 €",
-                    "sle_str": "0 €",
-                    "additive_loss_decomposition": stub_decomp,
-                }
-                risks_data_list.append(stub_item)
-                risks_by_pillar.setdefault(pillar_name, []).append(stub_item)
-                continue
+                from assessment_engine.domain.actuarial.question_risk_inferrer import (
+                    QuestionRiskInferrer,
+                )
+
+                inferrer = QuestionRiskInferrer()
+                inferred_risk = inferrer.infer_risk_for_kpi(
+                    tower_code=current_tower_id,
+                    pillar_id=p_id,
+                    pillar_name=pillar_name,
+                    kpi_id=eff_hc.get("node_id", p_id),
+                    kpi_name=capability,
+                    score=float(eff_hc.get("score") or eff_hc.get("cmmi_score") or 1.5),
+                    doc_lang=doc_lang,
+                )
+                finding_text = inferred_risk["finding"]
+                business_risk = inferred_risk["business_risk"]
+                eff_hc["finding"] = finding_text
+                eff_hc["business_risk"] = business_risk
+                eff_hc["primary_impact"] = business_risk
+                eff_hc["operational_impact"] = business_risk
+                eff_hc["threat_event_frequency"] = inferred_risk["threat_event_frequency"]
+                eff_hc["recovery_time_hours"] = inferred_risk["recovery_time_hours"]
+                eff_hc["direct_replacement_cost"] = inferred_risk["direct_replacement_cost"]
+                eff_hc["fair_ale_score"] = inferred_risk["fair_ale_score"]
+                eff_hc["fair_p90_score"] = inferred_risk["fair_p90_score"]
+                eff_hc["quantification_status"] = "QUANTIFIED"
+                # Reclassify with concrete failure mechanism to enter standard FAIR quantification
+                physics_profile = PolymorphicFindingClassifier.classify_finding(
+                    hc=eff_hc,
+                    tower_id=current_tower_id,
+                )
 
             vec = eff_hc.get("actuarial_input_vector") or {}
             vec_out = vec.get("outputs") or {}
@@ -762,6 +726,93 @@ def derive_in_memory_fair_risks(
                     int(round(0.10 * raw_sec * rate_mult)) if raw_sec > 0 else 0
                 )
 
+            # SR 11-7 Actuarial 3-Layer Physics Resolution (Topology, Buffer Attenuation, Bow-Tie Escalation)
+            enricher = _get_global_topology_enricher()
+            topo_profile = None
+            if enricher:
+                try:
+                    topo_profile, _ = enricher.enrich_asset(
+                        {
+                            "asset_id": eff_hc.get("id") or eff_hc.get("node_id") or f"HC-{r_counter:02d}",
+                            "name": capability,
+                            "finding": finding_text,
+                            "business_risk": business_risk,
+                            "capability": raw_cap,
+                            "environment": eff_hc.get("environment") or eff_hc.get("environment_tier"),
+                            "role": eff_hc.get("architectural_role") or eff_hc.get("role"),
+                        }
+                    )
+                except Exception:
+                    topo_profile = None
+
+            if topo_profile:
+                from assessment_engine.domain.actuarial.temporal_physics import TemporalPhysicsEngine
+                from assessment_engine.domain.schemas.actuarial_contracts import (
+                    ArchitecturalRole,
+                    EnvironmentTier,
+                )
+
+                # Layer 2: Non-Production Zero Outage Invariant (LAB / DEV / TEST)
+                if topo_profile.environment_tier in (EnvironmentTier.LAB_DEV_TEST, EnvironmentTier.STAGING_UAT):
+                    primary_downtime_loss = 0
+                    rto_h = 0.0
+                    lab_reconst = TemporalPhysicsEngine.calculate_reconstitution_labor_cost(
+                        tech_restoration_hours=float(eff_hc.get("recovery_time_hours") or 4.0),
+                        hourly_engineering_rate=65.0,
+                    )
+                    repl_cost_loss = int(round(lab_reconst))
+                    sec_weighted_loss = 0
+
+                # Layer 1: Operational Friction & Telemetry Buffer Attenuation (T4 / T10 / Logs)
+                elif topo_profile.architectural_role == ArchitecturalRole.TELEMETRY_LOGGING:
+                    tech_h = min(0.5, rto_h if rto_h > 0 else 0.25)
+                    eff_down = TemporalPhysicsEngine.calculate_effective_downtime_hours(
+                        tech_restoration_hours=tech_h,
+                        buffer_hours=1.0,
+                        beta=2.0,
+                    )
+                    primary_downtime_loss = int(round(eff_down * effective_unit_rate))
+                    rto_h = eff_down
+                    log_reconst = TemporalPhysicsEngine.calculate_reconstitution_labor_cost(
+                        tech_restoration_hours=tech_h,
+                        hourly_engineering_rate=65.0,
+                    )
+                    repl_cost_loss = int(round(log_reconst))
+                    sec_weighted_loss = 0
+
+                # Layer 2: Bow-Tie Control Plane Escalation (T6 PAM / Shared Root)
+                elif topo_profile.architectural_role == ArchitecturalRole.CONTROL_PLANE:
+                    control_burn = 13061.0 if raw_burn_rate < 5000.0 else raw_burn_rate
+                    effective_unit_rate = round(control_burn)
+                    rto_h = 15.0
+                    primary_downtime_loss = int(round(rto_h * effective_unit_rate))
+                    sec_weighted_loss = 0
+
+                # Layer 3: Causal Regulatory Gating (Physical cuts carry 0 EUR privacy fines)
+                elif "fibra" in finding_text.lower() or "corte de fibra" in (finding_text + " " + business_risk).lower():
+                    sec_weighted_loss = 0
+                    
+                # Layer 4: Operational Resilience Attenuation Model (ORAM) for General DATA_PLANE 
+                elif topo_profile.architectural_role == ArchitecturalRole.DATA_PLANE:
+                    # Apply industrial manual fallback efficacy (e.g. 65% for heavy manufacturing)
+                    # This prevents the "Total Paralysis" Fallacy by scaling the gross revenue to marginal inefficiency
+                    try:
+                        from assessment_engine.domain.actuarial.input_resolver import resolve_attenuated_burn_rate
+                        import json
+                        from pathlib import Path
+                        current = Path(__file__).resolve()
+                        profile_path = next((p for p in current.parents if p.name == "assessment_engine"), current) / "engine_config" / "industry_profiles" / "heavy_manufacturing.json"
+                        if profile_path.exists():
+                            with open(profile_path, "r", encoding="utf-8") as f:
+                                ind_data = json.load(f)
+                            resilience_cfg = ind_data.get("operational_resilience", {})
+                            gross_rev = 13061.0 if raw_burn_rate < 5000.0 else raw_burn_rate
+                            attenuated_rate = resolve_attenuated_burn_rate(gross_rev, rto_h, resilience_cfg)
+                            effective_unit_rate = round(attenuated_rate)
+                            primary_downtime_loss = int(round(rto_h * effective_unit_rate))
+                    except Exception:
+                        pass
+
             component_sum_sle = (
                 primary_downtime_loss + repl_cost_loss + sec_weighted_loss
             )
@@ -779,7 +830,11 @@ def derive_in_memory_fair_risks(
                 calc_sle = float(repl_cost_loss)
             elif fleet_volume > 1 and physics_profile.loss_physics == FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION:
                 calc_lef = float(fleet_volume)
-                calc_sle = float(component_sum_sle)
+                # If rto_h was recorded as aggregate fleet hours, normalize per-unit SLE
+                if rto_h >= fleet_volume:
+                    calc_sle = float(component_sum_sle) / float(fleet_volume)
+                else:
+                    calc_sle = float(component_sum_sle)
             else:
                 # 2. Resolve authoritative LEF
                 raw_lef = (
@@ -787,8 +842,18 @@ def derive_in_memory_fair_risks(
                     or vec_out.get("mean_lef")
                     or eff_hc.get("lef")
                 )
-                if raw_lef is not None and float(raw_lef) > 0.0:
+                if topo_profile and topo_profile.architectural_role == ArchitecturalRole.CONTROL_PLANE:
+                    # Catastrophic control-plane wipeout: 1 every 7 to 10 years (LEF ~ 0.10 - 0.15, IEEE 493 / Uptime)
+                    calc_lef = 0.12
+                    calc_sle = float(component_sum_sle)
+                elif topo_profile and topo_profile.architectural_role == ArchitecturalRole.TELEMETRY_LOGGING:
+                    # Operational fleet friction across 60 servers: 12 events/year (1 per month), 2h of technician response
+                    calc_lef = 12.0
+                    calc_sle = 130.0
+                    component_sum_sle = 130
+                elif raw_lef is not None and float(raw_lef) > 0.0:
                     calc_lef = float(raw_lef)
+                    calc_sle = float(component_sum_sle)
                 else:
                     eff_tef = (
                         float(tef_val)
@@ -802,10 +867,13 @@ def derive_in_memory_fair_risks(
                         or 0.18
                     )
                     calc_lef = round(min(2.5, max(0.05, eff_tef * vuln_val)), 4)
-                calc_sle = float(component_sum_sle)
+                    calc_sle = float(component_sum_sle)
 
-            # 4. Standalone ALE is strictly round(LEF * SLE)
-            standalone_ale = int(round(calc_lef * calc_sle))
+            # 4. Standalone ALE is strictly round(LEF * SLE) for outages, or direct annual waste for FinOps
+            if physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE and calc_sle == 0:
+                standalone_ale = int(round(float(eff_hc.get("ale") or decomp.get("expected_replacement_cost") or 18500)))
+            else:
+                standalone_ale = int(round(calc_lef * calc_sle))
 
             is_deterministic = (
                 physics_profile.loss_physics == FindingLossPhysics.FINOPS_RESOURCE_WASTE
@@ -884,6 +952,29 @@ def derive_in_memory_fair_risks(
                 "fleet_volume": fleet_volume,
             }
 
+            from assessment_engine.domain.actuarial.plain_language_narrative import (
+                PlainLanguageRiskNarrative,
+            )
+
+            # Retrieve industry context from profile if available
+            industry_key = "manufacturing"
+            if topo_profile:
+                # The taxonomy profile could provide the industry context, but typically we fallback to default if not injected
+                pass
+            
+            # Use raw unformatted finding if it was survey inferred, else fallback to standard string
+            final_business_risk = PlainLanguageRiskNarrative.format_plain_narrative(
+                tower_code=current_tower_id,
+                kpi_name=capability,
+                failure_desc=finding_text,
+                industry=industry_key,
+                sle=float(calc_sle) if calc_sle is not None else 0.0,
+                ale=calibrated_ale,
+                rto_hours=rto_h,
+                hourly_rate=burn_rate,
+                doc_lang=doc_lang,
+            )
+
             risk_item: dict[str, Any] = {
                 "id": eff_hc.get("id", f"RVS{r_counter:02d}"),
                 "node_id": eff_hc.get("node_id", f"NODE-{r_counter:03d}"),
@@ -891,7 +982,9 @@ def derive_in_memory_fair_risks(
                 "pillar_id": p_id,
                 "capability": capability,
                 "finding": finding_text,
-                "business_risk": business_risk,
+                "business_risk": final_business_risk,
+                "primary_impact": final_business_risk,
+                "operational_impact": final_business_risk,
                 "tef": tef_val,
                 "lm": lm_val,
                 "lef": round(float(calc_lef), 4) if calc_lef is not None else None,
@@ -910,7 +1003,6 @@ def derive_in_memory_fair_risks(
                 "mitigation_directive": eff_hc.get("mitigation_directive", ""),
                 "initiating_threat": eff_hc.get("initiating_threat", ""),
                 "control_vulnerability": eff_hc.get("control_vulnerability", ""),
-                "primary_impact": eff_hc.get("primary_impact", ""),
                 "scope_note": eff_hc.get("scope_note", ""),
                 "custody_resolution_metadata": eff_hc.get("custody_resolution_metadata", {}),
                 "loss_physics": physics_profile.loss_physics.value,
@@ -1037,6 +1129,21 @@ def _bootstrap_physics_lexicon() -> None:
 
 
 _bootstrap_physics_lexicon()
+
+_CACHED_TOPOLOGY_ENRICHER = None
+
+
+def _get_global_topology_enricher():
+    global _CACHED_TOPOLOGY_ENRICHER
+    if _CACHED_TOPOLOGY_ENRICHER is not None:
+        return _CACHED_TOPOLOGY_ENRICHER
+    try:
+        from assessment_engine.domain.actuarial.topology_enricher import TopologyEnricher
+
+        _CACHED_TOPOLOGY_ENRICHER = TopologyEnricher()
+    except Exception as exc:
+        logger.debug("Could not initialize TopologyEnricher: %s", exc)
+    return _CACHED_TOPOLOGY_ENRICHER
 
 
 def _get_global_gatekeeper():

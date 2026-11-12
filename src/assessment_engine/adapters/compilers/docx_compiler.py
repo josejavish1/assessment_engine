@@ -674,7 +674,19 @@ class DocxCompiler(DocumentCompiler):
 
             doc_locale = str(ast.metadata.get("language") or "en").lower()
             client_name = str(ast.metadata.get("client_name") or ast.metadata.get("client") or "CLIENT").upper()
-            footer_prefix_str = t("corporate_footer_prefix", locale=doc_locale)
+            doc_title_lower = str(ast.metadata.get("title") or getattr(ast, "title", "") or "").lower()
+            is_tomo1 = (
+                ast.metadata.get("is_tomo1")
+                or ast.metadata.get("document_type") == "TOMO_1"
+                or "situación actual" in doc_title_lower
+                or "tomo" in doc_title_lower
+                or "global" in doc_title_lower
+                or "consolidado" in doc_title_lower
+            )
+            if is_tomo1:
+                footer_prefix_str = "Diagnóstico Global AS-IS - Confidencial  |  Pág." if doc_locale.startswith("es") else "Global AS-IS Diagnostic - Confidential  |  Page"
+            else:
+                footer_prefix_str = t("corporate_footer_prefix", locale=doc_locale)
             full_footer = f"{client_name} - {footer_prefix_str} "
             r_text = p_foot.add_run(full_footer)
             set_run_font_comprehensive(r_text, font_name="Arial")
@@ -1067,6 +1079,7 @@ class DocxCompiler(DocumentCompiler):
             font_size_pt = 11.0
 
         # C-Level Typography Hygiene: Prevent orphaned headings at page bottom
+        p.paragraph_format.keep_with_next = True
         pPr = p._p.get_or_add_pPr()
         pPr.append(OxmlElement("w:keepNext"))
         pPr.append(OxmlElement("w:keepLines"))

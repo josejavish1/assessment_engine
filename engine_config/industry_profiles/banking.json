@@ -3,16 +3,16 @@
   "methodology_baseline": "Composite Financial Resilience Framework (DORA, Basel III, NIST CSF 2.0)",
   "effective_date": "2026-Q1",
   "benchmarks": {
-    "T1": 4.10,
-    "T2": 3.90,
+    "T1": 4.1,
+    "T2": 3.9,
     "T3": 3.85,
-    "T4": 4.00,
+    "T4": 4.0,
     "T5": 4.15,
     "T6": 4.25,
     "T7": 3.95,
     "T8": 4.05,
     "T9": 3.85,
-    "T10": 3.90
+    "T10": 3.9
   },
   "justifications": {
     "default": "Financial sector benchmarks demand high baseline maturity (Level 4 - Managed) driven by stringent regulatory frameworks (EU Digital Operational Resilience Act - DORA, SEC Cyber Disclosure, FFIEC guidelines). Core banking transaction processing, automated multi-region active-active resilience, and continuous threat monitoring are non-negotiable operational requirements.",
@@ -30,11 +30,42 @@
   "workforce_digital_profile": {
     "corporate_seat_ratio": 0.95,
     "shared_operational_edge_ratio": 0.05,
-    "deskless_field_ratio": 0.00,
+    "deskless_field_ratio": 0.0,
     "primary_disruption_driver": "TRANSACTION_CLEARING_AND_TRADING",
     "work_make_up_elasticity": 0.15,
     "annual_endpoint_refresh_rate": 0.333,
     "hours_per_manual_refresh": 2.0,
     "typical_it_support_hourly_rate": 65.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 1.0,
+    "manual_fallback_efficacy_eta": 0.0,
+    "physical_buffer_horizon_hours": 0.0,
+    "post_buffer_decay_lambda": 0.0,
+    "reconciliation_friction_omega": 0.0,
+    "fallback_mechanism_description": "zero manual fallback as automated trading requires real-time processing"
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

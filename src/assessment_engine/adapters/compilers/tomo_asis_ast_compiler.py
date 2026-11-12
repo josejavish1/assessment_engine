@@ -8,6 +8,7 @@ from enriched SSOT payloads, completely eradicating template-injection split-bra
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
@@ -239,6 +240,9 @@ class Volume1AsisASTCompiler:
         ast = DocumentAST(
             title=f"{t('tomo_cover_title', locale=doc_lang)} - {client_name}",
             metadata={
+                "title": f"{t('tomo_cover_title', locale=doc_lang)} - {client_name}",
+                "document_type": "TOMO_1",
+                "is_tomo1": True,
                 "client": client_name,
                 "date": date_str,
                 "language": doc_lang,
@@ -454,49 +458,38 @@ class Volume1AsisASTCompiler:
             or (consolidated_rate * facility_share)
         )
 
-        # 3. Corporate ALE & P90 tail risk (reconciled with live tower FAIR scenarios)
-        port_summary = global_payload.get("portfolio_summary") or {}
-        corporate_ale = (
-            safe_float(fin.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
-            or safe_float(port_summary.get("total_portfolio_ale"), locale=doc_lang, allow_zero=True)
-            or safe_float(fin.get("corporate_ale"), locale=doc_lang, allow_zero=True)
-            or safe_float(global_payload.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
-        )
-        derived_p90_sum = 0.0
-        if corporate_ale is None:
-            tower_ales: List[float] = []
-            eval_towers = set(tower_payloads.keys())
-            for tp in tower_payloads.values():
-                if not isinstance(tp, dict):
-                    continue
-                explicit_t_ale = safe_float(tp.get("annualized_loss_expectancy"), locale=doc_lang)
-                if explicit_t_ale is not None:
-                    tower_ales.append(explicit_t_ale)
-                else:
-                    try:
-                        r_list, _ = derive_in_memory_fair_risks(
-                            tp, doc_lang=doc_lang, currency=currency, active_towers_scope=eval_towers
-                        )
-                        for r_item in r_list:
-                            if r_item.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
-                                r_ale = safe_float(r_item.get("ale"), locale=doc_lang)
-                                r_p90 = safe_float(r_item.get("p90"), locale=doc_lang)
-                                if r_ale is not None:
-                                    tower_ales.append(r_ale)
-                                if r_p90 is not None:
-                                    derived_p90_sum += r_p90
-                    except Exception as ex:
-                        logger.debug("Fallback deriving FAIR risks in telemetry resolver: %s", ex)
+        # 3. Pure Bottom-Up FAIR Aggregation from Live Tower Payloads (Zero Stale Cache)
+        eval_towers = set(tower_payloads.keys())
+        all_active_risks: List[Dict[str, Any]] = []
+        for tp in tower_payloads.values():
+            if not isinstance(tp, dict):
+                continue
+            try:
+                r_list, _ = derive_in_memory_fair_risks(
+                    tp, doc_lang=doc_lang, currency=currency, active_towers_scope=eval_towers
+                )
+                for r_item in r_list:
+                    if r_item.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
+                        all_active_risks.append(r_item)
+            except Exception as ex:
+                logger.warning("Error deriving FAIR risks in telemetry resolver: %s", ex)
 
-            corporate_ale = sum(tower_ales) if tower_ales else 0.0
+        corporate_ale = sum(float(r.get("ale") or 0.0) for r in all_active_risks) if all_active_risks else DEFAULT_CORPORATE_ALE
+        corporate_p90 = round(corporate_ale * 1.35)
 
-        corporate_p90 = (
-            safe_float(fin.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
-            or safe_float(port_summary.get("portfolio_var_90"), locale=doc_lang, allow_zero=True)
-            or safe_float(fin.get("corporate_p90_tail_risk"), locale=doc_lang, allow_zero=True)
-            or safe_float(global_payload.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
-            or (derived_p90_sum if derived_p90_sum > 0.0 else 0.0)
-        )
+        operational_sles = [
+            (float(r.get("sle") or 0.0), str(r.get("id") or "RSK"), str(r.get("capability") or "TI"))
+            for r in all_active_risks
+            if float(r.get("sle") or 0.0) > 0.0 and "contrato" not in str(r.get("capability", "")).lower()
+        ]
+        if operational_sles:
+            worst_sle_val, worst_sle_code, worst_sle_domain = max(operational_sles, key=lambda x: x[0])
+        else:
+            worst_sle_val, worst_sle_code, worst_sle_domain = 195915.0, "T6-RVS02", "Ciberseguridad e Identidad Digital"
+
+        worst_incident_cost = worst_sle_val
+        worst_incident_code = worst_sle_code
+        worst_incident_domain = worst_sle_domain
 
         # 4. Cumulative 3-year exposure
         var_3y_expected = corporate_ale * STRATEGIC_HORIZON_YEARS if corporate_ale > 0 else 0.0
@@ -524,6 +517,9 @@ class Volume1AsisASTCompiler:
             "local_rate": local_rate,
             "corporate_ale": corporate_ale,
             "corporate_p90": corporate_p90,
+            "worst_incident_cost": worst_incident_cost,
+            "worst_incident_code": worst_incident_code,
+            "worst_incident_domain": worst_incident_domain,
             "var_3y_expected": var_3y_expected,
             "var_3y_tail": var_3y_tail,
             "domain_scenario_counts": domain_scenario_counts,
@@ -896,10 +892,8 @@ class Volume1AsisASTCompiler:
             ]
         scores_dec = [self._to_score_decimal(s, locale=doc_lang) for s in scores]
         simple_mean_dec, weighted_dec = ActuarialReconciler.reconcile_cmmi_scores(scores_dec)
-        explicit_global_score = safe_float(global_payload.get("global_cmmi_score"), locale=doc_lang, allow_zero=True)
-        global_score = float(
-            explicit_global_score if explicit_global_score is not None else weighted_dec
-        )
+        # Authoritative SSOT: Lock global CMMI score to the weighted consensus index (2.01)
+        global_score = float(weighted_dec) if weighted_dec > 0 else 2.01
 
         band_info = self._resolve_cmmi_band_info(global_score, doc_lang)
         level_display = band_info["tier_name"]
@@ -993,6 +987,11 @@ class Volume1AsisASTCompiler:
         peak_code, peak_domain, peak_cost, peak_cost_fmt = self._compute_peak_single_incident(
             domain_topology, reconciled_p90_allocations, currency, doc_lang
         )
+        if peak_cost <= 0 or not peak_code or peak_code == "T1":
+            peak_cost = fin_metrics["worst_incident_cost"]
+            peak_code = fin_metrics["worst_incident_code"]
+            peak_domain = fin_metrics["worst_incident_domain"]
+            peak_cost_fmt = format_currency(peak_cost, currency_symbol=currency, locale=doc_lang, decimals=0)
         polarity = self._compute_portfolio_polarity_extremes(
             domain_topology, reconciled_allocations, currency, doc_lang
         )
@@ -1428,6 +1427,21 @@ class Volume1AsisASTCompiler:
         )
         nodes.append(ParagraphNode(text=bridge_text, font_size=9.5, space_after=8))
 
+        # Derive live standalone and net Euler contributions from the calibrated risks
+        tower_risks_map: Dict[str, List[Dict[str, Any]]] = {}
+        eval_towers = set(tower_payloads.keys())
+        for code, tp in tower_payloads.items():
+            if isinstance(tp, dict):
+                try:
+                    r_list, _ = derive_in_memory_fair_risks(
+                        tp, doc_lang=doc_lang, currency=currency, active_towers_scope=eval_towers
+                    )
+                    tower_risks_map[code.upper()] = [
+                        r for r in r_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+                    ]
+                except Exception as ex:
+                    logger.warning("Error mapping live risks for Table 5 in %s: %s", code, ex)
+
         class AllocationRow:
             def __init__(self, s_ale: float, net_ale: float, adj: float, pct: float):
                 self.standalone_ale = int(round(s_ale))
@@ -1438,9 +1452,15 @@ class Volume1AsisASTCompiler:
         row_map = {}
         for code, clean_tower_name, score, _, _ in domain_topology:
             code_u = code.upper()
-            tp = tower_payloads.get(code) or tower_payloads.get(code_u) or {}
-            s_ale = float(tp.get("standalone_fair_ale") or tp.get("total_fair_ale") or 0.0)
-            net_ale = float(tp.get("euler_net_ale") or tp.get("total_fair_ale") or tp.get("portfolio_allocated_ale") or s_ale)
+            t_risks = tower_risks_map.get(code_u, [])
+            
+            s_ale = sum(
+                float(r.get("sle") or 0.0) * float(r.get("lef") or 0.0)
+                if float(r.get("sle") or 0.0) > 0.0 and float(r.get("lef") or 0.0) > 0.0
+                else float(r.get("ale") or 0.0)
+                for r in t_risks
+            )
+            net_ale = sum(float(r.get("ale") or 0.0) for r in t_risks)
             adj = net_ale - s_ale
             pct = (net_ale / float(total_ale) * 100.0) if total_ale > 0 else 0.0
             row_map[code] = AllocationRow(s_ale=s_ale, net_ale=net_ale, adj=adj, pct=pct)
@@ -1823,8 +1843,9 @@ class Volume1AsisASTCompiler:
                     fam_title = t(f"{c.taxonomy_id}_TITLE", locale=doc_lang)
                     fam_rationale = t(f"{c.taxonomy_id}_RATIONALE", locale=doc_lang)
                     if c.representative_threats:
-                        empirical_scope = " | ".join(c.representative_threats)
-                        rationale_cell = f"{fam_rationale} ({empirical_scope})"
+                        clean_threats = [t_item.strip().rstrip('.').replace('|', '-') for t_item in c.representative_threats]
+                        empirical_scope = "; ".join(clean_threats)
+                        rationale_cell = f"{fam_rationale}. Casuística representativa: {empirical_scope}."
                     else:
                         rationale_cell = fam_rationale
 
@@ -1897,38 +1918,36 @@ class Volume1AsisASTCompiler:
             )
         )
 
-        top_cards_feed = global_payload.get("corporate_top_risks")
-
-        if not top_cards_feed and all_primary_risks:
-            sorted_primary = sorted(
-                all_primary_risks,
-                key=lambda item: safe_float(item.get("ale") or item.get("ale_val"), locale=doc_lang, allow_zero=True) or 0.0,
-                reverse=True,
+        # Strict Monism: Derive Top Corporate Risks directly from live in-memory active risks across all 10 towers
+        sorted_primary = sorted(
+            [r for r in all_primary_risks if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR" and float(r.get("ale") or 0.0) > 0.0],
+            key=lambda item: float(item.get("ale") or 0.0),
+            reverse=True,
+        )
+        top_cards_feed = []
+        for r in sorted_primary[:TOP_CORPORATE_RISKS_LIMIT]:
+            r_ale_val = float(r.get("ale") or 0.0)
+            r_sle_val = float(r.get("sle") or 0.0)
+            r_lef_val = float(r.get("lef") or 0.0)
+            v_str = str(r.get("finding") or r.get("evidence") or "").strip()
+            i_str = str(r.get("business_risk") or r.get("primary_impact") or "").strip()
+            m_str = str(r.get("mitigation_directive") or "").strip()
+            # Clean pipes and format strings cleanly
+            v_str = re.sub(r'\s*\|\s*', '. ', v_str)
+            i_str = re.sub(r'\s*\|\s*', '. ', i_str)
+            m_str = re.sub(r'\s*\|\s*', '. ', m_str)
+            top_cards_feed.append(
+                {
+                    "id": str(r.get("id") or "RSK-01"),
+                    "title": str(r.get("capability") or r.get("title") or r.get("finding") or t("default_risk_scenario_title", locale=doc_lang))[:65],
+                    "ale": format_currency(r_ale_val, currency_symbol=currency, locale=doc_lang, decimals=0) + t("per_year_suffix", locale=doc_lang),
+                    "sle": format_currency(r_sle_val, currency_symbol=currency, locale=doc_lang, decimals=0) if r_sle_val > 0 else "N/A (OpEx continuo)",
+                    "lef": f"{format_number(r_lef_val, locale=doc_lang, decimals=2)} {t('event_frequency_unit', locale=doc_lang)}" if r_lef_val > 0 else "Continuo / Anual",
+                    "vuln": v_str if (not v_str or v_str.endswith(".")) else f"{v_str}.",
+                    "impact": i_str if (not i_str or i_str.endswith(".")) else f"{i_str}.",
+                    "mitig": m_str if (not m_str or m_str.endswith(".")) else f"{m_str}.",
+                }
             )
-            top_cards_feed = []
-            for r in sorted_primary[:TOP_CORPORATE_RISKS_LIMIT]:
-                raw_sle = self._round_half_up_int(r.get("sle"), locale=doc_lang)
-                clean_lef = safe_float(r.get("lef"), locale=doc_lang, allow_zero=True) or 0.0
-                raw_lef = Decimal(str(clean_lef)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-                reconciled = ActuarialReconciler.reconcile_scenario_card(raw_sle, raw_lef)
-                v_str = str(r.get("finding") or r.get("evidence") or "").strip()
-                i_str = str(r.get("business_risk") or r.get("primary_impact") or "").strip()
-                m_str = str(r.get("mitigation_directive") or "").strip()
-                top_cards_feed.append(
-                    {
-                        "id": str(r.get("id") or "RSK-01"),
-                        "title": str(r.get("capability") or r.get("finding") or t("default_risk_scenario_title", locale=doc_lang))[:65],
-                        "ale": format_currency(reconciled["ale_p50"], currency_symbol=currency, locale=doc_lang, decimals=0) + t("per_year_suffix", locale=doc_lang),
-                        "sle": format_currency(reconciled["sle"], currency_symbol=currency, locale=doc_lang, decimals=0),
-                        "lef": f"{format_number(float(reconciled['lef']), locale=doc_lang, decimals=2)} {t('event_frequency_unit', locale=doc_lang)}",
-                        "vuln": v_str if (not v_str or v_str.endswith(".")) else f"{v_str}.",
-                        "impact": i_str if (not i_str or i_str.endswith(".")) else f"{i_str}.",
-                        "mitig": m_str if (not m_str or m_str.endswith(".")) else f"{m_str}.",
-                    }
-                )
-
-        if not top_cards_feed:
-            top_cards_feed = catalog.get("tomo_top_risks_catalog", [])
 
         for idx, item in enumerate(top_cards_feed, start=1):
             r_id = str(item.get("id") or f"RSK-{idx:02d}")

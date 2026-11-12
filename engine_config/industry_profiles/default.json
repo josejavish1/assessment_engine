@@ -2,16 +2,36 @@
   "industry": "Default / General Enterprise",
   "methodology_baseline": "Gartner Enterprise Maturity Database 2026 (RAGE Grounded)",
   "active_frameworks_by_tower": {
-    "T1": ["google_dora"],
-    "T2": ["google_dora"],
-    "T3": ["microsoft_dwg"],
-    "T4": ["dama_dmbok"],
-    "T5": ["itil_v4"],
-    "T6": ["itil_v4"],
-    "T7": ["itil_v4"],
-    "T8": ["finops_foundation"],
-    "T9": ["microsoft_dwg"],
-    "T10": ["google_dora"]
+    "T1": [
+      "google_dora"
+    ],
+    "T2": [
+      "google_dora"
+    ],
+    "T3": [
+      "microsoft_dwg"
+    ],
+    "T4": [
+      "dama_dmbok"
+    ],
+    "T5": [
+      "itil_v4"
+    ],
+    "T6": [
+      "itil_v4"
+    ],
+    "T7": [
+      "itil_v4"
+    ],
+    "T8": [
+      "finops_foundation"
+    ],
+    "T9": [
+      "microsoft_dwg"
+    ],
+    "T10": [
+      "google_dora"
+    ]
   },
   "benchmarks": {
     "T1": 4.0,
@@ -29,13 +49,44 @@
     "default": "The benchmark is aligned with the modern cross-industry advanced baseline defined in the Gartner I&O Maturity Index (2026). In response to widespread cloud-native scaling and modern operational demands, even non-regulated corporate environments are expected to achieve Level 4 (Managed and Sustainable), characterized by automated telemetry, quantitatively measured execution metrics, and continuous compliance feedback loops."
   },
   "workforce_digital_profile": {
-    "corporate_seat_ratio": 0.60,
-    "shared_operational_edge_ratio": 0.20,
-    "deskless_field_ratio": 0.20,
+    "corporate_seat_ratio": 0.6,
+    "shared_operational_edge_ratio": 0.2,
+    "deskless_field_ratio": 0.2,
     "primary_disruption_driver": "CORE_BUSINESS_WORKFLOW",
     "work_make_up_elasticity": 0.25,
     "annual_endpoint_refresh_rate": 0.285,
     "hours_per_manual_refresh": 3.0,
     "typical_it_support_hourly_rate": 50.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 1.0,
+    "manual_fallback_efficacy_eta": 0.0,
+    "physical_buffer_horizon_hours": 0.0,
+    "post_buffer_decay_lambda": 0.0,
+    "reconciliation_friction_omega": 0.0,
+    "fallback_mechanism_description": "no manual fallback available"
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

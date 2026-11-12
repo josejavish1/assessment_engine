@@ -57,6 +57,10 @@
     "corte\\s+de\\s+fibra",
     "ca[i\u00ed]da\\s+de\\s+red\\s+troncal",
     "parada\\s+total\\s+de\\s+producci[o\u00f3]n",
-    "indisponibilidade\\s+cr[i\u00ed]tica"
+    "indisponibilidade\\s+cr[i\u00ed]tica",
+    "redundancia\\s+geogr[a\u00e1]fica",
+    "diversidad\\s+geogr[a\u00e1]fica",
+    "siniestro\\s+grave",
+    "ambos\\s+cpds"
   ]
 }

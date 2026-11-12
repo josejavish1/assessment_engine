@@ -2,16 +2,36 @@
   "industry": "Retail",
   "methodology_baseline": "Gartner Enterprise Maturity Database 2026 (RAGE Grounded)",
   "active_frameworks_by_tower": {
-    "T1": ["google_dora"],
-    "T2": ["google_dora"],
-    "T3": ["microsoft_dwg"],
-    "T4": ["dama_dmbok"],
-    "T5": ["microsoft_dwg"],
-    "T6": ["dama_dmbok"],
-    "T7": ["itil_v4"],
-    "T8": ["finops_foundation"],
-    "T9": ["microsoft_dwg"],
-    "T10": ["google_dora"]
+    "T1": [
+      "google_dora"
+    ],
+    "T2": [
+      "google_dora"
+    ],
+    "T3": [
+      "microsoft_dwg"
+    ],
+    "T4": [
+      "dama_dmbok"
+    ],
+    "T5": [
+      "microsoft_dwg"
+    ],
+    "T6": [
+      "dama_dmbok"
+    ],
+    "T7": [
+      "itil_v4"
+    ],
+    "T8": [
+      "finops_foundation"
+    ],
+    "T9": [
+      "microsoft_dwg"
+    ],
+    "T10": [
+      "google_dora"
+    ]
   },
   "benchmarks": {
     "T1": 4.2,
@@ -42,5 +62,36 @@
     "annual_endpoint_refresh_rate": 0.25,
     "hours_per_manual_refresh": 2.5,
     "typical_it_support_hourly_rate": 40.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 1.0,
+    "manual_fallback_efficacy_eta": 0.0,
+    "physical_buffer_horizon_hours": 0.0,
+    "post_buffer_decay_lambda": 0.0,
+    "reconciliation_friction_omega": 0.0,
+    "fallback_mechanism_description": "no manual fallback available"
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

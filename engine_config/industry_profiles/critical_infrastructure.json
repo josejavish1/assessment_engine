@@ -2,16 +2,36 @@
   "industry": "Critical Infrastructure",
   "methodology_baseline": "Gartner Enterprise Maturity Database 2026 (RAGE Grounded)",
   "active_frameworks_by_tower": {
-    "T1": ["google_dora"],
-    "T2": ["ens_alta"],
-    "T3": ["ens_alta"],
-    "T4": ["dama_dmbok"],
-    "T5": ["ens_alta"],
-    "T6": ["ens_alta"],
-    "T7": ["ens_alta"],
-    "T8": ["ens_alta"],
-    "T9": ["ens_alta"],
-    "T10": ["ens_alta"]
+    "T1": [
+      "google_dora"
+    ],
+    "T2": [
+      "ens_alta"
+    ],
+    "T3": [
+      "ens_alta"
+    ],
+    "T4": [
+      "dama_dmbok"
+    ],
+    "T5": [
+      "ens_alta"
+    ],
+    "T6": [
+      "ens_alta"
+    ],
+    "T7": [
+      "ens_alta"
+    ],
+    "T8": [
+      "ens_alta"
+    ],
+    "T9": [
+      "ens_alta"
+    ],
+    "T10": [
+      "ens_alta"
+    ]
   },
   "benchmarks": {
     "T1": 4.0,
@@ -33,13 +53,44 @@
     "T8": "Derived from Gartner Critical Infrastructure & Regulated Enterprise Governance Best Practices (2026). The baseline is calibrated to Level 4.0 to reflect mandatory compliance reporting and regulated asset lifecycle management, requiring formalized cost-attribution and multi-cloud governance frameworks."
   },
   "workforce_digital_profile": {
-    "corporate_seat_ratio": 0.30,
-    "shared_operational_edge_ratio": 0.30,
-    "deskless_field_ratio": 0.40,
+    "corporate_seat_ratio": 0.3,
+    "shared_operational_edge_ratio": 0.3,
+    "deskless_field_ratio": 0.4,
     "primary_disruption_driver": "GRID_AND_SUBSTATION_SUPERVISION",
     "work_make_up_elasticity": 0.15,
     "annual_endpoint_refresh_rate": 0.25,
     "hours_per_manual_refresh": 3.0,
     "typical_it_support_hourly_rate": 55.0
+  },
+  "operational_resilience": {
+    "it_ot_coupling_ratio_alpha": 1.0,
+    "manual_fallback_efficacy_eta": 0.0,
+    "physical_buffer_horizon_hours": 0.0,
+    "post_buffer_decay_lambda": 0.0,
+    "reconciliation_friction_omega": 0.0,
+    "fallback_mechanism_description": "no manual fallback available"
+  },
+  "recovery_regimes_hours": {
+    "INFRA_COLD_BOOT": {
+      "distribution": "PERT",
+      "min": 1.5,
+      "mode": 3.5,
+      "max": 8.0,
+      "narrative_label": "sequential cold-start and database consistency verification of server infrastructure"
+    },
+    "DATA_RESTORE": {
+      "distribution": "PERT",
+      "min": 6.0,
+      "mode": 14.0,
+      "max": 36.0,
+      "narrative_label": "snapshot restoration and transaction log replay from local backups"
+    },
+    "RANSOM_REBUILD": {
+      "distribution": "PERT",
+      "min": 24.0,
+      "mode": 72.0,
+      "max": 240.0,
+      "narrative_label": "forensic containment, Active Directory rebuild, and bare-metal recovery"
+    }
   }
 }

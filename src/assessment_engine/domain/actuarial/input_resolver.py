@@ -86,6 +86,106 @@ def parse_strict_float(val: Any, field_name: str = "float_field") -> Optional[fl
         ) from err
 
 
+def resolve_attenuated_burn_rate(
+    gross_hourly_rev: float,
+    rto_hours: float,
+    resilience_cfg: Dict[str, Any]
+) -> float:
+    """Computes true marginal hourly burn rate under the Operational Resilience Attenuation Model (ORAM)."""
+    alpha = float(resilience_cfg.get("it_ot_coupling_ratio_alpha", 1.0))
+    eta_0 = float(resilience_cfg.get("manual_fallback_efficacy_eta", 0.0))
+    tau_buf = float(resilience_cfg.get("physical_buffer_horizon_hours", 0.0))
+    lam = float(resilience_cfg.get("post_buffer_decay_lambda", 0.0))
+    omega = float(resilience_cfg.get("reconciliation_friction_omega", 0.0))
+
+    if rto_hours <= 0:
+        return 0.0
+
+    # Regime 1: Within physical buffer horizon (Constant manual efficacy)
+    t_reg1 = min(rto_hours, tau_buf)
+    loss_reg1 = t_reg1 * gross_hourly_rev * alpha * (1.0 - eta_0)
+
+    # Regime 2: Beyond buffer horizon (Exponential decay of manual efficacy)
+    loss_reg2 = 0.0
+    if rto_hours > tau_buf:
+        t_over = rto_hours - tau_buf
+        if lam > 0:
+            integral_decay = t_over - (eta_0 / lam) * (1.0 - math.exp(-lam * t_over))
+        else:
+            integral_decay = t_over * (1.0 - eta_0)
+        loss_reg2 = gross_hourly_rev * alpha * integral_decay
+
+    # Post-event clerical reconciliation friction
+    loss_reconcile = rto_hours * gross_hourly_rev * omega
+
+    total_productivity_loss = loss_reg1 + loss_reg2 + loss_reconcile
+    return round(total_productivity_loss / rto_hours, 2)
+
+
+def resolve_bayesian_poisson_lef(
+    cmmi_score: float,
+    physics_archetype: str,
+    firmographics: Dict[str, Any],
+    parameter_pack: Dict[str, Any]
+) -> Dict[str, float]:
+    """
+    Computes PERT (min, mode, max) Loss Event Frequency using Bayesian Prior Modulation
+    and Fleet Poisson Superposition. Complies with SR 11-7 and IEEE 493.
+    """
+    priors = parameter_pack.get("physics_archetype_priors") or {}
+    prior_cfg = priors.get(physics_archetype)
+    if not prior_cfg:
+        # Fallback for unmapped archetypes or legacy packs
+        return {
+            "lef_min": 0.05,
+            "lef_mode": 0.25,
+            "lef_max": 1.25,
+            "gamma": 4.0
+        }
+    
+    lambda_base = prior_cfg["lambda_base"]
+    beta = prior_cfg["elasticity_beta"]
+    floor = prior_cfg["lambda_floor"]
+    ceiling = prior_cfg["lambda_ceiling"]
+    regime = prior_cfg["scaling_regime"]
+    binding_key = prior_cfg["fleet_binding_key"]
+    
+    # 1. Bayesian Prior Modulation via CMMI Hazard Function (Baseline M = 3.0)
+    clamped_cmmi = max(1.0, min(5.0, float(cmmi_score)))
+    hazard_multiplier = math.exp(beta * (3.0 - clamped_cmmi))
+    lambda_modulated = max(floor, min(ceiling, lambda_base * hazard_multiplier))
+    
+    # 2. Topological Fleet Scaling (Poisson Superposition)
+    n_units = max(1, int(firmographics.get(binding_key, 1)))
+    
+    if regime == "SINGLETON":
+        # Macro-facility bound (e.g., DC Power)
+        lef_mode = lambda_modulated * min(n_units, 5) # Cap multi-DC linear scaling
+    elif regime == "LOG_TOPOLOGY":
+        # Sub-linear adversarial attack surface
+        baseline_assets = 50.0
+        alpha = 0.35
+        scale_factor = 1.0 + alpha * math.log(max(1.0, n_units / baseline_assets))
+        lef_mode = lambda_modulated * scale_factor
+    elif regime in ("POISSON_FLEET", "LINEAR_CLUSTER"):
+        # Homogeneous Poisson process across N nodes
+        lef_mode = lambda_modulated * n_units
+    else:
+        lef_mode = lambda_modulated * n_units
+
+    # 3. Construct PERT Distribution Bounds around the Poisson Mode
+    variance_band = 0.35 if regime == "POISSON_FLEET" else 0.65
+    lef_min = max(0.001, lef_mode * (1.0 - variance_band))
+    lef_max = lef_mode * (1.0 + (variance_band * 1.5))
+    
+    return {
+        "lef_min": round(lef_min, 4),
+        "lef_mode": round(lef_mode, 4),
+        "lef_max": round(lef_max, 4),
+        "gamma": prior_cfg["default_pert_gamma"]
+    }
+
+
 class ActuarialInputResolver:
     """Authoritative input resolver that binds inputs, parameter packs, and telemetry."""
 
@@ -221,23 +321,57 @@ class ActuarialInputResolver:
         )
 
         # 3. Threat Event Frequency (PERT)
+        # Extract classification first
+        from assessment_engine.domain.actuarial.finding_archetype_resolver import (
+            FindingLossPhysics,
+            PolymorphicFindingClassifier,
+        )
+
+        physics_profile = PolymorphicFindingClassifier.classify_finding(
+            hc=hc,
+            tower_id=tower_id,
+        )
+        effective_archetype = physics_profile.canonical_archetype
+
         raw_tef = hc.get("threat_event_frequency")
         if raw_tef is not None:
             parsed_tef = parse_strict_float(raw_tef, "threat_event_frequency")
             if parsed_tef is None or parsed_tef <= 0.0:
                 raise ValueError(f"tef_annual must be strictly > 0.0, got {raw_tef}")
             tef_mode = parsed_tef
+            tef_min = tef_mode * pack.pert_dispersion.tef_min_ratio
+            tef_max = tef_mode * pack.pert_dispersion.tef_max_ratio
             tef_source = ParameterSourceType.ASSESSMENT_PAYLOAD
+            tef_min_source = ParameterSourceType.DERIVED
+            tef_max_source = ParameterSourceType.DERIVED
             tef_conf = ParameterConfidenceLevel.HIGH
             is_explicit_tef = True
         else:
-            default_base_tef = (
-                tower_spec.default_tef_annual if tower_spec else global_fb.tef_annual
+            # Use Bayesian Prior Modulation and Fleet Poisson Scaling (SR 11-7)
+            import json
+            from pathlib import Path
+            current = Path(__file__).resolve()
+            profile_path = next((p for p in current.parents if p.name == "assessment_engine"), current) / "engine_config" / "industry_profiles" / "heavy_manufacturing.json"
+            firmographics = {"server_count": 60, "endpoint_count": 350, "facilities_count": 1, "ha_clusters_count": 4} # Fallback
+            if profile_path.exists():
+                with open(profile_path, "r", encoding="utf-8") as f:
+                    ind_data = json.load(f)
+                    if "firmographics" in ind_data:
+                        firmographics = ind_data["firmographics"]
+            
+            pack_dict = pack.model_dump(mode="json") if hasattr(pack, "model_dump") else pack.dict()
+            lef_dist = resolve_bayesian_poisson_lef(
+                cmmi_score=cmmi_val,
+                physics_archetype=effective_archetype.value if hasattr(effective_archetype, "value") else str(effective_archetype),
+                firmographics=firmographics,
+                parameter_pack=pack_dict
             )
-            sev = str(hc.get("severity", "HIGH")).upper()
-            mult = getattr(pack.severity_tef_multipliers, sev, 1.0)
-            tef_mode = default_base_tef * mult
+            tef_mode = lef_dist["lef_mode"]
+            tef_min = lef_dist["lef_min"]
+            tef_max = lef_dist["lef_max"]
             tef_source = ParameterSourceType.MODEL_DEFAULT
+            tef_min_source = ParameterSourceType.MODEL_DEFAULT
+            tef_max_source = ParameterSourceType.MODEL_DEFAULT
             tef_conf = ParameterConfidenceLevel.LOW
             is_explicit_tef = False
             material_parameters_explicit = False
@@ -257,12 +391,6 @@ class ActuarialInputResolver:
                 )
             tef_min_source = ParameterSourceType.ASSESSMENT_PAYLOAD
             tef_max_source = ParameterSourceType.ASSESSMENT_PAYLOAD
-        else:
-            tef_min = tef_mode * pack.pert_dispersion.tef_min_ratio
-            tef_max = tef_mode * pack.pert_dispersion.tef_max_ratio
-            tef_min_source = ParameterSourceType.DERIVED
-            tef_max_source = ParameterSourceType.DERIVED
-
         tef_min_rec = _build_provenance(
             p_name="tef_pert_min",
             est_val=tef_min,
@@ -293,28 +421,34 @@ class ActuarialInputResolver:
             default_conf=tef_conf,
         )
 
-        # 4. Recovery Time Objective (RTO) PERT — Governed by PolymorphicFindingClassifier & Circuit Breakers (SR 11-7)
-        from assessment_engine.domain.actuarial.finding_archetype_resolver import (
-            FindingLossPhysics,
-            PolymorphicFindingClassifier,
-        )
+        # 4. Recovery Time Objective (RTO) PERT — Circuit Breakers (SR 11-7)
 
-        physics_profile = PolymorphicFindingClassifier.classify_finding(
-            hc=hc,
-            tower_id=tower_id,
-        )
-        effective_archetype = physics_profile.canonical_archetype
 
-        # Circuit Breaker 1: Non-Production Zero-Outage Rule
         env_raw = str(hc.get("environment") or "").strip().upper()
         finding_corpus_cb = f"{hc.get('title', '')} {hc.get('finding', '')} {hc.get('capability', '')}".lower()
+
+        # Circuit Breaker 1: Non-Production & Pre-Production Roadmap Zero-Outage Rule
+        is_roadmap_or_future = any(
+            k in finding_corpus_cb
+            for k in (
+                "future clusters",
+                "future workloads",
+                "futuros clusters",
+                "futuras cargas",
+                "roadmap opportunity",
+                "oportunidad de implementar",
+                "early adoption",
+                "adopcion temprana",
+                "fase inicial en la formalizacion",
+            )
+        )
         is_non_prod = env_raw in (
             "LAB",
             "TEST",
             "DEV",
             "SANDBOX",
             "NON_PROD",
-        ) or any(
+        ) or is_roadmap_or_future or any(
             k in finding_corpus_cb
             for k in (
                 "experimental lab",
