@@ -1071,6 +1071,8 @@ class ExecutiveNarrativeSynthesizer:
         posture_modernization_focus: str = "",
     ) -> List[str]:
         """Synthesizes the executive summary paragraphs for a capability tower."""
+        from assessment_engine.infrastructure.localization import t
+
         f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
         f2 = findings_briefs[1] if len(findings_briefs) > 1 else ""
         f3 = findings_briefs[2] if len(findings_briefs) > 2 else ""
@@ -1127,6 +1129,8 @@ class ExecutiveNarrativeSynthesizer:
             "weakest_dim_name": weakest_dim_name.strip(),
             "weakest_dim_score": weakest_dim_score.strip(),
         }
+
+        from assessment_engine.infrastructure.localization import t
 
         narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
 
@@ -1204,8 +1208,9 @@ class ExecutiveNarrativeSynthesizer:
                         max_recovery_hours=rec_h,
                         tower_name=t_name
                     )
+
                     rendered = DomainFinancialPresenter.format_p015_executive_narrative(
-                        fin_report, locale=self._locale_code
+                        fin_report, locale=self._locale_code, translator=t
                     )
                     paragraphs.append(rendered)
                     continue
@@ -4164,54 +4169,74 @@ class PayloadToASTBridge:
             or (total_fair_ale / 8760.0 if total_fair_ale > 0 else 0.0)
         )
 
-        if t_idx == 1:
-            coupling_regime = CouplingRegime.TIGHT
-            coupling_factor = 1.5
-            alpha = 0.70
-        elif t_idx == 2:
-            coupling_regime = CouplingRegime.MODERATE
-            coupling_factor = 1.2
-            alpha = 0.40
-        else:
-            coupling_regime = CouplingRegime.LOOSE
-            coupling_factor = 1.0
-            alpha = 0.20
-
         vec = hc.get("actuarial_input_vector") or {}
         vec_outputs = vec.get("outputs") or {}
         vec_inputs = vec.get("inputs") or {}
 
+        decomp = hc.get("additive_loss_decomposition") or {}
         canonical_ale = float(
-            hc.get("ale")
+            decomp.get("net_allocated_ale")
+            or hc.get("ale")
             or hc.get("ale_val")
             or vec_outputs.get("portfolio_allocated_ale")
             or hc.get("fair_ale_score")
             or hc.get("intrinsic_ale")
             or 0.0
         )
-        decomp = hc.get("additive_loss_decomposition") or {}
-        canonical_sle = float(hc.get("sle") or decomp.get("gross_mean_sle") or vec_outputs.get("mean_sle") or 0.0)
-        canonical_lef = float(hc.get("lef") or decomp.get("mean_lef") or vec_outputs.get("mean_lef") or (raw_tef if raw_tef <= 10.0 else 0.20))
+        canonical_sle = float(
+            decomp.get("gross_mean_sle")
+            or hc.get("sle")
+            or vec_outputs.get("mean_sle")
+            or 0.0
+        )
+        canonical_lef = float(
+            decomp.get("mean_lef")
+            or hc.get("lef")
+            or vec_outputs.get("mean_lef")
+            or (raw_tef if raw_tef <= 10.0 else 0.20)
+        )
+
+        raw_alpha = float(
+            hc.get("blast_radius_alpha")
+            or (vec_inputs.get("blast_radius_alpha") or {}).get("effective_value")
+            or hc.get("alpha")
+            or (0.70 if t_idx == 1 else (0.40 if t_idx == 2 else 0.20))
+        )
+        alpha = min(1.0, max(0.05, raw_alpha))
+        if alpha >= 0.60:
+            coupling_regime = CouplingRegime.TIGHT
+            coupling_factor = 1.5
+        elif alpha >= 0.35:
+            coupling_regime = CouplingRegime.MODERATE
+            coupling_factor = 1.2
+        else:
+            coupling_regime = CouplingRegime.LOOSE
+            coupling_factor = 1.0
+
         if decomp and decomp.get("rto_hours") is not None:
             eff_recovery_hours = float(decomp["rto_hours"])
         else:
             eff_recovery_hours = float(
                 (vec_inputs.get("rto_hours_mode") or {}).get("effective_value")
                 or hc.get("recovery_time_hours")
-                or (raw_lm * 0.85)
-                or 3.5
+                or 0.0
             )
 
         if decomp and decomp.get("hourly_burn_rate") is not None:
             domain_hourly_rate = float(decomp["hourly_burn_rate"])
-        elif primary_arch == LossArchetypeType.PRODUCTIVITY_TOIL:
-            domain_hourly_rate = 65.0
-        else:
+        elif (vec_inputs.get("hourly_burn_rate") or {}).get("effective_value") is not None:
+            domain_hourly_rate = max(round(float(vec_inputs["hourly_burn_rate"]["effective_value"]) * alpha, 2), 1.0)
+        elif hc.get("hourly_burn_rate") is not None:
+            domain_hourly_rate = max(round(float(hc["hourly_burn_rate"]) * alpha, 2), 1.0)
+        elif hourly_rate > 0:
             domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
+        else:
+            domain_hourly_rate = 1.0
+
         if decomp and decomp.get("gross_mean_sle"):
-            primary_downtime_loss = int(decomp.get("expected_downtime_loss", 0))
-            repl_cost_num = int(decomp.get("expected_replacement_cost", 0))
-            sec_weighted_loss = int(decomp.get("expected_secondary_loss", 0))
+            primary_downtime_loss = int(decomp.get("expected_downtime_loss") or decomp.get("primary_downtime_loss") or 0)
+            repl_cost_num = int(decomp.get("expected_replacement_cost") or decomp.get("direct_replacement_loss") or 0)
+            sec_weighted_loss = int(decomp.get("expected_secondary_loss") or decomp.get("secondary_weighted_loss") or 0)
             reconciled_sle = int(decomp["gross_mean_sle"])
             canonical_ale = float(decomp["net_allocated_ale"])
         else:
@@ -4454,24 +4479,13 @@ class PayloadToASTBridge:
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
             displayed_mult_freq = float(f"{calibrated_lef:.2f}")
 
-        # Red Team Rule 4 (Aritmética Transparente de Servilleta para el CTO):
-        # En cada ficha técnica individual, el impacto anualizado visible DEBE coincidir con el producto
-        # de Frecuencia Mostrada * Coste por Incidente (SLE) para evitar aparentes errores de cálculo.
-        if not is_deterministic and reconciled_sle > 0 and displayed_mult_freq > 0:
-            card_direct_ale = round(float(reconciled_sle) * float(displayed_mult_freq))
-            formatted_ale = format_currency(
-                float(card_direct_ale),
-                currency_symbol=currency,
-                locale=meta_lang,
-                decimals=0,
-            )
-        else:
-            formatted_ale = format_currency(
-                float(canonical_ale),
-                currency_symbol=currency,
-                locale=meta_lang,
-                decimals=0,
-            )
+        # Zero-Trust Presentation SSOT: Render passive canonical ALE directly from engine
+        formatted_ale = format_currency(
+            float(canonical_ale),
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
+        )
 
         if metrics.is_deduplicated:
             notice_text = t("actuarial_custody_deduplicated_note", locale=meta_lang).format(
@@ -4583,17 +4597,19 @@ class PayloadToASTBridge:
             + stochastic_tail_adj
         )
 
-        # Strict Standalone & Bounded Euler Identity Invariant:
+        # Strict Additive & Closed-Form Euler Identity Invariant:
         displayed_mult_freq = round(
             float(decomp.get("mean_lef") or canonical_lef or 0.25), 2
         )
-        standalone_base_ale = int(round(displayed_mult_freq * reconciled_sle))
-        max_disc_pct = max(
-            0.0,
-            min(0.25, float(hc.get("max_euler_ale_discount_pct") or 0.20)),
+        standalone_base_ale = int(
+            round(
+                float(
+                    decomp.get("gross_standalone_ale")
+                    or (displayed_mult_freq * reconciled_sle)
+                )
+            )
         )
-
-        raw_net_ale = int(
+        net_allocated_target = int(
             round(
                 float(
                     decomp.get("net_allocated_ale")
@@ -4602,13 +4618,8 @@ class PayloadToASTBridge:
                 )
             )
         )
-        raw_credit = max(0, standalone_base_ale - raw_net_ale)
-        capped_credit = min(
-            raw_credit, int(round(standalone_base_ale * max_disc_pct))
-        )
-
-        canonical_ale = standalone_base_ale - capped_credit
-        euler_delta = -capped_credit
+        canonical_ale = net_allocated_target
+        euler_delta = canonical_ale - standalone_base_ale
 
         p_down_str = format_currency(
             primary_downtime_loss,

@@ -1,19 +1,24 @@
+"""Pure Domain Service: Semantic Domain Router.
+
+Enforces root-cause jurisdiction routing across multi-framework domains.
+100% Pure Domain: Zero infrastructure imports, zero filesystem I/O, zero network calls.
+Written in 100% Technical English.
+"""
+
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
-from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+import re
+from enum import StrEnum
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from pydantic import BaseModel, Field
-
-from assessment_engine.infrastructure.runtime_paths import ROOT
 
 logger = logging.getLogger(__name__)
 
 
-class TowerID(str, Enum):
+class TowerID(StrEnum):
+    """Canonical domain identifier for general infrastructure assessments."""
     T1 = "T1"
     T2 = "T2"
     T3 = "T3"
@@ -28,68 +33,93 @@ class TowerID(str, Enum):
 
 
 class AbsenceSemanticEvaluation(BaseModel):
+    """Evaluation of whether a finding represents a total absence of a required capability."""
+    model_config = {"frozen": True}
+
     is_absence_of_control: bool = Field(
-        description="True si el hallazgo describe la inexistencia, falta o carencia total de una herramienta, proceso o control necesario. False si el control existe pero presenta degradación o mal funcionamiento."
+        description="True if finding describes total absence or lack of a required control or tool."
     )
     missing_capability: Optional[str] = Field(
         default=None,
-        description="Si is_absence_of_control es True, describe canónicamente qué capacidad o control falta."
+        description="Canonical capability that is missing when is_absence_of_control is True."
     )
 
 
 class SemanticRoutingDecision(BaseModel):
-    finding_id: Optional[str] = Field(default=None, description="Identificador del hallazgo o texto evaluado.")
+    """Authoritative decision mapping a technical finding to its root-cause domain."""
+    model_config = {"frozen": True}
+
+    finding_id: Optional[str] = Field(
+        default=None,
+        description="Unique identifier for the evaluated finding."
+    )
     chain_of_thought_jurisdiction: str = Field(
-        description="Razonamiento conciso (1-2 oraciones) explicando por qué la causa raíz técnica pertenece a la torre asignada y cómo se aplicaron las exclusiones ontológicas."
+        description="Concise analytical reasoning explaining the root-cause jurisdiction assignment."
     )
     primary_tower: TowerID = Field(
-        description="La torre tecnológica propietaria legítima de la causa raíz técnica del hallazgo."
+        description="The canonical technology tower owning root-cause jurisdiction."
     )
     secondary_impacted_towers: List[TowerID] = Field(
         default_factory=list,
-        description="Otras torres que sufren síntomas derivados del fallo, sin ser dueñas del presupuesto o causa raíz."
+        description="Secondary domains experiencing derived operational friction."
     )
     confidence_score: float = Field(
         ge=0.0, le=1.0, default=1.0,
-        description="Nivel de certidumbre semántica de la asignación."
+        description="Epistemic confidence score between 0.0 and 1.0."
     )
     absence_evaluation: AbsenceSemanticEvaluation = Field(
         default_factory=lambda: AbsenceSemanticEvaluation(is_absence_of_control=False),
-        description="Evaluación semántica de ausencia de control."
+        description="Semantic evaluation of control absence."
     )
 
 
-class BatchSemanticRoutingResponse(BaseModel):
-    decisions: List[SemanticRoutingDecision]
+@runtime_checkable
+class SemanticClassifierPort(Protocol):
+    """Inversion of control port for probabilistic or grammar-constrained classifiers."""
+    def classify_finding(
+        self, text: str, ontology: Dict[str, Any], finding_id: Optional[str] = None
+    ) -> SemanticRoutingDecision:
+        ...
 
 
 class DomainSemanticRouter:
     """
-    Tier-1 Neurosymbolic Semantic Router.
-    Classifies findings against a formal Scope Ontology without brittle substring keyword matching.
+    Pure Domain Service for Root-Cause Domain Routing.
+    Evaluates technical findings against formal scope boundaries without substring fragility.
+    Hermetic: Zero filesystem I/O, zero network calls, zero infrastructure imports.
     """
 
-    def __init__(self, llm_client: Any = None, ontology_path: Optional[Path] = None):
-        self.llm = llm_client
-        self.ontology_path = ontology_path or (ROOT / "engine_config" / "ontology_taxonomies.json")
+    def __init__(
+        self,
+        classifier: Optional[SemanticClassifierPort] = None,
+        ontology: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self._classifier = classifier
+        self._ontology: Dict[str, Any] = ontology if ontology is not None else self._default_ontology()
         self._cache: Dict[str, SemanticRoutingDecision] = {}
-        self._ontology: Dict[str, Any] = self._load_ontology()
-
-    def _load_ontology(self) -> Dict[str, Any]:
-        if self.ontology_path.exists():
-            try:
-                return json.loads(self.ontology_path.read_text(encoding="utf-8"))
-            except Exception as ex:
-                logger.warning(f"Error loading ontology from {self.ontology_path}: {ex}")
-        return {}
 
     def _hash_text(self, text: str) -> str:
         return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
 
+    def _default_ontology(self) -> Dict[str, List[str]]:
+        """Embedded fallback dictionary to ensure 100% offline hermetic execution."""
+        return {
+            "T1": ["data center", "ups", "pdu", "cooling", "generator", "raised floor", "cabling", "physical security"],
+            "T2": ["vsphere", "simplivity", "hypervisor", "virtual machine", "compute cluster", "kubernetes", "container"],
+            "T3": ["core switch", "routing", "bgp", "ospf", "firewall", "sd-wan", "mpls", "dark fiber"],
+            "T4": ["san", "nas", "storage array", "lun", "netapp", "backup", "veeam", "immutable storage"],
+            "T5": ["business continuity", "drp", "disaster recovery", "failover", "runbook", "cyber vault"],
+            "T6": ["active directory", "identity", "pam", "mfa", "edr", "siem", "soc", "rbac"],
+            "T7": ["itsm", "servicenow", "jira", "cmdb", "change management", "incident management", "sla"],
+            "T8": ["finops", "cloud economics", "reserved instances", "software licensing", "cloud billing"],
+            "T9": ["digital workplace", "intune", "endpoint", "laptop", "vdi", "citrix", "m365"],
+            "T10": ["scada", "mes", "plc", "industrial ot", "weighbridge", "plant floor", "truck dispatch", "prenet"],
+        }
+
     def route_finding(self, text: str, finding_id: Optional[str] = None) -> SemanticRoutingDecision:
         """
         Routes a single technical finding to its canonical technology tower.
-        Uses SHA-256 caching to avoid redundant calls.
+        Thread-safe and cached via SHA-256 signatures.
         """
         clean_text = text.strip()
         if not clean_text:
@@ -103,102 +133,77 @@ class DomainSemanticRouter:
         if cache_key in self._cache:
             decision = self._cache[cache_key]
             if finding_id and not decision.finding_id:
-                decision.finding_id = finding_id
-            return decision
-
-        # If LLM client is available, execute reasoning against the ontology
-        if self.llm is None:
-            try:
-                from assessment_engine.infrastructure.genai_client import create_genai_client
-                self.llm = create_genai_client()
-            except Exception as ex:
-                logger.warning(f"Failed to create default genai client: {ex}")
-
-        if self.llm and hasattr(self.llm, "models") and hasattr(self.llm.models, "generate_content"):
-            from assessment_engine.infrastructure.genai_client import ModelTier, get_model
-            model_name = get_model(ModelTier.REASONING)
-            
-            ontology_str = json.dumps(self._ontology, ensure_ascii=False, indent=2)
-            prompt = f"""You are a Principal Enterprise Systems Architect and Chief Risk Officer.
-Assign the following technical finding to its canonical primary technology tower (T1 to T10) based strictly on ROOT CAUSE JURISDICTION and EXPLICIT EXCLUSIONS.
-
-### FORMAL SCOPE ONTOLOGY:
-{ontology_str}
-
-### TARGET FINDING:
-"{clean_text}"
-
-### MANDATORY INSTRUCTIONS:
-1. Apply ROOT_CAUSE_JURISDICTION: Assign to the tower that owns the root technical debt/budget, not systems suffering secondary symptoms.
-2. Apply PHYSICAL_ENVIRONMENT_OVERRIDE: Computing or networking assets located in plant floor, concrete mixing, quarries, or factories belong to T10, NOT T1.
-3. Apply ORGANIZATIONAL_PROCESS_VS_FACILITY: DRP and BCP software or governance belong to T5, NOT T1.
-4. Output MUST be valid JSON adhering strictly to:
-{{
-  "chain_of_thought_jurisdiction": "1-2 sentences explaining why the root cause belongs to primary_tower and how exclusions apply.",
-  "primary_tower": "T1" through "T10",
-  "secondary_impacted_towers": ["T2", ...],
-  "confidence_score": 0.95,
-  "absence_evaluation": {{
-    "is_absence_of_control": true or false,
-    "missing_capability": "short descriptor if true, else null"
-  }}
-}}
-Output raw JSON only.
-"""
-            try:
-                response = self.llm.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
-                raw_json = response.text.strip()
-                if raw_json.startswith("```json"):
-                    raw_json = raw_json[7:]
-                if raw_json.startswith("```"):
-                    raw_json = raw_json[3:]
-                if raw_json.endswith("```"):
-                    raw_json = raw_json[:-3]
-                
-                data = json.loads(raw_json.strip())
+                # Re-wrap with finding_id
                 decision = SemanticRoutingDecision(
                     finding_id=finding_id,
-                    chain_of_thought_jurisdiction=data.get("chain_of_thought_jurisdiction", "Ontological routing"),
-                    primary_tower=TowerID(data.get("primary_tower", "UNCLASSIFIED")),
-                    secondary_impacted_towers=[TowerID(t) for t in data.get("secondary_impacted_towers", []) if t in TowerID.__members__],
-                    confidence_score=float(data.get("confidence_score", 1.0)),
-                    absence_evaluation=AbsenceSemanticEvaluation(
-                        is_absence_of_control=data.get("absence_evaluation", {}).get("is_absence_of_control", False),
-                        missing_capability=data.get("absence_evaluation", {}).get("missing_capability")
-                    )
+                    chain_of_thought_jurisdiction=decision.chain_of_thought_jurisdiction,
+                    primary_tower=decision.primary_tower,
+                    secondary_impacted_towers=decision.secondary_impacted_towers,
+                    confidence_score=decision.confidence_score,
+                    absence_evaluation=decision.absence_evaluation,
                 )
-                self._cache[cache_key] = decision
-                return decision
-            except Exception as ex:
-                logger.error(f"Error executing LLM semantic routing: {ex}")
+            return decision
 
-        # Deterministic fallback based on ontology core keys if LLM fails
-        return self._deterministic_fallback(clean_text, finding_id)
+        text_lower = clean_text.lower()
 
-    def _deterministic_fallback(self, text: str, finding_id: Optional[str]) -> SemanticRoutingDecision:
-        """Deterministic heuristic fallback prioritizing exclusions over inclusions."""
-        text_lower = text.lower()
-        towers = self._ontology.get("towers", {})
-        
-        # Check specific jurisdictional overrides
-        if any(w in text_lower for w in ["hormigón", "hormigon", "planta periférica", "báscula", "pesaje", "prenet"]):
-            return SemanticRoutingDecision(
+        # Invariant: Physical manufacturing plant operations & weighbridges belong strictly to T10
+        if re.search(r"\b(hormig\w*|caseta\w*|planta\b|bascula\w*|weighbridge|prenet)\b", text_lower):
+            decision = SemanticRoutingDecision(
                 finding_id=finding_id,
                 chain_of_thought_jurisdiction="Physical plant and local weighbridge operations belong strictly to T10.",
                 primary_tower=TowerID.T10,
             )
-        if any(w in text_lower for w in ["drp", "disaster recovery", "plan de recuperación", "conmutación de servicios"]):
-            return SemanticRoutingDecision(
+            self._cache[cache_key] = decision
+            return decision
+
+        # Invariant: Disaster recovery governance & failover runbooks belong strictly to T5
+        if re.search(r"\b(drp|bcp|disaster recovery|failover plan|contingency plan)\b", text_lower):
+            decision = SemanticRoutingDecision(
                 finding_id=finding_id,
                 chain_of_thought_jurisdiction="Disaster recovery plans and service failover governance belong strictly to T5.",
                 primary_tower=TowerID.T5,
             )
-            
-        return SemanticRoutingDecision(
-            finding_id=finding_id,
-            chain_of_thought_jurisdiction="Default fallback.",
-            primary_tower=TowerID.UNCLASSIFIED,
-        )
+            self._cache[cache_key] = decision
+            return decision
+
+        # If an external classifier port is injected, delegate to it
+        if self._classifier is not None:
+            try:
+                delegated = self._classifier.classify_finding(clean_text, self._ontology, finding_id=finding_id)
+                self._cache[cache_key] = delegated
+                return delegated
+            except Exception as ex:
+                logger.warning("Delegated semantic classifier error: %s", ex)
+
+        # Deterministic boundary matching against loaded formal ontology
+        matched_towers: List[TowerID] = []
+        for tower_str, keywords in self._ontology.items():
+            if isinstance(keywords, list):
+                for kw in keywords:
+                    if re.search(rf"(?<!\w){re.escape(str(kw))}(?!\w)", text_lower):
+                        try:
+                            tower_enum = TowerID(tower_str)
+                            if tower_enum not in matched_towers:
+                                matched_towers.append(tower_enum)
+                        except ValueError:
+                            pass
+                        break
+
+        if matched_towers:
+            primary = matched_towers[0]
+            secondaries = matched_towers[1:]
+            decision = SemanticRoutingDecision(
+                finding_id=finding_id,
+                chain_of_thought_jurisdiction=f"Matched canonical ontology scope for {primary.value}.",
+                primary_tower=primary,
+                secondary_impacted_towers=secondaries,
+            )
+        else:
+            decision = SemanticRoutingDecision(
+                finding_id=finding_id,
+                chain_of_thought_jurisdiction="No explicit ontology matches found; unclassified.",
+                primary_tower=TowerID.UNCLASSIFIED,
+            )
+
+        self._cache[cache_key] = decision
+        return decision
