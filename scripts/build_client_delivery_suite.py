@@ -113,16 +113,18 @@ def generate_tower_case_inputs(
 
 
 def resolve_contextual_technology(tower_code: str, pillar_name: str, group_stack: list[dict[str, Any]]) -> str:
-    """Map tower domain to the most relevant technology component using external configuration."""
-    kw_path = REPO_ROOT / "engine_config" / "tower_classification_keywords.json"
-    tower_keywords: dict[str, list[str]] = json.loads(kw_path.read_text(encoding="utf-8")) if kw_path.exists() else {}
-    kw_list = tower_keywords.get(tower_code.upper(), [])
-    matching = [
-        t.get("name")
-        for t in group_stack
-        if any(kw in str(t.get("category", "")).lower() or kw in str(t.get("name", "")).lower() for kw in kw_list)
-    ]
-    return matching[0] if matching else pillar_name
+    """Map tower domain to the most relevant technology component using external ontology configuration."""
+    onto_path = REPO_ROOT / "engine_config" / "ontology_taxonomies.json"
+    if onto_path.exists():
+        try:
+            onto_data = json.loads(onto_path.read_text(encoding="utf-8"))
+            t_info = onto_data.get("towers", {}).get(tower_code.upper(), {})
+            c_name = t_info.get("name")
+            if c_name:
+                return c_name
+        except Exception:
+            pass
+    return pillar_name
 
 
 def synthesize_tower_blueprints(
