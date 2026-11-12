@@ -88,42 +88,27 @@ def _load_tower_keywords() -> dict[str, tuple[str, ...]]:
     return {}
 
 
-_TOWER_KEYWORDS: dict[str, tuple[str, ...]] = _load_tower_keywords()
-
-
 def infer_related_towers(*texts: str) -> list[str]:
-    """Infer related tower IDs by matching keywords within one or more text strings.
-
-    The function concatenates all provided texts into a single, lowercase string
-    to form a search corpus. It then searches this corpus for keywords from a
-    predefined mapping of tower IDs to their associated keywords. A tower ID is
-    included in the result if any of its associated keywords are present in the
-    corpus.
-
-    The keyword search is case-insensitive and is constrained to match whole
-    words only. For example, the keyword 'api' will match 'API' or ' api ',
-    but not 'paprika'.
-
-    Args:
-        *texts (str): One or more text strings to be searched.
-
-    Returns:
-        list[str]: A list of unique tower IDs whose keywords were found. The order
-            of IDs in the list depends on the iteration order of the internal
-            keyword mapping. Returns an empty list if no matches are found.
-
-    Raises:
-        TypeError: If any of the provided elements in `texts` is not a string.
+    """Infer related tower IDs semantically using the Tier-1 DomainSemanticRouter.
+    Eradicates legacy naive keyword substring matching.
     """
-    joined = " ".join(texts).lower()
-    matches: list[str] = []
-    for tower_id, keywords in _TOWER_KEYWORDS.items():
-        if any(
-            re.search(rf"(?<!\w){re.escape(keyword)}(?!\w)", joined)
-            for keyword in keywords
-        ):
-            matches.append(tower_id)
-    return matches
+    joined = " ".join(texts).strip()
+    if not joined:
+        return []
+    try:
+        from assessment_engine.domain.services.domain_router import DomainSemanticRouter, TowerID
+        router = DomainSemanticRouter()
+        decision = router.route_finding(joined)
+        results: list[str] = []
+        if decision.primary_tower != TowerID.UNCLASSIFIED:
+            results.append(decision.primary_tower.value)
+        for t in decision.secondary_impacted_towers:
+            if t != TowerID.UNCLASSIFIED and t.value not in results:
+                results.append(t.value)
+        return results if results else ["T1"]
+    except Exception as ex:
+        logger.debug(f"Error in semantic tower inference: {ex}")
+        return ["T1"]
 
 
 def _compute_binary_shannon_entropy(corroborated_mass: float, refuted_mass: float) -> float:

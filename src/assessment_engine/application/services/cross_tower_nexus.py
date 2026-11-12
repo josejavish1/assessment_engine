@@ -546,10 +546,29 @@ class CrossTowerNexusEngine:
     def _does_finding_trigger_rule(
         finding: dict[str, Any], rule: dict[str, Any]
     ) -> bool:
-        """Determines whether a finding triggers a cascade rule via token-set or phrase match."""
+        """Determines whether a finding triggers a cascade rule using semantic causality, structural severity, or fallback keywords."""
+        src_tower = str(rule.get("source_tower", "")).upper()
+        tgt_tower = str(rule.get("target_tower", "")).upper()
+
+        # If finding specifies a source tower, verify compatibility
+        f_tower = str(finding.get("tower_id") or finding.get("source_tower") or "").upper()
+        if f_tower and src_tower and f_tower != src_tower:
+            return False
+
+        # If finding has semantic routing indicating target_tower is secondary impacted
+        secondary = [str(t).upper() for t in finding.get("secondary_impacted_towers", [])]
+        if tgt_tower in secondary:
+            return True
+
+        # Check severity threshold
+        if finding.get("severity") not in ("CRITICAL", "HIGH", "ELEVATED"):
+            return False
+
+        # Support non-empty keywords if present as secondary filter
         keywords: list[str] = rule.get("trigger_keywords") or []
         if not keywords:
-            return finding.get("severity") in ("CRITICAL", "HIGH")
+            return True
+
         combined_text = str(finding.get("combined_text", "")).lower()
         tokens = set(re.findall(r"[a-z0-9]+", combined_text))
         for kw in keywords:

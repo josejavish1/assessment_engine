@@ -1,0 +1,107 @@
+{
+  "version": "2.0.0-NEUROSYMBOLIC",
+  "routing_principles": [
+    "ROOT_CAUSE_JURISDICTION: Clasifique según el dominio técnico propietario de la causa raíz de la falla o activo, no por los sistemas secundarios que sufren el impacto.",
+    "PHYSICAL_ENVIRONMENT_OVERRIDE: Los servidores, puestos o electrónica de red físicamente ubicados en casetas de planta, fábricas de hormigón o líneas de producción pertenecen a OT / Operaciones Locales (T10), nunca a Centros de Datos Core (T1).",
+    "ORGANIZATIONAL_PROCESS_VS_FACILITY: Los planes de continuidad de negocio (BCP) y de recuperación ante desastres de TI (DRP) pertenecen a Resiliencia (T5), nunca a las salas electromecánicas (T1).",
+    "POLYSEMY_RESOLUTION: Resuelva la polisemia analizando la función técnica contextual (ej. UPS como batería o SAI pertenece a T1; UPS como empresa de mensajería pertenece a Logística/T10; backup de switches pertenece a Redes T3)."
+  ],
+  "towers": {
+    "T1": {
+      "id": "T1",
+      "name": "Centro de Datos Físico e Instalaciones",
+      "core_jurisdiction": "Salas técnicas de CPD corporativas (CPD 1 y CPD 2 en Sant Vicenç dels Horts), suministro eléctrico de cabecera, sistemas SAI/UPS de doble conversión, grupos electrógenos diésel de emergencia, climatización de precisión (CRAC/HVAC), detección precoz por aspiración láser (VESDA), extinción automática por gas limpio, sensores ambientales en falso suelo y control físico de accesos a las salas de servidores.",
+      "explicit_exclusions": [
+        "NO incluye hardware o armarios ubicados en casetas de producción, naves fabriles o plantas de hormigón (eso es T10).",
+        "NO incluye planes de recuperación ante desastres de TI ni orquestación de software DRP (eso es T5).",
+        "NO incluye servidores virtuales, hipervisores o cómputo (eso es T2).",
+        "NO incluye la empresa de mensajería y paquetería 'UPS'."
+      ]
+    },
+    "T2": {
+      "id": "T2",
+      "name": "Cómputo Híbrido y Virtualización",
+      "core_jurisdiction": "Hipervisores VMware vCenter/ESXi, clústeres hiperconvergentes HPE SimpliVity, contención de memoria RAM y CPU en nodos, máquinas virtuales Linux/Windows, contenedores y Kubernetes, automatización de despliegue de cómputo (IaC, Terraform, Ansible) y Landing Zones en nubes públicas (Azure, GCP, AWS).",
+      "explicit_exclusions": [
+        "NO incluye hardware físico electromecánico de las salas ni suministro eléctrico (eso es T1).",
+        "NO incluye cabinas de almacenamiento compartido en bloque o NAS (eso es T4).",
+        "NO incluye políticas de continuidad global o réplicas de contingencia a nivel de negocio (eso es T5)."
+      ]
+    },
+    "T3": {
+      "id": "T3",
+      "name": "Redes y Conectividad Industrial",
+      "core_jurisdiction": "Conmutación troncal (Core LAN/Switching), protocolos de enrutamiento (BGP, OSPF, VLANs), fibra óptica inter-CPD (DCI), enlaces WAN con sedes y canteras, backup 4G/5G, conectividad cloud (ExpressRoute, VPNs IPsec), segmentación IT/OT y telefonía corporativa.",
+      "explicit_exclusions": [
+        "NO incluye cableado estructurado interno dentro de los racks del CPD (eso es T1).",
+        "NO incluye aplicaciones industriales o protocolos de automatización SCADA/PLC en planta (eso es T10).",
+        "NO incluye dispositivos de puesto de trabajo de usuario final (eso es T9)."
+      ]
+    },
+    "T4": {
+      "id": "T4",
+      "name": "Servicios de Datos y Almacenamiento",
+      "core_jurisdiction": "Cabinas de almacenamiento SAN (NetApp FAS/AFF), protocolos de bloques y ficheros (iSCSI, NFS, CIFS), gestión de IOPS, snapshots locales y réplica de datos de almacenamiento, políticas de backup corporativo (Veeam) y retención inmutable contra ransomware (Air-Gap).",
+      "explicit_exclusions": [
+        "NO incluye bases de datos transaccionales, tuning de SQL o motores de base de datos (eso es T7 o T10).",
+        "NO incluye el dimensionamiento de memoria RAM de las máquinas virtuales (eso es T2).",
+        "NO incluye los servidores físicos donde se ejecutan los backups (eso es T2)."
+      ]
+    },
+    "T5": {
+      "id": "T5",
+      "name": "Resiliencia y Continuidad Operativa (DRP/BCP)",
+      "core_jurisdiction": "Plan de Recuperación ante Desastres de TI (DRP), Plan de Continuidad de Negocio (BCP), análisis de impacto en el negocio (BIA), definición y prueba de RTO y RPO, simulacros de conmutación de servicios entre centros de datos y ciber-recuperación ante secuestro masivo de datos.",
+      "explicit_exclusions": [
+        "NO incluye los sistemas físicos de extinción de incendios o climatización de las salas (eso es T1).",
+        "NO incluye la ejecución rutinaria de las copias de seguridad diarias (eso es T4)."
+      ]
+    },
+    "T6": {
+      "id": "T6",
+      "name": "Seguridad de Infraestructura e Identidad",
+      "core_jurisdiction": "Gestión de accesos privilegiados (PAM, CyberArk, bóvedas de contraseñas), directorio activo (Active Directory, Entra ID), bastionado de sistemas operativos, gestión y despliegue de parches de seguridad, firewalls de perímetro, herramientas de detección y respuesta (EDR) y cumplimiento de NIS2/ISO 27001.",
+      "explicit_exclusions": [
+        "NO incluye el control de acceso físico con tarjeta o llaves a las salas técnicas (eso es T1).",
+        "NO incluye el enrutamiento y conmutación de tráfico de red estándar (eso es T3)."
+      ]
+    },
+    "T7": {
+      "id": "T7",
+      "name": "Gestión de Servicios de TI y Operaciones Digitales (ITSM)",
+      "core_jurisdiction": "Procesos ITIL/ITSM, gestión de incidencias, peticiones y problemas, Service Desk y CAU de soporte, Comité de Gestión de Cambios (CAB), CMDB y base de datos de activos, monitorización de infraestructura (Zabbix, Loki, Grafana) y observabilidad de servicios de TI.",
+      "explicit_exclusions": [
+        "NO incluye motores de bases de datos de aplicaciones de planta como Oracle 10g/Forms (eso es T10).",
+        "NO incluye el soporte presencial de microinformática en fábricas periféricas (eso es T9 o T10)."
+      ]
+    },
+    "T8": {
+      "id": "T8",
+      "name": "Estrategia Tecnológica, Gobierno y FinOps",
+      "core_jurisdiction": "Gobierno de cartera de proyectos de TI, Plan Director de Sistemas, gestión de costes cloud (FinOps), optimización de contratos de proveedores tecnológicos (telecomunicaciones, licencias Broadcom, hardware HP/NetApp), integración de fusiones y adquisiciones (M&A como SECIL) y medición de valor de TI.",
+      "explicit_exclusions": [
+        "NO incluye tareas técnicas operativas de parcheo o soporte (eso es T6 o T7).",
+        "NO incluye la gestión técnica de cables o servidores (eso es T1 o T2)."
+      ]
+    },
+    "T9": {
+      "id": "T9",
+      "name": "Puesto de Trabajo Digital y Servicios de Usuario",
+      "core_jurisdiction": "Parque de ordenadores portátiles y de sobremesa de usuario final, maquetación y ciclo de vida del puesto (Microsoft Intune, Windows Autopilot), productividad y colaboración en la nube (Microsoft 365, Teams, SharePoint), telefonía móvil corporativa y experiencia digital del empleado (DEX).",
+      "explicit_exclusions": [
+        "NO incluye servidores físicos, chasis de virtualización ni cabinas de almacenamiento (eso es T1, T2 o T4).",
+        "NO incluye la electrónica de red de campus ni switches troncales (eso es T3).",
+        "NO incluye equipos de pesaje industrial o básculas de camiones de planta (eso es T10)."
+      ]
+    },
+    "T10": {
+      "id": "T10",
+      "name": "Sistemas Transaccionales Core, Plantas y Operaciones Locales",
+      "core_jurisdiction": "Sistemas de expedición y básculas de camiones (PreNet), servidores locales y puestos de pesaje ubicados en las 9 delegaciones y plantas periféricas de hormigón/prefabricados, aplicaciones monolíticas históricas (Oracle 10g/11g, Oracle Forms), integración con SAP ERP industrial y continuidad operativa del piso de fábrica.",
+      "explicit_exclusions": [
+        "NO incluye las salas de servidores centrales de Sant Vicenç (CPD 1 y CPD 2) ni su infraestructura eléctrica (eso es T1).",
+        "NO incluye los portátiles y herramientas de ofimática del personal de oficinas centrales (eso es T9)."
+      ]
+    }
+  }
+}
