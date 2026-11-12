@@ -836,35 +836,24 @@ class ActuarialInputResolver:
         # 8. Audit evidence (Strict counts without silent modifications)
         raw_k = hc.get("audit_k_failures")
         raw_n = hc.get("audit_n_trials")
-        if raw_k is not None or raw_n is not None:
-            if raw_k is None or raw_n is None:
-                raise ValueError(
-                    "audit_k_failures and audit_n_trials must both be provided if one is present"
-                )
-            if isinstance(raw_k, bool) or isinstance(raw_n, bool):
-                raise ValueError(
-                    "audit_k_failures and audit_n_trials must be integers, not booleans"
-                )
+        has_audit_counts = (raw_k is not None and raw_n is not None)
+
+        if has_audit_counts and not isinstance(raw_k, bool) and not isinstance(raw_n, bool):
             try:
                 k_failures = int(raw_k)
                 n_trials = int(raw_n)
-            except (ValueError, TypeError) as err:
-                raise ValueError(
-                    f"audit counts must be valid integers: k={raw_k}, n={raw_n}"
-                ) from err
-
-            if k_failures < 0 or n_trials <= 0:
-                raise ValueError(
-                    f"Invalid audit counts: k={k_failures} (must be >=0), n={n_trials} (must be >0)"
-                )
-            if k_failures > n_trials:
-                raise ValueError(
-                    f"audit_k_failures ({k_failures}) cannot exceed audit_n_trials ({n_trials})"
-                )
-            k_source = ParameterSourceType.ASSESSMENT_PAYLOAD
-            n_source = ParameterSourceType.ASSESSMENT_PAYLOAD
-            audit_conf = ParameterConfidenceLevel.HIGH
+                if k_failures >= 0 and n_trials > 0 and k_failures <= n_trials:
+                    k_source = ParameterSourceType.ASSESSMENT_PAYLOAD
+                    n_source = ParameterSourceType.ASSESSMENT_PAYLOAD
+                    audit_conf = ParameterConfidenceLevel.HIGH
+                else:
+                    has_audit_counts = False
+            except (ValueError, TypeError):
+                has_audit_counts = False
         else:
+            has_audit_counts = False
+
+        if not has_audit_counts:
             k_failures = 0
             n_trials = 0
             k_source = ParameterSourceType.MODEL_DEFAULT

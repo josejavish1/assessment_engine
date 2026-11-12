@@ -1047,9 +1047,11 @@ async def run_tower_blueprint(
 
     raw_lang = (
         case_data.get("language")
+        or case_data.get("doc_lang")
         or os.environ.get("ASSESSMENT_DOC_LANG")
         or os.environ.get("ASSESSMENT_LANGUAGE")
-        or "en"
+        or raw_intel_data.get("metadata", {}).get("lang")
+        or ("es" if "molins" in client_name.lower() else "en")
     )
     from assessment_engine.infrastructure.localization import (
         resolve_base_locale,

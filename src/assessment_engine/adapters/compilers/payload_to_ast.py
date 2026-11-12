@@ -786,7 +786,7 @@ def extract_dimension_boundary_profile(
     for p in pillars_analysis:
         if not isinstance(p, dict):
             continue
-        name = str(p.get("pillar_name") or p.get("name") or "").strip()
+        name = str(p.get("pillar_name") or p.get("pilar_name") or p.get("name") or "").strip()
         raw_score = p.get("score") if p.get("score") is not None else p.get("maturity_score")
         if name and raw_score is not None:
             try:
@@ -4890,7 +4890,7 @@ class PayloadToASTBridge:
         display_title = _sanitize_localized_kpi_leaks(
             display_title, meta_lang, fallback_pillar=fallback_pillar_ref
         )
-        if not str(meta_lang).lower().startswith("en"):
+        if not str(meta_lang).lower().startswith("en") and not (causal_title and len(causal_title) > 10):
             display_title = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
                 fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
                 display_title,

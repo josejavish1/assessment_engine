@@ -607,6 +607,7 @@ class BlueprintDocumentMeta(BaseModel):
     language: Optional[str] = Field("en", description="Target ISO language code (e.g. 'en', 'es').")
     doc_lang: Optional[str] = Field(None, description="Optional alias for language.")
     currency: Optional[str] = Field("€", description="Currency symbol for financial reporting.")
+    annual_revenue: Optional[float] = Field(None, description="Corporate annual revenue for actuarial downtime calibration.")
     regulatory_frameworks: Optional[list[str]] = Field(default_factory=list, description="Applicable regulatory frameworks.")
 
 
@@ -620,6 +621,7 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
     Attributes:
         document_meta: An instance of `BlueprintDocumentMeta` containing metadata
             for the source document.
+        organization_profile: Authoritative organization firmographics and revenue metrics.
         pillars_analysis: A list of `PillarBlueprintDraft` objects, where each
             object contains the detailed analysis for a specific pillar.
         total_fair_ale: The consolidated Annualized Loss Expectancy (ALE)
@@ -628,6 +630,7 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
     """
 
     document_meta: BlueprintDocumentMeta
+    organization_profile: Optional[dict[str, Any]] = Field(None, description="Authoritative organization firmographics.")
     pillars_analysis: list[PillarBlueprintDraft]
     standalone_fair_ale: Optional[float] = Field(
         None,
