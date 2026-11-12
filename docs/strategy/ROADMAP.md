@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../../docs/operations/engineering-quality-gates.md
 - ../../src/assessment_engine/mcp_server.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

@@ -11,7 +11,7 @@ applies_to:
 source_of_truth:
 - ../../src/assessment_engine/infrastructure/epistemic_graph.py
 - ../../src/assessment_engine/infrastructure/evidence_engine.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 notes: Ontología de extracción y linaje de evidencias documentales a partir de PDFs
   de origen.
 diataxis: explanation

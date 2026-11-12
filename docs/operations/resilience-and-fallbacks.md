@@ -11,7 +11,7 @@ applies_to:
 source_of_truth:
 - ../../src/assessment_engine/infrastructure/ai_client.py
 - ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 notes: Runbook de mitigación, políticas de tolerancia a fallos y FMEA simple para
   la ejecución con APIs.
 diataxis: how_to

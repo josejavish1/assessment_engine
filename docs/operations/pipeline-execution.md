@@ -10,7 +10,7 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/pipeline_runtime.py
 - ../architecture/tower-pipeline.md
 - ../architecture/global-commercial-pipelines.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

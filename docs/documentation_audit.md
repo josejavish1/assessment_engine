@@ -5,7 +5,7 @@ source_of_truth:
 - ../docs/documentation-map.yaml
 - ../docs/README.md
 - ../docs/ai/documentation-governance.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - docs
 - humans

@@ -13,9 +13,7 @@ Implements:
 
 from __future__ import annotations
 
-import json
 from decimal import Decimal, ROUND_HALF_EVEN
-from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 from assessment_engine.domain.governance.primitives import (
@@ -25,7 +23,6 @@ from assessment_engine.domain.governance.primitives import (
     ResolvedMaturity,
     sanitize_to_decimal,
 )
-from assessment_engine.infrastructure.runtime_paths import ROOT
 
 
 class GovernanceScaleEngine:
@@ -37,16 +34,13 @@ class GovernanceScaleEngine:
     _instance: Optional[GovernanceScaleEngine] = None
 
     def __init__(self, config_dict: Optional[Dict[str, Any]] = None) -> None:
-        if config_dict is None:
-            cfg_path = ROOT / "engine_config" / "governance_scales.json"
-            if cfg_path.exists():
-                self.config = json.loads(cfg_path.read_text(encoding="utf-8"))
-            else:
-                self.config = self._fallback_config()
-        else:
-            self.config = config_dict
-
+        self.config = config_dict if config_dict is not None else self._fallback_config()
         self._verify_formal_invariants()
+
+    @classmethod
+    def configure(cls, config_dict: Dict[str, Any]) -> None:
+        """Configures or resets the singleton instance with custom configuration."""
+        cls._instance = cls(config_dict=config_dict)
 
     @classmethod
     def get_instance(cls) -> GovernanceScaleEngine:

@@ -43,7 +43,10 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
         elif custom_caller is not None:
             self._client = None
         else:
-            self._client = genai.Client()
+            try:
+                self._client = genai.Client()
+            except Exception:
+                self._client = None
 
     def _get_active_client(self) -> genai.Client:
         """Return the active GenAI client or initialize lazily if not provided."""

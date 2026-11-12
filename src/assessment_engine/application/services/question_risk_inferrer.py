@@ -101,8 +101,14 @@ class QuestionRiskInferrer:
         industry_key = (
             profile.industry_vertical
             if profile and profile.industry_vertical
-            else "manufacturing"
+            else "general"
         )
+        if profile and getattr(profile, "hourly_burn_rate", None) is not None and float(profile.hourly_burn_rate) > 0:
+            derived_hourly_rate = float(profile.hourly_burn_rate)
+        elif profile and getattr(profile, "annual_revenue", None) is not None and float(profile.annual_revenue) > 0:
+            derived_hourly_rate = round(float(profile.annual_revenue) / 8760.0, 2)
+        else:
+            derived_hourly_rate = 0.0
         plain_explanation = PlainLanguageRiskNarrative.format_plain_narrative(
             tower_code=normalized_tower,
             kpi_name=kpi_name,
@@ -111,7 +117,7 @@ class QuestionRiskInferrer:
             sle=latent.single_loss_expectancy,
             ale=latent.annual_loss_expectancy,
             rto_hours=rto_h,
-            hourly_rate=13061.0,
+            hourly_rate=derived_hourly_rate,
             doc_lang=doc_lang,
         )
 

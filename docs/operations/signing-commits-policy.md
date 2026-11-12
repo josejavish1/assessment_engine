@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - README.md
-last_verified_against: '2026-06-26'
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 doc_type: canonical

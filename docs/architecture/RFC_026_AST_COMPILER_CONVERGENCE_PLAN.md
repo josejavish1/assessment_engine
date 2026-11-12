@@ -5,7 +5,7 @@ source_of_truth:
 - docs/README.md
 - docs/SYSTEM_ARCHITECTURE.md
 - docs/architecture/split_brain_remediation_plan.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents
@@ -56,7 +56,7 @@ source_of_truth:
 - docs/README.md
 - docs/SYSTEM_ARCHITECTURE.md
 - docs/architecture/split_brain_remediation_plan.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

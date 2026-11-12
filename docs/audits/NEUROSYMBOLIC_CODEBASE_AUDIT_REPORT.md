@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../../scripts/audit_neurosymbolic_codebase.py
 - ../../src/assessment_engine/
-last_verified_against: '2026-06-26'
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

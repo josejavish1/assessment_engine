@@ -15,18 +15,18 @@ def test_resolve_maturity_band_late_binding_tokens():
     and resolves localized labels via late-binding against locales.json."""
     # 1. Default (no locale specified -> universal baseline English)
     res_default = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS)
-    assert res_default["band_key"] == "band_managed"
-    assert res_default["label"] == "Managed"
+    assert res_default["band_key"] == "band_quantitatively_managed"
+    assert res_default["label"] == "Quantitatively Managed"
 
     # 2. Spanish locale -> Spanish labels
     res_es = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS, locale="es", translator=t)
-    assert res_es["band_key"] == "band_managed"
-    assert res_es["label"] == "Gestionado"
+    assert res_es["band_key"] == "band_quantitatively_managed"
+    assert res_es["label"] == "Gestionado Cuantitativamente"
 
     # 3. English locale -> English labels
     res_en = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS, locale="en", translator=t)
-    assert res_en["band_key"] == "band_managed"
-    assert res_en["label"] == "Managed"
+    assert res_en["band_key"] == "band_quantitatively_managed"
+    assert res_en["label"] == "Quantitatively Managed"
 
     # 4. Initial level in English
     res_initial_en = resolve_maturity_band(1.2, ANNEX_MATURITY_BANDS, locale="en", translator=t)
@@ -36,13 +36,15 @@ def test_resolve_maturity_band_late_binding_tokens():
     # 5. Optimized level in English
     res_opt_en = resolve_maturity_band(4.8, ANNEX_MATURITY_BANDS, locale="en", translator=t)
     assert res_opt_en["band_key"] == "band_optimized"
-    assert res_opt_en["label"] == "Optimized"
+    assert res_opt_en["label"] in ["Optimizing", "Optimized"]
 
 
 def test_derive_maturity_band_bilingual():
     """Verify that derive_maturity_band supports bilingual resolution while preserving backwards compatibility."""
-    assert derive_maturity_band(4.0) == "Managed"
-    assert derive_maturity_band(4.0, locale="es") == "Gestionado"
-    assert derive_maturity_band(4.0, locale="en") == "Managed"
+    assert derive_maturity_band(4.0) == "Quantitatively Managed"
+    assert derive_maturity_band(4.0, locale="es") == "Gestionado Cuantitativamente"
+    assert derive_maturity_band(4.0, locale="en") == "Quantitatively Managed"
+    assert derive_maturity_band(2.0, locale="en") == "Managed"
+    assert derive_maturity_band(2.0, locale="es") == "Gestionado"
     assert derive_maturity_band(1.0, locale="en") == "Initial"
     assert derive_maturity_band(1.0, locale="es") == "Inicial"

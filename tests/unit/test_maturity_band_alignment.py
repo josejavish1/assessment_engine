@@ -77,9 +77,9 @@ def test_derive_maturity_band_scores_integration() -> None:
     locales_path = Path("engine_config/locales.json")
     test_cases = [
         (1.0, "band_initial"),
-        (2.0, "band_repeatable"),
+        (2.0, "band_managed"),
         (3.0, "band_defined"),
-        (4.0, "band_managed"),
+        (4.0, "band_quantitatively_managed"),
         (5.0, "band_optimized"),
     ]
 

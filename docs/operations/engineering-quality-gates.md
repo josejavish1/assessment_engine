@@ -14,7 +14,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
 - ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
 - ../../tests/integration/test_policy_engine.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

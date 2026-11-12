@@ -15,7 +15,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/run_commercial_refiner.py
 - ../../src/assessment_engine/application/run_intelligence_harvesting.py
 - ../../src/assessment_engine/application/generate_tower_radar_chart.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

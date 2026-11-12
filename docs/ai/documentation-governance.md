@@ -7,7 +7,7 @@ source_of_truth:
 - ../../pyproject.toml
 - ../../.github/workflows/ci.yml
 - ../../docs/documentation-map.yaml
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

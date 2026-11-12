@@ -29,29 +29,39 @@ class PillarForensicSynthesizer:
 Your sole objective is to write the authoritative 'As-Is Architecture Description' (`asis_architecture_description`) for ONE specific technology pillar.
 
 ### CONSTRUCTIVE & RESPECTFUL CONSULTING TONE (CLIENT SPONSORSHIP MANDATE)
-- ZERO BLAME / NEVER ACCUSATORY: Never judge, scold, or belittle the client's internal team. Strictly avoid punitive or derogatory terms (e.g., "inmadurez severa", "incapacidad de los equipos", "negligencia", "falta de rigor").
-- RESPECT OPERATIONAL REALITY: Recognize that the current architecture was designed to prioritize production continuity, plant uptime, and operational stability with the resources available at the time.
-- CONSTRUCTIVE DEBT FRAMING: Frame technical debt, legacy versions, and manual processes as the natural, understandable consequence of business longevity, uninterrupted industrial operations, and rapid corporate growth (M&A), which now encounter scalability, density, or modern integration limits.
-- The tone must empower the IT Director and CTO, providing them with solid, objective technical rationale to defend modern investment before the Board, rather than putting them on the defensive.
+- ZERO BLAME / NEVER ACCUSATORY: Never judge, scold, or belittle the client's internal team. Strictly avoid punitive or derogatory terms (e.g., severe immaturity, team incompetence, negligence, lack of operational rigor).
+- RESPECT OPERATIONAL REALITY: Recognize that the current architecture was designed to prioritize production continuity, operational uptime, and baseline stability with the resources available at the time.
+- CONSTRUCTIVE DEBT FRAMING: Frame technical debt, legacy versions, and manual processes as the natural, understandable consequence of business longevity, uninterrupted business operations, and corporate growth, which now encounter modern integration boundaries.
+- The tone must empower the IT Director and CTO, providing them with solid, objective technical rationale to defend modern investment before executive committees.
 
-### NARRATIVE STRUCTURE (250 to 450 WORDS)
-Construct a cohesive, elegant, multi-paragraph technical narrative in continuous Spanish technical prose (no bullet points, no markdown headers, no numbered lists):
+### EPISTEMIC DISTINCTION (FACT VS. GAP VS. RISK HYPOTHESIS)
+- EMPIRICAL FACTS: Report only topological facts, hardware configurations, and operational realities explicitly confirmed in evidence.
+- SUPERVISORY / EVIDENCE GAPS: When documentation, certifications, or testing routines are absent from the evidence, state them accurately as documentary gaps (e.g., "No formal verification records are provided in the dossier...", "Documentary accreditation is not present..."). NEVER make unverified categorical factual accusations (e.g., NEVER assert certifications are expired or maintenance is omitted unless explicitly attested in the evidence).
+- RISK HYPOTHESES: Clearly frame potential negative impacts as conditioned risk scenarios (e.g., "In the event of an operational contingency, the absence of prior protocolization exposes the environment to...").
+- STRICT DOMAIN ISOLATION: Confine analysis exclusively to the assigned technology domain. Never import foreign domain concepts.
+
+### PROPORTIONAL DEPTH BY EVIDENCE DENSITY
+- When direct telemetry/evidence is sparse (<= 2 evidence items): Write a concise, sober, strictly grounded narrative of 180 to 250 words. Do NOT invent filler, unverified sensor arrays, or unverified maintenance procedures.
+- When direct telemetry/evidence is rich (>= 3 evidence items): Write a comprehensive forensic analysis of 250 to 400 words.
+
+### NARRATIVE STRUCTURE
+Construct a cohesive, elegant, multi-paragraph technical narrative in continuous technical prose (no bullet points, no markdown headers, no numbered lists):
 
 1. BASELINE ARCHITECTURE & OPERATIONAL REALITY:
    Anchor the narrative in verified topological facts, configurations, and observed systems for this pillar. Describe the components currently running in production, acknowledging their contribution to operational continuity.
 
 2. TECHNICAL DYNAMICS & ARCHITECTURAL FRICTION:
-   Where direct telemetry is sparse, deduce the operating reality from confirmed adjacent facts (negative space analysis). Explain the physical and architectural constraints (e.g., memory contention, lack of API decoupling, manual configuration overhead, lack of native drivers).
+   Where direct telemetry is sparse, deduce the operating reality from confirmed adjacent facts (negative space analysis). Explain physical and architectural constraints (e.g., memory contention, lack of API decoupling, manual configuration overhead, lack of native drivers).
 
 3. DOMAIN IMPLICATIONS & EVOLUTIONARY HORIZON:
    Conclude naturally on how this specific technical configuration conditions operational agility, maintenance overhead, or resilience in this domain.
 
 ### RUTHLESS RESTRICTIONS (ZERO TOLERANCE)
 - ABSOLUTE PROHIBITION OF FIRMOGRAPHIC PARROT:
-  DO NOT write formulaic corporate recitations like "Para Cementos Molins, considerando su escala global de 1.144 millones de euros y 9 plantas de prefabricados...". Conclude purely and specifically on the technical domain's operational implications.
+  DO NOT write formulaic corporate recitations (e.g., "For [Client Organization], considering its global operational scale..."). Conclude purely and specifically on the technical domain's operational implications.
 - NO HALLUCINATED VENDORS: Never invent, assume, or name specific third-party vendor products or brands unless explicitly stated in the evidence. If unknown, refer to them by their functional role.
-- NO CONSULTING BOILERPLATE: Never use generic prescriptive fluff ("es fundamental contar con...", "las mejores prácticas dictan..."). Describe current As-Is reality only.
-- NO SURVEY METADATA: Never mention survey scores, maturity numbers (e.g. "nivel 2.4", "puntuación"), or questionnaires.
+- NO CONSULTING BOILERPLATE: Never use generic prescriptive fluff (e.g., "it is essential to have...", "industry best practices dictate..."). Describe current As-Is reality only.
+- NO SURVEY METADATA: Never mention survey scores, numerical maturity ratings (e.g. "level 2.4", "score"), or questionnaires.
 - STRICT DOMAIN ISOLATION: Confine analysis exclusively to the assigned technology domain.
 """
 
@@ -80,6 +90,30 @@ Construct a cohesive, elegant, multi-paragraph technical narrative in continuous
         findings_str = " | ".join(findings) if findings else "No direct telemetry captured; rely on Negative Space Inference from Tower Context."
 
         adjacent_context = tower_context.get("adjacent_evidence_summary", "Standard enterprise operational baseline.")
+        evidence_count = len(findings)
+        if evidence_count <= 2:
+            density_rule = (
+                f"- DENSITY GUIDANCE ({evidence_count} direct findings): Keep the narrative concise, sober, and strictly grounded (180 to 250 words). "
+                "Do NOT invent unverified sensor telemetry, unverified maintenance routines, or unverified regulatory expirations. "
+                "State what is confirmed, acknowledge documentary gaps soberly, and outline the resulting operational exposure."
+            )
+            length_instruction = "Ensure strict adherence to the 180–260 word boundary"
+        else:
+            density_rule = (
+                f"- DENSITY GUIDANCE ({evidence_count} direct findings): Provide an in-depth forensic breakdown (250 to 400 words)."
+            )
+            length_instruction = "Ensure strict adherence to the 250–450 word boundary"
+
+        target_lang = firmographics.get("doc_lang") or tower_context.get("doc_lang") or "en"
+        locale_map = {
+            "es": "Spanish",
+            "en": "English",
+            "pt": "Portuguese",
+            "fr": "French",
+            "ja": "Japanese",
+            "de": "German",
+        }
+        lang_name = locale_map.get(str(target_lang).lower()[:2], "English")
 
         prompt = f"""### TARGET ASSIGNMENT
 - **Tower:** [{tower_id}] {tower_name}
@@ -95,7 +129,9 @@ Construct a cohesive, elegant, multi-paragraph technical narrative in continuous
 {adjacent_context}
 
 ### EXECUTION INSTRUCTION
-Write the 4-slot forensic narrative (`asis_architecture_description`) for **{pillar_name}** in Spanish (matching standard enterprise report localization). Ensure strict adherence to the 250–450 word boundary and zero vendor hallucination. Output ONLY the raw narrative text.
+Write the forensic narrative (`asis_architecture_description`) for **{pillar_name}** in {lang_name} (matching standard enterprise report localization).
+{density_rule}
+{length_instruction} and zero vendor or factual hallucination. Output ONLY the raw narrative text.
 """
         if feedback_history:
             retry_block = "\n\n### CRITICAL VALIDATION FAILURES FROM PREVIOUS ATTEMPTS\n"
@@ -169,7 +205,8 @@ Write the 4-slot forensic narrative (`asis_architecture_description`) for **{pil
                     word_count = self.gatekeeper.validate(
                         text=clean_narrative,
                         tower_id=tower_id,
-                        allowed_evidence_text=evidence_str
+                        allowed_evidence_text=evidence_str,
+                        evidence_count=len(findings),
                     )
                     logger.info(f"[{tower_id}:{pillar_id}] Pillar synthesis succeeded on attempt {attempt} ({word_count} words).")
                     return PillarSynthesisResult(

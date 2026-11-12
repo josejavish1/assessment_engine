@@ -3132,7 +3132,10 @@
     "it_resource_waste_label": "Desperdicio de Recursos TI",
     "plant_impact_label": "IMPACTO EN FÁBRICA",
     "zero_plant_outage_label": "Sin parada de planta",
-    "finops_optimization_badge": "OPTIMIZACIÓN FINOPS"
+    "finops_optimization_badge": "OPTIMIZACIÓN FINOPS",
+    "p015_financial_narrative_fair_standard": "Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada del servicio conlleva un coste operativo directo de **{hourly_rate}** (detallado en la Sección 4.1). En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **{tower_name}** representan una **exposición de riesgo latente estimada en {annual_ale} anualizados**, cifra que refleja la pérdida media esperada por la fricción operativa e incidencias a lo largo de un año dentro de este dominio.",
+    "p015_financial_narrative_stress_scenario": "Adicionalmente, ante un **escenario de estrés financiero severo (Percentil 90 / P90)**, la acumulación estocástica de múltiples contingencias técnicas a lo largo de un ejercicio anual podría elevar las pérdidas agregadas del dominio hasta **{p90_tail_risk}**. En términos de liquidez operativa inmediata, el impacto económico derivado de la materialización del peor incidente individual aislado (Pérdida Máxima por Evento / Max SLE) se estima en **{max_sle}**, con un tiempo de recuperación técnica de hasta **{max_recovery_hours} horas**.",
+    "p015_financial_narrative_deterministic_opex": " A esta exposición por contingencias probables debe sumarse un **desperdicio operativo fijo (OpEx determinista)** de **{deterministic_opex} anuales** derivado de ineficiencias de suscripción y contratos cautivos."
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -5858,7 +5861,7 @@
     "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
     "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact.",
     "default_client_name": "Client",
-    "default_company_name": "La Entidad Evaluadora Independiente",
+    "default_company_name": "Independent Assessment Entity",
     "gloss_mcda_crit_extreme": "**Business Criticality (MCDA) [{val}% - Extreme]:** Assesses the level of direct dependency that key operational processes have on this domain. Core business operations depend critically on this platform, and an outage would cause immediate disruption of essential services.",
     "gloss_mcda_crit_high": "**Business Criticality (MCDA) [{val}% - High]:** Reflects high operational dependency, though a brief latency tolerance exists before core business continuity is disrupted.",
     "gloss_mcda_crit_medium": "**Business Criticality (MCDA) [{val}% - Medium]:** The domain provides supportive or back-office services whose temporary downtime is manageable via standard contingency procedures.",
@@ -6242,7 +6245,11 @@
     "it_resource_waste_label": "IT Resource Waste",
     "plant_impact_label": "PLANT IMPACT",
     "zero_plant_outage_label": "Zero Plant Outage",
-    "finops_optimization_badge": "FINOPS OPTIMIZATION"
+    "finops_optimization_badge": "FINOPS OPTIMIZATION",
+    "band_quantitatively_managed": "Quantitatively Managed",
+    "p015_financial_narrative_fair_standard": "Under the international Open FAIR standard, unplanned service downtime incurs a direct operational burn rate of **{hourly_rate}** (detailed in Section 4.1). Under standard operating conditions, the technical gaps evaluated in **{tower_name}** represent an **annualized loss expectancy (ALE) of {annual_ale}**, reflecting the expected average friction and incidents over an annual cycle.",
+    "p015_financial_narrative_stress_scenario": "Additionally, under a **severe financial stress scenario (90th Percentile / P90)**, the stochastic accumulation of multiple technical contingencies throughout the fiscal year could escalate aggregate domain losses to **{p90_tail_risk}**. In terms of immediate operational liquidity, the maximum impact from the worst single isolated incident (Max SLE) is estimated at **{max_sle}**, requiring a technical recovery window of up to **{max_recovery_hours} hours**.",
+    "p015_financial_narrative_deterministic_opex": " To this probabilistic contingency exposure must be added a **fixed operational waste (Deterministic OpEx)** of **{deterministic_opex} annually** stemming from captive contracts and unoptimized subscription capacity."
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -8987,7 +8994,7 @@
     "forensic_inventory_fallback_template": "Ambiente tecnológico avaliado para {domain_code} ({domain_title}), abrangendo {subpillar_count} subpilares de controle analisados.",
     "forensic_strength_fallback_template": "Continuidade operacional de linha de base estabelecida em {highest_subpillar_name} (índice de maturidade {highest_subpillar_score}/{max_cmmi_str}).",
     "forensic_finding_fallback_template": "Déficit de controle em {lowest_subpillar_name} (índice de maturidade {lowest_subpillar_score}/{max_cmmi_str}).",
-    "default_company_name": "La Entidad Evaluadora Independiente",
+    "default_company_name": "Entidade Avaliadora Independente",
     "tomo_ch3_table4_max_tag": "(Máx.)",
     "tomo_ch3_table4_footnote": "* Critério de Agregação Atuarial: A Exposição Anual Esperada (ALE) é aditiva entre domínios, enquanto os custos por incidente grave representam contingências operacionais independentes. Por rigor técnico, a linha de síntese não realiza soma aritmética, mas reflete o impacto do pior cenário crítico individual ({worst_incident_cost} em {worst_incident_code} — {worst_incident_domain}), enquanto a crise acumulada da carteira é modelada estocasticamente em {formatted_p90}.",
     "tomo_polarity_section_title": "1.1. Áreas-Chave: Pontos Fortes e Críticos",
@@ -9349,7 +9356,11 @@
     "it_resource_waste_label": "Desperdício de Recursos de TI",
     "plant_impact_label": "IMPACTO NA FÁBRICA",
     "zero_plant_outage_label": "Sem paralisação da fábrica",
-    "finops_optimization_badge": "OTIMIZAÇÃO FINOPS"
+    "finops_optimization_badge": "OTIMIZAÇÃO FINOPS",
+    "band_quantitatively_managed": "Gerenciado Quantitativamente",
+    "p015_financial_narrative_fair_standard": "Sob o padrão internacional Open FAIR, a indisponibilidade não planejada de serviço acarreta um custo operacional direto de **{hourly_rate}** (detalhado na Seção 4.1). Em condições normais, as lacunas técnicas avaliadas em **{tower_name}** representam uma **exposição de perda anualizada (ALE) de {annual_ale}**.",
+    "p015_financial_narrative_stress_scenario": "Adicionalmente, sob um **cenário de estresse financeiro severo (Percentil 90 / P90)**, o acúmulo estocástico de múltiplas contingências técnicas ao longo de um exercício anual pode elevar as perdas agregadas do domínio para **{p90_tail_risk}**. Em termos de liquidez operacional imediata, o impacto econômico derivado do pior incidente isolado (Perda Máxima por Evento / Max SLE) é estimado em **{max_sle}**, exigindo uma janela de recuperação técnica de até **{max_recovery_hours} horas**.",
+    "p015_financial_narrative_deterministic_opex": " A esta exposição de contingência deve ser somado um **desperdício operacional fixo (OpEx determinístico)** de **{deterministic_opex} anuais**."
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12093,7 +12104,7 @@
     "forensic_inventory_fallback_template": "Environnement technologique évalué pour {domain_code} ({domain_title}), comprenant {subpillar_count} sous-piliers de contrôle analysés.",
     "forensic_strength_fallback_template": "Continuité opérationnelle de référence établie dans {highest_subpillar_name} (indice de maturité {highest_subpillar_score}/{max_cmmi_str}).",
     "forensic_finding_fallback_template": "Déficit de contrôle dans {lowest_subpillar_name} (indice de maturité {lowest_subpillar_score}/{max_cmmi_str}).",
-    "default_company_name": "La Entidad Evaluadora Independiente",
+    "default_company_name": "Entité d'Évaluation Indépendante",
     "tomo_ch3_table4_max_tag": "(Max.)",
     "tomo_ch3_table4_footnote": "* Critère d'Agrégation Actuarielle : L'Exposition Annuelle Attendue (ALE) est additive entre domaines, tandis que les coûts par incident majeur représentent des contingences opérationnelles indépendantes. Par rigueur technique, la ligne de synthèse n'effectue pas de somme arithmétique, mais reflète l'impact du scénario critique le plus sévère ({worst_incident_cost} sur {worst_incident_code} — {worst_incident_domain}), tandis que l'exposition de crise cumulée du portefeuille est modélisée de manière stochastique à {formatted_p90}.",
     "tomo_polarity_section_title": "1.1. Domaines Clés : Forces et Points Critiques",
@@ -12454,7 +12465,11 @@
     "it_resource_waste_label": "Gaspillage de ressources informatiques",
     "plant_impact_label": "IMPACT SUR L'USINE",
     "zero_plant_outage_label": "Aucun arrêt d'usine",
-    "finops_optimization_badge": "OPTIMISATION FINOPS"
+    "finops_optimization_badge": "OPTIMISATION FINOPS",
+    "band_quantitatively_managed": "Géré Quantitativement",
+    "p015_financial_narrative_fair_standard": "Selon la norme internationale Open FAIR, l'indisponibilité non planifiée du service entraîne un coût opérationnel direct de **{hourly_rate}** (détaillé à la Section 4.1). Dans des conditions standard, les écarts techniques évalués dans **{tower_name}** représentent une **perte annualisée estimée (ALE) de {annual_ale}**.",
+    "p015_financial_narrative_stress_scenario": "De plus, dans un **scénario de stress financier sévère (90e centile / P90)**, l'accumulation stochastique de multiples aléas techniques au cours d'un exercice annuel pourrait porter les pertes agrégées du domaine jusqu'à **{p90_tail_risk}**. En termes de liquidité opérationnelle immédiate, l'impact économique découlant du pire incident isolé (Perte Maximale par Événement / Max SLE) est estimé à **{max_sle}**, avec un délai de reprise technique pouvant atteindre **{max_recovery_hours} heures**.",
+    "p015_financial_narrative_deterministic_opex": " À cette exposition aux aléas doit s'ajouter un **gaspillage opérationnel fixe (OpEx déterministe)** de **{deterministic_opex} par an**."
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15194,7 +15209,7 @@
     "forensic_inventory_fallback_template": "{domain_code}（{domain_title}）の対象技術環境。分析された{subpillar_count}個の制御サブピラーを網羅。",
     "forensic_strength_fallback_template": "{highest_subpillar_name}における確立されたベースライン運用継続性（成熟度指数 {highest_subpillar_score}/{max_cmmi_str}）。",
     "forensic_finding_fallback_template": "{lowest_subpillar_name}における統制不備（成熟度指数 {lowest_subpillar_score}/{max_cmmi_str}）。",
-    "default_company_name": "La Entidad Evaluadora Independiente",
+    "default_company_name": "独立評価機関",
     "tomo_ch3_table4_max_tag": "(最大)",
     "tomo_ch3_table4_footnote": "* 数理的集計基準：年間予想損失額（ALE）はドメイン間で合算可能ですが、重大インシデントのコストは独立した運用上の不測事態を表します。技術的厳密性を期すため、合計行は算術的合計を行わず、最大の単一クリティカルインシデント（{worst_incident_code} — {worst_incident_domain} における {worst_incident_cost}）を反映し、ポートフォリオ全体の累積危機エクスポージャーは確率論的に {formatted_p90} とモデル化されています。",
     "tomo_polarity_section_title": "1.1. 重要領域：強みと主要なボトルネック",
@@ -15550,7 +15565,11 @@
     "it_resource_waste_label": "ITリソースの浪費",
     "plant_impact_label": "工場への影響",
     "zero_plant_outage_label": "工場停止なし",
-    "finops_optimization_badge": "FINOPS最適化"
+    "finops_optimization_badge": "FINOPS最適化",
+    "band_quantitatively_managed": "定量的に管理された",
+    "p015_financial_narrative_fair_standard": "国際標準のOpen FAIR規格に基づき、計画外のサービス停止は**{hourly_rate}**の直接的な運用損失を発生させます。標準的な運用状況において、**{tower_name}**で評価された技術的ギャップは**{annual_ale}の年間損失期待値（ALE）**を表します。",
+    "p015_financial_narrative_stress_scenario": "さらに、**重大な財務ストレスシナリオ（90パーセンタイル / P90）**の下では、年間を通じた複数の技術的偶発事象の確率的蓄積により、ドメイン全体の集計損失が**{p90_tail_risk}**に達する可能性があります。即時運用流動性の観点から、単一の最悪インシデント（最大単一損失 / Max SLE）による経済的影響は最大**{max_sle}**（技術的復旧所要時間：最大{max_recovery_hours}時間）と推定されます。",
+    "p015_financial_narrative_deterministic_opex": " この不確実性リスクに加えて、契約やキャパシティの非効率性に起因する**固定的な運用浪費（確定的OpEx）**が年間**{deterministic_opex}**加算されます。"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -18293,7 +18312,7 @@
     "forensic_inventory_fallback_template": "Bewertetes technologisches Umfeld für {domain_code} ({domain_title}), das {subpillar_count} analysierte Kontroll-Teilbereiche umfasst.",
     "forensic_strength_fallback_template": "Etablierte operative Basiskontinuität in {highest_subpillar_name} (Reifegradindex {highest_subpillar_score}/{max_cmmi_str}).",
     "forensic_finding_fallback_template": "Kontrolldefizit in {lowest_subpillar_name} (Reifegradindex {lowest_subpillar_score}/{max_cmmi_str}).",
-    "default_company_name": "La Entidad Evaluadora Independiente",
+    "default_company_name": "Unabhängige Bewertungsstelle",
     "tomo_ch3_table4_max_tag": "(Max.)",
     "tomo_ch3_table4_footnote": "* Versicherungsmathematisches Aggregationskriterium: Der erwartete Jahresverlust (ALE) ist über Domänen hinweg additiv, während Kosten schwerer Vorfälle unabhängige operative Ereignisse darstellen. Aus Gründen technischer Genauigkeit bildet die Summenzeile keine arithmetische Summe, sondern spiegelt den Spitzenvorfall wider ({worst_incident_cost} in {worst_incident_code} — {worst_incident_domain}), während das kumulierte Krisenszenario stochastisch mit {formatted_p90} modelliert wird.",
     "tomo_polarity_section_title": "1.1. Kernbereiche: Stärken und Kritische Engpässe",
@@ -18649,7 +18668,11 @@
     "it_resource_waste_label": "IT-Ressourcenverschwendung",
     "plant_impact_label": "AUSWIRKUNG AUF DAS WERK",
     "zero_plant_outage_label": "Kein Werkstillstand",
-    "finops_optimization_badge": "FINOPS-OPTIMIERUNG"
+    "finops_optimization_badge": "FINOPS-OPTIMIERUNG",
+    "band_quantitatively_managed": "Quantitativ Gesteuert",
+    "p015_financial_narrative_fair_standard": "Nach dem internationalen Open-FAIR-Standard verursacht eine ungeplante Betriebsunterbrechung direkte Betriebskosten von **{hourly_rate}** (detailliert in Abschnitt 4.1). Unter Standardbedingungen stellen die in **{tower_name}** bewerteten technischen Lücken eine **annualisierte Schadenserwartung (ALE) von {annual_ale}** dar.",
+    "p015_financial_narrative_stress_scenario": "Zusätzlich könnten bei einem **schweren finanziellen Stressszenario (90. Perzentil / P90)** die stochastische Akkumulation mehrerer technischer Vorfälle im Verlauf eines Geschäftsjahres die aggregierten Bereichsverluste auf **{p90_tail_risk}** ansteigen lassen. In Bezug auf die unmittelbare operative Liquidität wird der wirtschaftliche Schaden des schwersten Einzelfalls (Maximaler Einzelschaden / Max SLE) auf **{max_sle}** geschätzt, mit einem technischen Wiederherstellungsfenster von bis zu **{max_recovery_hours} Stunden**.",
+    "p015_financial_narrative_deterministic_opex": " Zu dieser Exposition muss eine **feste Betriebsverschwendung (deterministisches OpEx)** von **{deterministic_opex} jährlich** hinzugerechnet werden."
   },
   "executive_summary_narrative": {
     "es": {

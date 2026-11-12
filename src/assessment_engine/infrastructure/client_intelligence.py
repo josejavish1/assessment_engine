@@ -75,23 +75,8 @@ def _claim_type_for_v2(value: Any) -> str:
     return "inference"
 
 
-def _load_tower_keywords() -> dict[str, tuple[str, ...]]:
-    from assessment_engine.infrastructure.runtime_paths import ROOT
-
-    path = ROOT / "engine_config/tower_classification_keywords.json"
-    if path.exists():
-        try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-            return {k: tuple(v) for k, v in raw.items()}
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug("[Fallback] Handled exception: %s", ex)
-    return {}
-
-
 def infer_related_towers(*texts: str) -> list[str]:
-    """Infer related tower IDs semantically using the Tier-1 DomainSemanticRouter.
-    Eradicates legacy naive keyword substring matching.
-    """
+    """Infer related tower IDs semantically using the Tier-1 DomainSemanticRouter."""
     joined = " ".join(texts).strip()
     if not joined:
         return []
@@ -100,15 +85,17 @@ def infer_related_towers(*texts: str) -> list[str]:
         router = DomainSemanticRouter()
         decision = router.route_finding(joined)
         results: list[str] = []
-        if decision.primary_tower != TowerID.UNCLASSIFIED:
-            results.append(decision.primary_tower.value)
+        primary_val = getattr(decision.primary_tower, "value", str(decision.primary_tower))
+        if primary_val and primary_val != TowerID.UNCLASSIFIED:
+            results.append(primary_val)
         for t in decision.secondary_impacted_towers:
-            if t != TowerID.UNCLASSIFIED and t.value not in results:
-                results.append(t.value)
-        return results if results else ["T1"]
+            sec_val = getattr(t, "value", str(t))
+            if sec_val and sec_val != TowerID.UNCLASSIFIED and sec_val not in results:
+                results.append(sec_val)
+        return results
     except Exception as ex:
-        logger.debug(f"Error in semantic tower inference: {ex}")
-        return ["T1"]
+        logger.debug("Error in semantic tower inference: %s", ex)
+        return []
 
 
 def _compute_binary_shannon_entropy(corroborated_mass: float, refuted_mass: float) -> float:

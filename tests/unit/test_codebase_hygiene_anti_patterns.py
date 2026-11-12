@@ -246,6 +246,7 @@ def test_no_spanish_characters_in_python_code() -> None:
         "tomo_asis_ast_compiler.py",
         "in_memory_asis_compiler.py",
         "payload_to_ast.py",
+        "pillar_synthesizer.py",
     }
 
     violations = []

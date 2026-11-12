@@ -7,7 +7,7 @@ source_of_truth:
 - docs/README.md
 - docs/operations/agentic-development-workflow.md
 - docs/operations/engineering-quality-gates.md
-last_verified_against: 2026-05-01
+last_verified_against: 2026-11-12
 applies_to:
 - copilot
 doc_type: operational

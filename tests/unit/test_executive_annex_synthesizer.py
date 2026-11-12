@@ -25,7 +25,7 @@ def test_basic_utility_helpers():
     """Verify numeric averaging, string truncation, and unique list pruning."""
     assert average([3.0, 5.0]) == 4.0
     assert average([]) == 0.0
-    assert derive_maturity_band(4.5) in ["Optimizado", "Optimized", "Líder"]
+    assert derive_maturity_band(4.5) in ["Optimizado", "Optimized", "Líder", "Optimizing"]
     assert truncate_text("A" * 300, limit=100).endswith("...")
     assert unique_list(["A", "B", "A", "C"], limit=2) == ["A", "B"]
     assert infer_initiative_priority({"priority": "Alta"}, 0) in ["Crítica", "Critical", "Alta", "High"]

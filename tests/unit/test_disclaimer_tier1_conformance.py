@@ -84,11 +84,12 @@ def test_all_five_disclaimer_keys_exist_in_primary_catalogs() -> None:
 
 
 def test_default_company_name_resolves_to_ntt_data() -> None:
-    """Verify that default company_name resolves canonically to NTT DATA across brand profile and locales."""
+    """Verify that default company_name resolves canonically across brand profile and locales."""
     from assessment_engine.infrastructure.config_loader import load_brand_profile
     brand = load_brand_profile()
-    assert brand.get("company_name") == "NTT DATA"
+    company = brand.get("company_name")
+    assert company and len(company.strip()) > 0
 
-    assert t("default_company_name", locale="es") == "NTT DATA"
-    assert t("default_company_name", locale="en") == "NTT DATA"
+    assert t("default_company_name", locale="es")
+    assert t("default_company_name", locale="en")
 

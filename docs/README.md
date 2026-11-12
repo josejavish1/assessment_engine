@@ -5,7 +5,7 @@ source_of_truth:
 - ../docs/documentation-map.yaml
 - ../src/assessment_engine/application/tools/validate_documentation_governance.py
 - ../.github/workflows/quality.yml
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - repository
 doc_type: canonical

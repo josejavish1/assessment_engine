@@ -259,3 +259,45 @@ def test_has_empirical_absence_evidence_patterns() -> None:
     # Extra tokens via injection (e.g. localized synonyms)
     assert _has_empirical_absence_evidence("No dispone de herramientas", extra_tokens=["no dispone"]) is True
 
+
+def test_llm_absence_prose_does_not_slash_canonical_score() -> None:
+    """Verifies that LLM narrative mentioning 'absence' or 'lacks' NEVER slashes canonical survey score."""
+    survey_ssot = {
+        "tower_id": "T1",
+        "tower_score_exact": 4.00,
+        "pillar_scores": [
+            {"pillar_id": "T1.P4", "score_exact": 4.00, "weight_pct": 100},
+        ],
+    }
+
+    # Payload with LLM prose containing 'absence' and 'ad-hoc'
+    payload = {
+        "tower_id": "T1",
+        "score": 4.00,
+        "pillars_analysis": [
+            {
+                "pillar_id": "T1.P4",
+                "score": 4.00,
+                "asis_architecture_description": (
+                    "In the absence of an integrated DRP, fire protection operates in an ad-hoc manual fashion."
+                ),
+                "health_check_asis": [
+                    {
+                        "node_id": "hc-01",
+                        "finding": "Absence of formal drills for clean-agent suppression.",
+                        "business_risk": "Operational delay during incident.",
+                    }
+                ],
+            }
+        ],
+    }
+
+    reconciled = reconcile_tower_scores(payload, survey_ssot)
+    p4 = reconciled["pillars_analysis"][0]
+
+    # Canonical score 4.00 MUST be preserved and NOT reduced to 1.75 or 1.25
+    assert p4["score"] == 4.00
+    assert p4.get("perception_gap_warning") is None
+    assert reconciled["score"] == 4.00
+
+

@@ -4,7 +4,7 @@ owner: product-engineering
 source_of_truth:
 - ../../src/assessment_engine/application/run_tower_blueprint_engine.py
 - ../../src/assessment_engine/domain/schemas/blueprint.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents

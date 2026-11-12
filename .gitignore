@@ -18,6 +18,8 @@ lib/
 !src/assessment_engine/scripts/lib/**
 !web/src/lib/
 !web/src/lib/**
+!business_command_center/src/lib/
+!business_command_center/src/lib/**
 lib64/
 parts/
 sdist/

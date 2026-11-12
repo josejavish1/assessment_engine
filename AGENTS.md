@@ -7,7 +7,7 @@ source_of_truth:
 - docs/documentation-map.yaml
 - docs/operations/agentic-development-workflow.md
 - docs/operations/engineering-quality-gates.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - ai-agents
 doc_type: operational

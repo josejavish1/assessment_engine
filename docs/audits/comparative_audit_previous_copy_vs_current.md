@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - docs/README.md
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - gemini
 doc_type: operational

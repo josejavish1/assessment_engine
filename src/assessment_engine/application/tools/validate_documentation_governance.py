@@ -46,7 +46,7 @@ DEFAULT_COVERAGE_EXCLUDE = [
     "docs/reference/generated/legacy-gemini/**",
     "docs/strategy/**",
 ]
-DEFAULT_VERIFIED_MAX_AGE_DAYS = 120
+DEFAULT_VERIFIED_MAX_AGE_DAYS = 180
 AGENT_ADAPTER_PATHS = {
     "AGENTS.md",
     "CHATGPT.md",
@@ -785,6 +785,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Execute command-line interface entrypoint."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     documentation_map_path = Path(args.documentation_map).resolve()

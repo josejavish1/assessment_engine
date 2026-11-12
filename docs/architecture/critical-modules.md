@@ -15,7 +15,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/run_commercial_refiner.py
 - ../../src/assessment_engine/adapters/render_commercial_report.py
 - ../../src/assessment_engine/adapters/render_web_presentation.py
-last_verified_against: 2026-06-26
+last_verified_against: 2026-11-12
 applies_to:
 - humans
 - ai-agents
