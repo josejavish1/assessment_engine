@@ -159,16 +159,16 @@ def _arbitrate_pillar_score(
     epistemic_state = str(payload_pillar.get("epistemic_state", "")).strip().upper()
 
     verified_score_flt = _extract_optional_float(
-        payload_pillar, "verified_empirical_score", "empirical_score"
+        payload_pillar, "verified_empirical_score", "empirical_score", "calibrated_score"
     )
 
-    # Formal audit override (RFC-085 & Universal Epistemic Plan):
+    # Formal audit override (RFC-083, RFC-085 & Universal Epistemic Plan):
     # Only trigger survey inflation arbitration if:
-    # 1. An explicit structured verified empirical score is provided and diverges > 1.0, OR
+    # 1. An explicit structured verified empirical score is provided and diverges >= 0.25, OR
     # 2. An explicit foundational discovery finding (<= 1.59, Level 1 Initial) proves capability absence with delta > 1.0.
     # Textual keyword matching in LLM prose is strictly prohibited from altering scores.
     is_survey_inflation = (
-        (verified_score_flt is not None and (exact_p_score - verified_score_flt) > 1.0)
+        (verified_score_flt is not None and abs(exact_p_score - verified_score_flt) >= 0.25)
         or (
             old_score_flt is not None
             and (exact_p_score - old_score_flt) > 1.0
@@ -207,8 +207,10 @@ def _arbitrate_pillar_score(
         reconciled_score,
         perception_delta,
     )
+    payload_pillar["declared_score"] = exact_p_score
     payload_pillar["survey_declared_score"] = exact_p_score
-    payload_pillar["perception_gap_delta"] = perception_delta
+    payload_pillar["calibrated_score"] = reconciled_score
+    payload_pillar["perception_gap_delta"] = -perception_delta
     payload_pillar["perception_gap_warning"] = True
     return reconciled_score, True
 
@@ -335,6 +337,7 @@ def _apply_pillar_reconciliation(
     effective_tower_id: str,
     quantizer: Decimal,
     extra_absence_tokens: Sequence[str],
+    calibration_overrides: Sequence[Dict[str, Any]] = (),
 ) -> bool:
     """Iterates through all pillars, arbitrating scores and setting deterministic weights."""
     consumed_ssot_indices: Set[int] = set()
@@ -364,6 +367,19 @@ def _apply_pillar_reconciliation(
         )
         exact_p_score = float(p_score_dec.quantize(quantizer, rounding=ROUND_HALF_UP))
         w_norm_dec, w_pct_dec = resolved_weights[matched_idx]
+
+        # Bind explicit RFC-083 calibration override if present
+        p_id = str(payload_pillar.get("pillar_id") or "").strip()
+        matched_p_id = str(matched_ssot.get("pillar_id") or "").strip()
+        for ov in calibration_overrides:
+            target_pid = str(ov.get("pillar_id") or "").strip()
+            if target_pid and (target_pid == p_id or target_pid == matched_p_id):
+                cal_s = float(ov["calibrated_score"])
+                payload_pillar["verified_empirical_score"] = cal_s
+                payload_pillar["calibrated_score"] = cal_s
+                payload_pillar["declared_score"] = float(ov.get("declared_score", exact_p_score))
+                if ov.get("calibration_rationale"):
+                    payload_pillar["calibration_rationale"] = ov.get("calibration_rationale")
 
         old_score_flt = _extract_optional_float(payload_pillar, "score")
 
@@ -449,6 +465,21 @@ def reconcile_tower_scores(
         ssot_index_by_id,
     ) = _extract_and_validate_pillars(result_payload, scoring_ssot, effective_tower_id)
 
+    overrides_list = result_payload.get("calibration_overrides") or []
+    if not overrides_list:
+        doc_meta = result_payload.get("document_meta") or {}
+        client_name = str(doc_meta.get("client_slug") or doc_meta.get("client_name") or "").lower()
+        if client_name:
+            from assessment_engine.infrastructure.runtime_paths import ROOT
+            intel_p = ROOT / "working" / client_name / "client_intelligence.json"
+            if intel_p.exists():
+                try:
+                    import json
+                    intel_d = json.loads(intel_p.read_text(encoding="utf-8"))
+                    overrides_list = intel_d.get("calibration_overrides", [])
+                except Exception:
+                    pass
+
     any_arbitrated = _apply_pillar_reconciliation(
         payload_pillars,
         ssot_pillars,
@@ -457,6 +488,7 @@ def reconcile_tower_scores(
         effective_tower_id,
         quantizer,
         extra_absence_tokens,
+        overrides_list,
     )
 
     _finalize_root_score(result_payload, payload_pillars, quantizer, effective_tower_id, any_arbitrated)
