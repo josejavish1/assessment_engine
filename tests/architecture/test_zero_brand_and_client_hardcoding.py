@@ -178,3 +178,34 @@ def test_no_canned_tower_prose_dictionaries_in_src() -> None:
                         violations.append(f"{py_path.relative_to(REPO_ROOT)}:L{node.lineno} -> {canned_vals[0][:60]}...")
 
     assert not violations, "Canned consulting prose dictionaries detected in source code:\n" + "\n".join(violations)
+
+
+def test_no_raw_kpi_codes_in_chapter4_card_titles() -> None:
+    """Verifies that Chapter4Synthesizer never returns raw alphanumeric KPI codes (e.g. T5.P4.K2) in card titles."""
+    from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+
+    dummy_blueprint = {
+        "document_meta": {"tower_id": "T9", "tower_name": "Digital Workplace", "language": "es"},
+        "pillars_analysis": [
+            {
+                "pilar_name": "Workplace Support & Operations",
+                "pilar_score": 1.5,
+                "health_check_asis": [
+                    {"capability": "T9.P4.K1", "finding": "SLA gap identified in support", "business_risk": "Delayed resolution across endpoints"},
+                    {"capability": "T9.P4.K2", "finding": "No self-service support portal", "business_risk": "Elevated ticket escalation volume"},
+                    {"capability": "T9.P4.K3", "finding": "No endpoint self-healing automation", "business_risk": "Manual reboot required for workers"},
+                    {"capability": "T9.P4.K4", "finding": "Problem management absent in operations", "business_risk": "Chronic incident recurrence on workstations"},
+                ],
+            }
+        ],
+    }
+
+    synth = Chapter4Synthesizer.synthesize_chapter4(dummy_blueprint)
+    cards = synth.get("strategic_risk_cards", [])
+    assert len(cards) == 4, f"Expected 4 cards, got {len(cards)}"
+    raw_code_pat = re.compile(r"^T\d+\.P\d+\.K\d+", re.IGNORECASE)
+    card_titles = [c["title"] for c in cards]
+    # Assert all 4 titles are unique (no parent pillar collapse)
+    assert len(set(card_titles)) == 4, f"Cards have duplicate titles: {card_titles}"
+    for c in cards:
+        assert not raw_code_pat.search(c["title"]), f"Card title contains raw KPI code: {c['title']}"

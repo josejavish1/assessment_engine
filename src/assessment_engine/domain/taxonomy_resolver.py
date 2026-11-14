@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 import logging
+import re
 import threading
 from types import MappingProxyType
 from typing import Any, Protocol, runtime_checkable
@@ -295,13 +296,26 @@ class PureTaxonomyResolver:
                             c_canon_lower
                         ]
 
-        # Index leaf KPI codes from injected index (zero filesystem I/O in domain layer)
+        # Index leaf KPI codes and their canonical/localized names into bidirectional index
         if self._leaf_kpis_index:
             for k_id, k_data in self._leaf_kpis_index.items():
                 k_id_clean = str(k_id).strip().upper()
                 k_entry = {str(k): str(v) for k, v in k_data.items()}
                 self._kpis_index[k_id_clean] = k_entry
                 self._capabilities_index[k_id_clean.lower()] = k_entry
+
+                c_name = str(k_entry.get("canonical") or "").strip().lower()
+                if c_name:
+                    self._capabilities_index[c_name] = k_entry
+                en_name = str(k_entry.get("en") or "").strip().lower()
+                if en_name:
+                    self._capabilities_index[en_name] = k_entry
+
+                for loc_k, loc_val in k_entry.items():
+                    if loc_k not in ("pillar_id", "canonical"):
+                        norm_val = str(loc_val).strip().lower()
+                        if norm_val and norm_val not in self._capabilities_index:
+                            self._capabilities_index[norm_val] = k_entry
 
     @staticmethod
     def _normalize_locale(locale: str) -> str:
@@ -400,16 +414,9 @@ class PureTaxonomyResolver:
         norm_cap_lower = norm_cap.lower()
         norm_locale = self._normalize_locale(locale)
 
-        if norm_cap_upper in self._kpis_index or (
-            " - " in norm_cap_upper
-            and norm_cap_upper.split(" - ")[0].strip() in self._kpis_index
-        ):
-            code_key = (
-                norm_cap_upper
-                if norm_cap_upper in self._kpis_index
-                else norm_cap_upper.split(" - ")[0].strip()
-            )
-            loc_dict = self._kpis_index[code_key]
+        k_match = re.search(r"\b(T\d+\.P\d+\.K\d+)\b", norm_cap_upper)
+        if k_match and k_match.group(1) in self._kpis_index:
+            loc_dict = self._kpis_index[k_match.group(1)]
             if norm_locale in loc_dict:
                 return loc_dict[norm_locale]
             if "en" in loc_dict:
@@ -425,10 +432,33 @@ class PureTaxonomyResolver:
             if "es" in loc_dict:
                 return loc_dict["es"]
 
+        # Token-subset matching for minor wording variants (e.g. Carrier Vendor Governance & SLA Management)
+        cap_tokens = set(re.findall(r"[a-z]{4,}", norm_cap_lower))
+        if len(cap_tokens) >= 3:
+            best_match = None
+            best_score = 0
+            for candidate, loc_dict in self._capabilities_index.items():
+                if re.match(r"^t\d+\.p\d+", candidate):
+                    continue
+                cand_tokens = set(re.findall(r"[a-z]{4,}", candidate))
+                overlap = len(cap_tokens & cand_tokens)
+                if overlap >= 3 and overlap > best_score:
+                    best_score = overlap
+                    best_match = loc_dict
+            if best_match and best_score >= 3:
+                if norm_locale in best_match:
+                    return best_match[norm_locale]
+                if "en" in best_match:
+                    return best_match["en"]
+
         # Universal fallback: If capability name matches a known pillar concept, resolve dynamically
         pillar_res = self.resolve_pillar_by_any_reference(norm_cap, default="", locale=norm_locale)
         if pillar_res:
             return pillar_res
+
+        # Fail-closed gate: Never return raw KPI codes like T5.P4.K2 to executive deliverables
+        if re.match(r"^T\d+\.P\d+\.K\d+", cap_name, re.IGNORECASE):
+            return default or "Core Infrastructure Capability"
 
         return default or cap_name
 

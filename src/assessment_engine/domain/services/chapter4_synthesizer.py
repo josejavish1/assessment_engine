@@ -294,13 +294,10 @@ class Chapter4Synthesizer:
             raw_cap = str(f.get("capability") or f.get("target_state") or "").strip()
             p_name = str(f.get("_pillar_name") or tower_name).strip()
 
-            # Multilingual Capability Title Resolution: eliminates raw codes like T5.P4.K2 and untranslated English
-            if not raw_cap or re.match(r"^T\d+\.P\d+\.K\d+", raw_cap, re.IGNORECASE):
+            # Multilingual Capability Title Resolution: resolves leaf KPIs (T9.P4.K1) and canonical English directly
+            clean_title = resolver.resolve_capability_name(raw_cap or p_name, locale=target_locale, default="")
+            if not clean_title or re.match(r"^T\d+\.P\d+\.K\d+", clean_title, re.IGNORECASE):
                 clean_title = resolver.resolve_pillar_by_any_reference(p_name, locale=target_locale, default=p_name)
-            else:
-                clean_title = resolver.resolve_capability_name(raw_cap, locale=target_locale, default=raw_cap)
-                if re.match(r"^T\d+\.P\d+\.K\d+", clean_title, re.IGNORECASE):
-                    clean_title = resolver.resolve_pillar_by_any_reference(p_name, locale=target_locale, default=p_name)
 
             finding_txt = str(f.get("finding") or f.get("risk_observed") or "").strip()
             risk_txt = str(f.get("business_risk") or f.get("impact") or "").strip()
@@ -316,7 +313,7 @@ class Chapter4Synthesizer:
                     "risk_id": f"RSK-{tower_id}-0{idx}",
                     "tier": "TIER_1_CRITICAL" if is_tier1 else "TIER_2_STRUCTURAL",
                     "title": clean_title,
-                    "affected_perimeter": f"Production and Operations Infrastructure · {tower_name}",
+                    "affected_perimeter": tower_name,
                     "estimated_frequency_label": "1 event / 12-18 months" if is_tier1 else "Continuous Latent Exposure",
                     "technical_evidence": finding_txt if len(finding_txt) >= 20 else f"Structural gap identified in the operational baseline and governance of {clean_title}.",
                     "operational_impact_chain": risk_txt if len(risk_txt) >= 20 else f"Risk of unplanned operational disruption and business workflow degradation dependent on {clean_title}.",

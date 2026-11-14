@@ -4308,7 +4308,9 @@ class PayloadToASTBridge:
         badge_bg = "FFF1F2" if is_tier1 else "FEF3C7"
         badge_color = [190, 18, 60] if is_tier1 else [180, 83, 9]
 
-        perimeter = str(card.get("affected_perimeter") or "Core Operations").strip()
+        raw_perimeter = str(card.get("affected_perimeter") or "Core Operations").strip()
+        perim_prefix = t("ch4_affected_perimeter_prefix", locale=meta_lang)
+        perimeter = f"{perim_prefix} · {raw_perimeter}" if "·" not in raw_perimeter else raw_perimeter
         frequency = str(card.get("estimated_frequency_label") or "1 event / 12-18 months").strip()
         evidence = str(card.get("technical_evidence") or "").strip()
         impact = str(card.get("operational_impact_chain") or "").strip()

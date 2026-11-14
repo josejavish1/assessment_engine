@@ -1056,7 +1056,7 @@
             "canonical_name": "Snapshot Policy Governance & Application Consistency Verification",
             "locales": {
               "en": "Snapshot Policy Governance & Application Consistency Verification",
-              "es": "Snapshot Policy Governance & Application Consistency Verification",
+              "es": "Políticas de Snapshots y Verificación de Consistencia de Aplicaciones",
               "pt": "Snapshot Policy Governance & Application Consistency Verification",
               "fr": "Snapshot Policy Governance & Application Consistency Verification",
               "de": "Snapshot Policy Governance & Application Consistency Verification",
@@ -1192,7 +1192,7 @@
             "canonical_name": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
             "locales": {
               "en": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
-              "es": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "es": "Operaciones Transversales de Almacenamiento y Procedimientos Cruzados",
               "pt": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
               "fr": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
               "de": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
@@ -1369,7 +1369,7 @@
             "canonical_name": "Automated DR Orchestration, Runbooks & Repeatable Failover",
             "locales": {
               "en": "Automated DR Orchestration, Runbooks & Repeatable Failover",
-              "es": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "es": "Orquestación Automatizada de DR, Runbooks y Pruebas Periódicas de Conmutación",
               "pt": "Automated DR Orchestration, Runbooks & Repeatable Failover",
               "fr": "Automated DR Orchestration, Runbooks & Repeatable Failover",
               "de": "Automated DR Orchestration, Runbooks & Repeatable Failover",
@@ -1415,7 +1415,7 @@
             "canonical_name": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
             "locales": {
               "en": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
-              "es": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "es": "Seguridad de Bóveda Aislada (Cyber Vault) y Acceso Fuera de Banda",
               "pt": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
               "fr": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
               "de": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
@@ -1837,7 +1837,7 @@
             "canonical_name": "Service Catalog Completeness, Classification & Service Ownership",
             "locales": {
               "en": "Service Catalog Completeness, Classification & Service Ownership",
-              "es": "Service Catalog Completeness, Classification & Service Ownership",
+              "es": "Catálogo de Servicios, Clasificación y Propiedad de Aplicaciones",
               "pt": "Service Catalog Completeness, Classification & Service Ownership",
               "fr": "Service Catalog Completeness, Classification & Service Ownership",
               "de": "Service Catalog Completeness, Classification & Service Ownership",
@@ -1848,7 +1848,7 @@
             "canonical_name": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
             "locales": {
               "en": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
-              "es": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "es": "Cumplimiento de Acuerdos de Nivel de Servicio (SLA/SLO) y Métricas de Respuesta",
               "pt": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
               "fr": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
               "de": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
@@ -1894,7 +1894,7 @@
             "canonical_name": "Mean Time to Restore (MTTR) by Service Criticality Tier",
             "locales": {
               "en": "Mean Time to Restore (MTTR) by Service Criticality Tier",
-              "es": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "es": "Tiempo Medio de Restitución (MTTR) por Nivel de Criticidad del Servicio",
               "pt": "Mean Time to Restore (MTTR) by Service Criticality Tier",
               "fr": "Mean Time to Restore (MTTR) by Service Criticality Tier",
               "de": "Mean Time to Restore (MTTR) by Service Criticality Tier",
@@ -1905,7 +1905,7 @@
             "canonical_name": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
             "locales": {
               "en": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
-              "es": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "es": "Tasa de Resolución en Primer Contacto (FCR) y Automatización Shift-Left",
               "pt": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
               "fr": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
               "de": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
@@ -1916,7 +1916,7 @@
             "canonical_name": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
             "locales": {
               "en": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
-              "es": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "es": "Gestión de Incidentes Mayores (MIM), Triaje y Revisiones Post-Incidente",
               "pt": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
               "fr": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
               "de": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
@@ -2019,7 +2019,7 @@
             "canonical_name": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
             "locales": {
               "en": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
-              "es": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "es": "Análisis de Causa Raíz (RCA), Trazabilidad y Post-Mortems sin Culpa",
               "pt": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
               "fr": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
               "de": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
@@ -2207,7 +2207,7 @@
             "canonical_name": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
             "locales": {
               "en": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
-              "es": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "es": "Gobernanza Adaptativa de Portfolio y Priorización de Inversiones por Valor",
               "pt": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
               "fr": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
               "de": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
@@ -2229,7 +2229,7 @@
             "canonical_name": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
             "locales": {
               "en": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
-              "es": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "es": "Gobernanza de Proveedores (SLAs Contractuales, Cuadros de Mando y Riesgos)",
               "pt": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
               "fr": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
               "de": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
@@ -2264,7 +2264,7 @@
             "canonical_name": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
             "locales": {
               "en": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
-              "es": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "es": "Registro de Riesgos Tecnológicos y Evaluación por Criticidad de Servicio",
               "pt": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
               "fr": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
               "de": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
@@ -2275,7 +2275,7 @@
             "canonical_name": "Risk Mitigation Program Execution, Tracking & Verified Closure",
             "locales": {
               "en": "Risk Mitigation Program Execution, Tracking & Verified Closure",
-              "es": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "es": "Ejecución del Plan de Mitigación de Riesgos y Cierre Verificado",
               "pt": "Risk Mitigation Program Execution, Tracking & Verified Closure",
               "fr": "Risk Mitigation Program Execution, Tracking & Verified Closure",
               "de": "Risk Mitigation Program Execution, Tracking & Verified Closure",
@@ -2286,7 +2286,7 @@
             "canonical_name": "Continuous Regulatory Compliance & Internal Control Attestation",
             "locales": {
               "en": "Continuous Regulatory Compliance & Internal Control Attestation",
-              "es": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "es": "Cumplimiento Normativo Continuo y Atestación de Controles Internos",
               "pt": "Continuous Regulatory Compliance & Internal Control Attestation",
               "fr": "Continuous Regulatory Compliance & Internal Control Attestation",
               "de": "Continuous Regulatory Compliance & Internal Control Attestation",
@@ -2365,7 +2365,7 @@
             "canonical_name": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
             "locales": {
               "en": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
-              "es": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "es": "Adopción Cultural FinOps y Responsabilidad de Costes Unitarios en Ingeniería",
               "pt": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
               "fr": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
               "de": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
@@ -2610,7 +2610,7 @@
             "canonical_name": "Digital Workplace Platform Utilization & Feature Adoption Depth",
             "locales": {
               "en": "Digital Workplace Platform Utilization & Feature Adoption Depth",
-              "es": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "es": "Aprovechamiento y Adopción de Funcionalidades en el Puesto de Trabajo Digital",
               "pt": "Digital Workplace Platform Utilization & Feature Adoption Depth",
               "fr": "Digital Workplace Platform Utilization & Feature Adoption Depth",
               "de": "Digital Workplace Platform Utilization & Feature Adoption Depth",
@@ -2634,7 +2634,7 @@
             "canonical_name": "Workplace Support SLA Adherence (Incident & Request Resolution)",
             "locales": {
               "en": "Workplace Support SLA Adherence (Incident & Request Resolution)",
-              "es": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "es": "Cumplimiento de SLAs de Soporte y Resolución de Peticiones del Puesto de Trabajo",
               "pt": "Workplace Support SLA Adherence (Incident & Request Resolution)",
               "fr": "Workplace Support SLA Adherence (Incident & Request Resolution)",
               "de": "Workplace Support SLA Adherence (Incident & Request Resolution)",
@@ -2645,7 +2645,7 @@
             "canonical_name": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
             "locales": {
               "en": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
-              "es": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "es": "Portal de Autoservicio y Resolución Asistida mediante Base de Conocimiento",
               "pt": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
               "fr": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
               "de": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
@@ -2656,7 +2656,7 @@
             "canonical_name": "Endpoint Self-Healing & Automated Client-Side Remediation",
             "locales": {
               "en": "Endpoint Self-Healing & Automated Client-Side Remediation",
-              "es": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "es": "Autorreparación de Puesto de Trabajo y Remediación Automatizada de Incidencias",
               "pt": "Endpoint Self-Healing & Automated Client-Side Remediation",
               "fr": "Endpoint Self-Healing & Automated Client-Side Remediation",
               "de": "Endpoint Self-Healing & Automated Client-Side Remediation",
@@ -2667,7 +2667,7 @@
             "canonical_name": "Workplace Problem Management & Endpoint Crash Trend Reduction",
             "locales": {
               "en": "Workplace Problem Management & Endpoint Crash Trend Reduction",
-              "es": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "es": "Gestión de Problemas y Reducción de Caídas Recurrentes en Endpoint",
               "pt": "Workplace Problem Management & Endpoint Crash Trend Reduction",
               "fr": "Workplace Problem Management & Endpoint Crash Trend Reduction",
               "de": "Workplace Problem Management & Endpoint Crash Trend Reduction",
@@ -2765,7 +2765,7 @@
             "canonical_name": "Operational Procedures & Runbook Governance with Evidential Coverage",
             "locales": {
               "en": "Operational Procedures & Runbook Governance with Evidential Coverage",
-              "es": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "es": "Procedimientos Operativos y Gobernanza de Runbooks con Evidencias",
               "pt": "Operational Procedures & Runbook Governance with Evidential Coverage",
               "fr": "Operational Procedures & Runbook Governance with Evidential Coverage",
               "de": "Operational Procedures & Runbook Governance with Evidential Coverage",
@@ -2776,7 +2776,7 @@
             "canonical_name": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
             "locales": {
               "en": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
-              "es": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "es": "Tiempo Medio de Restitución (MTTR) en Incidentes Críticos y Escalado",
               "pt": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
               "fr": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
               "de": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
@@ -2787,7 +2787,7 @@
             "canonical_name": "Incident Recurrence Suppression & Root-Cause Problem Management",
             "locales": {
               "en": "Incident Recurrence Suppression & Root-Cause Problem Management",
-              "es": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "es": "Supresión de Recurrencia de Incidentes y Gestión de Problemas",
               "pt": "Incident Recurrence Suppression & Root-Cause Problem Management",
               "fr": "Incident Recurrence Suppression & Root-Cause Problem Management",
               "de": "Incident Recurrence Suppression & Root-Cause Problem Management",
@@ -2798,7 +2798,7 @@
             "canonical_name": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
             "locales": {
               "en": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
-              "es": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "es": "Gobernanza del Riesgo de Persona Clave y Continuidad del Conocimiento",
               "pt": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
               "fr": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
               "de": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
@@ -2833,7 +2833,7 @@
             "canonical_name": "Change Success Rate (CSR) & Incident Inducement Minimization",
             "locales": {
               "en": "Change Success Rate (CSR) & Incident Inducement Minimization",
-              "es": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "es": "Tasa de Éxito de Cambios y Minimización de Incidentes en Planta",
               "pt": "Change Success Rate (CSR) & Incident Inducement Minimization",
               "fr": "Change Success Rate (CSR) & Incident Inducement Minimization",
               "de": "Change Success Rate (CSR) & Incident Inducement Minimization",
@@ -2947,7 +2947,7 @@
             "canonical_name": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
             "locales": {
               "en": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
-              "es": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "es": "Resiliencia de Integraciones (Reintentos, Colas y Tolerancia a Fallos)",
               "pt": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
               "fr": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
               "de": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
