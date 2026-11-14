@@ -62,8 +62,8 @@ def normalize_text(value: str) -> str:
 
 
 def normalize_dash(value: str) -> str:
-    """{'docstring': 'Normalize various dash-like characters in a string to a standard hyphen-minus.'}."""
-    return str(value or "").replace("-", "-").replace("-", "-").replace("−", "-")
+    """Normalize various dash-like characters in a string to a standard hyphen-minus."""
+    return str(value or "").replace("\u2013", "-").replace("\u2014", "-").replace("\u2212", "-")
 
 
 def comparable_text(value: str) -> str:
@@ -296,7 +296,7 @@ def extract_weights(
     # Certain source matrices embed the final, normalized weight for a component directly within its descriptive text.
     # Prioritize parsing fully articulated weight definitions (e.g., 'Compute Foundation & Virtualization - 22%') when available, as they provide an unambiguous, direct source for weighting factors.
     # Pre-calculated weight values extracted directly from the source document are considered authoritative, as they represent the final, rounded distribution guaranteed to sum to 100%.
-    named_weight_pattern = re.compile(r"(.+?)\s[---]\s(\d+)%$", flags=re.IGNORECASE)
+    named_weight_pattern = re.compile(r"(.+?)\s[\u2013\u2014\-]\s(\d+)%$", flags=re.IGNORECASE)
     for text in paragraphs:
         normalized = normalize_dash(text)
         match = named_weight_pattern.search(normalized)

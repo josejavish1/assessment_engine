@@ -605,9 +605,9 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
     )
     text = nearby_pattern.sub(_replace_nearby_score_level, text)
 
-    text = re.sub(r"\bNivel\s+1\s*[\-]\s*Initial\b", t("cmmi_level_1_label", locale=locale, default="Level 1 - Initial"), text, flags=re.IGNORECASE)
-    text = re.sub(r"\bNivel\s+2\s*[\-]\s*(?:Managed|Repeatable)\b", t("cmmi_level_2_label", locale=locale, default="Level 2 - Managed"), text, flags=re.IGNORECASE)
-    text = re.sub(r"\bNivel\s+3\s*[\-]\s*Defined\b", t("cmmi_level_3_label", locale=locale, default="Level 3 - Defined"), text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+1\s*[\-]\s*Initial\b", t("cmmi_level_1_label", locale=locale), text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+2\s*[\-]\s*(?:Managed|Repeatable)\b", t("cmmi_level_2_label", locale=locale), text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+3\s*[\-]\s*Defined\b", t("cmmi_level_3_label", locale=locale), text, flags=re.IGNORECASE)
     return text
 
 
@@ -3588,9 +3588,15 @@ class PayloadToASTBridge:
         tower_name = str(ctx.get("tower_name") or safe_get(blueprint_data, "document_meta", "tower_name", default="Infrastructure Domain"))
 
         from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
-            synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx)
+            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+            synth = Chapter4Synthesizer.synthesize_chapter4(
+                blueprint_data,
+                context=ctx,
+                rates_catalog=rates_cat,
+            )
 
         nodes.append(SpacerNode(points=10))
         nodes.append(
@@ -3630,7 +3636,7 @@ class PayloadToASTBridge:
 
         for idx, a in enumerate(anchors):
             t_key = title_keys[idx] if idx < len(title_keys) else "ch4_anchor_toil_title"
-            dim_title = t(t_key, locale=meta_lang, default=a.get("dimension_title", "Exposure Vector"))
+            dim_title = t(t_key, locale=meta_lang)
             bg_col = "FFFFFF" if idx % 2 == 0 else self.alt_row_hex
             ann_min = a.get("annual_exposure_min", 0.0)
             ann_max = a.get("annual_exposure_max", 0.0)
@@ -4168,9 +4174,15 @@ class PayloadToASTBridge:
 
         blueprint_data = ctx.get("blueprint_data") or {}
         from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
-            synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx)
+            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+            synth = Chapter4Synthesizer.synthesize_chapter4(
+                blueprint_data,
+                context=ctx,
+                rates_catalog=rates_cat,
+            )
 
         nodes.append(PageBreakNode())
         nodes.append(
@@ -4447,7 +4459,6 @@ class PayloadToASTBridge:
             status_badge = t(
                 "governance_control_badge",
                 locale=meta_lang,
-                default="GOVERNANCE CONTROL GAP (SURVEY)",
             )
             desc_text = (
                 f"{finding_text}\n\n_{risk_text}_"
@@ -4458,7 +4469,6 @@ class PayloadToASTBridge:
                 "governance_maturity_gap_stub",
                 locale=meta_lang,
                 currency=currency,
-                default=f"Governance maturity gap identified in CMMI survey. Requires field telemetry for stochastic actuarial quantification (Direct exposure assigned: 0 {currency}/yr).",
             )
 
             return TableNode(
@@ -4939,11 +4949,11 @@ class PayloadToASTBridge:
                 disp_sle_band = f"0 {currency}"
 
             if calibrated_lef >= 1.0:
-                disp_freq = t("risk_freq_high_band", locale=meta_lang, default="High (1-2 incidents/yr)")
+                disp_freq = t("risk_freq_high_band", locale=meta_lang)
             elif calibrated_lef >= 0.25:
-                disp_freq = t("risk_freq_moderate_band", locale=meta_lang, default="Moderate (1 incident every 2-3 yrs)")
+                disp_freq = t("risk_freq_moderate_band", locale=meta_lang)
             else:
-                disp_freq = t("risk_freq_low_band", locale=meta_lang, default="Low frequency (1 incident every 3-5 yrs)")
+                disp_freq = t("risk_freq_low_band", locale=meta_lang)
 
             kpi_row_cells = [
                 CellNode(
@@ -4988,15 +4998,16 @@ class PayloadToASTBridge:
         else:
             max_tail_num = max(10000, int(round((max(sle_num, 10000.0) * 2.2) / 5000)) * 5000)
             tail_cur_str = format_currency(max_tail_num, currency_symbol=currency, locale=meta_lang, decimals=0)
-            wc_lead = t("risk_card_wc_deduced_lead", locale=meta_lang, default="Unforeseen critical failure during peak operational demand")
-            wc_suffix = t("risk_card_wc_deduced_suffix", locale=meta_lang, tail_amount=tail_cur_str, default=f"service disruption and emergency manual recovery requirement with an estimated economic impact of up to ~{tail_cur_str}")
+            wc_lead = t("risk_card_wc_deduced_lead", locale=meta_lang)
+            wc_suffix = t("risk_card_wc_deduced_suffix", locale=meta_lang, tail_amount=tail_cur_str)
             worst_case_txt = f"{wc_lead}: {wc_suffix}."
 
         raw_mitigation = hc.get("remediation_architecture") or hc.get("mitigation_directive") or hc.get("remediation")
         if raw_mitigation and len(str(raw_mitigation).strip().split()) >= 4:
             directive_txt = str(raw_mitigation).strip()
         else:
-            directive_txt = t("risk_card_default_mitigation_template", locale=meta_lang, capability=fallback_pillar_ref or "the evaluated capability", default=f"Prioritize architectural modernization and structural remediation of {fallback_pillar_ref or 'the evaluated capability'} in the TO-BE phase.")
+            domain_ref = fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang)
+            directive_txt = t("risk_card_default_mitigation_template", locale=meta_lang, capability=domain_ref)
 
         decomp = hc.get("additive_loss_decomposition") or {}
         primary_downtime_loss = int(
@@ -5331,24 +5342,15 @@ class PayloadToASTBridge:
         # Replace generic template boilerplate on FinOps / Governance / Chronic Toil cards with domain-accurate impact
         if _GENERIC_BOILERPLATE_IMPACT_RE.search(impact_txt):
             title_check = f"{loss_event.title} {fallback_pillar_ref}".lower()
-            if any(k in title_check for k in ("finops", "cost", "coste", "econom", "licenc", "presupuest", "tag")):
-                impact_txt = t(
-                    "boilerplate_impact_finops",
-                    locale=meta_lang,
-                    default="Structural financial inefficiency, lack of unit-cost attribution (Showback/Chargeback), and unmonitored CAPEX/OPEX budget drift.",
-                )
-            elif any(k in title_check for k in ("dex", "workplace", "puesto", "endpoint", "provisioning", "aprovisionamiento", "toil")):
-                impact_txt = t(
-                    "boilerplate_impact_workplace",
-                    locale=meta_lang,
-                    default="Chronic operational friction in employee productivity, elevated reactive support ticket volume, and excessive engineering toil on manual tasks.",
-                )
+            if any(k in title_check for k in ("finops", "cost", "econom", "licens", "budget", "tag")):
+                impact_txt = t("boilerplate_impact_finops", locale=meta_lang)
+            elif any(k in title_check for k in ("dex", "workplace", "endpoint", "provisioning", "toil")):
+                impact_txt = t("boilerplate_impact_workplace", locale=meta_lang)
             else:
                 impact_txt = t(
                     "boilerplate_impact_generic",
                     locale=meta_lang,
                     domain=domain_fallback_lbl,
-                    default=f"Service level degradation, recurring operational friction, and reactive remediation overhead across {domain_fallback_lbl}.",
                 )
 
         # Normalize corrupted camelCase prefixes, unresolved bracket placeholders, and repair broken template grammar
@@ -5919,7 +5921,7 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         return f"{prefix}{score_raw}{mid}({lvl_word} {lvl_num} - {lvl_label})"
 
     reconciled = re.sub(
-        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,35}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]00?\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[---:]\s*[^)]+)?\)",
+        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,35}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]00?\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[\-:]\s*[^)]+)?\)",
         _fix_score_and_parenthetical_level,
         text,
         flags=re.IGNORECASE,
@@ -5937,7 +5939,7 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         return f"{prefix}{score_raw}{mid}{lvl_word} {lvl_num} - {lvl_label}"
 
     reconciled = re.sub(
-        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5[.,]00?\s*)?\(\s*)(?:Nivel|Level)\s*\d\s*[---:]\s*[^)]+(?=\))",
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5[.,]00?\s*)?\(\s*)(?:Nivel|Level)\s*\d\s*[\-:]\s*[^)]+(?=\))",
         _fix_inline_score_with_level_claim,
         reconciled,
         flags=re.IGNORECASE,
