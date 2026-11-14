@@ -3588,6 +3588,11 @@ class PayloadToASTBridge:
         tower_id = str(ctx.get("tower_id") or safe_get(blueprint_data, "document_meta", "tower_id", default="T1")).strip().upper()
         tower_name = str(ctx.get("tower_name") or safe_get(blueprint_data, "document_meta", "tower_name", default="Infrastructure Domain"))
 
+        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+        synth = blueprint_data.get("chapter4_synthesis")
+        if not synth:
+            synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx)
+
         nodes.append(SpacerNode(points=10))
         nodes.append(
             HeadingNode(
@@ -3601,132 +3606,76 @@ class PayloadToASTBridge:
             "ch4_sec1_intro_inaction",
             locale=meta_lang,
             tower_name=tower_name,
-            default=f"Maintaining {tower_name} infrastructure in its current state (AS-IS) without modernization carries latent economic and operational exposure. Inaction imposes a silent drain through manual toil and continuous reactive support, increasing the probability that an ordinary incident escalates into a business crisis.",
+            default=f"Maintaining {tower_name} infrastructure in its current state (AS-IS) without modernization carries latent economic and operational exposure.",
         )
         nodes.append(ParagraphNode(text=intro_text, space_after=10))
 
-        raw_ale = float(total_fair_ale or 35000.0)
-        step = 5000 if raw_ale < 80000 else 10000
-        base_ale = max(step, int(round(raw_ale / step)) * step)
-        min_ale_band = max(step, base_ale - step)
-        max_ale_band = base_ale + step
-
-        min_toil_band = max(3000, int(round((base_ale * 0.35) / 1000)) * 1000)
-        max_toil_band = max(min_toil_band + 2000, int(round((base_ale * 0.55) / 1000)) * 1000)
-
-        worst_case_max = max(base_ale * 2, int(round((base_ale * 2.6) / 5000)) * 5000)
-
-        # Dynamic Payload Projection: Derive operational implications from tenant payload
-        pillars = blueprint_data.get("pillars_analysis") or []
-        findings_list = []
-        for p in pillars:
-            if isinstance(p, dict):
-                for hc in (p.get("health_check_asis") or []):
-                    if isinstance(hc, dict):
-                        findings_list.append(hc)
-
-        # 1. Dimension 1: Toil & Recurring Maintenance
-        toil_text = ""
-        toil_keywords = ("manual", "procedure", "toil", "supervis", "reactive", "overhead", "maintenance", "reparacion", "procedimiento", "reactiv")
-        for f in findings_list:
-            f_txt = str(f.get("finding") or "").strip()
-            if any(k in f_txt.lower() for k in toil_keywords) and len(f_txt.split()) >= 6:
-                toil_text = f_txt.split(".")[0].strip() + "."
-                break
-        if not toil_text:
-            toil_text = t("inaction_toil_category_template", locale=meta_lang, domain=tower_name)
-
-        # 2. Dimension 2: Operational Incident Exposure (~ALE)
-        incident_text = ""
-        for f in findings_list:
-            r_txt = str(f.get("business_risk") or "").strip()
-            if len(r_txt.split()) >= 6:
-                incident_text = r_txt.split(".")[0].strip() + "."
-                break
-        if not incident_text:
-            incident_text = t("inaction_incident_category_template", locale=meta_lang, domain=tower_name)
-
-        # 3. Dimension 3: Worst-Case Disaster Crisis
-        worst_crisis = str(blueprint_data.get("worst_crisis_event") or "").strip()
-        if not worst_crisis or len(worst_crisis.split()) < 5:
-            if findings_list:
-                top_r = str(findings_list[0].get("business_risk") or "").strip()
-                if len(top_r.split()) >= 6:
-                    worst_crisis = top_r.split(".")[0].strip() + "."
-        if not worst_crisis:
-            worst_crisis = t("inaction_worst_case_category_template", locale=meta_lang, domain=tower_name)
-
-        # 4. Dimension 4: MTTR Recovery Ceiling
-        rto_val = blueprint_data.get("worst_crisis_rto_hours")
-        if rto_val and safe_float(rto_val) > 0 and safe_float(rto_val) < 10000:
-            base_rto = int(safe_float(rto_val))
-            mttr_disp = f"{base_rto} - {base_rto + 4} {t('hours_lbl', locale=meta_lang, default='hours')}"
-        else:
-            mttr_disp = t("inaction_mttr_default_range", locale=meta_lang, default="10 to 16 hours")
-
-        # 5. Dimension 5: External Forcing Functions & Deadlines
-        ext_deps = safe_get(blueprint_data, "external_dependencies", default=[])
-        deadline_text = ""
-        if ext_deps and isinstance(ext_deps, list) and isinstance(ext_deps[0], str) and len(ext_deps[0].strip().split()) >= 4:
-            deadline_text = ext_deps[0].strip()
-        else:
-            deadline_text = t("inaction_deadlines_category_template", locale=meta_lang, domain=tower_name)
-
+        anchors = synth.get("anchors") or []
         yr_str = t("year_lbl", locale=meta_lang, default="year")
-        formatted_wc_amount = format_number(worst_case_max, locale=meta_lang, decimals=0)
-        wc_upto_text = t(
-            "inaction_worst_case_upto",
-            locale=meta_lang,
-            amount=formatted_wc_amount,
-            currency=currency,
-            default=f"Up to ~{formatted_wc_amount} {currency}",
-        )
+
         table_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("inaction_table_col_dimension", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3120),
-                    CellNode(text=t("inaction_table_col_magnitude", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5, width_dxa=2340),
-                    CellNode(text=t("inaction_table_col_impact", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3900),
+                    CellNode(text=t("ch4_table_col_vector", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3120),
+                    CellNode(text=t("ch4_table_col_basis", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3900),
+                    CellNode(text=t("ch4_table_col_exposure", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5, width_dxa=2340),
                 ],
                 is_header=True,
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=f"**{t('inaction_row_toil', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
-                    CellNode(text=f"~{format_number(min_toil_band, locale=meta_lang, decimals=0)} - {format_number(max_toil_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
-                    CellNode(text=toil_text, font_size=8.0, bg_color="FFFFFF"),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=f"**{t('inaction_row_ale', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
-                    CellNode(text=f"~{format_number(min_ale_band, locale=meta_lang, decimals=0)} - {format_number(max_ale_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
-                    CellNode(text=incident_text, font_size=8.0, bg_color=self.alt_row_hex),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=f"**{t('inaction_row_worst_case', locale=meta_lang)}**", font_size=8.0, bg_color="FFF8F8"),
-                    CellNode(text=wc_upto_text, font_size=8.0, bg_color="FFF8F8", align="CENTER", bold=True, text_color_rgb=[185, 28, 28]),
-                    CellNode(text=worst_crisis, font_size=8.0, bg_color="FFF8F8"),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=f"**{t('inaction_row_mttr', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
-                    CellNode(text=mttr_disp, font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
-                    CellNode(text=t("inaction_desc_mttr", locale=meta_lang, default="Time required for forensic diagnosis, vendor escalation, and manual service recovery."), font_size=8.0, bg_color="FFFFFF"),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=f"**{t('inaction_row_vendor_deadlines', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
-                    CellNode(text=t("inaction_val_deadlines", locale=meta_lang, default="Milestone Alert"), font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
-                    CellNode(text=deadline_text, font_size=8.0, bg_color=self.alt_row_hex),
-                ]
-            ),
+            )
         ]
-        nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.33, 0.25, 0.42]))
+
+        title_keys = [
+            "ch4_anchor_toil_title",
+            "ch4_anchor_outage_title",
+            "ch4_anchor_contractual_title",
+        ]
+
+        for idx, a in enumerate(anchors):
+            t_key = title_keys[idx] if idx < len(title_keys) else "ch4_anchor_toil_title"
+            dim_title = t(t_key, locale=meta_lang, default=a.get("dimension_title", "Exposure Vector"))
+            bg_col = "FFFFFF" if idx % 2 == 0 else self.alt_row_hex
+            ann_min = a.get("annual_exposure_min", 0.0)
+            ann_max = a.get("annual_exposure_max", 0.0)
+            exp_str = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
+
+            table_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(text=f"**{dim_title}**", font_size=8.0, bg_color=bg_col),
+                        CellNode(text=a.get("evidence_narrative", ""), font_size=8.0, bg_color=bg_col),
+                        CellNode(text=exp_str, font_size=8.0, bg_color=bg_col, align="CENTER", bold=True),
+                    ]
+                )
+            )
+
+        tot_min = synth.get("total_status_quo_exposure_min", 0.0)
+        tot_max = synth.get("total_status_quo_exposure_max", 0.0)
+        tot_exp_str = f"~{format_currency(tot_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(tot_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
+
+        table_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{t('ch4_anchor_total_title', locale=meta_lang)}**",
+                        font_size=8.5,
+                        bold=True,
+                        bg_color="EAECEE",
+                        grid_span=2,
+                        width_dxa=7020,
+                    ),
+                    CellNode(
+                        text=f"**{tot_exp_str}**",
+                        font_size=8.5,
+                        bold=True,
+                        bg_color="EAECEE",
+                        align="CENTER",
+                        width_dxa=2340,
+                    ),
+                ]
+            )
+        )
+
+        nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.33, 0.42, 0.25]))
         nodes.append(SpacerNode(points=12))
 
     def _build_fair_risk_analysis(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]) -> None:
@@ -3845,7 +3794,7 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=8))
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec2_tiers_subtitle", locale=meta_lang, default="Distribución y Concentración de la Cartera por Severidad (Tiers)"),
+                text=t("ch4_sec2_tiers_subtitle", locale=meta_lang, default="Risk Portfolio Concentration & Distribution"),
                 level=3,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -4219,6 +4168,12 @@ class PayloadToASTBridge:
         if not risks_data_list:
             return
 
+        blueprint_data = ctx.get("blueprint_data") or {}
+        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+        synth = blueprint_data.get("chapter4_synthesis")
+        if not synth:
+            synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx)
+
         nodes.append(PageBreakNode())
         nodes.append(
             HeadingNode(
@@ -4232,11 +4187,19 @@ class PayloadToASTBridge:
                 text=t(
                     "ch4_sec3_intro",
                     locale=meta_lang,
-                    default="A continuación se detallan las fichas técnico-operativas de los riesgos evaluados, desglosando la causa raíz de ingeniería, la afectación en planta, el peor escenario de crisis y la recomendación de intervención:",
+                    default="The current state risk register omits minor operational noise, focusing strictly on top-level structural risks (Tier 1 and Tier 2):",
                 ),
                 space_after=12,
             )
         )
+
+        strategic_cards = synth.get("strategic_risk_cards") or []
+        if strategic_cards:
+            for card in strategic_cards:
+                card_table = self._build_executive_4block_risk_card(ctx=ctx, card=card)
+                nodes.append(card_table)
+                nodes.append(SpacerNode(points=12))
+            return
 
         # 1. Global ranking: primary risks ranked by ALE descending, tangential risks appended thereafter
         sorted_risks = sorted(
@@ -4317,6 +4280,147 @@ class PayloadToASTBridge:
                 )
                 nodes.append(card_table)
                 nodes.append(SpacerNode(points=12))
+
+    def _build_executive_4block_risk_card(
+        self,
+        ctx: dict[str, Any],
+        card: dict[str, Any],
+    ) -> TableNode:
+        """Renders an executive 4-Block Risk Card adhering strictly to ISO 31000 / NIST SP 800-30."""
+        meta_lang = ctx["meta_lang"]
+        currency = ctx["currency"]
+
+        risk_id = str(card.get("risk_id") or "RSK-01").strip()
+        title = str(card.get("title") or "Strategic Operational Risk").strip()
+        tier = str(card.get("tier") or "TIER_1_CRITICAL").strip().upper()
+        is_tier1 = tier == "TIER_1_CRITICAL"
+
+        severity_label = (
+            t("severity_tier1_label", locale=meta_lang, default="CRÍTICA (Tier 1)")
+            if is_tier1
+            else t("severity_tier2_label", locale=meta_lang, default="ALTA (Tier 2)")
+        )
+        badge_bg = "FFF1F2" if is_tier1 else "FEF3C7"
+        badge_color = [190, 18, 60] if is_tier1 else [180, 83, 9]
+
+        perimeter = str(card.get("affected_perimeter") or "Core Operations").strip()
+        frequency = str(card.get("estimated_frequency_label") or "1 event / 12-18 months").strip()
+        evidence = str(card.get("technical_evidence") or "").strip()
+        impact = str(card.get("operational_impact_chain") or "").strip()
+        ev_min = float(card.get("event_loss_min") or 0.0)
+        ev_max = float(card.get("event_loss_max") or 0.0)
+        ann_min = float(card.get("annual_exposure_min") or 0.0)
+        ann_max = float(card.get("annual_exposure_max") or 0.0)
+        milestone = card.get("external_forcing_milestone")
+
+        yr_str = t("year_lbl", locale=meta_lang, default="year")
+        formatted_ev = f"~{format_currency(ev_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ev_max, currency_symbol=currency, locale=meta_lang, decimals=0)}"
+        formatted_ann = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
+
+        rows = [
+            # Row 0: Title & Severity Badge
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**[{risk_id}] {title}**",
+                        font_size=9.5,
+                        bold=True,
+                        bg_color=self.primary_color_hex,
+                        text_color_rgb=[255, 255, 255],
+                        width_dxa=6700,
+                    ),
+                    CellNode(
+                        text=f"**{severity_label}**",
+                        font_size=9.0,
+                        bold=True,
+                        bg_color=badge_bg,
+                        text_color_rgb=badge_color,
+                        align="CENTER",
+                        width_dxa=2660,
+                    ),
+                ]
+            ),
+            # Row 1: Perimeter & Frequency Metadata
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{t('ch4_card_block_perimeter', locale=meta_lang)}:** {perimeter}",
+                        font_size=8.0,
+                        bg_color="F8FAFC",
+                        width_dxa=6700,
+                    ),
+                    CellNode(
+                        text=f"**{t('ch4_card_block_frequency', locale=meta_lang)}:** {frequency}",
+                        font_size=8.0,
+                        bg_color="F8FAFC",
+                        align="CENTER",
+                        width_dxa=2660,
+                    ),
+                ]
+            ),
+            # Row 2: Technical Evidence AS-IS
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{t('ch4_card_block_evidence', locale=meta_lang)}:**\n{evidence}",
+                        font_size=8.5,
+                        bg_color="FFFFFF",
+                        grid_span=2,
+                        width_dxa=9360,
+                    ),
+                ]
+            ),
+            # Row 3: Operational Impact Chain
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{t('ch4_card_block_impact', locale=meta_lang)}:**\n{impact}",
+                        font_size=8.5,
+                        bg_color=self.alt_row_hex,
+                        grid_span=2,
+                        width_dxa=9360,
+                    ),
+                ]
+            ),
+            # Row 4: Financial Box (Impact per event & Annualized Exposure)
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{t('ch4_card_block_event_loss', locale=meta_lang)}:** {formatted_ev}",
+                        font_size=8.5,
+                        bold=True,
+                        bg_color="F1F5F9",
+                        width_dxa=4680,
+                    ),
+                    CellNode(
+                        text=f"**{t('ch4_card_block_annual_exposure', locale=meta_lang)}:** {formatted_ann}",
+                        font_size=8.5,
+                        bold=True,
+                        bg_color="F1F5F9",
+                        align="RIGHT",
+                        width_dxa=4680,
+                    ),
+                ]
+            ),
+        ]
+
+        if milestone:
+            rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"**{t('ch4_card_block_milestone', locale=meta_lang)}:** {milestone}",
+                            font_size=8.0,
+                            italic=True,
+                            bg_color="F8FAFC",
+                            grid_span=2,
+                            width_dxa=9360,
+                        ),
+                    ]
+                )
+            )
+
+        return TableNode(rows=rows)
 
     def _build_risk_mini_infographic_card(
         self,

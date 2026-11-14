@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -687,3 +687,50 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
     synthesis_provenance: Optional[dict[str, Any]] = Field(
         None, description="CEGAR formal provenance metadata."
     )
+    chapter4_synthesis: Optional["Chapter4SynthesisPayload"] = Field(
+        None, description="Universal Chapter 4 Executive Status Quo and Strategic Risk Synthesis."
+    )
+
+
+class Chapter4StatusQuoAnchor(BaseModel):
+    """Represents one of the 3 transparent financial anchors in Section 4.1."""
+
+    anchor_type: Literal[
+        "OPERATIONAL_TOIL",
+        "AVAILABILITY_DISRUPTION",
+        "CONTRACTUAL_FORCING_FUNCTION",
+    ]
+    dimension_title: str
+    annual_exposure_min: float
+    annual_exposure_max: float
+    exposure_formula_display: str
+    evidence_narrative: str
+    governing_milestone_date: Optional[str] = None
+
+
+class Chapter4ExecutiveRiskCard(BaseModel):
+    """Represents a curated, high-impact Tier 1 or Tier 2 strategic risk card in Section 4.3."""
+
+    risk_id: str
+    tier: Literal["TIER_1_CRITICAL", "TIER_2_STRUCTURAL"]
+    title: str
+    affected_perimeter: str
+    estimated_frequency_label: str
+    technical_evidence: str
+    operational_impact_chain: str
+    event_loss_min: float
+    event_loss_max: float
+    annual_exposure_min: float
+    annual_exposure_max: float
+    external_forcing_milestone: Optional[str] = None
+
+
+class Chapter4SynthesisPayload(BaseModel):
+    """Consolidated payload for Chapter 4 executive status quo and strategic risk dossier."""
+
+    total_status_quo_exposure_min: float
+    total_status_quo_exposure_max: float
+    anchors: list[Chapter4StatusQuoAnchor]
+    matrix_concentration_narrative: list[str] = Field(default_factory=list)
+    strategic_risk_cards: list[Chapter4ExecutiveRiskCard]
+
