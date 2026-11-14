@@ -1950,16 +1950,16 @@ class PayloadToASTBridge:
         scorecard_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
-                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
-                    CellNode(text=t("kpi_inaction_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
-                    CellNode(text=t("kpi_regulatory_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
+                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_inaction_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_regulatory_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=10.0),
-                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=10.0),
+                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=9.5),
+                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=9.5),
                     CellNode(text=inaction_display, bold=True, align="CENTER", bg_color="FCE4D6", font_size=9.5),
                     CellNode(text=reg_status, bold=True, align="CENTER", bg_color=reg_bg, font_size=9.5),
                 ]
@@ -1968,7 +1968,7 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.20, 0.28, 0.28, 0.24]))
         nodes.append(SpacerNode(points=12))
 
-        # COMPONENT B: DIRECT OPERATIONAL DIAGNOSIS PARAGRAPH
+        # COMPONENT B: DIRECT OPERATIONAL DIAGNOSIS (SPLIT INTO BALANCED THOUGHTS WITH COMFORTABLE BREATHING ROOM)
         raw_verdict = str((blueprint_data.get("executive_snapshot") or {}).get("bottom_line") or "").strip()
         min_len = 25
 
@@ -1978,7 +1978,17 @@ class PayloadToASTBridge:
         else:
             verdict_text = t("default_executive_verdict", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         verdict_text = restore_locale_diacritics(verdict_text, meta_lang)
-        nodes.append(ParagraphNode(text=verdict_text, font_size=9.5, space_after=12))
+
+        # Split long monolithic paragraphs into two balanced thoughts for executive readability
+        sentences = re.split(r"(?<=\.)\s+", verdict_text)
+        if len(sentences) >= 3 and len(verdict_text) > 300:
+            half = max(1, len(sentences) // 2)
+            p1 = " ".join(sentences[:half]).strip()
+            p2 = " ".join(sentences[half:]).strip()
+            nodes.append(ParagraphNode(text=p1, font_size=9.5, space_after=8))
+            nodes.append(ParagraphNode(text=p2, font_size=9.5, space_after=14))
+        else:
+            nodes.append(ParagraphNode(text=verdict_text, font_size=9.5, space_after=14))
 
         # COMPONENT C: DYNAMIC N-PILLAR CAPABILITY MICRO-HEATMAP (GARTNER COMPACT - ID RESOLUTION)
         nodes.append(ParagraphNode(text=f"**{t('heatmap_section_title', locale=meta_lang)}**", font_size=9.5, space_after=4, keep_with_next=True))
@@ -2001,8 +2011,8 @@ class PayloadToASTBridge:
                 p_score_str = format_number(p_score, locale=meta_lang, decimals=2)
                 c_bg = "FEE2E2" if p_score < 2.0 else ("FEF3C7" if p_score < 3.4 else "DCFCE7")
 
-                heatmap_headers.append(CellNode(text=p_clean_name, bold=True, font_size=7.5, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
-                heatmap_data.append(CellNode(text=f"**{p_score_str}**", bold=True, font_size=9.0, align="CENTER", bg_color=c_bg))
+                heatmap_headers.append(CellNode(text=p_clean_name, bold=True, font_size=8.0, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
+                heatmap_data.append(CellNode(text=f"**{p_score_str}**", bold=True, font_size=9.5, align="CENTER", bg_color=c_bg))
 
             heatmap_rows = [
                 TableRowNode(cells=heatmap_headers, is_header=True),
@@ -2042,7 +2052,7 @@ class PayloadToASTBridge:
 
             formatted_bullet = f"**{c_title}:** {c_desc}"
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=8.5, space_after=6))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=8))
 
         # COMPONENT E: UNIVERSAL DECISION HORIZON & STRATEGIC MANDATE (BAIN COST OF DELAY)
         nodes.append(SpacerNode(points=10))
@@ -2050,7 +2060,7 @@ class PayloadToASTBridge:
         horizon_body = t("decision_horizon_body", locale=meta_lang, regulation=primary_reg)
         horizon_full = f"**{horizon_lead}** {horizon_body}"
         horizon_full = restore_locale_diacritics(horizon_full, meta_lang)
-        nodes.append(ParagraphNode(text=horizon_full, font_size=9.0, space_after=12))
+        nodes.append(ParagraphNode(text=horizon_full, font_size=9.5, space_after=12))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
