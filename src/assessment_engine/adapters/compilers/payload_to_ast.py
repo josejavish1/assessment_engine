@@ -3553,11 +3553,189 @@ class PayloadToASTBridge:
             annualized_secondary_ale=net_secondary_ale,
         )
 
-        strategy = ActuarialReceptorFactory.get_strategy(primary_arch)
-        ast_nodes = strategy.build_ast_nodes(receptor_ctx)
-        nodes.extend(ast_nodes)
+        self._build_cost_of_inaction_section(
+            ctx=ctx,
+            nodes=nodes,
+            total_fair_ale=total_fair_ale,
+            currency=currency,
+            meta_lang=meta_lang,
+        )
 
         return risks_data_list, fair_lookup
+
+    def _build_cost_of_inaction_section(
+        self,
+        ctx: dict[str, Any],
+        nodes: List[Any],
+        total_fair_ale: float,
+        currency: str,
+        meta_lang: str,
+    ) -> None:
+        """Builds Section 4.1: Executive Cost of Inaction & Status Quo Exposure."""
+        blueprint_data = ctx.get("blueprint_data") or {}
+        tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
+        tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
+
+        nodes.append(SpacerNode(points=10))
+        nodes.append(
+            HeadingNode(
+                text=t("ch4_sec1_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
+        intro_text = t(
+            "ch4_sec1_intro_inaction",
+            locale=meta_lang,
+            default=(
+                f"Mantener la infraestructura de {tower_name} en su estado actual (AS-IS) sin abordar la modernización "
+                "conlleva una exposición económica y operativa latente. La inacción impone una sangría silenciosa por tareas manuales "
+                "y soporte reactivo continuo, elevando la probabilidad de que una incidencia ordinaria escale a crisis de negocio."
+            ),
+        )
+        nodes.append(ParagraphNode(text=intro_text, space_after=10))
+
+        raw_ale = float(total_fair_ale or 35000.0)
+        step = 5000 if raw_ale < 80000 else 10000
+        base_ale = max(step, int(round(raw_ale / step)) * step)
+        min_ale_band = max(step, base_ale - step)
+        max_ale_band = base_ale + step
+
+        min_toil_band = max(3000, int(round((base_ale * 0.35) / 1000)) * 1000)
+        max_toil_band = max(min_toil_band + 2000, int(round((base_ale * 0.55) / 1000)) * 1000)
+
+        worst_case_max = max(base_ale * 2, int(round((base_ale * 2.6) / 5000)) * 5000)
+
+        domain_implications = {
+            "T1": (
+                "Horas de mantenimiento electromecánico manual y supervisión presencial de salas.",
+                "Micro-cortes en cuadros de distribución y degradación térmica en pasillos.",
+                "Caída no contenida de acometida eléctrica y fallo de generador en pico de demanda.",
+                "12 a 16 horas",
+                "Obsolescencia de baterías de SAI y adecuación a directiva de resiliencia física."
+            ),
+            "T2": (
+                "Horas de soporte dedicadas a apagado manual de VMs y troubleshooting de saturación de RAM.",
+                "Degradación transaccional por saturación de nodos SimpliVity y reinicios de hipervisores.",
+                "Caída de host en plena jornada de expedición que fuerza al despacho manual de camiones.",
+                "10 a 14 horas",
+                "Vencimiento contractual de Broadcom/VMware (mayo 2027) y ciclo EOS de hardware SimpliVity."
+            ),
+            "T3": (
+                "Gestión reactiva de reglas de red y resolución manual de incidencias de sedes remotas.",
+                "Caídas de enlaces WAN secundarios y micro-cortes en conmutadores de campus.",
+                "Rotura de fibra en canalización compartida de carretera comarcal con incomunicación entre ambos CPDs.",
+                "8 a 14 horas",
+                "Renovación de circuitos de telecomunicaciones y contratos de soporte con operadores."
+            ),
+            "T4": (
+                "Monitorización manual de umbrales de capacidad y gestión reactiva de cuotas de almacenamiento.",
+                "Latencia elevada en cabinas NetApp por contención de I/O en procesos batch nocturnos.",
+                "Corrupción de volúmenes de almacenamiento o fallo de sincronización síncrona entre centros de datos.",
+                "12 a 18 horas",
+                "Renovación de soporte de cabinas de almacenamiento y ciclo de vida de controladoras."
+            ),
+            "T5": (
+                "Verificación manual de trabajos de backup y comprobación periódica no automatizada de copias.",
+                "Retrasos en ventanas de copia y fallos esporádicos en restauración de máquinas auxiliares.",
+                "Indisponibilidad simultánea en ambas salas por proximidad geográfica (500m) ante catástrofe regional.",
+                "24 a 48 horas",
+                "Exigencias normativas de inmutabilidad de copias de seguridad y pruebas de contingencia."
+            ),
+            "T6": (
+                "Gestión manual de altas, bajas y accesos temporales de proveedores externos.",
+                "Intentos de compromiso de credenciales, ataques de phishing y deriva de configuración de bastionado.",
+                "Compromiso de cuenta administrativa con privilegios permanentes y despliegue de ransomware.",
+                "16 a 36 horas",
+                "Obligaciones legales de la directiva NIS2 y requisitos de asegurabilidad en pólizas de ciberriesgo."
+            ),
+            "T7": (
+                "Resolución manual de tickets repetitivos y sobrecarga del equipo de Service Desk.",
+                "Demoras en la resolución de incidencias graves por falta de CMDB automatizada y reconciliada.",
+                "Incidencia crítica no contenida por falta de visibilidad en dependencias de servicio cruzadas.",
+                "8 a 12 horas",
+                "Obsolescencia de herramientas de ticketing y exigencias de acuerdos de nivel de servicio (SLAs)."
+            ),
+            "T8": (
+                "Horas de reconciliación contable en hojas de cálculo y control de gasto cloud a mes vencido.",
+                "Sobrecoste sostenido del 15% al 25% por instancias huérfanas y falta de reservas contratadas.",
+                "Desviación presupuestaria descontrolada en consumo elástico o auditoría de licencias desfavorable.",
+                "No aplica (Impacto financiero)",
+                "Renovaciones anuales de compromisos de consumo cloud (Enterprise Agreement / EDP)."
+            ),
+            "T9": (
+                "Soporte presencial a usuarios y resolución manual de incidencias de puestos y portátiles.",
+                "Lentitud en despliegue de parches de sistema operativo y actualizaciones de clientes ofimáticos.",
+                "Bloqueo generalizado del parque de portátiles corporativos tras actualización no homologada.",
+                "8 a 16 horas",
+                "Fin de ciclo de soporte de sistemas operativos cliente y estandarización UEM."
+            ),
+            "T10": (
+                "Mantenimiento manual de scripts de integración batch y soporte reactivo en servidores de planta.",
+                "Retrasos en la ejecución de cierres transaccionales y degradación de rendimiento en base de datos Oracle.",
+                "Parada no planificada de la base de datos core que bloquea la expedición de cemento y hormigón en plantas.",
+                "12 a 20 horas",
+                "Estrategia de migración de SAP ECC 6.0 hacia S/4HANA antes del fin de soporte oficial."
+            ),
+        }
+
+        dim_texts = domain_implications.get(tower_id) or (
+            "Sobrecoste por tareas manuales y soporte reactivo en la infraestructura del dominio.",
+            "Incidencias operativas imprevistas y degradación de niveles de servicio ordinarios.",
+            "Fallo simultáneo de componentes críticos en periodo de máxima demanda operativa.",
+            "12 a 16 horas",
+            "Vencimientos contractuales de licencias y requisitos de cumplimiento normativo."
+        )
+
+        yr_str = t("year_lbl", locale=meta_lang, default="año")
+        table_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("inaction_table_col_dimension", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3120),
+                    CellNode(text=t("inaction_table_col_magnitude", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5, width_dxa=2340),
+                    CellNode(text=t("inaction_table_col_impact", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], font_size=8.5, width_dxa=3900),
+                ],
+                is_header=True,
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=f"**{t('inaction_row_toil', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
+                    CellNode(text=f"~{format_number(min_toil_band, locale=meta_lang, decimals=0)} - {format_number(max_toil_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
+                    CellNode(text=dim_texts[0], font_size=8.0, bg_color="FFFFFF"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=f"**{t('inaction_row_ale', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
+                    CellNode(text=f"~{format_number(min_ale_band, locale=meta_lang, decimals=0)} - {format_number(max_ale_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
+                    CellNode(text=dim_texts[1], font_size=8.0, bg_color=self.alt_row_hex),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=f"**{t('inaction_row_worst_case', locale=meta_lang)}**", font_size=8.0, bg_color="FFF8F8"),
+                    CellNode(text=f"Hasta ~{format_number(worst_case_max, locale=meta_lang, decimals=0)} {currency}", font_size=8.0, bg_color="FFF8F8", align="CENTER", bold=True, text_color_rgb=[185, 28, 28]),
+                    CellNode(text=dim_texts[2], font_size=8.0, bg_color="FFF8F8"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=f"**{t('inaction_row_mttr', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
+                    CellNode(text=dim_texts[3], font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
+                    CellNode(text=t("inaction_desc_mttr", locale=meta_lang, default="Tiempo requerido para diagnóstico, escalado a soporte de terceros y restitución manual de servicios."), font_size=8.0, bg_color="FFFFFF"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=f"**{t('inaction_row_vendor_deadlines', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
+                    CellNode(text=t("inaction_val_deadlines", locale=meta_lang, default="Alerta de Hito"), font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
+                    CellNode(text=dim_texts[4], font_size=8.0, bg_color=self.alt_row_hex),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.33, 0.25, 0.42]))
+        nodes.append(SpacerNode(points=12))
 
     def _build_fair_risk_analysis(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]) -> None:
         if not risks_data_list:
@@ -3671,12 +3849,12 @@ class PayloadToASTBridge:
         )
         nodes.append(SpacerNode(points=12))
 
-        # 4.3 Pure AS-IS Domain Risk Concentration Profile
-        nodes.append(PageBreakNode())
+        # 4.2.3 Pure AS-IS Domain Risk Concentration Profile
+        nodes.append(SpacerNode(points=8))
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec3_title", locale=meta_lang),
-                level=2,
+                text=t("ch4_sec2_tiers_subtitle", locale=meta_lang, default="Distribución y Concentración de la Cartera por Severidad (Tiers)"),
+                level=3,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
@@ -4138,16 +4316,21 @@ class PayloadToASTBridge:
         if not risks_data_list:
             return
 
+        nodes.append(PageBreakNode())
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec4_title", locale=meta_lang),
+                text=t("ch4_sec3_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
         nodes.append(
             ParagraphNode(
-                text=t("ch4_sec4_intro", locale=meta_lang, risk_count=len(risks_data_list)),
+                text=t(
+                    "ch4_sec3_intro",
+                    locale=meta_lang,
+                    default="A continuación se detallan las fichas técnico-operativas de los riesgos evaluados, desglosando la causa raíz de ingeniería, la afectación en planta, el peor escenario de crisis y la recomendación de intervención:",
+                ),
                 space_after=12,
             )
         )
@@ -4683,6 +4866,9 @@ class PayloadToASTBridge:
             decimals=0,
         )
 
+        ale_num = float(canonical_ale or 0.0)
+        sle_num = float(reconciled_sle or 0.0)
+
         if metrics.is_deduplicated:
             notice_text = t("actuarial_custody_deduplicated_note", locale=meta_lang).format(
                 primary_risk_ref=loss_event.primary_risk_ref
@@ -4733,9 +4919,36 @@ class PayloadToASTBridge:
                 ),
             ]
         else:
+            # Clean Fermi magnitude bands for risk card (Zero fake decimals)
+            
+            if ale_num > 0:
+                step_a = 5000 if ale_num < 40000 else 10000
+                rnd_a = max(step_a, int(round(ale_num / step_a)) * step_a)
+                min_a = max(step_a, rnd_a - step_a)
+                max_a = rnd_a + step_a
+                disp_ale_band = f"~{format_number(min_a, locale=meta_lang, decimals=0)} - {format_number(max_a, locale=meta_lang, decimals=0)} {currency}"
+            else:
+                disp_ale_band = f"0 {currency}"
+
+            if sle_num > 0:
+                step_s = 2000 if sle_num < 20000 else 5000
+                rnd_s = max(step_s, int(round(sle_num / step_s)) * step_s)
+                min_s = max(step_s, rnd_s - step_s)
+                max_s = rnd_s + step_s
+                disp_sle_band = f"~{format_number(min_s, locale=meta_lang, decimals=0)} - {format_number(max_s, locale=meta_lang, decimals=0)} {currency}"
+            else:
+                disp_sle_band = f"0 {currency}"
+
+            if calibrated_lef >= 1.0:
+                disp_freq = "Alta (1 a 2 incidentes/año)" if str(meta_lang).startswith("es") else "High (1-2 incidents/yr)"
+            elif calibrated_lef >= 0.25:
+                disp_freq = "Moderada (1 vez cada 2-3 años)" if str(meta_lang).startswith("es") else "Moderate (1 incident every 2-3 yrs)"
+            else:
+                disp_freq = "Baja frecuencia (1 vez cada 3-5 años)" if str(meta_lang).startswith("es") else "Low frequency (1 incident every 3-5 yrs)"
+
             kpi_row_cells = [
                 CellNode(
-                    text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
+                    text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{disp_ale_band} / {t('year_lbl', locale=meta_lang)}",
                     font_size=8.5,
                     bg_color="F8FAFC",
                     text_color_rgb=self.primary_color_rgb,
@@ -4744,7 +4957,7 @@ class PayloadToASTBridge:
                     align="CENTER",
                 ),
                 CellNode(
-                    text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{formatted_sle}",
+                    text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{disp_sle_band}",
                     font_size=8.5,
                     bg_color="F8FAFC",
                     grid_span=4,
@@ -4752,7 +4965,7 @@ class PayloadToASTBridge:
                     align="CENTER",
                 ),
                 CellNode(
-                    text=f"**{t('kpi_estimated_frequency_label', locale=meta_lang)}**\n{freq_display}",
+                    text=f"**{t('kpi_estimated_frequency_label', locale=meta_lang)}**\n{disp_freq}",
                     font_size=8.5,
                     bg_color="F8FAFC",
                     grid_span=4,
@@ -4760,6 +4973,30 @@ class PayloadToASTBridge:
                     align="CENTER",
                 ),
             ]
+
+        fallback_pillar_ref = str(
+            hc.get("pillar_name")
+            or hc.get("pillar")
+            or hc.get("domain_name")
+            or p_name
+            or ""
+        ).strip()
+
+        # Construct Worst-Case Scenario with bounded Fermi magnitude
+        raw_wc = hc.get("worst_case_scenario") or hc.get("worst_crisis_scenario")
+        if raw_wc and len(str(raw_wc).strip().split()) >= 8:
+            worst_case_txt = str(raw_wc).strip()
+        else:
+            max_tail_num = max(10000, int(round((max(sle_num, 10000.0) * 2.2) / 5000)) * 5000)
+            tail_cur_str = format_currency(max_tail_num, currency_symbol=currency, locale=meta_lang, decimals=0)
+            wc_lead = t("risk_card_wc_deduced_lead", locale=meta_lang, default="Fallo crítico imprevisto durante un pico de demanda o contingencia operativa simultánea")
+            worst_case_txt = f"{wc_lead}: disrupción del servicio y necesidad de restitución manual de emergencia con un impacto económico estimado de hasta ~{tail_cur_str}."
+
+        raw_mitigation = hc.get("remediation_architecture") or hc.get("mitigation_directive") or hc.get("remediation")
+        if raw_mitigation and len(str(raw_mitigation).strip().split()) >= 4:
+            directive_txt = str(raw_mitigation).strip()
+        else:
+            directive_txt = t("risk_card_default_mitigation", locale=meta_lang, default=f"Abordar la modernización arquitectónica y remediación estructural de {fallback_pillar_ref or 'la capacidad evaluada'} en la fase TO-BE.")
 
         decomp = hc.get("additive_loss_decomposition") or {}
         primary_downtime_loss = int(
@@ -5066,6 +5303,13 @@ class PayloadToASTBridge:
         vuln_txt = _dedup_clauses(vuln_txt)
         impact_txt = _dedup_clauses(impact_txt)
 
+        impact_txt = re.sub(r"\bnarrative_header_\w+\b", "", impact_txt)
+        impact_txt = re.sub(r"\bnarrative_cost_\w+\b", "", impact_txt)
+        impact_txt = re.sub(r"\s+", " ", impact_txt).strip()
+        vuln_txt = re.sub(r"\bnarrative_header_\w+\b", "", vuln_txt)
+        vuln_txt = re.sub(r"\bnarrative_cost_\w+\b", "", vuln_txt)
+        vuln_txt = re.sub(r"\s+", " ", vuln_txt).strip()
+
         if not str(meta_lang).lower().startswith("en"):
             fallback_card_pillar = fallback_pillar_ref or t(
                 "domain_control_standard_fallback",
@@ -5240,12 +5484,27 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"**{cost_justification_title}:**\n{actuarial_box_text}",
+                            text=f"**{t('risk_card_worst_case_label', locale=meta_lang)}:**\n{worst_case_txt}",
                             font_size=8.0,
-                            bg_color="F8F9FA",
+                            bg_color="FFF8F8",
                             grid_span=12,
                             width_dxa=9360,
-                            border_left_color="1D3557",
+                            border_left_color="DC2626",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"**{t('risk_card_recommendation_label', locale=meta_lang)}:**\n_{directive_txt}_",
+                            font_size=8.0,
+                            bg_color="F0FDF4",
+                            grid_span=12,
+                            width_dxa=9360,
+                            border_left_color="16A34A",
                             border_left_size=24,
                             align="LEFT",
                         ),
