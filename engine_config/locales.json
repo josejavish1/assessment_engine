@@ -3219,7 +3219,8 @@
     "default_capability_domain_label": "Capacidad del Dominio",
     "findings_lead_in": "Hallazgos observados en el estado actual:",
     "generic_operational_domain_fallback": "el dominio operativo evaluado",
-    "risk_card_severity_low": "BAJA (Tier 3)"
+    "risk_card_severity_low": "BAJA (Tier 3)",
+    "and_conjunction": " y "
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6417,7 +6418,8 @@
     "default_capability_domain_label": "Domain Capability",
     "findings_lead_in": "Findings observed in the current state:",
     "generic_operational_domain_fallback": "the assessed operational domain",
-    "risk_card_severity_low": "LOW (Tier 3)"
+    "risk_card_severity_low": "LOW (Tier 3)",
+    "and_conjunction": " and "
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9612,7 +9614,8 @@
     "default_capability_domain_label": "Capacidade do Domínio",
     "findings_lead_in": "Achados observados no estado atual:",
     "generic_operational_domain_fallback": "o domínio operacional avaliado",
-    "risk_card_severity_low": "BAIXA (Tier 3)"
+    "risk_card_severity_low": "BAIXA (Tier 3)",
+    "and_conjunction": " e "
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12805,7 +12808,8 @@
     "default_capability_domain_label": "Capacité du domaine",
     "findings_lead_in": "Constats observés dans l'état actuel :",
     "generic_operational_domain_fallback": "le domaine opérationnel évalué",
-    "risk_card_severity_low": "FAIBLE (Tier 3)"
+    "risk_card_severity_low": "FAIBLE (Tier 3)",
+    "and_conjunction": " et "
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15989,7 +15993,8 @@
     "default_capability_domain_label": "ドメイン機能",
     "findings_lead_in": "現状で確認された所見：",
     "generic_operational_domain_fallback": "評価対象運用ドメイン",
-    "risk_card_severity_low": "低 (Tier 3)"
+    "risk_card_severity_low": "低 (Tier 3)",
+    "and_conjunction": "および"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19176,7 +19181,8 @@
     "default_capability_domain_label": "Domänenfähigkeit",
     "findings_lead_in": "Im Ist-Zustand beobachtete Befunde:",
     "generic_operational_domain_fallback": "die bewertete Betriebsebene",
-    "risk_card_severity_low": "NIEDRIG (Tier 3)"
+    "risk_card_severity_low": "NIEDRIG (Tier 3)",
+    "and_conjunction": " und "
   },
   "executive_summary_narrative": {
     "es": {

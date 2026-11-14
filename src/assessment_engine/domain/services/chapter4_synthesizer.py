@@ -72,7 +72,12 @@ class Chapter4Synthesizer:
         rates_catalog: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Resolves authoritative country labor rates and disruption cost baselines without infrastructure coupling."""
-        rates = rates_catalog or {}
+        raw_catalog = rates_catalog or {}
+        rates = (
+            raw_catalog.get("rates_by_country", raw_catalog)
+            if isinstance(raw_catalog, dict)
+            else {}
+        )
         code = str(country_code or "").strip().upper()
         if code in rates:
             return rates[code]

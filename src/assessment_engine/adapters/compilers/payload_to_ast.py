@@ -827,7 +827,7 @@ def extract_dimension_boundary_profile(
     max_score = sorted_dims[-1][1]
 
     from assessment_engine.infrastructure.localization import t
-    and_connector = t("connector_and", locale=locale, default=" y " if str(locale).startswith("es") else " and ")
+    and_connector = t("connector_and", locale=locale)
 
     tied_weakest = [d for d in sorted_dims if abs(d[1] - min_score) < 0.05]
     if len(tied_weakest) > 1:
@@ -1015,11 +1015,7 @@ def _sanitize_localized_kpi_leaks(
     default_domain_fallback = (
         resolved_fallback
         if resolved_fallback
-        else t(
-            "generic_operational_domain_fallback",
-            locale=locale,
-            default="la arquitectura operativa del dominio" if norm_loc.startswith("es") else "the operational domain architecture",
-        )
+        else t("generic_operational_domain_fallback", locale=locale)
     )
 
     if _UNRESOLVED_BRACKET_PLACEHOLDER_RE.search(text):
@@ -5324,7 +5320,6 @@ class PayloadToASTBridge:
         domain_fallback_lbl = fallback_pillar_ref or t(
             "domain_control_standard_fallback",
             locale=meta_lang,
-            default="the assessed domain",
         )
 
         if not str(meta_lang).lower().startswith("en"):
@@ -5332,12 +5327,12 @@ class PayloadToASTBridge:
             impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, impact_txt)
             vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(domain_fallback_lbl, vuln_txt)
             impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(domain_fallback_lbl, impact_txt)
-            _orphan_prep_re = re.compile(
-                r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
+            _double_prep_re = re.compile(
+                r"\b([a-zA-ZáéíóúñÁÉÍÓÚÑ]{2,12})\s+(en|por|con|ante|para|de)\s+(en|por|con|ante|para|de)\b",
                 re.IGNORECASE,
             )
-            vuln_txt = _orphan_prep_re.sub(r"\1 \2", vuln_txt)
-            impact_txt = _orphan_prep_re.sub(r"\1 \2", impact_txt)
+            vuln_txt = _double_prep_re.sub(r"\1 \2", vuln_txt)
+            impact_txt = _double_prep_re.sub(r"\1 \2", impact_txt)
 
         # Replace generic template boilerplate on FinOps / Governance / Chronic Toil cards with domain-accurate impact
         if _GENERIC_BOILERPLATE_IMPACT_RE.search(impact_txt):

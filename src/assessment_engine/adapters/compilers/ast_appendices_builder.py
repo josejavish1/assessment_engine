@@ -196,7 +196,6 @@ def build_cmmi_methodology_and_capabilities(
                 locale=meta_lang,
                 p_name=p_name,
                 range_label=range_label,
-                default=f"{p_name} operational controls and verified standards {range_label}",
             )
         else:
             kpi_str = t("lbl_default_pillar_kpis", locale=meta_lang)

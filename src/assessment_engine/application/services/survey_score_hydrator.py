@@ -47,7 +47,8 @@ class SurveyScoreHydrator:
             for r in range(1, 4):
                 for c in range(1, 12):
                     val = str(ws.cell(r, c).value or "").strip().upper()
-                    if "CODIGO" in val or "CÓDIGO" in val or "QUESTION_ID" in val or val == "CODE":
+                    norm_val = val.replace("\u00D3", "O")
+                    if "CODIGO" in norm_val or "QUESTION_ID" in norm_val or norm_val == "CODE":
                         code_col = c
                     elif ("RESPUESTA" in val and ("1:5" in val or "1-5" in val)) or val == "RESPUESTA" or "SCORE" in val:
                         score_col = c

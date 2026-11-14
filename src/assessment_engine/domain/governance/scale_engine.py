@@ -123,7 +123,7 @@ class GovernanceScaleEngine:
                         "band_managed": "Gestionado",
                         "band_defined": "Definido",
                         "band_quantitatively_managed": "Gestionado Cuantitativamente",
-                        "band_optimized": "En Optimización",
+                        "band_optimized": "Optimizado",
                     }
                     label = spanish_map.get(token, label)
 
