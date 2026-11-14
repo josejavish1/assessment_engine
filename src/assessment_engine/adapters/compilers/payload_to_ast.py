@@ -3607,88 +3607,63 @@ class PayloadToASTBridge:
 
         worst_case_max = max(base_ale * 2, int(round((base_ale * 2.6) / 5000)) * 5000)
 
-        domain_implications = {
-            "T1": (
-                "Horas de mantenimiento electromecánico manual y supervisión presencial de salas.",
-                "Micro-cortes en cuadros de distribución y degradación térmica en pasillos.",
-                "Caída no contenida de acometida eléctrica y fallo de generador en pico de demanda.",
-                "12 a 16 horas",
-                "Obsolescencia de baterías de SAI y adecuación a directiva de resiliencia física."
-            ),
-            "T2": (
-                "Horas de soporte dedicadas a apagado manual de VMs y troubleshooting de saturación de RAM.",
-                "Degradación transaccional por saturación de nodos SimpliVity y reinicios de hipervisores.",
-                "Caída de host en plena jornada de expedición que fuerza al despacho manual de camiones.",
-                "10 a 14 horas",
-                "Vencimiento contractual de Broadcom/VMware (mayo 2027) y ciclo EOS de hardware SimpliVity."
-            ),
-            "T3": (
-                "Gestión reactiva de reglas de red y resolución manual de incidencias de sedes remotas.",
-                "Caídas de enlaces WAN secundarios y micro-cortes en conmutadores de campus.",
-                "Rotura de fibra en canalización compartida de carretera comarcal con incomunicación entre ambos CPDs.",
-                "8 a 14 horas",
-                "Renovación de circuitos de telecomunicaciones y contratos de soporte con operadores."
-            ),
-            "T4": (
-                "Monitorización manual de umbrales de capacidad y gestión reactiva de cuotas de almacenamiento.",
-                "Latencia elevada en cabinas NetApp por contención de I/O en procesos batch nocturnos.",
-                "Corrupción de volúmenes de almacenamiento o fallo de sincronización síncrona entre centros de datos.",
-                "12 a 18 horas",
-                "Renovación de soporte de cabinas de almacenamiento y ciclo de vida de controladoras."
-            ),
-            "T5": (
-                "Verificación manual de trabajos de backup y comprobación periódica no automatizada de copias.",
-                "Retrasos en ventanas de copia y fallos esporádicos en restauración de máquinas auxiliares.",
-                "Indisponibilidad simultánea en ambas salas por proximidad geográfica (500m) ante catástrofe regional.",
-                "24 a 48 horas",
-                "Exigencias normativas de inmutabilidad de copias de seguridad y pruebas de contingencia."
-            ),
-            "T6": (
-                "Gestión manual de altas, bajas y accesos temporales de proveedores externos.",
-                "Intentos de compromiso de credenciales, ataques de phishing y deriva de configuración de bastionado.",
-                "Compromiso de cuenta administrativa con privilegios permanentes y despliegue de ransomware.",
-                "16 a 36 horas",
-                "Obligaciones legales de la directiva NIS2 y requisitos de asegurabilidad en pólizas de ciberriesgo."
-            ),
-            "T7": (
-                "Resolución manual de tickets repetitivos y sobrecarga del equipo de Service Desk.",
-                "Demoras en la resolución de incidencias graves por falta de CMDB automatizada y reconciliada.",
-                "Incidencia crítica no contenida por falta de visibilidad en dependencias de servicio cruzadas.",
-                "8 a 12 horas",
-                "Obsolescencia de herramientas de ticketing y exigencias de acuerdos de nivel de servicio (SLAs)."
-            ),
-            "T8": (
-                "Horas de reconciliación contable en hojas de cálculo y control de gasto cloud a mes vencido.",
-                "Sobrecoste sostenido del 15% al 25% por instancias huérfanas y falta de reservas contratadas.",
-                "Desviación presupuestaria descontrolada en consumo elástico o auditoría de licencias desfavorable.",
-                "No aplica (Impacto financiero)",
-                "Renovaciones anuales de compromisos de consumo cloud (Enterprise Agreement / EDP)."
-            ),
-            "T9": (
-                "Soporte presencial a usuarios y resolución manual de incidencias de puestos y portátiles.",
-                "Lentitud en despliegue de parches de sistema operativo y actualizaciones de clientes ofimáticos.",
-                "Bloqueo generalizado del parque de portátiles corporativos tras actualización no homologada.",
-                "8 a 16 horas",
-                "Fin de ciclo de soporte de sistemas operativos cliente y estandarización UEM."
-            ),
-            "T10": (
-                "Mantenimiento manual de scripts de integración batch y soporte reactivo en servidores de planta.",
-                "Retrasos en la ejecución de cierres transaccionales y degradación de rendimiento en base de datos Oracle.",
-                "Parada no planificada de la base de datos core que bloquea la expedición de cemento y hormigón en plantas.",
-                "12 a 20 horas",
-                "Estrategia de migración de SAP ECC 6.0 hacia S/4HANA antes del fin de soporte oficial."
-            ),
-        }
+        # Dynamic Payload Projection: Derive operational implications from tenant payload
+        pillars = blueprint_data.get("pillars_analysis") or []
+        findings_list = []
+        for p in pillars:
+            if isinstance(p, dict):
+                for hc in p.get("health_check_asis", []):
+                    if isinstance(hc, dict):
+                        findings_list.append(hc)
 
-        dim_texts = domain_implications.get(tower_id) or (
-            "Sobrecoste por tareas manuales y soporte reactivo en la infraestructura del dominio.",
-            "Incidencias operativas imprevistas y degradación de niveles de servicio ordinarios.",
-            "Fallo simultáneo de componentes críticos en periodo de máxima demanda operativa.",
-            "12 a 16 horas",
-            "Vencimientos contractuales de licencias y requisitos de cumplimiento normativo."
-        )
+        # 1. Dimension 1: Toil & Recurring Maintenance
+        toil_text = ""
+        toil_keywords = ("manual", "procedimiento", "toil", "supervis", "reactiv", "overhead", "mantenimiento")
+        for f in findings_list:
+            f_txt = str(f.get("finding") or "").strip()
+            if any(k in f_txt.lower() for k in toil_keywords) and len(f_txt.split()) >= 6:
+                toil_text = f_txt.split(".")[0].strip() + "."
+                break
+        if not toil_text:
+            toil_text = t("inaction_toil_category_template", locale=meta_lang, domain=tower_name)
 
-        yr_str = t("year_lbl", locale=meta_lang, default="año")
+        # 2. Dimension 2: Operational Incident Exposure (~ALE)
+        incident_text = ""
+        for f in findings_list:
+            r_txt = str(f.get("business_risk") or "").strip()
+            if len(r_txt.split()) >= 6:
+                incident_text = r_txt.split(".")[0].strip() + "."
+                break
+        if not incident_text:
+            incident_text = t("inaction_incident_category_template", locale=meta_lang, domain=tower_name)
+
+        # 3. Dimension 3: Worst-Case Disaster Crisis
+        worst_crisis = str(blueprint_data.get("worst_crisis_event") or "").strip()
+        if not worst_crisis or len(worst_crisis.split()) < 5:
+            if findings_list:
+                top_r = str(findings_list[0].get("business_risk") or "").strip()
+                if len(top_r.split()) >= 6:
+                    worst_crisis = top_r.split(".")[0].strip() + "."
+        if not worst_crisis:
+            worst_crisis = t("inaction_worst_case_category_template", locale=meta_lang, domain=tower_name)
+
+        # 4. Dimension 4: MTTR Recovery Ceiling
+        rto_val = blueprint_data.get("worst_crisis_rto_hours")
+        if rto_val and safe_float(rto_val) > 0:
+            base_rto = int(safe_float(rto_val))
+            mttr_disp = f"{base_rto} - {base_rto + 4} {t('hours_lbl', locale=meta_lang, default='hours')}"
+        else:
+            mttr_disp = t("inaction_mttr_default_range", locale=meta_lang, default="10 to 16 hours")
+
+        # 5. Dimension 5: External Forcing Functions & Deadlines
+        ext_deps = blueprint_data.get("external_dependencies") or []
+        deadline_text = ""
+        if ext_deps and isinstance(ext_deps, list) and isinstance(ext_deps[0], str) and len(ext_deps[0].strip().split()) >= 4:
+            deadline_text = ext_deps[0].strip()
+        else:
+            deadline_text = t("inaction_deadlines_category_template", locale=meta_lang, domain=tower_name)
+
+        yr_str = t("year_lbl", locale=meta_lang, default="year")
         table_rows = [
             TableRowNode(
                 cells=[
@@ -3702,35 +3677,35 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=f"**{t('inaction_row_toil', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
                     CellNode(text=f"~{format_number(min_toil_band, locale=meta_lang, decimals=0)} - {format_number(max_toil_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
-                    CellNode(text=dim_texts[0], font_size=8.0, bg_color="FFFFFF"),
+                    CellNode(text=toil_text, font_size=8.0, bg_color="FFFFFF"),
                 ]
             ),
             TableRowNode(
                 cells=[
                     CellNode(text=f"**{t('inaction_row_ale', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
                     CellNode(text=f"~{format_number(min_ale_band, locale=meta_lang, decimals=0)} - {format_number(max_ale_band, locale=meta_lang, decimals=0)} {currency}/{yr_str}", font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
-                    CellNode(text=dim_texts[1], font_size=8.0, bg_color=self.alt_row_hex),
+                    CellNode(text=incident_text, font_size=8.0, bg_color=self.alt_row_hex),
                 ]
             ),
             TableRowNode(
                 cells=[
                     CellNode(text=f"**{t('inaction_row_worst_case', locale=meta_lang)}**", font_size=8.0, bg_color="FFF8F8"),
                     CellNode(text=f"Hasta ~{format_number(worst_case_max, locale=meta_lang, decimals=0)} {currency}", font_size=8.0, bg_color="FFF8F8", align="CENTER", bold=True, text_color_rgb=[185, 28, 28]),
-                    CellNode(text=dim_texts[2], font_size=8.0, bg_color="FFF8F8"),
+                    CellNode(text=worst_crisis, font_size=8.0, bg_color="FFF8F8"),
                 ]
             ),
             TableRowNode(
                 cells=[
                     CellNode(text=f"**{t('inaction_row_mttr', locale=meta_lang)}**", font_size=8.0, bg_color="FFFFFF"),
-                    CellNode(text=dim_texts[3], font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
-                    CellNode(text=t("inaction_desc_mttr", locale=meta_lang, default="Tiempo requerido para diagnóstico, escalado a soporte de terceros y restitución manual de servicios."), font_size=8.0, bg_color="FFFFFF"),
+                    CellNode(text=mttr_disp, font_size=8.0, bg_color="FFFFFF", align="CENTER", bold=True),
+                    CellNode(text=t("inaction_desc_mttr", locale=meta_lang, default="Time required for forensic diagnosis, vendor escalation, and manual service recovery."), font_size=8.0, bg_color="FFFFFF"),
                 ]
             ),
             TableRowNode(
                 cells=[
                     CellNode(text=f"**{t('inaction_row_vendor_deadlines', locale=meta_lang)}**", font_size=8.0, bg_color=self.alt_row_hex),
-                    CellNode(text=t("inaction_val_deadlines", locale=meta_lang, default="Alerta de Hito"), font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
-                    CellNode(text=dim_texts[4], font_size=8.0, bg_color=self.alt_row_hex),
+                    CellNode(text=t("inaction_val_deadlines", locale=meta_lang, default="Milestone Alert"), font_size=8.0, bg_color=self.alt_row_hex, align="CENTER", bold=True),
+                    CellNode(text=deadline_text, font_size=8.0, bg_color=self.alt_row_hex),
                 ]
             ),
         ]
@@ -4940,11 +4915,11 @@ class PayloadToASTBridge:
                 disp_sle_band = f"0 {currency}"
 
             if calibrated_lef >= 1.0:
-                disp_freq = "Alta (1 a 2 incidentes/año)" if str(meta_lang).startswith("es") else "High (1-2 incidents/yr)"
+                disp_freq = t("risk_freq_high_band", locale=meta_lang, default="High (1-2 incidents/yr)")
             elif calibrated_lef >= 0.25:
-                disp_freq = "Moderada (1 vez cada 2-3 años)" if str(meta_lang).startswith("es") else "Moderate (1 incident every 2-3 yrs)"
+                disp_freq = t("risk_freq_moderate_band", locale=meta_lang, default="Moderate (1 incident every 2-3 yrs)")
             else:
-                disp_freq = "Baja frecuencia (1 vez cada 3-5 años)" if str(meta_lang).startswith("es") else "Low frequency (1 incident every 3-5 yrs)"
+                disp_freq = t("risk_freq_low_band", locale=meta_lang, default="Low frequency (1 incident every 3-5 yrs)")
 
             kpi_row_cells = [
                 CellNode(
@@ -4989,14 +4964,15 @@ class PayloadToASTBridge:
         else:
             max_tail_num = max(10000, int(round((max(sle_num, 10000.0) * 2.2) / 5000)) * 5000)
             tail_cur_str = format_currency(max_tail_num, currency_symbol=currency, locale=meta_lang, decimals=0)
-            wc_lead = t("risk_card_wc_deduced_lead", locale=meta_lang, default="Fallo crítico imprevisto durante un pico de demanda o contingencia operativa simultánea")
-            worst_case_txt = f"{wc_lead}: disrupción del servicio y necesidad de restitución manual de emergencia con un impacto económico estimado de hasta ~{tail_cur_str}."
+            wc_lead = t("risk_card_wc_deduced_lead", locale=meta_lang, default="Unforeseen critical failure during peak operational demand")
+            wc_suffix = t("risk_card_wc_deduced_suffix", locale=meta_lang, tail_amount=tail_cur_str, default=f"service disruption and emergency manual recovery requirement with an estimated economic impact of up to ~{tail_cur_str}")
+            worst_case_txt = f"{wc_lead}: {wc_suffix}."
 
         raw_mitigation = hc.get("remediation_architecture") or hc.get("mitigation_directive") or hc.get("remediation")
         if raw_mitigation and len(str(raw_mitigation).strip().split()) >= 4:
             directive_txt = str(raw_mitigation).strip()
         else:
-            directive_txt = t("risk_card_default_mitigation", locale=meta_lang, default=f"Abordar la modernización arquitectónica y remediación estructural de {fallback_pillar_ref or 'la capacidad evaluada'} en la fase TO-BE.")
+            directive_txt = t("risk_card_default_mitigation_template", locale=meta_lang, capability=fallback_pillar_ref or "the evaluated capability", default=f"Prioritize architectural modernization and structural remediation of {fallback_pillar_ref or 'the evaluated capability'} in the TO-BE phase.")
 
         decomp = hc.get("additive_loss_decomposition") or {}
         primary_downtime_loss = int(
