@@ -1874,6 +1874,7 @@ class PayloadToASTBridge:
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
+        nodes.append(SpacerNode(points=6))
 
         currency = str(
             ctx.get("currency")
@@ -1888,23 +1889,7 @@ class PayloadToASTBridge:
         resolver = get_taxonomy_resolver()
         tower_name = resolver.resolve_tower_name(tower_id_canonical, default=raw_tname, locale=meta_lang)
 
-        # COMPONENT A: DIRECT OPERATIONAL DIAGNOSIS (BLUF SCQA)
-        exec_sum = (
-            blueprint_data.get("executive_snapshot")
-            or (annex_data.get("executive_summary") if annex_data else {})
-            or {}
-        )
-        bespoke_bottom_line = str(exec_sum.get("bottom_line") or "").strip()
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
-        verdict_text = (
-            bespoke_bottom_line
-            if len(bespoke_bottom_line) > 40
-            else t("default_executive_verdict", locale=meta_lang, tower_name=tower_name, client_name=client_name)
-        )
-        verdict_text = restore_locale_diacritics(verdict_text, meta_lang)
-        nodes.append(ParagraphNode(text=verdict_text, font_size=9.5, space_after=8))
-
-        # COMPONENT B: 4-METRIC EXECUTIVE SCORECARD (GARTNER + DELOITTE SSOT)
+        # COMPONENT A: 4-METRIC EXECUTIVE SCORECARD (PLACED FIRST UNDER HEADING 1 - BLUF)
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
             from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
@@ -1965,25 +1950,37 @@ class PayloadToASTBridge:
         scorecard_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
-                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
-                    CellNode(text=t("kpi_inaction_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
-                    CellNode(text=t("kpi_regulatory_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
+                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
+                    CellNode(text=t("kpi_inaction_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
+                    CellNode(text=t("kpi_regulatory_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.5),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=9.5),
-                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=9.5),
-                    CellNode(text=inaction_display, bold=True, align="CENTER", bg_color="FCE4D6", font_size=9.0),
-                    CellNode(text=reg_status, bold=True, align="CENTER", bg_color=reg_bg, font_size=9.0),
+                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=10.0),
+                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=10.0),
+                    CellNode(text=inaction_display, bold=True, align="CENTER", bg_color="FCE4D6", font_size=9.5),
+                    CellNode(text=reg_status, bold=True, align="CENTER", bg_color=reg_bg, font_size=9.5),
                 ]
             ),
         ]
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.20, 0.28, 0.28, 0.24]))
-        nodes.append(SpacerNode(points=8))
+        nodes.append(SpacerNode(points=12))
 
-        # COMPONENT C: DYNAMIC N-PILLAR CAPABILITY MICRO-HEATMAP (GARTNER COMPACT)
+        # COMPONENT B: DIRECT OPERATIONAL DIAGNOSIS PARAGRAPH
+        raw_verdict = str((blueprint_data.get("executive_snapshot") or {}).get("bottom_line") or "").strip()
+        min_len = 25
+
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        if len(raw_verdict) >= min_len:
+            verdict_text = raw_verdict
+        else:
+            verdict_text = t("default_executive_verdict", locale=meta_lang, tower_name=tower_name, client_name=client_name)
+        verdict_text = restore_locale_diacritics(verdict_text, meta_lang)
+        nodes.append(ParagraphNode(text=verdict_text, font_size=9.5, space_after=12))
+
+        # COMPONENT C: DYNAMIC N-PILLAR CAPABILITY MICRO-HEATMAP (GARTNER COMPACT - ID RESOLUTION)
         nodes.append(ParagraphNode(text=f"**{t('heatmap_section_title', locale=meta_lang)}**", font_size=9.5, space_after=4, keep_with_next=True))
         pillars_raw = [p for p in blueprint_data.get("pillars_analysis", []) if isinstance(p, dict)]
         if pillars_raw:
@@ -1991,6 +1988,7 @@ class PayloadToASTBridge:
             col_width = round(1.0 / n_cols, 3)
             heatmap_headers = []
             heatmap_data = []
+
             for idx, p in enumerate(pillars_raw[:n_cols], start=1):
                 pid = str(p.get("pillar_id") or p.get("pilar_id") or f"{tower_id_canonical}.P{idx}").strip().upper()
                 p_score = _safe_float(p.get("pilar_score") or p.get("score"), default=2.0)
@@ -1999,14 +1997,9 @@ class PayloadToASTBridge:
                     p_name_raw = str(p.get("pilar_name") or p.get("name") or "Capability").strip()
                     clean_raw = re.sub(r"\(.*?\)", "", p_name_raw).strip()
                     p_clean_name = resolver.resolve_pillar_by_any_reference(clean_raw or p_name_raw, locale=meta_lang, default=p_name_raw)
+
                 p_score_str = format_number(p_score, locale=meta_lang, decimals=2)
-                
-                if p_score < 2.0:
-                    c_bg = "FEE2E2"
-                elif p_score < 3.4:
-                    c_bg = "FEF3C7"
-                else:
-                    c_bg = "DCFCE7"
+                c_bg = "FEE2E2" if p_score < 2.0 else ("FEF3C7" if p_score < 3.4 else "DCFCE7")
 
                 heatmap_headers.append(CellNode(text=p_clean_name, bold=True, font_size=7.5, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
                 heatmap_data.append(CellNode(text=f"**{p_score_str}**", bold=True, font_size=9.0, align="CENTER", bg_color=c_bg))
@@ -2016,11 +2009,11 @@ class PayloadToASTBridge:
                 TableRowNode(cells=heatmap_data),
             ]
             nodes.append(TableNode(rows=heatmap_rows, col_widths=[col_width] * n_cols))
-            nodes.append(SpacerNode(points=8))
+            nodes.append(SpacerNode(points=14))
 
-        # COMPONENT D: THE 3 STRATEGIC REALITIES (THE RULE OF THREE WITH ANCHORS)
+        # COMPONENT D: THE 3 STRATEGIC REALITIES (COMPLETE SENTENCES - ZERO CUTOFFS)
         lead_in = t("exec_summary_key_findings_lead", locale=meta_lang)
-        nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=9.5, space_after=4, keep_with_next=True))
+        nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=9.5, space_after=6, keep_with_next=True))
 
         cards_pool = synth.get("strategic_risk_cards") or []
         fallback_risk_title = t("default_operational_risk_title", locale=meta_lang)
@@ -2033,21 +2026,31 @@ class PayloadToASTBridge:
 
         for card_item in cards_pool[:3]:
             c_title = str(card_item.get("title") or fallback_risk_title).strip()
-            c_desc = str(card_item.get("technical_evidence") or card_item.get("operational_impact_chain") or "").strip().rstrip(".")
-            if len(c_desc) > 150:
-                truncated = c_desc[:147]
-                c_desc = truncated.rsplit(" ", 1)[0] + "..." if " " in truncated else truncated + "..."
-            formatted_bullet = f"**{c_title}:** {c_desc}."
+            raw_desc = str(card_item.get("technical_evidence") or card_item.get("operational_impact_chain") or "").strip()
+            
+            # Extract first complete sentence to ensure complete thoughts without mid-sentence ellipsis
+            if "." in raw_desc:
+                c_desc = raw_desc.split(".")[0].strip() + "."
+            else:
+                c_desc = raw_desc.rstrip(".") + "."
+
+            # Avoid redundant title repetition in bullet body
+            if c_desc.lower().startswith(c_title.lower()):
+                c_desc = c_desc[len(c_title):].lstrip(" :-,.")
+                if c_desc:
+                    c_desc = c_desc[0].upper() + c_desc[1:]
+
+            formatted_bullet = f"**{c_title}:** {c_desc}"
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=8.5, space_after=4))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=8.5, space_after=6))
 
         # COMPONENT E: UNIVERSAL DECISION HORIZON & STRATEGIC MANDATE (BAIN COST OF DELAY)
-        nodes.append(SpacerNode(points=6))
+        nodes.append(SpacerNode(points=10))
         horizon_lead = t("decision_horizon_lead", locale=meta_lang)
         horizon_body = t("decision_horizon_body", locale=meta_lang, regulation=primary_reg)
         horizon_full = f"**{horizon_lead}** {horizon_body}"
         horizon_full = restore_locale_diacritics(horizon_full, meta_lang)
-        nodes.append(ParagraphNode(text=horizon_full, font_size=9.0, space_after=8))
+        nodes.append(ParagraphNode(text=horizon_full, font_size=9.0, space_after=12))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
