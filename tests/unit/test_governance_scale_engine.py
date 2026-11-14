@@ -77,18 +77,18 @@ def test_cmmi_half_open_interval_boundary_precision(engine: GovernanceScaleEngin
     # Level 4: [3.50, 4.50)
     m3_50 = engine.resolve_maturity(3.50)
     assert m3_50.level == 4
-    assert m3_50.label == "Quantitatively Managed"
+    assert m3_50.label == "Advanced and Measured"
 
     # The 4.25 case -> Level 4
     m4_25 = engine.resolve_maturity(4.25, locale="es")
     assert m4_25.level == 4
     assert m4_25.band_code == MaturityBandCode.MANAGED
-    assert m4_25.label == "Gestionado Cuantitativamente"
+    assert m4_25.label == "Avanzado y Medido"
 
     # Level 5: [4.50, 5.00]
     m4_50 = engine.resolve_maturity(4.50)
     assert m4_50.level == 5
-    assert m4_50.label == "Optimizing"
+    assert m4_50.label == "Optimized and Resilient"
 
     m5_00 = engine.resolve_maturity(5.00)
     assert m5_00.level == 5

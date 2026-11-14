@@ -562,8 +562,8 @@ def _resolve_cmmi_maturity_label(score: float, locale: str) -> str:
     if val < 3.60:
         return "Nivel 3 - Definido" if is_es else "Level 3 - Defined"
     if val < 4.60:
-        return "Nivel 4 - Gestionado Cuantitativamente" if is_es else "Level 4 - Quantitatively Managed"
-    return "Nivel 5 - Optimizado" if is_es else "Level 5 - Optimizing"
+        return "Nivel 4 - Avanzado y Medido" if is_es else "Level 4 - Advanced and Measured"
+    return "Nivel 5 - Optimizado y Resiliente" if is_es else "Level 5 - Optimized and Resilient"
 
 
 def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:

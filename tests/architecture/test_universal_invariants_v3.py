@@ -20,12 +20,12 @@ def test_cmmi_v2_international_band_alignment() -> None:
     from assessment_engine.infrastructure.localization import t
 
     lvl4_band = [b for b in ANNEX_MATURITY_BANDS if b["level"] == 4][0]
-    assert lvl4_band["label"] == "Quantitatively Managed"
+    assert lvl4_band["label"] == "Advanced and Measured"
     assert lvl4_band["band_key"] == "band_quantitatively_managed"
 
-    # In Spanish localization, it must resolve to 'Gestionado Cuantitativamente'
+    # In Spanish localization, it must resolve to 'Avanzado y Medido'
     resolved_es = resolve_maturity_band(4.00, ANNEX_MATURITY_BANDS, locale="es", translator=t)
-    assert resolved_es["label"] == "Gestionado Cuantitativamente"
+    assert resolved_es["label"] == "Avanzado y Medido"
 
     # Level 2 must resolve to 'Gestionado' or 'Repetible'
     resolved_l2_es = resolve_maturity_band(2.10, ANNEX_MATURITY_BANDS, locale="es", translator=t)

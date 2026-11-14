@@ -58,8 +58,8 @@ class GovernanceScaleEngine:
                     {"level": 1, "code": "INITIAL", "upper_bound_exclusive": 1.50, "label_token": "band_initial", "default_label": "Initial", "ui_token": "status-critical"},
                     {"level": 2, "code": "REPEATABLE", "upper_bound_exclusive": 2.50, "label_token": "band_managed", "default_label": "Managed", "ui_token": "status-warning"},
                     {"level": 3, "code": "DEFINED", "upper_bound_exclusive": 3.50, "label_token": "band_defined", "default_label": "Defined", "ui_token": "status-neutral"},
-                    {"level": 4, "code": "MANAGED", "upper_bound_exclusive": 4.50, "label_token": "band_quantitatively_managed", "default_label": "Quantitatively Managed", "ui_token": "status-good"},
-                    {"level": 5, "code": "OPTIMIZED", "upper_bound_exclusive": 5.0001, "label_token": "band_optimized", "default_label": "Optimizing", "ui_token": "status-excellent"},
+                    {"level": 4, "code": "MANAGED", "upper_bound_exclusive": 4.50, "label_token": "band_quantitatively_managed", "default_label": "Advanced and Measured", "ui_token": "status-good"},
+                    {"level": 5, "code": "OPTIMIZED", "upper_bound_exclusive": 5.0001, "label_token": "band_optimized", "default_label": "Optimized and Resilient", "ui_token": "status-excellent"},
                 ]
             },
             "open_fair_loss_magnitude_scale": {
@@ -122,8 +122,8 @@ class GovernanceScaleEngine:
                         "band_initial": "Inicial",
                         "band_managed": "Gestionado",
                         "band_defined": "Definido",
-                        "band_quantitatively_managed": "Gestionado Cuantitativamente",
-                        "band_optimized": "Optimizado",
+                        "band_quantitatively_managed": "Avanzado y Medido",
+                        "band_optimized": "Optimizado y Resiliente",
                     }
                     label = spanish_map.get(token, label)
 
