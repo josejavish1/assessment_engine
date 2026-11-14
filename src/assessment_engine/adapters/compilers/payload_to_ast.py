@@ -3638,11 +3638,14 @@ class PayloadToASTBridge:
             ann_max = a.get("annual_exposure_max", 0.0)
             exp_str = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
 
+            n_key = a.get("narrative_key")
+            narrative_text = t(n_key, locale=meta_lang, domain=tower_name) if n_key else a.get("evidence_narrative", "")
+
             table_rows.append(
                 TableRowNode(
                     cells=[
                         CellNode(text=f"**{dim_title}**", font_size=8.0, bg_color=bg_col),
-                        CellNode(text=a.get("evidence_narrative", ""), font_size=8.0, bg_color=bg_col),
+                        CellNode(text=narrative_text, font_size=8.0, bg_color=bg_col),
                         CellNode(text=exp_str, font_size=8.0, bg_color=bg_col, align="CENTER", bold=True),
                     ]
                 )

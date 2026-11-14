@@ -7,7 +7,8 @@ Adheres strictly to Tier-1 Architectural Standards:
    - Strict AS-IS diagnostic boundary (no future TO-BE project pricing or premature paybacks).
    - Pure Tier 1 (Critical) & Tier 2 (Structural) risks (zero Tier 3 trivial noise).
 3. Universal Multi-Tenant Scalability:
-   - Pure dynamic synthesis from tenant findings and evidence (zero canned client prose dictionaries).
+   - Dynamic mathematical risk prioritization: (5.00 - Pillar_Score) * Asset_Criticality.
+   - Multilingual taxonomy resolution via TaxonomyResolver (eliminates raw codes like T5.P4.K2).
    - Econometric Disruption Resolution: Dynamically derived from enterprise annual revenue and operating intensity.
    - Clean Architecture Purity: Completely decoupled from infrastructure imports; receives rate catalog via port.
    - Dynamic logarithmic magnitude scaling (scales from EUR/USD to JPY and mid-market to Global 500).
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import logging
 import math
+import re
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -98,6 +100,7 @@ class Chapter4Synthesizer:
         tower_id = str(ctx.get("tower_id") or doc_meta.get("tower_id") or "T1").strip().upper()
         tower_name = str(ctx.get("tower_name") or doc_meta.get("tower_name") or "Infrastructure Domain").strip()
         country_code = str(ctx.get("country_code") or doc_meta.get("country_code") or "DEFAULT").strip().upper()
+        target_locale = str(ctx.get("meta_lang") or doc_meta.get("language") or "en").strip().lower()
 
         effective_catalog = rates_catalog or ctx.get("rates_catalog") or blueprint_data.get("rates_catalog")
         rate_card = cls.get_country_rate_card(country_code, rates_catalog=effective_catalog)
@@ -112,16 +115,18 @@ class Chapter4Synthesizer:
         else:
             disruption_rate = float(rate_card.get("default_hourly_disruption_cost", 3000.0))
 
-        # Collect raw findings across all pillars
+        # Collect raw findings across all pillars with attached pillar maturity scores
         pillars = blueprint_data.get("pillars_analysis") or []
         findings_pool: List[Dict[str, Any]] = []
         for p in pillars:
             if isinstance(p, dict):
                 p_name = str(p.get("pilar_name") or "Core Domain")
+                p_score = _safe_float(p.get("pilar_score") or p.get("score"), default=2.5)
                 for hc in (p.get("health_check_asis") or []):
                     if isinstance(hc, dict):
                         hc_copy = dict(hc)
                         hc_copy["_pillar_name"] = p_name
+                        hc_copy["_pillar_score"] = p_score
                         findings_pool.append(hc_copy)
 
         # 1. Synthesize Section 4.1: The Three Transparent Financial Anchors
@@ -158,7 +163,6 @@ class Chapter4Synthesizer:
         milestone_date = None
         if ext_deps and isinstance(ext_deps, list) and isinstance(ext_deps[0], str) and len(ext_deps[0].strip().split()) >= 3:
             milestone_text = ext_deps[0].strip()
-            # Extract date if present in string
             words = milestone_text.split()
             if len(words) >= 2 and any(char.isdigit() for char in words[-1]):
                 milestone_date = f"{words[-2]} {words[-1]}"
@@ -178,6 +182,7 @@ class Chapter4Synthesizer:
             {
                 "anchor_type": "OPERATIONAL_TOIL",
                 "dimension_title": "1. Operational Engineering Toil (Recurring Maintenance)",
+                "narrative_key": "ch4_anchor_toil_desc",
                 "annual_exposure_min": toil_min,
                 "annual_exposure_max": toil_max,
                 "exposure_formula_display": "15 to 20 h/wk in manual operations & off-hours support",
@@ -187,15 +192,17 @@ class Chapter4Synthesizer:
             {
                 "anchor_type": "AVAILABILITY_DISRUPTION",
                 "dimension_title": "2. Availability & Outage Disruption Exposure",
+                "narrative_key": "ch4_anchor_outage_desc",
                 "annual_exposure_min": outage_min,
                 "annual_exposure_max": outage_max,
                 "exposure_formula_display": f"1 incident every 12-18 months with {int(eff_rto-1)}-{int(eff_rto+1)}h MTTR",
-                "evidence_narrative": f"Operational degradation and contingency risk upon hardware failure or component disruption in core {tower_name} assets.",
+                "evidence_narrative": f"Operational contingency and disruption risk upon component failure or hardware degradation in {tower_name}.",
                 "governing_milestone_date": None,
             },
             {
                 "anchor_type": "CONTRACTUAL_FORCING_FUNCTION",
                 "dimension_title": "3. Projected Vendor & Lifecycle Contractual Overspend",
+                "narrative_key": "ch4_anchor_contractual_desc",
                 "annual_exposure_min": contractual_min,
                 "annual_exposure_max": contractual_max,
                 "exposure_formula_display": "Projected lifecycle support escalation upon contract expiration",
@@ -214,6 +221,7 @@ class Chapter4Synthesizer:
             annual_exposure_min=outage_min,
             annual_exposure_max=outage_max,
             milestone_text=milestone_text,
+            target_locale=target_locale,
         )
 
         synthesis_payload = {
@@ -241,14 +249,38 @@ class Chapter4Synthesizer:
         annual_exposure_min: float,
         annual_exposure_max: float,
         milestone_text: Optional[str] = None,
+        target_locale: str = "en",
     ) -> List[Dict[str, Any]]:
         """Extracts and formats strictly 3 to 4 strategic risks (Tier 1 and Tier 2 only) adhering to the 4-block layout."""
         cards: List[Dict[str, Any]] = []
 
-        # Pure dynamic synthesis: Rank findings by FAIR ALE score or severity heuristics
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
+        # Deterministic Mathematical Prioritization Formula: (5.00 - Pillar_Score) * Asset_Criticality
+        def _calculate_priority(hc: Dict[str, Any]) -> float:
+            p_score = _safe_float(hc.get("_pillar_score"), default=2.5)
+            gap = max(0.5, 5.0 - p_score)
+
+            text_corpus = f"{hc.get('finding', '')} {hc.get('business_risk', '')} {hc.get('capability', '')} {hc.get('_pillar_name', '')}".lower()
+            is_auxiliary = any(k in text_corpus for k in ("test", "dev", "sandbox", "lab", "auxiliar", "cert-manager", "template", "golden image"))
+            is_core = any(k in text_corpus for k in ("producci", "core", "host", "cluster", "database", "sap", "oracle", "network", "plant", "datacenter", "cpd", "pam", "credential"))
+
+            if is_core and not is_auxiliary:
+                criticality = 1.0
+            elif is_auxiliary:
+                criticality = 0.3
+            else:
+                criticality = 0.7
+
+            tef = float(hc.get("threat_event_frequency") or 3.0)
+            vuln = float(hc.get("vulnerability_level") or 3.0)
+
+            return gap * criticality * (tef * 0.5 + vuln * 0.5)
+
         sorted_findings = sorted(
             findings_pool,
-            key=lambda x: _safe_float(x.get("fair_ale_score"), 0.0),
+            key=_calculate_priority,
             reverse=True,
         )
 
@@ -259,7 +291,17 @@ class Chapter4Synthesizer:
         fallback_milestone = milestone_text or "Statutory governance and operational resilience compliance requirements."
 
         for idx, f in enumerate(selected_findings, start=1):
-            cap = str(f.get("capability") or f.get("target_state") or f"{tower_name} Core Capability")
+            raw_cap = str(f.get("capability") or f.get("target_state") or "").strip()
+            p_name = str(f.get("_pillar_name") or tower_name).strip()
+
+            # Multilingual Capability Title Resolution: eliminates raw codes like T5.P4.K2 and untranslated English
+            if not raw_cap or re.match(r"^T\d+\.P\d+\.K\d+", raw_cap, re.IGNORECASE):
+                clean_title = resolver.resolve_pillar_by_any_reference(p_name, locale=target_locale, default=p_name)
+            else:
+                clean_title = resolver.resolve_capability_name(raw_cap, locale=target_locale, default=raw_cap)
+                if re.match(r"^T\d+\.P\d+\.K\d+", clean_title, re.IGNORECASE):
+                    clean_title = resolver.resolve_pillar_by_any_reference(p_name, locale=target_locale, default=p_name)
+
             finding_txt = str(f.get("finding") or f.get("risk_observed") or "").strip()
             risk_txt = str(f.get("business_risk") or f.get("impact") or "").strip()
             is_tier1 = idx <= 2
@@ -273,11 +315,11 @@ class Chapter4Synthesizer:
                 {
                     "risk_id": f"RSK-{tower_id}-0{idx}",
                     "tier": "TIER_1_CRITICAL" if is_tier1 else "TIER_2_STRUCTURAL",
-                    "title": cap,
+                    "title": clean_title,
                     "affected_perimeter": f"Production and Operations Infrastructure · {tower_name}",
                     "estimated_frequency_label": "1 event / 12-18 months" if is_tier1 else "Continuous Latent Exposure",
-                    "technical_evidence": finding_txt if len(finding_txt) >= 20 else f"Structural gap identified in the operational baseline and governance of {cap}.",
-                    "operational_impact_chain": risk_txt if len(risk_txt) >= 20 else f"Risk of unplanned operational disruption and business workflow degradation dependent on {cap}.",
+                    "technical_evidence": finding_txt if len(finding_txt) >= 20 else f"Structural gap identified in the operational baseline and governance of {clean_title}.",
+                    "operational_impact_chain": risk_txt if len(risk_txt) >= 20 else f"Risk of unplanned operational disruption and business workflow degradation dependent on {clean_title}.",
                     "event_loss_min": ev_min,
                     "event_loss_max": ev_max,
                     "annual_exposure_min": ann_min,

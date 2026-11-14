@@ -3220,7 +3220,10 @@
     "findings_lead_in": "Hallazgos observados en el estado actual:",
     "generic_operational_domain_fallback": "el dominio operativo evaluado",
     "risk_card_severity_low": "BAJA (Tier 3)",
-    "and_conjunction": " y "
+    "and_conjunction": " y ",
+    "ch4_anchor_toil_desc": "Ajustes operativos manuales, tareas de mantenimiento preventivo y soporte reactivo recurrente en {domain}.",
+    "ch4_anchor_outage_desc": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en {domain}.",
+    "ch4_anchor_contractual_desc": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en {domain}."
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6419,7 +6422,10 @@
     "findings_lead_in": "Findings observed in the current state:",
     "generic_operational_domain_fallback": "the assessed operational domain",
     "risk_card_severity_low": "LOW (Tier 3)",
-    "and_conjunction": " and "
+    "and_conjunction": " and ",
+    "ch4_anchor_toil_desc": "Ongoing manual resource adjustments, operational maintenance toil, and reactive troubleshooting across {domain}.",
+    "ch4_anchor_outage_desc": "Operational contingency and disruption risk upon component failure or hardware degradation in {domain}.",
+    "ch4_anchor_contractual_desc": "Projected overspend arising from end-of-life (EOL) milestones, extended vendor support, or mandatory licensing model transitions in {domain}."
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9615,7 +9621,10 @@
     "findings_lead_in": "Achados observados no estado atual:",
     "generic_operational_domain_fallback": "o domínio operacional avaliado",
     "risk_card_severity_low": "BAIXA (Tier 3)",
-    "and_conjunction": " e "
+    "and_conjunction": " e ",
+    "ch4_anchor_toil_desc": "Ajustes operacionais manuais, esforço de manutenção preventiva e suporte reativo recorrente em {domain}.",
+    "ch4_anchor_outage_desc": "Risco de contingência e interrupção operacional diante de degradação de componentes ou falhas de hardware em {domain}.",
+    "ch4_anchor_contractual_desc": "Sobrecusto projetado decorrente de marcos de fim de ciclo de vida (EOL), suporte estendido ou transição forçada de licenciamento em {domain}."
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12809,7 +12818,10 @@
     "findings_lead_in": "Constats observés dans l'état actuel :",
     "generic_operational_domain_fallback": "le domaine opérationnel évalué",
     "risk_card_severity_low": "FAIBLE (Tier 3)",
-    "and_conjunction": " et "
+    "and_conjunction": " et ",
+    "ch4_anchor_toil_desc": "Ajustements opérationnels manuels, maintenance préventive et support réactif récurrent dans {domain}.",
+    "ch4_anchor_outage_desc": "Risque de contingence et d'interruption opérationnelle en cas de dégradation de composants ou de panne matérielle dans {domain}.",
+    "ch4_anchor_contractual_desc": "Surcoût projeté découlant des jalons de fin de vie (EOL), du support étendu ou de transitions obligatoires de licences dans {domain}."
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15994,7 +16006,10 @@
     "findings_lead_in": "現状で確認された所見：",
     "generic_operational_domain_fallback": "評価対象運用ドメイン",
     "risk_card_severity_low": "低 (Tier 3)",
-    "and_conjunction": "および"
+    "and_conjunction": "および",
+    "ch4_anchor_toil_desc": "{domain}における手作業によるリソース調整、保守トイルおよび事後対応トラブルシューティング。",
+    "ch4_anchor_outage_desc": "{domain}におけるコンポーネント障害またはハードウェア劣化に伴う運用停止リスク。",
+    "ch4_anchor_contractual_desc": "{domain}におけるサポート終了（EOL）マイルストーン、延長サポート、または強制的なライセンス移行に伴う予測超過コスト。"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19182,7 +19197,10 @@
     "findings_lead_in": "Im Ist-Zustand beobachtete Befunde:",
     "generic_operational_domain_fallback": "die bewertete Betriebsebene",
     "risk_card_severity_low": "NIEDRIG (Tier 3)",
-    "and_conjunction": " und "
+    "and_conjunction": " und ",
+    "ch4_anchor_toil_desc": "Laufende manuelle Ressourcenanpassungen, betrieblicher Wartungsaufwand und reaktive Fehlerbehebung in {domain}.",
+    "ch4_anchor_outage_desc": "Betriebliches Kontingenz- und Unterbrechungsrisiko bei Komponentenausfall oder Hardware-Degradation in {domain}.",
+    "ch4_anchor_contractual_desc": "Prognostizierte Mehrkosten aufgrund von End-of-Life (EOL)-Meilensteinen, erweitertem Support oder erzwungenen Lizenzmodell-Übergängen in {domain}."
   },
   "executive_summary_narrative": {
     "es": {
