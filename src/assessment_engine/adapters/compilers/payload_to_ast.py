@@ -2729,8 +2729,7 @@ class PayloadToASTBridge:
             tower_intro_map = catalog.get("cross_cutting_debt_intro_by_tower", {})
             transversal_intro = tower_intro_map.get(canonical_tower_id) or t("cross_cutting_debt_intro", locale=meta_lang)
 
-            nodes.append(ParagraphNode(text=transversal_intro, italic=True))
-            nodes.append(SpacerNode(points=6))
+            nodes.append(ParagraphNode(text=transversal_intro, font_size=9.5, space_after=8))
 
             dynamic_patterns = self._extract_dynamic_transversal_patterns(
                 ctx=ctx,
@@ -3191,8 +3190,34 @@ class PayloadToASTBridge:
                 if not desc_paragraphs and r_item.get("operational_reality"):
                     desc_paragraphs = [str(r_item["operational_reality"]).strip()]
 
-                for para_idx, para_text in enumerate(desc_paragraphs):
-                    is_last = (para_idx == len(desc_paragraphs) - 1)
+                # Structure dense monolithic blocks into readable multi-paragraph sections
+                formatted_paragraphs = []
+                for p in desc_paragraphs:
+                    words = p.split()
+                    if len(words) >= 90:
+                        import re
+                        sentences = re.split(r'(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ])', p)
+                        if len(sentences) >= 3:
+                            total_w = sum(len(s.split()) for s in sentences)
+                            mid_target = total_w / 2.0
+                            accum_w = 0
+                            best_idx = 1
+                            best_diff = float("inf")
+                            for i in range(1, len(sentences)):
+                                accum_w += len(sentences[i - 1].split())
+                                diff = abs(accum_w - mid_target)
+                                if diff < best_diff:
+                                    best_diff = diff
+                                    best_idx = i
+                            p1 = " ".join(sentences[:best_idx]).strip()
+                            p2 = " ".join(sentences[best_idx:]).strip()
+                            if p1 and p2:
+                                formatted_paragraphs.extend([p1, p2])
+                                continue
+                    formatted_paragraphs.append(p)
+
+                for para_idx, para_text in enumerate(formatted_paragraphs):
+                    is_last = (para_idx == len(formatted_paragraphs) - 1)
                     clean_para = str(para_text).strip()
                     if clean_para and not clean_para.endswith((".", "!", "?", ":")):
                         clean_para += "."

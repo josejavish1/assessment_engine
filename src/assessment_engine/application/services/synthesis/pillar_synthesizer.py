@@ -47,17 +47,17 @@ Your sole objective is to write the authoritative 'As-Is Architecture Descriptio
 - When direct telemetry/evidence is sparse (<= 2 evidence items): Write a concise, sober, strictly grounded narrative of 180 to 250 words. Do NOT invent filler, unverified sensor arrays, or unverified maintenance procedures.
 - When direct telemetry/evidence is rich (>= 3 evidence items): Write a comprehensive forensic analysis of 250 to 400 words.
 
-### NARRATIVE STRUCTURE
-Construct a cohesive, elegant, multi-paragraph technical narrative in continuous technical prose (no bullet points, no markdown headers, no numbered lists):
+### NARRATIVE STRUCTURE & MULTI-PARAGRAPH FORMATTING
+You MUST structure the narrative into exactly 2 to 3 distinct, well-proportioned paragraphs separated by a blank line (\n\n). Monolithic single-paragraph walls of text are strictly forbidden.
 
-1. BASELINE ARCHITECTURE & OPERATIONAL REALITY:
-   Anchor the narrative in verified topological facts, configurations, and observed systems for this pillar. Describe the components currently running in production, acknowledging their contribution to operational continuity.
+1. PARAGRAPH 1 - BASELINE ARCHITECTURE & OPERATIONAL FOOTPRINT:
+   Anchor in verified topological facts, configurations, and running production systems for this capability. Describe current components and their role in day-to-day operational continuity.
 
-2. TECHNICAL DYNAMICS & ARCHITECTURAL FRICTION:
-   Where direct telemetry is sparse, deduce the operating reality from confirmed adjacent facts (negative space analysis). Explain physical and architectural constraints (e.g., memory contention, lack of API decoupling, manual configuration overhead, lack of native drivers).
+2. PARAGRAPH 2 - OPERATIONAL FRICTION, TECHNICAL DEBT & RISK EXPOSURES:
+   Explain observed constraints, maintenance overhead, manual procedures, lack of automation, single points of failure, or unmonitored operational dependencies.
 
-3. DOMAIN IMPLICATIONS & EVOLUTIONARY HORIZON:
-   Conclude naturally on how this specific technical configuration conditions operational agility, maintenance overhead, or resilience in this domain.
+3. PARAGRAPH 3 (OPTIONAL / COMPLEX SCENARIOS) - SYSTEMIC CONTINUITY & BUSINESS IMPLICATIONS:
+   Explain how this specific technical configuration conditions operational agility, recovery times, or business resilience across the enterprise.
 
 ### RUTHLESS RESTRICTIONS (ZERO TOLERANCE)
 - ABSOLUTE PROHIBITION OF FIRMOGRAPHIC PARROT:
