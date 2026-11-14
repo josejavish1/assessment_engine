@@ -3183,7 +3183,14 @@
     "risk_freq_low_band": "Baja frecuencia (1 vez cada 3-5 años)",
     "risk_card_wc_deduced_lead": "Fallo crítico imprevisto durante un pico de demanda operativa",
     "risk_card_wc_deduced_suffix": "disrupción del servicio y necesidad de restitución manual de emergencia con un impacto económico estimado de hasta ~{tail_amount}",
-    "risk_card_default_mitigation_template": "Abordar la modernización arquitectónica y remediación estructural de {capability} en la fase TO-BE."
+    "risk_card_default_mitigation_template": "Abordar la modernización arquitectónica y remediación estructural de {capability} en la fase TO-BE.",
+    "inaction_worst_case_upto": "Hasta ~{amount} {currency}",
+    "governance_control_badge": "CONTROL DE GOBERNANZA (CUESTIONARIO)",
+    "governance_maturity_gap_stub": "Brecha de madurez metodológica detectada en evaluación CMMI. Requiere telemetría operativa para cuantificación actuarial estocástica (Exposición directa asignada: 0 {currency}/año).",
+    "boilerplate_impact_finops": "Ineficiencia financiera estructural, opacidad en la imputación de costes por unidad de negocio (Showback/Chargeback) y desviación presupuestaria entre modelos CAPEX/OPEX sin trazabilidad unitaria.",
+    "boilerplate_impact_workplace": "Fricción operativa crónica en la productividad del empleado, sobrecarga de soporte reactivo N1/N2/N3 y exceso de horas de ingeniería dedicadas a tareas manuales repetitivas.",
+    "boilerplate_impact_generic": "Degradación de los niveles de servicio (SLA), fricción operativa recurrente y sobrecoste de remediación reactiva en {domain}.",
+    "domain_control_standard_fallback": "el dominio evaluado"
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6345,7 +6352,14 @@
     "risk_freq_low_band": "Low frequency (1 incident every 3-5 yrs)",
     "risk_card_wc_deduced_lead": "Unforeseen critical failure during peak operational demand",
     "risk_card_wc_deduced_suffix": "service disruption and emergency manual recovery requirement with an estimated economic impact of up to ~{tail_amount}",
-    "risk_card_default_mitigation_template": "Prioritize architectural modernization and structural remediation of {capability} in the TO-BE phase."
+    "risk_card_default_mitigation_template": "Prioritize architectural modernization and structural remediation of {capability} in the TO-BE phase.",
+    "inaction_worst_case_upto": "Up to ~{amount} {currency}",
+    "governance_control_badge": "GOVERNANCE CONTROL GAP (SURVEY)",
+    "governance_maturity_gap_stub": "Governance maturity gap identified in CMMI survey. Requires field telemetry for stochastic actuarial quantification (Direct exposure assigned: 0 {currency}/yr).",
+    "boilerplate_impact_finops": "Structural financial inefficiency, lack of unit-cost attribution (Showback/Chargeback), and unmonitored CAPEX/OPEX budget drift.",
+    "boilerplate_impact_workplace": "Chronic operational friction in employee productivity, elevated reactive support ticket volume, and excessive engineering toil on manual tasks.",
+    "boilerplate_impact_generic": "Service level degradation, recurring operational friction, and reactive remediation overhead across {domain}.",
+    "domain_control_standard_fallback": "the assessed domain"
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9504,7 +9518,14 @@
     "risk_freq_low_band": "Baixa frequência (1 vez a cada 3-5 anos)",
     "risk_card_wc_deduced_lead": "Falha crítica imprevista durante pico de demanda operacional",
     "risk_card_wc_deduced_suffix": "disrupção de serviço e necessidade de recuperação manual de emergência com impacto econômico estimado de até ~{tail_amount}",
-    "risk_card_default_mitigation_template": "Priorizar a modernização arquitetural e remediação estrutural de {capability} na fase TO-BE."
+    "risk_card_default_mitigation_template": "Priorizar a modernização arquitetural e remediação estrutural de {capability} na fase TO-BE.",
+    "inaction_worst_case_upto": "Até ~{amount} {currency}",
+    "governance_control_badge": "CONTROLE DE GOVERNANÇA (QUESTIONÁRIO)",
+    "governance_maturity_gap_stub": "Lacuna de maturidade de governança identificada na avaliação CMMI. Requer telemetria de campo para quantificação atuarial estocástica (Exposição direta atribuída: 0 {currency}/ano).",
+    "boilerplate_impact_finops": "Ineficiência financeira estrutural, falta de atribuição de custos unitários (Showback/Chargeback) e desvio orçamentário CAPEX/OPEX sem monitoramento.",
+    "boilerplate_impact_workplace": "Fricção operacional crônica na produtividade dos colaboradores, volume elevado de chamados de suporte reativo e esforço excessivo de engenharia em tarefas manuais.",
+    "boilerplate_impact_generic": "Degradação dos níveis de serviço (SLA), fricção operacional recorrente e sobrecusto de remediação reativa em {domain}.",
+    "domain_control_standard_fallback": "o domínio avaliado"
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12661,7 +12682,14 @@
     "risk_freq_low_band": "Faible fréquence (1 incident tous les 3-5 ans)",
     "risk_card_wc_deduced_lead": "Panne critique imprévue lors d'un pic d'activité opérationnelle",
     "risk_card_wc_deduced_suffix": "interruption de service et recours à une restauration manuelle d'urgence avec un impact économique estimé jusqu'à ~{tail_amount}",
-    "risk_card_default_mitigation_template": "Prioriser la modernisation architecturale et la remédiation structurelle de {capability} dans la phase TO-BE."
+    "risk_card_default_mitigation_template": "Prioriser la modernisation architecturale et la remédiation structurelle de {capability} dans la phase TO-BE.",
+    "inaction_worst_case_upto": "Jusqu'à ~{amount} {currency}",
+    "governance_control_badge": "CONTRÔLE DE GOUVERNANCE (QUESTIONNAIRE)",
+    "governance_maturity_gap_stub": "Écart de maturité de gouvernance identifié dans l'évaluation CMMI. Nécessite une télémétrie de terrain pour la quantification actuarielle stochastique (Exposition directe assignée : 0 {currency}/an).",
+    "boilerplate_impact_finops": "Inefficacité financière structurelle, absence d'imputation des coûts unitaires (Showback/Chargeback) et dérive budgétaire CAPEX/OPEX non surveillée.",
+    "boilerplate_impact_workplace": "Friction opérationnelle chronique dans la productivité des employés, volume élevé de tickets de support réactif et surcharge d'ingénierie sur les tâches manuelles.",
+    "boilerplate_impact_generic": "Dégradation des niveaux de service (SLA), friction opérationnelle récurrente et surcoût de remédiation réactive dans {domain}.",
+    "domain_control_standard_fallback": "le domaine évalué"
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15809,7 +15837,14 @@
     "risk_freq_low_band": "低頻度（3〜5年に1回のインシデント）",
     "risk_card_wc_deduced_lead": "運用のピーク需要時における予期せぬ重大障害",
     "risk_card_wc_deduced_suffix": "サービス中断および手動緊急復旧の必要性が生じ、推定経済的損失は最大で約{tail_amount}に達する",
-    "risk_card_default_mitigation_template": "TO-BEフェーズにおいて、{capability}のアーキテクチャ近代化および構造的是正を優先的に実施する。"
+    "risk_card_default_mitigation_template": "TO-BEフェーズにおいて、{capability}のアーキテクチャ近代化および構造的是正を優先的に実施する。",
+    "inaction_worst_case_upto": "最大約{amount} {currency}",
+    "governance_control_badge": "ガバナンス統制ギャップ（アンケート）",
+    "governance_maturity_gap_stub": "CMMI評価で特定されたガバナンス成熟度ギャップ。確率的保険数理定量的評価には実環境テレメトリが必要です（直接エクスポージャー配分：0 {currency}/年）。",
+    "boilerplate_impact_finops": "構造的な財務非効率、ユニットコスト帰属（Showback/Chargeback）の欠如、および未監視のCAPEX/OPEX予算ドリフト。",
+    "boilerplate_impact_workplace": "従業員の生産性における慢性的運用摩擦、事後対応サポートチケット量の増加、および手作業に対する過剰なエンジニアリング工数。",
+    "boilerplate_impact_generic": "{domain}におけるサービスレベル（SLA）の低下、反復的な運用摩擦、および事後対応的な是正オーバーヘッド。",
+    "domain_control_standard_fallback": "評価対象ドメイン"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -18960,7 +18995,14 @@
     "risk_freq_low_band": "Geringe Frequenz (1 Vorfall alle 3-5 Jahre)",
     "risk_card_wc_deduced_lead": "Unvorhergesehener kritischer Ausfall während operativer Spitzenlastzeiten",
     "risk_card_wc_deduced_suffix": "Serviceunterbrechung und manueller Notbetrieb mit geschätzten wirtschaftlichen Auswirkungen von bis zu ~{tail_amount}",
-    "risk_card_default_mitigation_template": "Priorisierung der architektonischen Modernisierung und strukturellen Behebung von {capability} in der TO-BE-Phase."
+    "risk_card_default_mitigation_template": "Priorisierung der architektonischen Modernisierung und strukturellen Behebung von {capability} in der TO-BE-Phase.",
+    "inaction_worst_case_upto": "Bis zu ~{amount} {currency}",
+    "governance_control_badge": "GOVERNANCE-KONTROLLLÜCKE (UMFRAGE)",
+    "governance_maturity_gap_stub": "In der CMMI-Bewertung identifizierte Governance-Reifegradlücke. Erfordert Feldtelemetrie für die stochastische versicherungsmathematische Quantifizierung (Direkte Exposition zugewiesen: 0 {currency}/Jahr).",
+    "boilerplate_impact_finops": "Strukturelle finanzielle Ineffizienz, fehlende Stückkostenzurechnung (Showback/Chargeback) und unüberwachte CAPEX/OPEX-Budgetabweichungen.",
+    "boilerplate_impact_workplace": "Chronische operative Reibung bei der Mitarbeiterproduktivität, erhöhtes reaktives Support-Ticket-Volumen und übermäßiger manueller Engineering-Aufwand.",
+    "boilerplate_impact_generic": "Verschlechterung des Servicelevels (SLA), wiederkehrende operative Reibung und reaktiver Behebungsmehraufwand in {domain}.",
+    "domain_control_standard_fallback": "die bewertete Domäne"
   },
   "executive_summary_narrative": {
     "es": {

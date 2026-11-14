@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class BaseNode(BaseModel):
@@ -31,6 +31,13 @@ class ParagraphNode(BaseNode):
 
     type: Literal["paragraph"] = "paragraph"
     text: str = Field(..., description="Textual content of the paragraph.")
+
+    @field_validator("text", mode="before")
+    @classmethod
+    def sanitize_strict_hyphens(cls, v: Any) -> str:
+        if v is None:
+            return ""
+        return str(v).replace("\u2014", "-").replace("\u2013", "-")
     bold: bool = Field(
         False, description="Specifies if the paragraph text is rendered in bold."
     )
@@ -72,6 +79,14 @@ class HeadingNode(BaseNode):
 
     type: Literal["heading"] = "heading"
     text: str = Field(..., description="Textual content of the heading.")
+
+    @field_validator("text", mode="before")
+    @classmethod
+    def sanitize_strict_hyphens(cls, v: Any) -> str:
+        if v is None:
+            return ""
+        return str(v).replace("\u2014", "-").replace("\u2013", "-")
+
     level: int = Field(
         1,
         ge=1,
@@ -108,6 +123,14 @@ class CellNode(BaseModel):
     """
 
     text: str = Field(..., description="Textual content of the table cell.")
+
+    @field_validator("text", mode="before")
+    @classmethod
+    def sanitize_strict_hyphens(cls, v: Any) -> str:
+        if v is None:
+            return ""
+        return str(v).replace("\u2014", "-").replace("\u2013", "-")
+
     bold: bool = Field(
         False, description="String literal content to be rendered in a bold style."
     )

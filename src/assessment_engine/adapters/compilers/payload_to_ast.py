@@ -20,6 +20,18 @@ DIVERGENCE_ALERT_THRESHOLD: Final[float] = 0.50
 DEFAULT_UNASSESSED_PILLAR_SCORE: Final[float] = 2.50
 
 
+def safe_get(data: Any, *keys: str, default: Any = None) -> Any:
+    """Safely traverses nested dictionaries without raising AttributeError or TypeError on None values."""
+    current = data
+    for key in keys:
+        if not isinstance(current, dict):
+            return default
+        current = current.get(key)
+        if current is None:
+            return default
+    return current
+
+
 def _safe_float(val: Any, default: float = 0.0, locale: str | None = None) -> float:
     """Defensively parse any numeric string, int, float, or None without crashing or locale corruption."""
     if val is None:
@@ -3573,8 +3585,8 @@ class PayloadToASTBridge:
     ) -> None:
         """Builds Section 4.1: Executive Cost of Inaction & Status Quo Exposure."""
         blueprint_data = ctx.get("blueprint_data") or {}
-        tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
+        tower_id = str(ctx.get("tower_id") or safe_get(blueprint_data, "document_meta", "tower_id", default="T1")).strip().upper()
+        tower_name = str(ctx.get("tower_name") or safe_get(blueprint_data, "document_meta", "tower_name", default="Infrastructure Domain"))
 
         nodes.append(SpacerNode(points=10))
         nodes.append(
@@ -3588,11 +3600,8 @@ class PayloadToASTBridge:
         intro_text = t(
             "ch4_sec1_intro_inaction",
             locale=meta_lang,
-            default=(
-                f"Mantener la infraestructura de {tower_name} en su estado actual (AS-IS) sin abordar la modernización "
-                "conlleva una exposición económica y operativa latente. La inacción impone una sangría silenciosa por tareas manuales "
-                "y soporte reactivo continuo, elevando la probabilidad de que una incidencia ordinaria escale a crisis de negocio."
-            ),
+            tower_name=tower_name,
+            default=f"Maintaining {tower_name} infrastructure in its current state (AS-IS) without modernization carries latent economic and operational exposure. Inaction imposes a silent drain through manual toil and continuous reactive support, increasing the probability that an ordinary incident escalates into a business crisis.",
         )
         nodes.append(ParagraphNode(text=intro_text, space_after=10))
 
@@ -3612,13 +3621,13 @@ class PayloadToASTBridge:
         findings_list = []
         for p in pillars:
             if isinstance(p, dict):
-                for hc in p.get("health_check_asis", []):
+                for hc in (p.get("health_check_asis") or []):
                     if isinstance(hc, dict):
                         findings_list.append(hc)
 
         # 1. Dimension 1: Toil & Recurring Maintenance
         toil_text = ""
-        toil_keywords = ("manual", "procedimiento", "toil", "supervis", "reactiv", "overhead", "mantenimiento")
+        toil_keywords = ("manual", "procedure", "toil", "supervis", "reactive", "overhead", "maintenance", "reparacion", "procedimiento", "reactiv")
         for f in findings_list:
             f_txt = str(f.get("finding") or "").strip()
             if any(k in f_txt.lower() for k in toil_keywords) and len(f_txt.split()) >= 6:
@@ -3649,14 +3658,14 @@ class PayloadToASTBridge:
 
         # 4. Dimension 4: MTTR Recovery Ceiling
         rto_val = blueprint_data.get("worst_crisis_rto_hours")
-        if rto_val and safe_float(rto_val) > 0:
+        if rto_val and safe_float(rto_val) > 0 and safe_float(rto_val) < 10000:
             base_rto = int(safe_float(rto_val))
             mttr_disp = f"{base_rto} - {base_rto + 4} {t('hours_lbl', locale=meta_lang, default='hours')}"
         else:
             mttr_disp = t("inaction_mttr_default_range", locale=meta_lang, default="10 to 16 hours")
 
         # 5. Dimension 5: External Forcing Functions & Deadlines
-        ext_deps = blueprint_data.get("external_dependencies") or []
+        ext_deps = safe_get(blueprint_data, "external_dependencies", default=[])
         deadline_text = ""
         if ext_deps and isinstance(ext_deps, list) and isinstance(ext_deps[0], str) and len(ext_deps[0].strip().split()) >= 4:
             deadline_text = ext_deps[0].strip()
@@ -3664,6 +3673,14 @@ class PayloadToASTBridge:
             deadline_text = t("inaction_deadlines_category_template", locale=meta_lang, domain=tower_name)
 
         yr_str = t("year_lbl", locale=meta_lang, default="year")
+        formatted_wc_amount = format_number(worst_case_max, locale=meta_lang, decimals=0)
+        wc_upto_text = t(
+            "inaction_worst_case_upto",
+            locale=meta_lang,
+            amount=formatted_wc_amount,
+            currency=currency,
+            default=f"Up to ~{formatted_wc_amount} {currency}",
+        )
         table_rows = [
             TableRowNode(
                 cells=[
@@ -3690,7 +3707,7 @@ class PayloadToASTBridge:
             TableRowNode(
                 cells=[
                     CellNode(text=f"**{t('inaction_row_worst_case', locale=meta_lang)}**", font_size=8.0, bg_color="FFF8F8"),
-                    CellNode(text=f"Hasta ~{format_number(worst_case_max, locale=meta_lang, decimals=0)} {currency}", font_size=8.0, bg_color="FFF8F8", align="CENTER", bold=True, text_color_rgb=[185, 28, 28]),
+                    CellNode(text=wc_upto_text, font_size=8.0, bg_color="FFF8F8", align="CENTER", bold=True, text_color_rgb=[185, 28, 28]),
                     CellNode(text=worst_crisis, font_size=8.0, bg_color="FFF8F8"),
                 ]
             ),
@@ -3923,95 +3940,6 @@ class PayloadToASTBridge:
         t2_focus_str = _get_tier_focus_summary(t2_risks, t2_fallback_focus)
         t3_focus_str = _get_tier_focus_summary(t3_risks, t3_fallback_focus)
 
-        # Dual-Ledger Governance Architecture: Ledger A (Stochastic ALE) vs Ledger B (Deterministic OpEx)
-        ledger_a_risks = [
-            r for r in risks_data_list
-            if not r.get("is_deterministic")
-            and (r.get("additive_loss_decomposition") or {}).get("ledger_type") != "LEDGER_B_DETERMINISTIC_OPEX"
-            and r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-        ]
-        ledger_b_risks = [
-            r for r in risks_data_list
-            if (r.get("is_deterministic")
-                or (r.get("additive_loss_decomposition") or {}).get("ledger_type") == "LEDGER_B_DETERMINISTIC_OPEX")
-            and r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-        ]
-        ledger_a_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_a_risks)
-        ledger_b_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in ledger_b_risks)
-        is_es_mat = str(meta_lang).startswith("es")
-
-        dual_ledger_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(
-                        text="**Libro Contable / Horizonte Financiero**" if is_es_mat else "**Accounting Ledger / Financial Horizon**",
-                        bold=True,
-                        bg_color=self.primary_color_hex,
-                        text_color_rgb=[255, 255, 255],
-                        font_size=8.5,
-                        align="LEFT",
-                    ),
-                    CellNode(
-                        text="**Exposición Anual**" if is_es_mat else "**Annual Exposure**",
-                        bold=True,
-                        bg_color=self.primary_color_hex,
-                        text_color_rgb=[255, 255, 255],
-                        font_size=8.5,
-                        align="CENTER",
-                    ),
-                    CellNode(
-                        text="**Destino en Estados Financieros (IFRS / GAAP)**" if is_es_mat else "**Financial Statement Impact (IFRS / GAAP)**",
-                        bold=True,
-                        bg_color=self.primary_color_hex,
-                        text_color_rgb=[255, 255, 255],
-                        font_size=8.5,
-                        align="LEFT",
-                    ),
-                ],
-                is_header=True,
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(
-                        text="**Libro A: Riesgo Operacional Estocástico** (P < 1.0)" if is_es_mat else "**Ledger A: Stochastic Operational Risk** (P < 1.0)",
-                        bg_color="F8FAFC",
-                        font_size=8.5,
-                    ),
-                    CellNode(
-                        text=f"**{format_number(ledger_a_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**",
-                        bg_color="F8FAFC",
-                        align="CENTER",
-                        font_size=8.5,
-                    ),
-                    CellNode(
-                        text="Reserva de Capital Económico y Pérdida Máxima Probable (Balance)" if is_es_mat else "Economic Capital Reserve & Probable Maximum Loss (Balance Sheet)",
-                        bg_color="F8FAFC",
-                        font_size=8.0,
-                    ),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(
-                        text="**Libro B: Ineficiencia OpEx y Toil Recurrente** (P = 1.0)" if is_es_mat else "**Ledger B: Deterministic OpEx & Toil** (P = 1.0)",
-                        bg_color="F1F5F9",
-                        font_size=8.5,
-                    ),
-                    CellNode(
-                        text=f"**{format_number(ledger_b_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**",
-                        bg_color="F1F5F9",
-                        align="CENTER",
-                        font_size=8.5,
-                    ),
-                    CellNode(
-                        text="Sobrecoste Recurrente en Cuenta de Resultados (EBITDA Drag)" if is_es_mat else "Recurring Operating Expenditure Leakage (EBITDA Drag)",
-                        bg_color="F1F5F9",
-                        font_size=8.0,
-                    ),
-                ]
-            ),
-        ]
-        # Dual Ledger table removed for clarity
         nodes.append(SpacerNode(points=10))
 
         # Two-Tier Financial Reconciliation Bridge (Red Team Rule 4 & DEF-02)
@@ -4088,7 +4016,7 @@ class PayloadToASTBridge:
                             text=t("ch4_overlapping_correction_label", locale=meta_lang),
                             bg_color="F8FAFC", font_size=8.5, italic=True
                         ),
-                        CellNode(text="—", align="CENTER", bg_color="F8FAFC", font_size=8.5),
+                        CellNode(text="-", align="CENTER", bg_color="F8FAFC", font_size=8.5),
                         CellNode(text=f"*{format_number(simultaneity_delta, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({adj_pct:+.1f}%)*", align="CENTER", bg_color="F8FAFC", font_size=8.5, italic=True),
                         CellNode(text=t("ch4_overlapping_correction_desc", locale=meta_lang), bg_color="F8FAFC", font_size=8.0, italic=True),
                     ]
@@ -4418,23 +4346,21 @@ class PayloadToASTBridge:
             display_title = str(hc.get("title") or r_cap or p_name)
             finding_text = str(hc.get("finding") or "")
             risk_text = str(hc.get("business_risk") or "")
-            is_es = str(meta_lang).startswith("es")
-            status_badge = (
-                "CONTROL DE GOBERNANZA (CUESTIONARIO)"
-                if is_es
-                else "GOVERNANCE CONTROL GAP (SURVEY)"
+            status_badge = t(
+                "governance_control_badge",
+                locale=meta_lang,
+                default="GOVERNANCE CONTROL GAP (SURVEY)",
             )
             desc_text = (
                 f"{finding_text}\n\n_{risk_text}_"
                 if risk_text and risk_text != finding_text
                 else finding_text
             )
-            impact_stub = (
-                "Brecha de madurez metodológica detectada en evaluación CMMI. "
-                "Requiere telemetría operativa para cuantificación actuarial estocástica (Exposición directa asignada: 0 €/año)."
-                if is_es
-                else "Governance maturity gap identified in CMMI survey. "
-                "Requires field telemetry for stochastic actuarial quantification (Direct exposure assigned: 0 €/yr)."
+            impact_stub = t(
+                "governance_maturity_gap_stub",
+                locale=meta_lang,
+                currency=currency,
+                default=f"Governance maturity gap identified in CMMI survey. Requires field telemetry for stochastic actuarial quantification (Direct exposure assigned: 0 {currency}/yr).",
             )
 
             return TableNode(
@@ -4860,7 +4786,7 @@ class PayloadToASTBridge:
                     align="RIGHT",
                 )
             ]
-        elif is_deterministic or (reconciled_sle <= 0) or ("desmantelamiento" in vuln_txt.lower()) or ("zombie" in vuln_txt.lower()) or ("nos" in vuln_txt.lower() and "contrato" in vuln_txt.lower()):
+        elif is_deterministic or (reconciled_sle <= 0) or getattr(loss_event, "is_deterministic", False):
             cost_lbl = t("estimated_annual_cost_label", locale=meta_lang)
             type_lbl = t("exposure_type_label", locale=meta_lang)
             waste_lbl = t("it_resource_waste_label", locale=meta_lang)
@@ -5088,7 +5014,7 @@ class PayloadToASTBridge:
             locale=meta_lang,
             decimals=0,
         )
-        p_adj_str = "+0 €"
+        p_adj_str = f"+0 {currency}"
 
         finding_physics = hc.get("loss_physics") or (
             decomp.get("loss_physics") if decomp else None
@@ -5286,52 +5212,51 @@ class PayloadToASTBridge:
         vuln_txt = re.sub(r"\bnarrative_cost_\w+\b", "", vuln_txt)
         vuln_txt = re.sub(r"\s+", " ", vuln_txt).strip()
 
+        domain_fallback_lbl = fallback_pillar_ref or t(
+            "domain_control_standard_fallback",
+            locale=meta_lang,
+            default="the assessed domain",
+        )
+
         if not str(meta_lang).lower().startswith("en"):
-            fallback_card_pillar = fallback_pillar_ref or t(
-                "domain_control_standard_fallback",
-                locale=meta_lang,
-            )
-            vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, vuln_txt)
-            impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_card_pillar, impact_txt)
-            vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, vuln_txt)
-            impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_card_pillar, impact_txt)
-            # Repair orphaned prepositions from template splicing (e.g., 'condicionada por en la mayoría')
+            vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, vuln_txt)
+            impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, impact_txt)
+            vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(domain_fallback_lbl, vuln_txt)
+            impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(domain_fallback_lbl, impact_txt)
             _orphan_prep_re = re.compile(
                 r"\b(condicionad[oa]s?\s+por|debido\s+a|causad[oa]s?\s+por|derivad[oa]s?\s+de|asociad[oa]s?\s+a)\s+(en\s+|por\s+|con\s+|ante\s+)",
                 re.IGNORECASE,
             )
-            vuln_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", vuln_txt)
-            impact_txt = _orphan_prep_re.sub(r"\1 deficiencias críticas \2", impact_txt)
+            vuln_txt = _orphan_prep_re.sub(r"\1 \2", vuln_txt)
+            impact_txt = _orphan_prep_re.sub(r"\1 \2", impact_txt)
 
         # Replace generic template boilerplate on FinOps / Governance / Chronic Toil cards with domain-accurate impact
         if _GENERIC_BOILERPLATE_IMPACT_RE.search(impact_txt):
             title_check = f"{loss_event.title} {fallback_pillar_ref}".lower()
-            is_es_card = str(meta_lang).lower().startswith("es")
             if any(k in title_check for k in ("finops", "cost", "coste", "econom", "licenc", "presupuest", "tag")):
-                impact_txt = (
-                    "Ineficiencia financiera estructural, opacidad en la imputación de costes por unidad de negocio (Showback/Chargeback) "
-                    "y desviación presupuestaria entre modelos CAPEX/OPEX sin trazabilidad unitaria."
-                    if is_es_card
-                    else "Structural financial inefficiency, lack of unit-cost attribution (Showback/Chargeback), and unmonitored CAPEX/OPEX budget drift."
+                impact_txt = t(
+                    "boilerplate_impact_finops",
+                    locale=meta_lang,
+                    default="Structural financial inefficiency, lack of unit-cost attribution (Showback/Chargeback), and unmonitored CAPEX/OPEX budget drift.",
                 )
             elif any(k in title_check for k in ("dex", "workplace", "puesto", "endpoint", "provisioning", "aprovisionamiento", "toil")):
-                impact_txt = (
-                    "Fricción operativa crónica en la productividad del empleado, sobrecarga de soporte reactivo N1/N2/N3 y "
-                    "exceso de horas de ingeniería dedicadas a tareas manuales repetitivas."
-                    if is_es_card
-                    else "Chronic operational friction in employee productivity, elevated reactive support ticket volume, and excessive engineering toil on manual tasks."
+                impact_txt = t(
+                    "boilerplate_impact_workplace",
+                    locale=meta_lang,
+                    default="Chronic operational friction in employee productivity, elevated reactive support ticket volume, and excessive engineering toil on manual tasks.",
                 )
             else:
-                impact_txt = (
-                    f"Degradación de los niveles de servicio (SLA), fricción operativa recurrente y sobrecoste de remediación reactiva en {fallback_pillar_ref or 'el dominio evaluado'}."
-                    if is_es_card
-                    else f"Service level degradation, recurring operational friction, and reactive remediation overhead across {fallback_pillar_ref or 'the assessed domain'}."
+                impact_txt = t(
+                    "boilerplate_impact_generic",
+                    locale=meta_lang,
+                    domain=domain_fallback_lbl,
+                    default=f"Service level degradation, recurring operational friction, and reactive remediation overhead across {domain_fallback_lbl}.",
                 )
 
         # Normalize corrupted camelCase prefixes, unresolved bracket placeholders, and repair broken template grammar
-        vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", vuln_txt)
-        impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", impact_txt)
-        actuarial_box_text = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(fallback_pillar_ref or "control del dominio", actuarial_box_text)
+        vuln_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, vuln_txt)
+        impact_txt = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, impact_txt)
+        actuarial_box_text = _UNRESOLVED_BRACKET_PLACEHOLDER_RE.sub(domain_fallback_lbl, actuarial_box_text)
         vuln_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), vuln_txt)
         impact_txt = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), impact_txt)
         actuarial_box_text = _CAMELCASE_ARTIFACT_RE.sub(lambda m: m.group(1).upper() + m.group(2) + (m.group(3) or ""), actuarial_box_text)

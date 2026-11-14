@@ -1843,7 +1843,7 @@ class Volume1AsisASTCompiler:
                     else:
                         rationale_cell = fam_rationale
 
-                    codes_cell = ", ".join(c.matrix_plot_codes) if c.matrix_plot_codes else "—"
+                    codes_cell = ", ".join(c.matrix_plot_codes) if c.matrix_plot_codes else "-"
                     breakdown_cell = t(
                         "sec_3_2_findings_badge_template",
                         locale=doc_lang,
