@@ -3236,7 +3236,8 @@
     "reg_gap_low": "Audit-Ready ({reg})",
     "heatmap_section_title": "Madurez por Capacidad (AS-IS)",
     "decision_horizon_lead": "Ventana de Decisión y Mandato:",
-    "decision_horizon_body": "Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de {regulation}."
+    "decision_horizon_body": "Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de {regulation}.",
+    "default_operational_risk_title": "Riesgo Operativo"
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6451,7 +6452,8 @@
     "reg_gap_low": "Audit-Ready ({reg})",
     "heatmap_section_title": "Capability Maturity (AS-IS)",
     "decision_horizon_lead": "Decision Horizon & Strategic Mandate:",
-    "decision_horizon_body": "Recommended 12 to 18-month execution horizon to deploy target architecture before mandatory {regulation} compliance audits."
+    "decision_horizon_body": "Recommended 12 to 18-month execution horizon to deploy target architecture before mandatory {regulation} compliance audits.",
+    "default_operational_risk_title": "Operational Risk"
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9663,7 +9665,8 @@
     "reg_gap_low": "Audit-Ready ({reg})",
     "heatmap_section_title": "Maturidade por Capacidade (AS-IS)",
     "decision_horizon_lead": "Janela de Decisão e Mandato Estratégico:",
-    "decision_horizon_body": "Horizonte de atuação recomendado de 12 a 18 meses para executar a modernização antes das auditorias de conformidade com {regulation}."
+    "decision_horizon_body": "Horizonte de atuação recomendado de 12 a 18 meses para executar a modernização antes das auditorias de conformidade com {regulation}.",
+    "default_operational_risk_title": "Risco Operacional"
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12873,7 +12876,8 @@
     "reg_gap_low": "Prêt pour Audit ({reg})",
     "heatmap_section_title": "Maturité par Capacité (AS-IS)",
     "decision_horizon_lead": "Fenêtre de Décision et Mandat Stratégique :",
-    "decision_horizon_body": "Horizon d'exécution recommandé de 12 à 18 mois pour déployer l'architecture cible avant les audits de conformité {regulation}."
+    "decision_horizon_body": "Horizon d'exécution recommandé de 12 à 18 mois pour déployer l'architecture cible avant les audits de conformité {regulation}.",
+    "default_operational_risk_title": "Risque Opérationnel"
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -16074,7 +16078,8 @@
     "reg_gap_low": "監査対応完了（{reg}）",
     "heatmap_section_title": "能力別成熟度（AS-IS）",
     "decision_horizon_lead": "意思決定期間および戦略的マンデート：",
-    "decision_horizon_body": "{regulation}の必須コンプライアンス監査に先立ち、ターゲットアーキテクチャを展開するための推奨実施期間は12〜18か月です。"
+    "decision_horizon_body": "{regulation}の必須コンプライアンス監査に先立ち、ターゲットアーキテクチャを展開するための推奨実施期間は12〜18か月です。",
+    "default_operational_risk_title": "運用リスク"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19278,7 +19283,8 @@
     "reg_gap_low": "Auditbereit ({reg})",
     "heatmap_section_title": "Fähigkeiten-Reifegrad (AS-IS)",
     "decision_horizon_lead": "Entscheidungshorizont & strategisches Mandat:",
-    "decision_horizon_body": "Empfohlener Ausführungshorizont von 12 bis 18 Monaten zur Implementierung der Zielarchitektur vor verpflichtenden {regulation}-Audits."
+    "decision_horizon_body": "Empfohlener Ausführungshorizont von 12 bis 18 Monaten zur Implementierung der Zielarchitektur vor verpflichtenden {regulation}-Audits.",
+    "default_operational_risk_title": "Operationelles Risiko"
   },
   "executive_summary_narrative": {
     "es": {
