@@ -3214,7 +3214,12 @@
     "narrative_op_risk_general_sla": "Disrupción del servicio operativo y degradación de SLA impactando en {kpi_name}.",
     "cmmi_level_1_label": "Nivel 1 - Inicial",
     "cmmi_level_2_label": "Nivel 2 - Gestionado",
-    "cmmi_level_3_label": "Nivel 3 - Definido"
+    "cmmi_level_3_label": "Nivel 3 - Definido",
+    "band_optimizing": "Optimizado",
+    "default_capability_domain_label": "Capacidad del Dominio",
+    "findings_lead_in": "Hallazgos observados en el estado actual:",
+    "generic_operational_domain_fallback": "el dominio operativo evaluado",
+    "risk_card_severity_low": "BAJA (Tier 3)"
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6407,7 +6412,12 @@
     "narrative_op_risk_general_sla": "Operational service disruption and SLA degradation impacting {kpi_name}.",
     "cmmi_level_1_label": "Level 1 - Initial",
     "cmmi_level_2_label": "Level 2 - Managed",
-    "cmmi_level_3_label": "Level 3 - Defined"
+    "cmmi_level_3_label": "Level 3 - Defined",
+    "band_optimizing": "Optimizing",
+    "default_capability_domain_label": "Domain Capability",
+    "findings_lead_in": "Findings observed in the current state:",
+    "generic_operational_domain_fallback": "the assessed operational domain",
+    "risk_card_severity_low": "LOW (Tier 3)"
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9597,7 +9607,12 @@
     "narrative_op_risk_general_sla": "Disrupção do serviço operacional e degradação de SLA impactando {kpi_name}.",
     "cmmi_level_1_label": "Nível 1 - Inicial",
     "cmmi_level_2_label": "Nível 2 - Gerenciado",
-    "cmmi_level_3_label": "Nível 3 - Definido"
+    "cmmi_level_3_label": "Nível 3 - Definido",
+    "band_optimizing": "Otimizado",
+    "default_capability_domain_label": "Capacidade do Domínio",
+    "findings_lead_in": "Achados observados no estado atual:",
+    "generic_operational_domain_fallback": "o domínio operacional avaliado",
+    "risk_card_severity_low": "BAIXA (Tier 3)"
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12785,7 +12800,12 @@
     "narrative_op_risk_general_sla": "Perturbation du service opérationnel et dégradation des SLA impactant {kpi_name}.",
     "cmmi_level_1_label": "Niveau 1 - Initial",
     "cmmi_level_2_label": "Niveau 2 - Géré",
-    "cmmi_level_3_label": "Niveau 3 - Défini"
+    "cmmi_level_3_label": "Niveau 3 - Défini",
+    "band_optimizing": "Optimisé",
+    "default_capability_domain_label": "Capacité du domaine",
+    "findings_lead_in": "Constats observés dans l'état actuel :",
+    "generic_operational_domain_fallback": "le domaine opérationnel évalué",
+    "risk_card_severity_low": "FAIBLE (Tier 3)"
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15964,7 +15984,12 @@
     "narrative_op_risk_general_sla": "{kpi_name}に影響を与える運用サービス中断およびSLA低下。",
     "cmmi_level_1_label": "レベル1 - 初期",
     "cmmi_level_2_label": "レベル2 - 管理された",
-    "cmmi_level_3_label": "レベル3 - 定義された"
+    "cmmi_level_3_label": "レベル3 - 定義された",
+    "band_optimizing": "最適化中",
+    "default_capability_domain_label": "ドメイン機能",
+    "findings_lead_in": "現状で確認された所見：",
+    "generic_operational_domain_fallback": "評価対象運用ドメイン",
+    "risk_card_severity_low": "低 (Tier 3)"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19146,7 +19171,12 @@
     "narrative_op_risk_general_sla": "Operative Dienstunterbrechung und SLA-Verschlechterung mit Auswirkungen auf {kpi_name}.",
     "cmmi_level_1_label": "Stufe 1 - Initial",
     "cmmi_level_2_label": "Stufe 2 - Gemanagt",
-    "cmmi_level_3_label": "Stufe 3 - Definiert"
+    "cmmi_level_3_label": "Stufe 3 - Definiert",
+    "band_optimizing": "Optimierend",
+    "default_capability_domain_label": "Domänenfähigkeit",
+    "findings_lead_in": "Im Ist-Zustand beobachtete Befunde:",
+    "generic_operational_domain_fallback": "die bewertete Betriebsebene",
+    "risk_card_severity_low": "NIEDRIG (Tier 3)"
   },
   "executive_summary_narrative": {
     "es": {

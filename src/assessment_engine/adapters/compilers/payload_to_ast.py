@@ -3605,12 +3605,11 @@ class PayloadToASTBridge:
             "ch4_sec1_intro_inaction",
             locale=meta_lang,
             tower_name=tower_name,
-            default=f"Maintaining {tower_name} infrastructure in its current state (AS-IS) without modernization carries latent economic and operational exposure.",
         )
         nodes.append(ParagraphNode(text=intro_text, space_after=10))
 
         anchors = synth.get("anchors") or []
-        yr_str = t("year_lbl", locale=meta_lang, default="year")
+        yr_str = t("year_lbl", locale=meta_lang)
 
         table_rows = [
             TableRowNode(
@@ -3793,7 +3792,7 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=8))
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec2_tiers_subtitle", locale=meta_lang, default="Risk Portfolio Concentration & Distribution"),
+                text=t("ch4_sec2_tiers_subtitle", locale=meta_lang),
                 level=3,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -4183,11 +4182,7 @@ class PayloadToASTBridge:
         )
         nodes.append(
             ParagraphNode(
-                text=t(
-                    "ch4_sec3_intro",
-                    locale=meta_lang,
-                    default="The current state risk register omits minor operational noise, focusing strictly on top-level structural risks (Tier 1 and Tier 2):",
-                ),
+                text=t("ch4_sec3_intro", locale=meta_lang),
                 space_after=12,
             )
         )
@@ -4295,9 +4290,9 @@ class PayloadToASTBridge:
         is_tier1 = tier == "TIER_1_CRITICAL"
 
         severity_label = (
-            t("severity_tier1_label", locale=meta_lang, default="CRITICAL (Tier 1)")
+            t("severity_tier1_label", locale=meta_lang)
             if is_tier1
-            else t("severity_tier2_label", locale=meta_lang, default="HIGH (Tier 2)")
+            else t("severity_tier2_label", locale=meta_lang)
         )
         badge_bg = "FFF1F2" if is_tier1 else "FEF3C7"
         badge_color = [190, 18, 60] if is_tier1 else [180, 83, 9]
@@ -4312,7 +4307,7 @@ class PayloadToASTBridge:
         ann_max = _safe_float(card.get("annual_exposure_max"), default=0.0)
         milestone = card.get("external_forcing_milestone")
 
-        yr_str = t("year_lbl", locale=meta_lang, default="year")
+        yr_str = t("year_lbl", locale=meta_lang)
         formatted_ev = f"~{format_currency(ev_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ev_max, currency_symbol=currency, locale=meta_lang, decimals=0)}"
         formatted_ann = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
 

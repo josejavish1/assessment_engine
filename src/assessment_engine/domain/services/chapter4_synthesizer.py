@@ -9,7 +9,7 @@ Adheres strictly to Tier-1 Architectural Standards:
 3. Universal Multi-Tenant Scalability:
    - Pure dynamic synthesis from tenant findings and evidence (zero canned client prose dictionaries).
    - Econometric Disruption Resolution: Dynamically derived from enterprise annual revenue and operating intensity.
-   - Resolves country-specific loaded labor rates dynamically from infrastructure configuration loader.
+   - Clean Architecture Purity: Completely decoupled from infrastructure imports; receives rate catalog via port.
    - Dynamic logarithmic magnitude scaling (scales from EUR/USD to JPY and mid-market to Global 500).
    - Triangulates evidence from empirical interview transcripts, attested survey responses, or CMMI ontologies.
 4. Produces immutable, strongly-typed Chapter4SynthesisPayload dictionaries.
@@ -21,9 +21,16 @@ import logging
 import math
 from typing import Any, Dict, List, Optional
 
-from assessment_engine.infrastructure.config_loader import load_country_labor_rates
-
 logger = logging.getLogger(__name__)
+
+GLOBAL_BENCHMARK_RATE_CARD: Dict[str, Any] = {
+    "country_name": "Global Benchmark",
+    "currency_iso": "EUR",
+    "systems_engineer_hourly_rate": 45.0,
+    "senior_architect_hourly_rate": 70.0,
+    "technician_hourly_rate": 35.0,
+    "default_hourly_disruption_cost": 3000.0,
+}
 
 
 def round_to_order_of_magnitude(val: float, precision: int = 1) -> float:
@@ -59,28 +66,26 @@ class Chapter4Synthesizer:
     """Upstream domain service that synthesizes Chapter 4 executive status quo anchors and strategic risk cards."""
 
     @classmethod
-    def get_country_rate_card(cls, country_code: Optional[str] = None) -> Dict[str, Any]:
-        """Resolves authoritative country labor rates and disruption cost baselines."""
-        rates = load_country_labor_rates()
+    def get_country_rate_card(
+        cls,
+        country_code: Optional[str] = None,
+        rates_catalog: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Resolves authoritative country labor rates and disruption cost baselines without infrastructure coupling."""
+        rates = rates_catalog or {}
         code = str(country_code or "").strip().upper()
         if code in rates:
             return rates[code]
         if "DEFAULT" in rates:
             return rates["DEFAULT"]
-        return {
-            "country_name": "Global Benchmark",
-            "currency_iso": "EUR",
-            "systems_engineer_hourly_rate": 45.0,
-            "senior_architect_hourly_rate": 70.0,
-            "technician_hourly_rate": 35.0,
-            "default_hourly_disruption_cost": 3000.0,
-        }
+        return GLOBAL_BENCHMARK_RATE_CARD
 
     @classmethod
     def synthesize_chapter4(
         cls,
         blueprint_data: Dict[str, Any],
         context: Optional[Dict[str, Any]] = None,
+        rates_catalog: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Synthesizes the complete Chapter 4 executive payload for a given tower blueprint."""
         ctx = context or {}
@@ -89,8 +94,9 @@ class Chapter4Synthesizer:
         tower_name = str(ctx.get("tower_name") or doc_meta.get("tower_name") or "Infrastructure Domain").strip()
         country_code = str(ctx.get("country_code") or doc_meta.get("country_code") or "DEFAULT").strip().upper()
 
-        rate_card = cls.get_country_rate_card(country_code)
-        hourly_rate = float(rate_card.get("systems_engineer_hourly_rate", 42.0))
+        effective_catalog = rates_catalog or ctx.get("rates_catalog") or blueprint_data.get("rates_catalog")
+        rate_card = cls.get_country_rate_card(country_code, rates_catalog=effective_catalog)
+        hourly_rate = float(rate_card.get("systems_engineer_hourly_rate", 45.0))
 
         # Econometric Disruption Resolution: Derived dynamically from enterprise revenue when available
         org_profile = blueprint_data.get("organization_profile") or {}
@@ -99,7 +105,7 @@ class Chapter4Synthesizer:
             # Derived hourly operational drag = (Revenue / 8760 operating hours) * sector criticality factor (0.02)
             disruption_rate = round_to_order_of_magnitude((annual_revenue / 8760.0) * 0.02)
         else:
-            disruption_rate = float(rate_card.get("default_hourly_disruption_cost", 2500.0))
+            disruption_rate = float(rate_card.get("default_hourly_disruption_cost", 3000.0))
 
         # Collect raw findings across all pillars
         pillars = blueprint_data.get("pillars_analysis") or []
@@ -170,7 +176,7 @@ class Chapter4Synthesizer:
                 "annual_exposure_min": toil_min,
                 "annual_exposure_max": toil_max,
                 "exposure_formula_display": "15 to 20 h/wk in manual operations & off-hours support",
-                "evidence_narrative": f"Ongoing manual resource balancing, off-hours hypervisor patching, and repetitive troubleshooting in {tower_name}.",
+                "evidence_narrative": f"Ongoing manual resource adjustments, operational maintenance toil, and reactive troubleshooting across {tower_name}.",
                 "governing_milestone_date": None,
             },
             {
@@ -179,16 +185,16 @@ class Chapter4Synthesizer:
                 "annual_exposure_min": outage_min,
                 "annual_exposure_max": outage_max,
                 "exposure_formula_display": f"1 incident every 12-18 months with {int(eff_rto-1)}-{int(eff_rto+1)}h MTTR",
-                "evidence_narrative": f"Operational degradation and dispatch contingency risk upon hardware failure in core {tower_name} assets.",
+                "evidence_narrative": f"Operational degradation and contingency risk upon hardware failure or component disruption in core {tower_name} assets.",
                 "governing_milestone_date": None,
             },
             {
                 "anchor_type": "CONTRACTUAL_FORCING_FUNCTION",
-                "dimension_title": "3. Projected Vendor Contractual Overspend",
+                "dimension_title": "3. Projected Vendor & Lifecycle Contractual Overspend",
                 "annual_exposure_min": contractual_min,
                 "annual_exposure_max": contractual_max,
-                "exposure_formula_display": "Projected core subscription hike upon contract expiration",
-                "evidence_narrative": milestone_text or "Licensing model transition from historical amortized base to mandatory per-core subscription.",
+                "exposure_formula_display": "Projected lifecycle support escalation upon contract expiration",
+                "evidence_narrative": milestone_text or f"Vendor support escalation and lifecycle transition risks across {tower_name}.",
                 "governing_milestone_date": milestone_date,
             },
         ]
@@ -210,8 +216,8 @@ class Chapter4Synthesizer:
             "total_status_quo_exposure_max": total_exposure_max,
             "anchors": anchors,
             "matrix_concentration_narrative": [
-                f"Core Operational Continuity Axis (Tier 1): Concentrates the majority of operational and financial exposure in {tower_name}.",
-                f"Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from aging operating systems and rigid maintenance windows.",
+                f"Core Operational Continuity Axis (Tier 1): Concentrates the primary operational and resilience exposure in {tower_name}.",
+                f"Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from platform lifecycle aging and maintenance scheduling constraints.",
             ],
             "strategic_risk_cards": strategic_cards,
         }
@@ -245,7 +251,7 @@ class Chapter4Synthesizer:
         target_count = 4 if len(sorted_findings) >= 4 else (3 if len(sorted_findings) >= 3 else len(sorted_findings))
         selected_findings = sorted_findings[:target_count] if sorted_findings else []
 
-        fallback_milestone = milestone_text or "Statutory governance and operational resilience compliance requirements (e.g. NIS2 / DORA)."
+        fallback_milestone = milestone_text or "Statutory governance and operational resilience compliance requirements."
 
         for idx, f in enumerate(selected_findings, start=1):
             cap = str(f.get("capability") or f.get("target_state") or f"{tower_name} Core Capability")
