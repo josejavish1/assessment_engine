@@ -6,14 +6,15 @@ from typing import Any
 
 
 import base64
+import re
 import tempfile
 from pathlib import Path
 
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.shared import Inches, Pt
+from docx.oxml import OxmlElement, parse_xml
+from docx.oxml.ns import nsdecls, qn
+from docx.shared import Inches, Pt, RGBColor
 from docx.table import Table
 from docx.text.paragraph import Paragraph
 

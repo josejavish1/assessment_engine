@@ -11,7 +11,7 @@
     "currency": "€",
     "annual_revenue": 1144000000.0,
     "regulatory_frameworks": [],
-    "cover_footer_metadata": "INDEPENDENT ASSESSMENT ENTITY  |  Noviembre 2026  |  Versión 1.0  |  Confidencial"
+    "cover_footer_metadata": "NTT DATA  |  Noviembre 2026  |  Versión 1.0  |  Confidencial"
   },
   "nodes": [
     {
@@ -5788,7 +5788,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El presente informe técnico constituye una evaluación diagnóstica elaborada con carácter estrictamente confidencial para uso interno exclusivo de la organización cliente. El análisis, conclusiones y estimaciones económicas se fundamentan de manera única en la información cualitativa, explicaciones de arquitectura y declaraciones operativas facilitadas por el personal de MOLINS durante las entrevistas y cuestionarios técnicos de autoevaluación cumplimentados. La Entidad Evaluadora Independiente no ha llevado a cabo auditorías de campo, inspección de configuraciones, revisión de código fuente ni captura de telemetría de red, no asumiendo deber ni obligación de verificar la exactitud, integridad o vigencia de dichas manifestaciones, y quedando expresamente exonerada de cualquier responsabilidad derivada de omisiones, desactualizaciones o inexactitudes en la información declarada por el cliente.",
+      "text": "El presente informe técnico constituye una evaluación diagnóstica elaborada con carácter estrictamente confidencial para uso interno exclusivo de la organización cliente. El análisis, conclusiones y estimaciones económicas se fundamentan de manera única en la información cualitativa, explicaciones de arquitectura y declaraciones operativas facilitadas por el personal de MOLINS durante las entrevistas y cuestionarios técnicos de autoevaluación cumplimentados. NTT DATA no ha llevado a cabo auditorías de campo, inspección de configuraciones, revisión de código fuente ni captura de telemetría de red, no asumiendo deber ni obligación de verificar la exactitud, integridad o vigencia de dichas manifestaciones, y quedando expresamente exonerada de cualquier responsabilidad derivada de omisiones, desactualizaciones o inexactitudes en la información declarada por el cliente.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -5833,7 +5833,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Queda expresamente prohibido distribuir, divulgar, reproducir, citar o facilitar el acceso a este informe, de forma total o parcial, a cualquier tercero ajeno a la organización cliente sin la autorización previa y por escrito de La Entidad Evaluadora Independiente. La Entidad Evaluadora Independiente no asume obligación ni responsabilidad alguna, contractual o extracontractual, frente a terceros que accedan al contenido del informe o adopten decisiones fundamentadas en el mismo, asumiendo dichos terceros el riesgo de forma exclusiva. La organización cliente se compromete a mantener indemne a La Entidad Evaluadora Independiente, sus socios, consultores y empleados frente a cualquier reclamación, demanda, daño, coste o perjuicio derivado de la divulgación, uso inapropiado o cesión no autorizada de este informe a terceros.",
+      "text": "Queda expresamente prohibido distribuir, divulgar, reproducir, citar o facilitar el acceso a este informe, de forma total o parcial, a cualquier tercero ajeno a la organización cliente sin la autorización previa y por escrito de NTT DATA. NTT DATA no asume obligación ni responsabilidad alguna, contractual o extracontractual, frente a terceros que accedan al contenido del informe o adopten decisiones fundamentadas en el mismo, asumiendo dichos terceros el riesgo de forma exclusiva. La organización cliente se compromete a mantener indemne a NTT DATA, sus socios, consultores y empleados frente a cualquier reclamación, demanda, daño, coste o perjuicio derivado de la divulgación, uso inapropiado o cesión no autorizada de este informe a terceros.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -5848,7 +5848,7 @@
     },
     {
       "type": "paragraph",
-      "text": "En la máxima medida permitida por la legislación aplicable, La Entidad Evaluadora Independiente no será responsable en ningún caso, bajo ninguna teoría contractual o extracontractual, por daños indirectos, incidentales, punitivos, especiales o consecuenciales, incluyendo de manera enunciativa pero no limitativa, lucro cesante, pérdida de ingresos, paradas de planta, interrupción de negocio, pérdidas de datos o daños reputacionales derivados directa o indirectamente de la aplicación o no aplicación de las recomendaciones técnicas contenidas en este informe.",
+      "text": "En la máxima medida permitida por la legislación aplicable, NTT DATA no será responsable en ningún caso, bajo ninguna teoría contractual o extracontractual, por daños indirectos, incidentales, punitivos, especiales o consecuenciales, incluyendo de manera enunciativa pero no limitativa, lucro cesante, pérdida de ingresos, paradas de planta, interrupción de negocio, pérdidas de datos o daños reputacionales derivados directa o indirectamente de la aplicación o no aplicación de las recomendaciones técnicas contenidas en este informe.",
       "bold": false,
       "italic": false,
       "style": "Normal",

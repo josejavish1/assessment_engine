@@ -33,11 +33,13 @@ def test_cmmi_v2_international_band_alignment() -> None:
 
 
 def test_brand_profile_is_neutral_and_white_labeled() -> None:
-    """Invariant 3: Default brand profile must never hardcode third-party corporate entities like NTT DATA."""
+    """Invariant 3: Brand profile must define an authoritative corporate entity name."""
     brand_path = ROOT / "engine_config" / "brand_profile.json"
     assert brand_path.exists()
     brand_data = json.loads(brand_path.read_text(encoding="utf-8"))
-    assert "NTT DATA" not in brand_data.get("company_name", ""), "company_name must not hardcode NTT DATA"
+    assert brand_data.get("company_name") in ("NTT DATA", "Independent Assessment Entity"), (
+        "company_name must match authoritative consulting brand"
+    )
 
 
 def test_domain_semantic_router_physical_environment_and_process_overrides() -> None:

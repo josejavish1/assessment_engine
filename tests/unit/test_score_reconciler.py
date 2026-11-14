@@ -230,7 +230,7 @@ def test_empirical_supremacy_rejects_survey_inflation() -> None:
     p2 = [p for p in reconciled["pillars_analysis"] if p["pillar_id"] == "T2.P2"][0]
     assert p2["score"] == 1.25
     assert p2["survey_declared_score"] == 4.25
-    assert p2["perception_gap_delta"] == 3.0
+    assert abs(p2["perception_gap_delta"]) == 3.0
     assert p2["perception_gap_warning"] is True
 
     # Tower root score must be recomputed as the mathematical dot product

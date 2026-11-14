@@ -39,8 +39,10 @@ def test_tower_internal_coherence(tower_num: str) -> None:
 
     t1_normalized = t1_score_str.replace(",", ".")
 
+    t1_base_score = t1_normalized.split(" / ")[0].split()[0]
+
     # Invariant 1: Scores must be identical in Table 1 and Table 3
-    assert t1_normalized in t3_score_str, (
+    assert t1_base_score == t3_score_str, (
         f"Tower {tower_num} score mismatch: Table 1 shows '{t1_normalized}' but Table 3 shows '{t3_score_str}'"
     )
 
