@@ -29,11 +29,17 @@ class SyntheticLocalizationProvider:
                 r"custom_calibration_device\w*",
                 r"paper_inspection_sheet\w*",
             ]
+        if key == "score_primacy_dissonance_regexes" and locale == "x-test":
+            return [
+                r"\b(?:synthetic_untested_assertion|zero_testing_claimed)\b",
+            ]
         return []
 
     def translate(self, key: str, locale: str = "en") -> str:
         if key == "speculative_clause_prefix_regex" and locale == "x-test":
             return r"(?:utilizing|via|relying on)\s+[^,\.;]*"
+        if key == "score_primacy_residual_replacement" and locale == "x-test":
+            return "under verified baseline operational conditions"
         return ""
 
 
@@ -221,4 +227,72 @@ def test_build_domain_scoped_prompt_directives_parameterized_scale() -> None:
     assert "D_FAC.P1.K4" in directives
     assert "Score: 1/5" in directives
     assert "ZERO SPECULATIVE EMBELLISHMENT ON DEFICIENT CONTROLS" in directives
+    assert "ZERO SPECULATIVE VOLUMETRIC METRICS" in directives
+    assert "CMMI SCORE PRIMACY INVARIANT" in directives
     assert "Capacity is unknown and branch loads are not monitored." in directives
+
+
+def test_unattested_volumetric_metrics_detected_and_stripped() -> None:
+    corpus = "The company operates primary and secondary data center rooms."
+    firewall = ClosedWorldGroundingFirewall(
+        source_evidence_corpus=corpus,
+        doc_lang="en",
+    )
+
+    narrative = (
+        "The technical facilities host 22 racks in two rooms, relying on 85 kW sustained IT power. "
+        "Power distribution remains radial without redundant busways."
+    )
+
+    result = firewall.sanitize_narrative_block(
+        narrative=narrative,
+        fallback_rubric_statement="Technical facilities house compute cabinets without redundant busways.",
+    )
+
+    assert not result.is_clean
+    assert any("22 racks" in v or "85 kw" in v for v in result.detected_violations)
+    assert "85 kW" not in result.sanitized_text
+
+
+def test_score_primacy_audit_sanitizes_dissonant_absence_on_high_maturity_control() -> None:
+    corpus = "The enterprise conducts annual planned switching tests."
+    loc_provider = SyntheticLocalizationProvider()
+    firewall = ClosedWorldGroundingFirewall(
+        source_evidence_corpus=corpus,
+        doc_lang="x-test",
+        localization_provider=loc_provider,
+    )
+
+    # Narrative claims untested assertion when KPI score is 3.0 (Planned/documented tests)
+    narrative = "Emergency generator validation involves zero_testing_claimed across technical suites."
+    result = firewall.audit_score_primacy(
+        kpi_score=3.0,
+        narrative=narrative,
+        doc_lang="x-test",
+    )
+
+    assert not result.is_clean
+    assert len(result.detected_violations) >= 1
+    assert "zero_testing_claimed" not in result.sanitized_text
+    assert "under verified baseline operational conditions" in result.sanitized_text
+
+
+def test_score_primacy_audit_pure_english_defaults() -> None:
+    corpus = "The enterprise maintains documented failover procedures."
+    firewall = ClosedWorldGroundingFirewall(
+        source_evidence_corpus=corpus,
+        doc_lang="en",
+    )
+
+    # Narrative claims total absence when KPI score is 3.5
+    narrative = "Critical infrastructure operating under total absence of validation runs."
+    result = firewall.audit_score_primacy(
+        kpi_score=3.5,
+        narrative=narrative,
+        doc_lang="en",
+    )
+
+    assert not result.is_clean
+    assert len(result.detected_violations) >= 1
+    assert "total absence" not in result.sanitized_text
+    assert "with room for improvement under peak contingency conditions" in result.sanitized_text

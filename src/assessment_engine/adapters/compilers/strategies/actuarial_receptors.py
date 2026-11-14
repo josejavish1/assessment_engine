@@ -48,6 +48,12 @@ class ActuarialReceptorContext:
     operational_archetype: str = "STANDARD_ENTERPRISE_B2B"
     cloud_intensity_gamma: float = 0.50
     buffering_elasticity_beta: float = 0.50
+    hourly_rate: float = 0.0
+    hourly_rate_fmt: str = ""
+    annualized_downtime_ale: float = 0.0
+    annualized_replacement_ale: float = 0.0
+    annualized_secondary_ale: float = 0.0
+    tower_id: str = "T1"
 
 
 class IActuarialReceptorStrategy(ABC):
@@ -101,14 +107,35 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
             )
         )
 
-        # Methodology Intro Narrative (Safe format_map)
-        from collections import defaultdict
+        total_ale_str = f"{format_number(ctx.total_fair_ale, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
+        formatting_context: Dict[str, str] = {
+            "domain_name": ctx.tower_name,
+            "client_name": ctx.client_name,
+            "hourly_rate": ctx.hourly_rate_fmt,
+            "currency": ctx.currency,
+            "total_ale": total_ale_str,
+        }
+
+        def _safe_format_text(template_str: str) -> str:
+            if not template_str:
+                return ""
+            from collections import defaultdict
+            import re
+            safe_dict = defaultdict(str, formatting_context)
+            try:
+                rendered = template_str.format_map(safe_dict)
+            except Exception:
+                rendered = template_str
+            # Deterministic Gatekeeper: ensure no unresolved placeholder leaks to AST
+            unresolved = re.findall(r"\{[a-zA-Z0-9_]+\}", rendered)
+            if unresolved:
+                logger.warning("Sanitizing unresolved template placeholder in receptor text: %s", unresolved)
+                rendered = re.sub(r"\{[a-zA-Z0-9_]+\}", "", rendered)
+            return rendered.strip()
+
+        # Methodology Intro Narrative
         intro_tmpl = loc.get("methodology_intro", "")
-        try:
-            safe_map = defaultdict(str, domain_name=ctx.tower_name, client_name=ctx.client_name)
-            intro_text = intro_tmpl.format_map(safe_map)
-        except Exception:
-            intro_text = intro_tmpl
+        intro_text = _safe_format_text(intro_tmpl)
         nodes.append(ParagraphNode(text=intro_text, space_after=6))
 
         # Centered Mathematical Equation
@@ -122,25 +149,53 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
         )
         nodes.append(SpacerNode(points=8))
 
-        # Vector Residual Allocation via Hare-Niemeyer
-        w_alpha, w_beta, w_gamma = self._get_weights()
-        split = ActuarialVectorAllocator.allocate(
-            total_ale=ctx.total_fair_ale,
-            weight_alpha=w_alpha,
-            weight_beta=w_beta,
-            weight_gamma=w_gamma,
+        # Scope-adjusted hourly failure rate derivation (Self-Explaining Actuarial Proof)
+        rate_70 = f"{format_number(ctx.hourly_rate * 0.70, locale=ctx.meta_lang, decimals=0)} {ctx.currency}/{t('hour_unit_short', locale=ctx.meta_lang)}"
+        rate_50 = f"{format_number(ctx.hourly_rate * 0.50, locale=ctx.meta_lang, decimals=0)} {ctx.currency}/{t('hour_unit_short', locale=ctx.meta_lang)}"
+        rate_40 = f"{format_number(ctx.hourly_rate * 0.40, locale=ctx.meta_lang, decimals=0)} {ctx.currency}/{t('hour_unit_short', locale=ctx.meta_lang)}"
+        rate_20 = f"{format_number(ctx.hourly_rate * 0.20, locale=ctx.meta_lang, decimals=0)} {ctx.currency}/{t('hour_unit_short', locale=ctx.meta_lang)}"
+
+        alpha_expl = t(
+            "sec4_1_alpha_reconciliation",
+            locale=ctx.meta_lang,
+            base_rate=ctx.hourly_rate_fmt,
+            rate_70=rate_70,
+            rate_50=rate_50,
+            rate_40=rate_40,
+            rate_20=rate_20,
         )
+        if alpha_expl and not alpha_expl.startswith("sec4_1_"):
+            nodes.append(ParagraphNode(text=alpha_expl, font_size=9.5, space_after=8))
 
-        v_alpha_fmt = f"{format_number(split.alpha_value, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
-        v_beta_fmt = f"{format_number(split.beta_value, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
-        v_gamma_fmt = f"{format_number(split.gamma_value, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
-        total_val = split.alpha_value + split.beta_value + split.gamma_value
+        # Vector Allocation: prioritize dynamically aggregated components from risk catalog (Zero Split-Brain)
+        if ctx.annualized_downtime_ale > 0 or ctx.annualized_replacement_ale > 0:
+            tot = max(ctx.total_fair_ale, 1.0)
+            p_a = round((ctx.annualized_downtime_ale / tot) * 100.0, 1)
+            p_b = round((ctx.annualized_replacement_ale / tot) * 100.0, 1)
+            p_c = round(100.0 - (p_a + p_b), 1)
+            v_a = round(ctx.annualized_downtime_ale)
+            v_b = round(ctx.annualized_replacement_ale)
+            v_c = round(ctx.total_fair_ale - (v_a + v_b))
+        else:
+            w_alpha, w_beta, w_gamma = self._get_weights()
+            split = ActuarialVectorAllocator.allocate(
+                total_ale=ctx.total_fair_ale,
+                weight_alpha=w_alpha,
+                weight_beta=w_beta,
+                weight_gamma=w_gamma,
+            )
+            v_a = split.alpha_value
+            v_b = split.beta_value
+            v_c = split.gamma_value
+            p_a = round(w_alpha * 100.0, 1)
+            p_b = round(w_beta * 100.0, 1)
+            p_c = round(100.0 - (p_a + p_b), 1)
+
+        v_alpha_fmt = f"{format_number(v_a, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
+        v_beta_fmt = f"{format_number(v_b, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
+        v_gamma_fmt = f"{format_number(v_c, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
+        total_val = v_a + v_b + v_c
         total_fmt = f"{format_number(total_val, locale=ctx.meta_lang, decimals=0)} {ctx.currency}"
-
-        # Discretize Percentage Weights to strictly sum to 100.0%
-        p_a = round(w_alpha * 100.0, 1)
-        p_b = round(w_beta * 100.0, 1)
-        p_c = round(100.0 - (p_a + p_b), 1)
         p_alpha_str = f"{format_number(p_a, locale=ctx.meta_lang, decimals=1)}%"
         p_beta_str = f"{format_number(p_b, locale=ctx.meta_lang, decimals=1)}%"
         p_gamma_str = f"{format_number(p_c, locale=ctx.meta_lang, decimals=1)}%"
@@ -160,6 +215,16 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
         row_tot_name = t("ch4_lineage_row_total_ale", locale=ctx.meta_lang)
         row_tot_desc = t("ch4_lineage_row_total_desc", locale=ctx.meta_lang)
 
+        code_alpha = loc.get("vector_alpha_code", "PARADA")
+        code_beta = loc.get("vector_beta_code", "EQUIPOS")
+        code_gamma = loc.get("vector_gamma_code", "GUARDIAS")
+        code_tot = loc.get("vector_total_code", "TOTAL")
+
+        desc_alpha = _safe_format_text(loc.get("vector_alpha_desc", ""))
+        desc_beta = _safe_format_text(loc.get("vector_beta_desc", ""))
+        desc_gamma = _safe_format_text(loc.get("vector_gamma_desc", ""))
+        desc_tot = _safe_format_text(row_tot_desc)
+
         lineage_rows = [
             TableRowNode(
                 cells=[
@@ -174,8 +239,8 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
             TableRowNode(
                 cells=[
                     CellNode(text=loc.get("vector_alpha_label", "Primary Vector Alpha"), bold=True, bg_color=ctx.alt_row_hex, font_size=8.5),
-                    CellNode(text="V_alpha", bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
-                    CellNode(text=loc.get("vector_alpha_desc", ""), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=code_alpha, bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=desc_alpha, bg_color="FFFFFF", font_size=8.0),
                     CellNode(text=v_alpha_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_alpha_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
@@ -183,8 +248,8 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
             TableRowNode(
                 cells=[
                     CellNode(text=loc.get("vector_beta_label", "Primary Vector Beta"), bold=True, bg_color=ctx.alt_row_hex, font_size=8.5),
-                    CellNode(text="V_beta", bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
-                    CellNode(text=loc.get("vector_beta_desc", ""), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=code_beta, bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=desc_beta, bg_color="FFFFFF", font_size=8.0),
                     CellNode(text=v_beta_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_beta_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
@@ -192,8 +257,8 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
             TableRowNode(
                 cells=[
                     CellNode(text=loc.get("vector_gamma_label", "Primary Vector Gamma"), bold=True, bg_color=ctx.alt_row_hex, font_size=8.5),
-                    CellNode(text="V_gamma", bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
-                    CellNode(text=loc.get("vector_gamma_desc", ""), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=code_gamma, bg_color=ctx.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=desc_gamma, bg_color="FFFFFF", font_size=8.0),
                     CellNode(text=v_gamma_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_gamma_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
@@ -201,15 +266,19 @@ class BaseReceptorStrategy(IActuarialReceptorStrategy):
             TableRowNode(
                 cells=[
                     CellNode(text=row_tot_name, bold=True, bg_color="E2F0D9", font_size=9.0),
-                    CellNode(text="ALE_total", bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
-                    CellNode(text=row_tot_desc, italic=True, bg_color="E2F0D9", font_size=8.0),
+                    CellNode(text=code_tot, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
+                    CellNode(text=desc_tot, italic=True, bg_color="E2F0D9", font_size=8.0),
                     CellNode(text=total_fmt, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
                     CellNode(text=p_tot_str, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
                 ]
             ),
         ]
         nodes.append(TableNode(rows=lineage_rows, autofit=True, col_widths=[0.24, 0.12, 0.40, 0.14, 0.10]))
-        nodes.append(SpacerNode(points=8))
+        nodes.append(SpacerNode(points=6))
+
+        cost_dist_note = _safe_format_text(loc.get("cost_distribution_note") or t("cost_distribution_note", locale=ctx.meta_lang))
+        if cost_dist_note:
+            nodes.append(ParagraphNode(text=f"*{cost_dist_note}*", font_size=8.5, space_after=8))
 
         # Epistemic Callout Box
         nodes.append(
@@ -260,9 +329,15 @@ class AvailabilityOutageStrategy(BaseReceptorStrategy):
         if not tmpl:
             return None
 
+        domain_assets = t(
+            f"domain_assets_{ctx.tower_id.lower()}",
+            locale=ctx.meta_lang,
+            default=ctx.tower_name,
+        )
+
         from collections import defaultdict
         try:
-            safe_b = defaultdict(str, beta=beta)
+            safe_b = defaultdict(str, beta=beta, domain_assets=domain_assets)
             formatted = tmpl.format_map(safe_b)
         except Exception:
             formatted = tmpl

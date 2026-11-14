@@ -21,8 +21,8 @@ from docx import Document
 
 from assessment_engine.adapters.compilers.docx_compiler import DocxCompiler
 from assessment_engine.adapters.render_commercial_report import render_commercial_report
-from assessment_engine.adapters.render_tower_annex_from_template import (
-    main as render_annex_main,
+from assessment_engine.adapters.compilers.payload_to_ast import (
+    compile_asis_docx_via_ast,
 )
 from assessment_engine.domain.schemas.ast import (
     CellNode,
@@ -343,7 +343,7 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
     annex_json_path.write_text(json.dumps(annex_payload_data, indent=2, ensure_ascii=False), encoding="utf-8")
 
     annex_docx_path = out_dir / f"Anexo_Tecnico_{slug}.docx"
-    render_annex_main(["render_tower_annex", str(annex_json_path), str(ANNEX_TEMPLATE_PATH), str(annex_docx_path)])
+    compile_asis_docx_via_ast(annex_json_path, annex_docx_path, doc_lang=cfg.doc_lang)
     audit_results["generated_files"].append(str(annex_docx_path))
 
     # 4. Build AST Technical Blueprint Deliverable

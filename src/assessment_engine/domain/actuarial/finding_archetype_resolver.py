@@ -73,6 +73,7 @@ class FindingPhysicsProfile:
     max_euler_ale_discount_pct: float
     max_euler_var_discount_pct: float
     classification_rationale: str
+    default_lef_annual: float = 0.10
 
 
 @dataclass(frozen=True)
@@ -85,6 +86,7 @@ class PhysicsDefaultSpec:
     default_blast_radius_factor: float
     max_euler_ale_discount_pct: float
     max_euler_var_discount_pct: float
+    default_lef_annual: float = 0.10
 
 
 @dataclass(frozen=True)
@@ -169,6 +171,7 @@ ADMISSIBILITY_MATRIX: Final[Mapping[str, Set[FindingLossPhysics]]] = {
         FindingLossPhysics.AVAILABILITY_OUTAGE,
         FindingLossPhysics.PLATFORM_DEGRADATION,
         FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
+        FindingLossPhysics.REGULATORY_AND_BREACH,
     },
     "T2": {
         FindingLossPhysics.PLATFORM_DEGRADATION,
@@ -223,6 +226,14 @@ ADMISSIBILITY_MATRIX: Final[Mapping[str, Set[FindingLossPhysics]]] = {
 }
 
 PILLAR_SUB_ADMISSIBILITY: Final[Mapping[str, Set[FindingLossPhysics]]] = {
+    "T1.P3": {
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+    },
+    "T1.P4": {
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
+        FindingLossPhysics.REGULATORY_AND_BREACH,
+    },
     "T2.P4": {
         FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
         FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY,
@@ -231,6 +242,11 @@ PILLAR_SUB_ADMISSIBILITY: Final[Mapping[str, Set[FindingLossPhysics]]] = {
         FindingLossPhysics.FINOPS_RESOURCE_WASTE,
         FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
         FindingLossPhysics.REGULATORY_AND_BREACH,
+    },
+    "T2.P5": {
+        FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION,
+        FindingLossPhysics.PLATFORM_DEGRADATION,
+        FindingLossPhysics.AVAILABILITY_OUTAGE,
     },
     "T7.P4": {
         FindingLossPhysics.FINOPS_RESOURCE_WASTE,
@@ -259,6 +275,7 @@ class PolymorphicFindingClassifier:
             default_blast_radius_factor=0.0,
             max_euler_ale_discount_pct=0.0,
             max_euler_var_discount_pct=0.0,
+            default_lef_annual=1.00,
         ),
         FindingLossPhysics.ENGINEERING_VELOCITY_FRICTION: PhysicsDefaultSpec(
             allows_downtime_burn=False,
@@ -267,14 +284,16 @@ class PolymorphicFindingClassifier:
             default_blast_radius_factor=0.05,
             max_euler_ale_discount_pct=0.10,
             max_euler_var_discount_pct=0.15,
+            default_lef_annual=1.00,
         ),
         FindingLossPhysics.PLATFORM_DEGRADATION: PhysicsDefaultSpec(
             allows_downtime_burn=True,
             allows_secondary_regulatory_fallout=False,
-            default_rto_hours=0.25,
+            default_rto_hours=0.5,
             default_blast_radius_factor=0.02,
             max_euler_ale_discount_pct=0.15,
             max_euler_var_discount_pct=0.20,
+            default_lef_annual=0.85,
         ),
         FindingLossPhysics.REGULATORY_AND_BREACH: PhysicsDefaultSpec(
             allows_downtime_burn=False,
@@ -283,6 +302,7 @@ class PolymorphicFindingClassifier:
             default_blast_radius_factor=0.25,
             max_euler_ale_discount_pct=0.15,
             max_euler_var_discount_pct=0.25,
+            default_lef_annual=0.25,
         ),
         FindingLossPhysics.ASSET_OBSOLESCENCE_AND_INTEGRITY: PhysicsDefaultSpec(
             allows_downtime_burn=True,
@@ -291,14 +311,16 @@ class PolymorphicFindingClassifier:
             default_blast_radius_factor=0.10,
             max_euler_ale_discount_pct=0.20,
             max_euler_var_discount_pct=0.25,
+            default_lef_annual=0.35,
         ),
         FindingLossPhysics.AVAILABILITY_OUTAGE: PhysicsDefaultSpec(
             allows_downtime_burn=True,
             allows_secondary_regulatory_fallout=True,
-            default_rto_hours=8.0,
+            default_rto_hours=4.0,
             default_blast_radius_factor=0.35,
             max_euler_ale_discount_pct=0.20,
             max_euler_var_discount_pct=0.25,
+            default_lef_annual=0.10,
         ),
     }
 
@@ -439,4 +461,5 @@ class PolymorphicFindingClassifier:
             max_euler_ale_discount_pct=spec.max_euler_ale_discount_pct,
             max_euler_var_discount_pct=spec.max_euler_var_discount_pct,
             classification_rationale=rationale,
+            default_lef_annual=spec.default_lef_annual,
         )

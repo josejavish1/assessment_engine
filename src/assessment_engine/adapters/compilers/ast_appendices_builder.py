@@ -59,7 +59,7 @@ def build_cmmi_methodology_and_capabilities(
         ParagraphNode(
             text=t("maturity_scale_intro", locale=meta_lang),
             space_after=4,
-            font_size=10.5,
+            font_size=9.5,
             text_color_rgb=[46, 64, 77],
         )
     )
@@ -83,12 +83,10 @@ def build_cmmi_methodology_and_capabilities(
         band_token = b.get("label_token", f"band_{level_num}")
         level_prefix = t("level_prefix", locale=meta_lang, default="Nivel" if meta_lang.startswith("es") else "Level")
 
-        if meta_lang.startswith("es") and level_num == 2:
-            band_label = "Administrado"
-        else:
-            band_label = t(band_token, locale=meta_lang, default=b.get("default_label", ""))
+        resolved_b = engine.resolve_maturity(min_score, locale=str(meta_lang), translator=t)
+        band_label = resolved_b.label
 
-        desc = t(f"cmmi_desc_level_{level_num}", locale=meta_lang, default="")
+        desc = t(f"cmmi_desc_level_{level_num}", locale=meta_lang)
 
         bullet_text = (
             f"**{level_prefix} {level_num} - {band_label} ({min_fmt} - {max_fmt}):** {desc}"
@@ -100,7 +98,7 @@ def build_cmmi_methodology_and_capabilities(
                 text=bullet_text,
                 style="List Bullet",
                 space_after=2,
-                font_size=10.5,
+                font_size=9.5,
                 text_color_rgb=[46, 64, 77],
             )
         )
@@ -118,7 +116,7 @@ def build_cmmi_methodology_and_capabilities(
         ParagraphNode(
             text=t("evaluated_capabilities_intro", locale=meta_lang),
             space_after=4,
-            font_size=10.5,
+            font_size=9.5,
             text_color_rgb=[46, 64, 77],
         )
     )
@@ -148,9 +146,10 @@ def build_cmmi_methodology_and_capabilities(
         except (OSError, ValueError, KeyError, AttributeError) as ex:
             logger.debug("[Fallback] Handled exception: %s", ex)
 
-    pillars_list = t_def.get("pillars", []) if isinstance(t_def, dict) else []
+    # Sovereign SSOT: Payload data takes precedence over static templates
+    pillars_list = blueprint_data.get("pillars_analysis") or []
     if not pillars_list:
-        pillars_list = blueprint_data.get("pillars_analysis", [])
+        pillars_list = t_def.get("pillars", []) if isinstance(t_def, dict) else []
 
     from assessment_engine.domain.taxonomy_resolver import (
         extract_pillar_identifiers,
@@ -181,13 +180,10 @@ def build_cmmi_methodology_and_capabilities(
                 distinct_names.append(raw_kname)
 
         if distinct_names and len(distinct_names) == len(kpi_list):
-            formatted_names = [
-                n[0].lower() + n[1:] if n and not n.isupper() and len(n) > 4 else n
-                for n in distinct_names
-            ]
-            and_str = t("connector_and", locale=meta_lang)
+            formatted_names = [n.strip() for n in distinct_names]
+            and_str = t("connector_and", locale=meta_lang, default=" y " if meta_lang.startswith("es") else " and ")
             if len(formatted_names) > 1:
-                kpi_str = ", ".join(formatted_names[:-1]) + and_str + formatted_names[-1]
+                kpi_str = "; ".join(formatted_names[:-1]) + and_str + formatted_names[-1]
             else:
                 kpi_str = formatted_names[0]
         elif kpi_list:
@@ -195,7 +191,13 @@ def build_cmmi_methodology_and_capabilities(
             first_k = kpi_list[0].get("kpi_id", "")
             last_k = kpi_list[-1].get("kpi_id", "")
             range_label = f"({first_k} - {last_k})" if first_k and last_k and first_k != last_k else f"({first_k})"
-            kpi_str = f"{p_name} operational controls and verified standards {range_label}"
+            kpi_str = t(
+                "kpi_range_operational_controls",
+                locale=meta_lang,
+                p_name=p_name,
+                range_label=range_label,
+                default=f"{p_name} operational controls and verified standards {range_label}",
+            )
         else:
             kpi_str = t("lbl_default_pillar_kpis", locale=meta_lang)
 
@@ -215,7 +217,7 @@ def build_cmmi_methodology_and_capabilities(
                 text=p_bullet_text,
                 style="List Bullet",
                 space_after=3,
-                font_size=10.5,
+                font_size=9.5,
                 text_color_rgb=[46, 64, 77],
             )
         )
@@ -441,7 +443,7 @@ def build_appendix_c_glossary_and_disclaimer(
         if not filtered_terms:
             filtered_terms = dict(list(glossary.items())[:10])
 
-        for term, definition in sorted(filtered_terms.items()):
+        for term, definition in sorted(filtered_terms.items(), key=lambda x: x[0].lower()):
             rows.append(
                 TableRowNode(
                     cells=[
@@ -466,7 +468,12 @@ def build_appendix_c_glossary_and_disclaimer(
         )
     )
     client_name = str(ctx.get("client_name") or ctx.get("client") or "CLIENT").upper()
-    company_name = str(ctx.get("company_name") or ctx.get("company") or vocab.get("default_company_name") or "").strip()
+    raw_company = str(ctx.get("company_name") or ctx.get("company") or "").strip()
+    default_company = t("default_company_name", locale=meta_lang)
+    if not raw_company or raw_company == "Independent Assessment Entity":
+        company_name = str(vocab.get("default_company_name") or default_company).strip()
+    else:
+        company_name = raw_company
     for i in range(1, 6):
         disc_text = vocab.get(f"disclaimer_text_{i}", "")
         if disc_text:

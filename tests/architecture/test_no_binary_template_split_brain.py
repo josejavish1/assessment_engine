@@ -16,10 +16,7 @@ SRC_DIR = REPO_ROOT / "src" / "assessment_engine"
 
 
 def _collect_production_python_files() -> List[Path]:
-    return [
-        p for p in SRC_DIR.rglob("*.py")
-        if "adapters/render_tower_annex_from_template.py" not in str(p)
-    ]
+    return list(SRC_DIR.rglob("*.py"))
 
 
 def test_no_forbidden_binary_template_mutators_in_core() -> None:

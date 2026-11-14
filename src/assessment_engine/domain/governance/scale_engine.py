@@ -120,10 +120,10 @@ class GovernanceScaleEngine:
                 elif locale.startswith("es"):
                     spanish_map = {
                         "band_initial": "Inicial",
-                        "band_managed": "Administrado",
+                        "band_managed": "Gestionado",
                         "band_defined": "Definido",
                         "band_quantitatively_managed": "Gestionado Cuantitativamente",
-                        "band_optimized": "Optimizado",
+                        "band_optimized": "En Optimización",
                     }
                     label = spanish_map.get(token, label)
 

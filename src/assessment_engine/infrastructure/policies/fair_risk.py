@@ -204,19 +204,19 @@ class FairRiskPolicy(BaseSovereignPolicy):
         # Establishes safe default values to ensure resilience against configuration file parsing errors or unavailability.
         if not tef_map:
             tef_map = {
-                1: {"min": 0.01, "ml": 0.1, "max": 0.2},
-                2: {"min": 0.1, "ml": 0.25, "max": 0.5},
-                3: {"min": 0.5, "ml": 1.0, "max": 3.0},
-                4: {"min": 2.0, "ml": 4.0, "max": 8.0},
-                5: {"min": 6.0, "ml": 12.0, "max": 24.0},
+                1: {"min": 0.01, "ml": 0.05, "max": 0.15},
+                2: {"min": 0.05, "ml": 0.15, "max": 0.35},
+                3: {"min": 0.15, "ml": 0.35, "max": 0.65},
+                4: {"min": 0.35, "ml": 0.75, "max": 1.50},
+                5: {"min": 0.75, "ml": 1.50, "max": 3.00},
             }
         if not vuln_map:
             vuln_map = {
-                1: {"min": 0.05, "ml": 0.10, "max": 0.15},
-                2: {"min": 0.15, "ml": 0.25, "max": 0.35},
-                3: {"min": 0.30, "ml": 0.50, "max": 0.70},
-                4: {"min": 0.70, "ml": 0.85, "max": 0.95},
-                5: {"min": 0.90, "ml": 1.00, "max": 1.00},
+                1: {"min": 0.01, "ml": 0.05, "max": 0.10},
+                2: {"min": 0.05, "ml": 0.15, "max": 0.25},
+                3: {"min": 0.15, "ml": 0.30, "max": 0.50},
+                4: {"min": 0.30, "ml": 0.50, "max": 0.75},
+                5: {"min": 0.50, "ml": 0.80, "max": 0.95},
             }
         if not lm_map:
             lm_map = {

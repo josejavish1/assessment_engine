@@ -467,18 +467,8 @@ def reconcile_tower_scores(
 
     overrides_list = result_payload.get("calibration_overrides") or []
     if not overrides_list:
-        doc_meta = result_payload.get("document_meta") or {}
-        client_name = str(doc_meta.get("client_slug") or doc_meta.get("client_name") or "").lower()
-        if client_name:
-            from assessment_engine.infrastructure.runtime_paths import ROOT
-            intel_p = ROOT / "working" / client_name / "client_intelligence.json"
-            if intel_p.exists():
-                try:
-                    import json
-                    intel_d = json.loads(intel_p.read_text(encoding="utf-8"))
-                    overrides_list = intel_d.get("calibration_overrides", [])
-                except Exception:
-                    pass
+        intel_d = result_payload.get("client_intelligence") or {}
+        overrides_list = intel_d.get("calibration_overrides", [])
 
     any_arbitrated = _apply_pillar_reconciliation(
         payload_pillars,

@@ -20,7 +20,7 @@ Module render_commercial_report.py.
 Contains core orchestration and rendering logic for Assessment Engine pipeline.
 """
 
-from assessment_engine.adapters.render_global_report_from_template import (
+from assessment_engine.infrastructure.docx_render_utils import (
     add_smart_bullet_list,
     add_spacer,
     clean_t_codes,

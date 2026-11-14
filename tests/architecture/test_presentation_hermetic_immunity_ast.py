@@ -16,7 +16,6 @@ import pytest
 PRESENTATION_FILES = [
     Path("src/assessment_engine/adapters/compilers/payload_to_ast.py"),
     Path("src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py"),
-    Path("src/assessment_engine/adapters/compilers/asis_fair_chapter.py"),
     Path("src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py"),
 ]
 

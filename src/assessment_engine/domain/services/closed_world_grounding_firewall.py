@@ -42,6 +42,10 @@ _DEFAULT_ENGLISH_SPECULATIVE_ARTIFACTS: Sequence[str] = (
     r"handwritten\s+signatures?",
     r"physical\s+logbooks?",
     r"paper\s+forms?",
+    r"\b\d+\s+(?:racks?|cabinets?)\b",
+    r"\b~?\d+\s*(?:m²|m2|sqm|square\s+meters?)\b",
+    r"\b\d+(?:[\.,]\d+)?\s*(?:kw|kva|mw|kilowatts?)\b",
+    r"\b\d+(?:[\.,]\d+)?\s*(?:kw/rack|w/m²|w/m2)\b",
 )
 
 _DEFAULT_ENGLISH_CLAUSE_PREFIX: str = (
@@ -49,6 +53,15 @@ _DEFAULT_ENGLISH_CLAUSE_PREFIX: str = (
 )
 
 _DEFAULT_ENGLISH_CONJUNCTION: str = r"(?:and|or)"
+
+_DEFAULT_ENGLISH_SCORE_PRIMACY_PATTERNS: Sequence[str] = (
+    r"\b(?:total\s+absence|completely\s+absent|never\s+tested|no\s+tests?\s+conducted)\b",
+    r"\b(?:no-load\s+only|unloaded\s+starts?)\b",
+)
+
+_DEFAULT_ENGLISH_SCORE_PRIMACY_REPLACEMENT: str = (
+    "with room for improvement under peak contingency conditions"
+)
 
 # Protect against false sentence splits on technical abbreviations (e.g., i.e., vs., fig., st., approx., dept.)
 _SENTENCE_BOUNDARY_RE = re.compile(
@@ -166,6 +179,7 @@ class ClosedWorldGroundingFirewall:
             re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", re.IGNORECASE)
             for term in self._foreign_domain_primary_terms
         )
+        self._localization_provider = localization_provider
 
     def build_domain_scoped_prompt_directives(
         self,
@@ -216,7 +230,15 @@ class ClosedWorldGroundingFirewall:
             "and verified interview facts. DO NOT invent specific physical measuring instruments (e.g., clamp meters, "
             "thermal cameras, multimeters), manufacturer nameplates, spreadsheets, or handwritten paper forms unless "
             "those exact terms appear verbatim in the interview transcript.",
-            "4. VERIFIED QUESTIONNAIRE RUBRIC LEDGER:",
+            "4. ZERO SPECULATIVE VOLUMETRIC METRICS (RACKS, M², KW): NEVER invent exact square meters, rack counts, "
+            "kilowatt power ratings, or power density ratios unless those exact numeric figures appear verbatim in the "
+            "Verified Evidence Corpus. When volumetric figures are unstated, describe physical facilities strictly "
+            "in terms of declared topology and functional architecture.",
+            "5. CMMI SCORE PRIMACY INVARIANT: When a control is scored at Level 3 (Defined / Documented) or Level 4/5 "
+            "(Managed / Optimized), NEVER claim the control is completely absent, nonexistent, or restricted to informal "
+            "zero-load checks. You MUST explicitly acknowledge the existing formal control and frame the residual risk "
+            "strictly around peak load stress, cross-telemetry integration, or disaster recovery edge-cases.",
+            "6. VERIFIED QUESTIONNAIRE RUBRIC LEDGER:",
         ]
         lines.extend(rubric_ledger_lines)
         return "\n".join(lines)
@@ -347,3 +369,68 @@ class ClosedWorldGroundingFirewall:
             return cleaned if cleaned[-1] in ".!?" else f"{cleaned}."
 
         return fallback_rubric_statement.strip()
+
+    def audit_score_primacy(
+        self,
+        kpi_score: float,
+        narrative: str,
+        doc_lang: str = "en",
+    ) -> GroundingAuditResult:
+        """Audits that narrative respects the CMMI score and does not claim total absence for Level 3/4/5.
+
+        A score >= 3.0 indicates defined, documented, and planned controls.
+        Asserting total absence or claiming that tests are limited to zero-load starts violates Score Primacy.
+        """
+        text = str(narrative or "").strip()
+        if not text or kpi_score < 3.0:
+            return GroundingAuditResult(is_clean=True, sanitized_text=text)
+
+        violations: List[str] = []
+        target_lang = str(doc_lang or self._doc_lang or "en").strip().lower()
+        lang_subtag = target_lang.split("-")[0]
+
+        dissonance_patterns: list[str] = []
+        if self._localization_provider is not None:
+            loc_patterns = self._localization_provider.get_localized_list(
+                "score_primacy_dissonance_regexes", target_lang
+            )
+            if not loc_patterns and "-" in target_lang:
+                loc_patterns = self._localization_provider.get_localized_list(
+                    "score_primacy_dissonance_regexes", lang_subtag
+                )
+            if loc_patterns:
+                dissonance_patterns = list(loc_patterns)
+
+        if not dissonance_patterns:
+            dissonance_patterns = list(_DEFAULT_ENGLISH_SCORE_PRIMACY_PATTERNS)
+
+        replacement = ""
+        if self._localization_provider is not None:
+            loc_repl = self._localization_provider.translate(
+                "score_primacy_residual_replacement", target_lang
+            )
+            if (not loc_repl or loc_repl == "score_primacy_residual_replacement") and "-" in target_lang:
+                loc_repl = self._localization_provider.translate(
+                    "score_primacy_residual_replacement", lang_subtag
+                )
+            if loc_repl and loc_repl != "score_primacy_residual_replacement":
+                replacement = loc_repl
+
+        if not replacement:
+            replacement = _DEFAULT_ENGLISH_SCORE_PRIMACY_REPLACEMENT
+
+        clean_text = text
+        for pattern_str in dissonance_patterns:
+            compiled = re.compile(pattern_str, re.IGNORECASE)
+            match = compiled.search(clean_text)
+            if match and not compiled.search(self._source_corpus_lower):
+                violations.append(
+                    f"Score primacy violation for CMMI >= {kpi_score}: unverified absence assertion '{match.group(0)}'"
+                )
+                clean_text = compiled.sub(replacement, clean_text)
+
+        return GroundingAuditResult(
+            is_clean=(len(violations) == 0),
+            sanitized_text=clean_text,
+            detected_violations=violations,
+        )

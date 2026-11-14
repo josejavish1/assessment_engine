@@ -11,9 +11,6 @@ from assessment_engine.domain.schemas.global_report import (
 from assessment_engine.application.run_executive_refiner import (
     postprocess_refined_findings,
 )
-from assessment_engine.adapters.render_global_report_from_template import (
-    load_payload,
-)
 
 
 def test_baseline_payload_strict_schema_conformance():
@@ -47,17 +44,15 @@ def test_baseline_payload_strict_schema_conformance():
 
 
 def test_render_adapter_load_payload_fails_fast_on_corrupt_data(tmp_path: Path):
-    """Verify that load_payload fails fast with ValidationError on corrupt schema data rather than concealing errors."""
+    """Verify that GlobalReportPayload fails fast with ValidationError on corrupt schema data rather than concealing errors."""
     corrupt_payload = {
         "_generation_metadata": {"artifact_type": "global_report_payload"},
         "meta": {"client": "Corrupt Corp"},
         # Missing critical sections: executive_summary, burning_platform, etc.
     }
-    corrupt_file = tmp_path / "corrupt_payload.json"
-    corrupt_file.write_text(json.dumps(corrupt_payload), encoding="utf-8")
 
     with pytest.raises(ValidationError):
-        load_payload(corrupt_file)
+        GlobalReportPayload.model_validate(corrupt_payload)
 
 
 def test_refiner_postprocess_produces_fully_validated_payload():

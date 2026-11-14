@@ -325,7 +325,11 @@ class ActuarialDowntimeCalibrator:
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
 
-        explicit_override = organization_profile.get("explicit_hourly_downtime_cost")
+        explicit_override = (
+            organization_profile.get("explicit_hourly_downtime_cost")
+            or organization_profile.get("hourly_burn_rate")
+            or (organization_profile.get("financial_telemetry") or {}).get("authoritative_hourly_downtime_cost")
+        )
         if explicit_override is not None and float(explicit_override) > 0.0:
             calibrated_hourly_cost = Decimal(str(explicit_override)).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
@@ -433,24 +437,14 @@ class ActuarialDowntimeCalibrator:
                     )
                 return parsed_rev, RevenueSourceType.VERIFIED_FILING
 
-        # Resilient fallback: Check client dossier if available on disk
-        doc_meta = organization_profile.get("document_meta") or {}
-        client_name = str(doc_meta.get("client_slug") or doc_meta.get("client_name") or "").lower()
-        if client_name:
-            from assessment_engine.infrastructure.runtime_paths import ROOT
-            intel_p = ROOT / "working" / client_name / "client_intelligence.json"
-            if intel_p.exists():
-                try:
-                    import json
-                    intel_d = json.loads(intel_p.read_text(encoding="utf-8"))
-                    rev_val = (
-                        intel_d.get("profile", {}).get("annual_revenue")
-                        or intel_d.get("profile", {}).get("consolidated_annual_revenue")
-                    )
-                    if rev_val and float(rev_val) > 0:
-                        return Decimal(str(rev_val)), RevenueSourceType.VERIFIED_FILING
-                except Exception as ex:
-                    logger.debug("Failed reading client_intelligence fallback: %s", ex)
+        # Resilient fallback: Check client dossier if available in memory
+        intel_d = organization_profile.get("client_intelligence") or {}
+        rev_val = (
+            intel_d.get("profile", {}).get("annual_revenue")
+            or intel_d.get("profile", {}).get("consolidated_annual_revenue")
+        )
+        if rev_val and float(rev_val) > 0:
+            return Decimal(str(rev_val)), RevenueSourceType.VERIFIED_FILING
 
         if strict:
             raise TelemetryResolutionError(

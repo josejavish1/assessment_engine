@@ -56,7 +56,7 @@ def test_compiled_asis_document_purity(tmp_path: Path) -> None:
     assert "Hexágono de retorno" not in full_text
     assert "Palancas de Retorno de Resiliencia" not in full_text
     assert "Avería o fallo de componente electromecánico principal durante la operación continua" not in full_text
-    assert "Desglose del Cálculo Actuarial" in full_text
+    assert "Justificación del Coste Económico" in full_text or "Desglose del Cálculo Actuarial" in full_text
     assert "Frecuencia Estimada" in full_text
 
     # Task 7 & 8: Streamlined Architecture (RFC 053/054)

@@ -613,6 +613,34 @@ class TowerPayloadHydrator:
                                 disk_score = score_data.get("tower_score_exact")
                                 if disk_score is not None:
                                     raw_payload["exact_score"] = float(disk_score)
+
+                                # RFC 083: Hydrate pillar declared scores from questionnaire SSOT
+                                s_pillar_scores = score_data.get("pillar_scores") or []
+                                s_score_map: Dict[str, float] = {}
+                                for sp in s_pillar_scores:
+                                    sp_id = str(sp.get("pillar_id", "")).strip().upper()
+                                    sp_score = (
+                                        sp.get("score_exact")
+                                        if sp.get("score_exact") is not None
+                                        else sp.get("score")
+                                    )
+                                    if sp_id and sp_score is not None:
+                                        s_score_map[sp_id] = float(sp_score)
+                                        if "." in sp_id:
+                                            s_score_map[sp_id.split(".")[-1]] = float(sp_score)
+
+                                if s_score_map and raw_payload.get("pillars_analysis"):
+                                    for pil in raw_payload["pillars_analysis"]:
+                                        if isinstance(pil, dict):
+                                            p_raw_id = str(
+                                                pil.get("pillar_id") or pil.get("id") or ""
+                                            ).strip().upper()
+                                            dec_s = s_score_map.get(p_raw_id)
+                                            if dec_s is None and "." in p_raw_id:
+                                                dec_s = s_score_map.get(p_raw_id.split(".")[-1])
+                                            if dec_s is not None and pil.get("declared_score") is None:
+                                                pil["declared_score"] = dec_s
+                                                pil["survey_declared_score"] = dec_s
                         except Exception as ex:
                             logger.debug("Could not read scoring_output in %s: %s", tower_dir, ex)
                     break

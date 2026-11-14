@@ -223,11 +223,11 @@
       "kpis": [
         {
           "kpi_id": "T1.P4.K1",
-          "kpi_name": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization",
+          "kpi_name": "Early Fire Detection (Aspirating Smoke) & Room Compartmentalization",
           "questions": [
             {
               "question_id": "T1.P4.K1.PR1",
-              "question_text": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?"
+              "question_text": "How are very early warning aspirating smoke detection systems and fire-rated room barriers deployed and tested?"
             }
           ]
         },
@@ -364,10 +364,10 @@
     },
     {
       "question_id": "T1.P4.K1.PR1",
-      "question_text": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?",
+      "question_text": "How are very early warning aspirating smoke detection systems and fire-rated room barriers deployed and tested?",
       "pillar_id": "T1.P4",
       "kpi_id": "T1.P4.K1",
-      "kpi_name": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization"
+      "kpi_name": "Early Fire Detection (Aspirating Smoke) & Room Compartmentalization"
     },
     {
       "question_id": "T1.P4.K2.PR1",

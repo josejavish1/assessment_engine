@@ -531,6 +531,13 @@ def _invoke_module_in_process(module_name: str, args: list[str]) -> str:
 
 def _serialize_docx_worker(request: DocxRenderRequest) -> str:
     """Top-level worker function executed inside the bounded ProcessPoolExecutor."""
+    if "render_tower_annex_from_template" in request.module_name:
+        from assessment_engine.adapters.compilers.payload_to_ast import (
+            compile_asis_docx_via_ast,
+        )
+        out_p = compile_asis_docx_via_ast(request.payload_json, request.output_docx)
+        return f"Compiled via modern AST engine: {out_p}"
+
     return _invoke_module_in_process(
         request.module_name,
         [request.payload_json, request.template_docx, request.output_docx],
@@ -716,8 +723,14 @@ def _run_script(module_name: str, args: list[str]) -> str:
         )
         return _run_coro_sync(execute_tower_build(request))
 
+    if module_name == "assessment_engine.adapters.render_tower_annex_from_template":
+        from assessment_engine.adapters.compilers.payload_to_ast import (
+            compile_asis_docx_via_ast,
+        )
+        out_p = compile_asis_docx_via_ast(args[0], args[2] if len(args) > 2 else args[1])
+        return f"Compiled via modern AST engine: {out_p}"
+
     if module_name in {
-        "assessment_engine.adapters.render_tower_annex_from_template",
         "assessment_engine.adapters.render_commercial_report",
     }:
         render_req = DocxRenderRequest(
@@ -771,33 +784,28 @@ def build_tower_payload(
 
 @mcp.tool()
 def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -> str:
-    """Populates a DOCX template using a structured JSON payload via the bounded ProcessPoolExecutor.
+    """Renders a technical tower annex document using the modern Declarative AST engine.
 
-    This function dispatches CPU-bound XML document serialization to the shared
-    process pool for `assessment_engine.adapters.render_tower_annex_from_template`.
+    Backward-compatible wrapper for legacy MCP clients. Automatically compiles via
+    the Declarative AST engine (compile_asis_docx_via_ast).
 
     Args:
         payload_json: The file path to the input JSON data.
-        template_docx: The file path to the source DOCX template.
+        template_docx: The file path to the source DOCX template (ignored in AST mode).
         output_docx: The destination file path for the rendered DOCX document.
 
     Returns:
         A string containing a success message concatenated with the standard
-        output from the rendering worker upon successful execution.
-
-    Raises:
-        FileNotFoundError: If the `payload_json` or `template_docx` file cannot
-            be located.
-        RuntimeError: If the underlying rendering worker fails during execution.
+        output from the rendering engine.
     """
-    request = DocxRenderRequest(
-        module_name="assessment_engine.adapters.render_tower_annex_from_template",
-        payload_json=payload_json,
-        template_docx=template_docx,
-        output_docx=output_docx,
+    from assessment_engine.adapters.compilers.payload_to_ast import (
+        compile_asis_docx_via_ast,
     )
-    out = _run_coro_sync(execute_docx_render(request))
-    return f"Tower Document successfully rendered.\n{out}"
+    from pathlib import Path
+
+    out_path = compile_asis_docx_via_ast(payload_json, output_docx)
+    size_bytes = Path(out_path).stat().st_size
+    return f"Tower Document successfully rendered via AST Engine.\nPath: {out_path} ({size_bytes:,} bytes)"
 
 
 @mcp.tool()

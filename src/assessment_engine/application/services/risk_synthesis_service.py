@@ -62,7 +62,7 @@ PILLAR_FAILURE_PATTERNS: dict[str, dict[str, str]] = {
     "T1.P4": {
         "title": "Aspirating smoke detection delay and clean-agent discharge compliance in {tech_name}",
         "mechanism": "Deferred room integrity testing and unmonitored gaseous suppression circuits in {tech_name} risk catastrophic environmental damage.",
-        "remediation": "Conduct annual room enclosure integrity certification and continuous VESDA aspirating smoke telemetry for {tech_name}.",
+        "remediation": "Conduct annual room enclosure integrity certification and continuous aspirating smoke detection telemetry for {tech_name}.",
     },
     "T1.P5": {
         "title": "DCIM telemetry fragmentation and facility lifecycle obsolescence in {tech_name}",

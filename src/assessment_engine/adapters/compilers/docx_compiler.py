@@ -218,7 +218,7 @@ def add_markdown_runs(
     text: str,
     default_bold: bool = False,
     default_italic: bool = False,
-    font_size: float = 10.5,
+    font_size: float = 9.5,
     font_name: str = "Arial",
     color_rgb: Any = None,
 ) -> None:
@@ -610,25 +610,34 @@ class DocxCompiler(DocumentCompiler):
         )
 
         template_path = resolve_tower_annex_template_path()
-        try:
-            doc = Document(str(template_path))
-        except Exception as ex:
-            logger.warning(
-                f"[DocxCompiler Warning] Failed to load template from {template_path}, falling back to empty Document(): {ex}"
-            )
+        if template_path and template_path.exists():
+            try:
+                doc = Document(str(template_path))
+            except Exception:
+                doc = Document()
+        else:
             doc = Document()
 
-        # Clears all pre-existing paragraphs and tables from the template body.
+        # Clears all pre-existing paragraphs and tables from the template body if loaded.
         for p in list(doc.paragraphs):
             p._element.getparent().remove(p._element)
         for t in list(doc.tables):
             t._element.getparent().remove(t._element)
 
+        # Standard corporate page geometry (1-inch margins)
+        if doc.sections:
+            section = doc.sections[0]
+            section.top_margin = Inches(1.0)
+            section.bottom_margin = Inches(1.0)
+            section.left_margin = Inches(1.0)
+            section.right_margin = Inches(1.0)
+
         #
         style_normal = doc.styles["Normal"]
         font = style_normal.font
         font.name = "Arial"
-        font.size = Pt(10.5)
+        font.size = Pt(9.5)
+        font.color.rgb = RGBColor(46, 64, 77)
 
         # Configure corporate footer with native page number field
         try:

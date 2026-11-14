@@ -539,7 +539,6 @@ class Volume1AsisASTCompiler:
         Returns list of tuples: (tower_code, tower_name, default_score, title_key, text_key).
         """
         catalog = self._get_locale_catalog(doc_lang)
-        catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         canonical_topology_map = {
             f"T{i}": (
@@ -602,7 +601,6 @@ class Volume1AsisASTCompiler:
             code_u = code.upper()
             h_item = heatmap_map.get(code_u, {})
             t_item = t_payloads.get(code) or t_payloads.get(code_u) or t_payloads.get(code.lower()) or {}
-            c_item = catalog_loc.get(code_u, catalog_loc.get(code, {}))
 
             # Score resolution prioritizing live telemetry (preserving legitimate 0.0 scores)
             score_val = self._first_not_none(
@@ -611,7 +609,6 @@ class Volume1AsisASTCompiler:
                 t_item.get("maturity_score") if isinstance(t_item, dict) else None,
                 t_item.get("overall_score") if isinstance(t_item, dict) else None,
                 h_item.get("score") if isinstance(h_item, dict) else None,
-                c_item.get("score_num") if isinstance(c_item, dict) else None,
             )
             if score_val is None and isinstance(t_item, dict) and t_item.get("pillars_analysis"):
                 pa_scores = [
@@ -791,8 +788,8 @@ class Volume1AsisASTCompiler:
         tower_payloads: Dict[str, Dict[str, Any]],
         target_corporate_ale: float,
         domain_meta: List[Any],
-        catalog_loc: Dict[str, Any],
         doc_lang: str,
+        catalog_loc: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, int]:
         """Resolves closed-form integer allocations across N domains using ActuarialReconciler."""
         fin = global_payload.get("financial_telemetry") or global_payload.get("meta", {}).get("financial_telemetry", {})
@@ -825,15 +822,14 @@ class Volume1AsisASTCompiler:
                     heatmap_map[code_u].get("ale") or heatmap_map[code_u].get("fair_ale_score"),
                     locale=doc_lang,
                 ) or 0.0
-            # 4. Check catalog baseline
+            # 4. Parametric uniform allocation fallback
             else:
-                t_info = catalog_loc.get(code, {})
                 parametric_weight = (
                     (target_corporate_ale / max(1, len(domain_meta)))
                     if target_corporate_ale > 0
                     else 0.0
                 )
-                val = safe_float(t_info.get("raw_ale"), locale=doc_lang, allow_zero=True) or parametric_weight
+                val = parametric_weight
 
             try:
                 dec_val = Decimal(str(val)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -873,7 +869,6 @@ class Volume1AsisASTCompiler:
         nodes.append(SpacerNode(points=CHAPTER_HEADING_SPACER_PT))
 
         catalog = self._get_locale_catalog(doc_lang)
-        catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         heatmap = global_payload.get("heatmap", [])
         scores = [
@@ -883,12 +878,12 @@ class Volume1AsisASTCompiler:
             for val in [safe_float(item.get("score"), locale=doc_lang, allow_zero=True)]
             if val is not None
         ]
-        if not scores and catalog_loc:
+        if not scores and tower_payloads:
             scores = [
                 val
-                for v in catalog_loc.values()
-                if isinstance(v, dict)
-                for val in [safe_float(v.get("score_num"), locale=doc_lang, allow_zero=True)]
+                for tp in tower_payloads.values()
+                if isinstance(tp, dict)
+                for val in [safe_float(tp.get("maturity_score") or tp.get("global_score"), locale=doc_lang, allow_zero=True)]
                 if val is not None
             ]
         scores_dec = [self._to_score_decimal(s, locale=doc_lang) for s in scores]
@@ -967,13 +962,11 @@ class Volume1AsisASTCompiler:
         domain_topology = self._resolve_domain_topology(
             global_payload, doc_lang, tower_payloads=tower_payloads
         )
-        catalog_loc = self._get_locale_catalog(doc_lang).get("tomo_tower_forensic_catalog", {})
         reconciled_allocations = self._resolve_domain_allocations(
             global_payload=global_payload,
             tower_payloads=tower_payloads or {},
             target_corporate_ale=total_ale,
             domain_meta=domain_topology,
-            catalog_loc=catalog_loc,
             doc_lang=doc_lang,
         )
         target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
@@ -1777,7 +1770,7 @@ class Volume1AsisASTCompiler:
             is_critical_tier=is_critical_tier,
             locale=doc_lang,
         )
-        heatmap_feed = global_payload.get("corporate_heatmap_risks") or catalog.get("tomo_corporate_heatmap_risks") or all_primary_risks
+        heatmap_feed = global_payload.get("corporate_heatmap_risks") or all_primary_risks
         if heatmap_feed:
             nodes.append(
                 build_heatmap_mosaic(
@@ -2035,7 +2028,6 @@ class Volume1AsisASTCompiler:
         strip_exposure_lbl = t("tomo_lbl_exposure", locale=doc_lang)
 
         catalog = self._get_locale_catalog(doc_lang)
-        catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
         col_sub_lbl = t("tomo_ch4_subpillar_col_name", locale=doc_lang)
         col_str_lbl = t("tomo_ch4_subpillar_col_strengths", locale=doc_lang)
         col_rsk_lbl = t("tomo_ch4_subpillar_col_risks", locale=doc_lang)
@@ -2050,7 +2042,6 @@ class Volume1AsisASTCompiler:
             tower_payloads=tower_payloads,
             target_corporate_ale=fin_metrics["corporate_ale"],
             domain_meta=domain_meta,
-            catalog_loc=catalog_loc,
             doc_lang=doc_lang,
         )
         target_ale_int = self._round_half_up_int(fin_metrics["corporate_ale"], locale=doc_lang)
@@ -2069,7 +2060,6 @@ class Volume1AsisASTCompiler:
                 )
             )
 
-            t_data = catalog_loc.get(code, catalog_loc.get(code.upper(), {}))
             t_payload = tower_payloads.get(code) or tower_payloads.get(code.upper()) or tower_payloads.get(code.lower()) or {}
             h_item = heatmap_map.get(code.upper(), {})
 
@@ -2086,7 +2076,6 @@ class Volume1AsisASTCompiler:
                 self._first_not_none(
                     h_item.get("score") if isinstance(h_item, dict) else None,
                     payload_score,
-                    t_data.get("score_num") if isinstance(t_data, dict) else None,
                     default=DEFAULT_MATURITY_SCORE,
                 ),
                 locale=doc_lang,
@@ -2143,29 +2132,16 @@ class Volume1AsisASTCompiler:
                         p_score = safe_float(p.get("score"), locale=doc_lang, allow_zero=True)
                         subpillars.append([p_name, p_score if p_score is not None else DEFAULT_MATURITY_SCORE, p])
             else:
-                raw_sp_list = t_data.get("subpillars") or []
                 subpillars = []
-                for sp_item in raw_sp_list:
-                    if isinstance(sp_item, (list, tuple)) and len(sp_item) >= 2:
-                        sp_id, raw_pname = extract_pillar_identifiers({"pillar_name": str(sp_item[0])})
-                        sp_name = resolver.resolve_pillar_by_any_reference(
-                            sp_id or raw_pname,
-                            default=(raw_pname or sp_id or str(sp_item[0])),
-                            locale=doc_lang,
-                            tower_id=code,
-                        )
-                        sp_score = safe_float(sp_item[1], locale=doc_lang, allow_zero=True)
-                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE, {}])
-                    elif isinstance(sp_item, dict):
-                        sp_id, raw_pname = extract_pillar_identifiers(sp_item)
-                        sp_name = resolver.resolve_pillar_by_any_reference(
-                            sp_id or raw_pname,
-                            default=(raw_pname or sp_id or t("default_subpillar_label", locale=doc_lang)),
-                            locale=doc_lang,
-                            tower_id=code,
-                        )
-                        sp_score = safe_float(sp_item.get("score"), locale=doc_lang, allow_zero=True)
-                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE, sp_item])
+                for p_num in range(1, 6):
+                    p_ref = f"{code}.P{p_num}"
+                    sp_name = resolver.resolve_pillar_by_any_reference(
+                        p_ref,
+                        default=f"Pillar {p_num}",
+                        locale=doc_lang,
+                        tower_id=code,
+                    )
+                    subpillars.append([sp_name, DEFAULT_MATURITY_SCORE, {}])
 
             # 2. Dynamic narrative extraction
             raw_narrative = (
@@ -2192,7 +2168,7 @@ class Volume1AsisASTCompiler:
                 if isinstance(t_payload, dict)
                 else None
             )
-            inventory = payload_inv or t_data.get("inventory") or ""
+            inventory = payload_inv or ""
             if inventory and "{client_name}" in inventory:
                 c_name = str(global_payload.get("meta", {}).get("client") or t("default_client_name", locale=doc_lang)).strip()
                 inventory = inventory.replace("{client_name}", c_name)
@@ -2218,7 +2194,7 @@ class Volume1AsisASTCompiler:
                 if isinstance(t_payload, dict)
                 else None
             )
-            strengths = payload_str or t_data.get("strengths") or []
+            strengths = payload_str or []
             max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
             if not strengths and subpillars:
                 sorted_sp = sorted(
@@ -2250,7 +2226,7 @@ class Volume1AsisASTCompiler:
                 if isinstance(t_payload, dict)
                 else None
             )
-            findings = payload_fnd or t_data.get("findings") or []
+            findings = payload_fnd or []
             if not findings and subpillars:
                 sorted_sp = sorted(
                     subpillars,
@@ -2339,14 +2315,12 @@ class Volume1AsisASTCompiler:
                     )
                 ]
                 max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
-                cat_strengths = t_data.get("strengths") or []
-                cat_findings = t_data.get("findings") or []
                 for idx, sp in enumerate(subpillars):
                     sp_name = sp[0]
                     sp_score = sp[1]
                     sp_pillar_dict = sp[2] if len(sp) > 2 and isinstance(sp[2], dict) else {}
 
-                    # Resolve Strength: prioritize live health checks/payload strengths, then catalog, then fallback
+                    # Resolve Strength: prioritize live health checks/payload strengths, then localized fallback
                     sp_strength = ""
                     if sp_pillar_dict:
                         hcs = sp_pillar_dict.get("health_check_asis") or []
@@ -2363,12 +2337,10 @@ class Volume1AsisASTCompiler:
                             sp_strength = f"{clean_st}." if clean_st else str(target_st).strip()
                     if not sp_strength and idx < len(strengths) and strengths[idx]:
                         sp_strength = str(strengths[idx]).strip()
-                    elif not sp_strength and idx < len(cat_strengths) and cat_strengths[idx]:
-                        sp_strength = str(cat_strengths[idx]).strip()
                     if not sp_strength:
                         sp_strength = t("tomo_pillar_default_strength", locale=doc_lang, pillar_name=sp_name)
 
-                    # Resolve Finding / Risk: prioritize live health checks/payload findings, then catalog, then fallback
+                    # Resolve Finding / Risk: prioritize live health checks/payload findings, then localized fallback
                     sp_finding = ""
                     if sp_pillar_dict:
                         hcs = sp_pillar_dict.get("health_check_asis") or []
@@ -2385,8 +2357,6 @@ class Volume1AsisASTCompiler:
                             sp_finding = f"{clean_sent}." if clean_sent else str(f_txt).strip()
                     if not sp_finding and idx < len(findings) and findings[idx]:
                         sp_finding = str(findings[idx]).strip()
-                    elif not sp_finding and idx < len(cat_findings) and cat_findings[idx]:
-                        sp_finding = str(cat_findings[idx]).strip()
                     if not sp_finding:
                         sp_finding = t("tomo_pillar_default_finding", locale=doc_lang, pillar_name=sp_name)
 
@@ -2440,7 +2410,7 @@ class Volume1AsisASTCompiler:
             )
         ]
 
-        spof_list = global_payload.get("spof_matrix") or catalog.get("tomo_spof_catalog", [])
+        spof_list = global_payload.get("spof_matrix") or []
 
         # Sort SPOFs deterministically by descending criticality (CRITICAL -> HIGH -> MEDIUM -> LOW)
         canonical_criticality_ranks = {
@@ -2464,18 +2434,27 @@ class Volume1AsisASTCompiler:
         valid_spofs = [sp for sp in spof_list if isinstance(sp, dict)]
         sorted_spofs = sorted(valid_spofs, key=_resolve_spof_sort_key)
 
-        for sp in sorted_spofs:
+        if not sorted_spofs:
             spof_rows.append(
                 TableRowNode(
                     cells=[
-                        CellNode(text=str(sp.get("id") or ""), bold=True, font_size=8.5, align="CENTER"),
-                        CellNode(text=str(sp.get("component") or ""), font_size=8.0),
-                        CellNode(text=str(sp.get("mechanism") or ""), font_size=8.0),
-                        CellNode(text=str(sp.get("impact") or ""), font_size=8.0),
-                        CellNode(text=str(sp.get("criticality") or ""), bold=True, bg_color=sp.get("bg", "FFFFFF"), font_size=8.0, align="CENTER"),
+                        CellNode(text=t("tomo_spof_empty", locale=doc_lang), font_size=8.5, col_span=5, align="CENTER")
                     ]
                 )
             )
+        else:
+            for sp in sorted_spofs:
+                spof_rows.append(
+                    TableRowNode(
+                        cells=[
+                            CellNode(text=str(sp.get("id") or ""), bold=True, font_size=8.5, align="CENTER"),
+                            CellNode(text=str(sp.get("component") or ""), font_size=8.0),
+                            CellNode(text=str(sp.get("mechanism") or ""), font_size=8.0),
+                            CellNode(text=str(sp.get("impact") or ""), font_size=8.0),
+                            CellNode(text=str(sp.get("criticality") or ""), bold=True, bg_color=sp.get("bg", "FFFFFF"), font_size=8.0, align="CENTER"),
+                        ]
+                    )
+                )
 
         nodes.append(TableNode(rows=spof_rows, autofit=True, col_widths=[0.10, 0.22, 0.28, 0.28, 0.12]))
         nodes.append(SpacerNode(points=14))
@@ -2519,22 +2498,30 @@ class Volume1AsisASTCompiler:
         ]
 
         catalog = self._get_locale_catalog(doc_lang)
-        nexus_list = global_payload.get("nexus_matrix") or catalog.get("tomo_nexus_catalog", [])
+        nexus_list = global_payload.get("nexus_matrix") or []
 
-        for nx in nexus_list:
-            if not isinstance(nx, dict):
-                continue
+        valid_nexus = [nx for nx in nexus_list if isinstance(nx, dict)]
+        if not valid_nexus:
             nexus_rows.append(
                 TableRowNode(
                     cells=[
-                        CellNode(text=str(nx.get("source") or ""), bold=True, font_size=8.0),
-                        CellNode(text=str(nx.get("target") or ""), font_size=8.0),
-                        CellNode(text=str(nx.get("type") or ""), bold=True, bg_color=nx.get("bg", "FFFFFF"), font_size=8.0, align="CENTER"),
-                        CellNode(text=str(nx.get("mechanism") or ""), font_size=8.0),
-                        CellNode(text=str(nx.get("impact") or ""), font_size=8.0),
+                        CellNode(text=t("tomo_nexus_empty", locale=doc_lang), font_size=8.5, col_span=5, align="CENTER")
                     ]
                 )
             )
+        else:
+            for nx in valid_nexus:
+                nexus_rows.append(
+                    TableRowNode(
+                        cells=[
+                            CellNode(text=str(nx.get("source") or ""), bold=True, font_size=8.0),
+                            CellNode(text=str(nx.get("target") or ""), font_size=8.0),
+                            CellNode(text=str(nx.get("type") or ""), bold=True, bg_color=nx.get("bg", "FFFFFF"), font_size=8.0, align="CENTER"),
+                            CellNode(text=str(nx.get("mechanism") or ""), font_size=8.0),
+                            CellNode(text=str(nx.get("impact") or ""), font_size=8.0),
+                        ]
+                    )
+                )
         nodes.append(TableNode(rows=nexus_rows, autofit=True, col_widths=[0.20, 0.20, 0.15, 0.25, 0.20]))
         nodes.append(SpacerNode(points=14))
         nodes.append(PageBreakNode())

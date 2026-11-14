@@ -40,8 +40,9 @@ DEFAULT_TAXONOMY_ANCHORS: dict[str, str] = {
     "T2": (
         "Compute, server hardware, virtualization, hypervisor, VMware, vSphere, ESXi, "
         "vMotion, Nutanix, KVM, blades, CPU, RAM, memory utilization, bare metal, "
-        "operating systems, Linux, Windows Server, legacy operating systems, hypervisor host, "
-        "clusters, capacity, compute nodes, provisioning, node failure."
+        "operating systems, Linux, Windows Server, hypervisor host, clusters, capacity, "
+        "compute nodes, provisioning, node failure, public cloud, hybrid cloud, AWS, Azure, "
+        "Google Cloud, GCP, cloud native, Kubernetes, K8s, Docker, containers, serverless, IaaS, PaaS."
     ),
     "T3": (
         "Network infrastructure, core routing, switches, BGP, OSPF, VLAN, WAN, SD-WAN, "
@@ -53,13 +54,13 @@ DEFAULT_TAXONOMY_ANCHORS: dict[str, str] = {
         "Data storage, SAN, NAS, object storage, synchronous replication, active-active, "
         "Pure Storage, EMC, Dell, block storage, backup, recovery, snapshot retention, "
         "asynchronous, immutable storage, archive, RAID, fibre channel, iSCSI, IOPS, "
-        "terabytes, petabytes, disaster recovery, RPO, RTO, tape."
+        "terabytes, petabytes, storage arrays, tape."
     ),
     "T5": (
-        "Public cloud, hybrid cloud, AWS, Azure, Google Cloud, GCP, cloud native, "
-        "Kubernetes, K8s, OpenShift, Docker, containers, serverless, microservice, "
-        "IaC, Terraform, CloudFormation, landing zone, VPC, VNet, cloud migration, "
-        "egress, ingress, autoscaling, PaaS, IaaS."
+        "Operational resilience, business continuity, BCP, disaster recovery, DRP, "
+        "failover, failover drill, cyber vault, recovery time objective, RTO, RPO, "
+        "incident response plan, contingency procedures, high availability, site recovery, "
+        "disaster recovery testing, crisis management, backup restoration, runbook, operational survivability."
     ),
     "T6": (
         "Cybersecurity, information security, identity and access management, IAM, "

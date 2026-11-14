@@ -53,7 +53,7 @@ class ParagraphNode(BaseNode):
         description="Horizontal alignment of the paragraph's content. Valid values are 'LEFT', 'CENTER', 'RIGHT', 'JUSTIFY'.",
     )
     font_size: float = Field(
-        10.5, description="Font size of the paragraph in points (pt)."
+        9.5, description="Font size of the paragraph in points (pt)."
     )
 
 

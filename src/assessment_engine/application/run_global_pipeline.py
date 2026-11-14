@@ -157,47 +157,20 @@ def main(argv: list[str] | None = None) -> None:
         (client_dir / tomo_todo_name, "todo"),
     ]
 
-    import asyncio
-
-    async def _render_all_tomos_concurrently() -> None:
-        from assessment_engine.adapters.render_global_report_from_template import (
-            load_payload,
-            render_global_report,
+    try:
+        from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
+            Volume1AsisASTCompiler,
         )
 
-        loaded_pl = load_payload(payload_path)
-        loop = asyncio.get_running_loop()
-        tasks = [
-            loop.run_in_executor(
-                None,
-                render_global_report,
-                loaded_pl,
-                template_path,
-                out_p,
-                client_dir,
-                scope,
-            )
-            for out_p, scope in tomos_to_render
-        ]
-        await asyncio.gather(*tasks)
-
-    try:
-        asyncio.run(_render_all_tomos_concurrently())
+        compiler = Volume1AsisASTCompiler()
+        compiler.compile(
+            global_payload_path=str(payload_path),
+            output_docx_path=str(output_path),
+            doc_lang=doc_lang,
+        )
     except Exception as exc:
         logger.warning(
-            f"[GlobalPipeline] Error compiling strategic volumes in-memory ({exc}). Using CLI fallback..."
-        )
-        run_module_step(
-            [
-                python_bin,
-                "-m",
-                "assessment_engine.adapters.render_global_report_from_template",
-                str(payload_path),
-                str(template_path),
-                str(output_path),
-            ],
-            "Render Global DOCX (CIO-Ready)",
-            env,
+            f"[GlobalPipeline] Error compiling strategic volume via AST compiler ({exc})."
         )
 
     if output_path.exists():

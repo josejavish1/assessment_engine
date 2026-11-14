@@ -40,8 +40,8 @@
     "es": "¿Cuál es la cobertura, período de retención e inalterabilidad de los registros de videovigilancia CCTV y accesos físicos biométricos?"
   },
   "T1.P4.K1.PR1": {
-    "en": "How are very early warning aspirating smoke detection systems (VESDA) and fire-rated room barriers deployed and tested?",
-    "es": "¿Cómo se despliegan y prueban los sistemas de detección precoz de humos por aspiración (VESDA) y barreras cortafuegos?"
+    "en": "How are very early warning aspirating smoke detection systems and fire-rated room barriers deployed and tested?",
+    "es": "¿Cómo se despliegan y prueban los sistemas de detección precoz de humos por aspiración y barreras cortafuegos?"
   },
   "T1.P4.K2.PR1": {
     "en": "What gaseous clean-agent suppression systems (e.g. FM-200, Novec 1230, Inergen) protectWhitespace, and how frequently are room integrity tests conducted?",

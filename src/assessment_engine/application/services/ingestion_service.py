@@ -94,11 +94,11 @@ class DocumentIngestionService:
             lower_para = para.lower()
             if any(k in lower_para for k in ["cpd", "datacenter", "data center", "eléctric", "ups", "generador", "clima"]):
                 mapped_towers.append("T1")
-            if any(k in lower_para for k in ["cloud", "aws", "azure", "kubernetes", "vmware", "compute", "servidor"]):
+            if any(k in lower_para for k in ["cloud", "aws", "azure", "kubernetes", "hypervisor", "compute", "servidor"]):
                 mapped_towers.append("T2")
             if any(k in lower_para for k in ["red", "wan", "lan", "sd-wan", "firewall", "mpls", "switch", "vpn"]):
                 mapped_towers.append("T3")
-            if any(k in lower_para for k in ["storage", "almacenamiento", "nas", "san", "backup", "netapp", "pure"]):
+            if any(k in lower_para for k in ["storage", "almacenamiento", "nas", "san", "backup", "block storage", "file storage"]):
                 mapped_towers.append("T4")
             if any(k in lower_para for k in ["drp", "bcp", "resiliencia", "rto", "rpo", "contingencia", "desastre"]):
                 mapped_towers.append("T5")
@@ -319,4 +319,17 @@ class AssessmentMatrixParserService:
             len(merged_towers),
             digital_twin.overall_maturity_index,
         )
+
+        # Native lifecycle hydration of declared scores into tower blueprints and scoring manifests
+        client_dir = self.workspace_manager.resolve_client_dir(client_slug)
+        if source_path.suffix.lower() == ".xlsx":
+            try:
+                from assessment_engine.application.services.survey_score_hydrator import (
+                    SurveyScoreHydrator,
+                )
+                SurveyScoreHydrator.hydrate_client_directory(source_path, client_dir)
+                logger.info("Successfully hydrated declared scores for client %s across all towers", client_slug)
+            except Exception as hyd_ex:
+                logger.warning("Automated survey score hydration failed for %s: %s", client_slug, hyd_ex)
+
         return digital_twin

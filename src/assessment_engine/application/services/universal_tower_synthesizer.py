@@ -8,11 +8,20 @@ from __future__ import annotations
 
 import copy
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 from assessment_engine.application.services.semantic_epistemic_router import (
     EpistemicContextPacket,
 )
+
+
+class CriticalityTier(str, Enum):
+    """Normalized criticality classification governing architectural rigor and resilience standards."""
+
+    MISSION_CRITICAL = "MISSION_CRITICAL"
+    HIGH_AVAILABILITY = "HIGH_AVAILABILITY"
+    ENTERPRISE_OPERATIONAL = "ENTERPRISE_OPERATIONAL"
 
 
 @dataclass(frozen=True)
@@ -26,6 +35,7 @@ class ClientAssessmentContext:
     regulatory_frameworks: tuple[str, ...] = field(default_factory=tuple)
     target_language: str = "en"
     operational_footprint: str = ""
+    criticality_tier: str | CriticalityTier = "ENTERPRISE_OPERATIONAL"
 
 
 @dataclass(frozen=True)
@@ -230,17 +240,32 @@ CANONICAL {pillar_count} PILLARS FOR {tower_code}:
 4. STORAGE PROTOCOL ARCHITECTURAL INVARIANT:
    - Accurately distinguish Block, File, and Object storage tiers based strictly on observed workload mechanics. Object storage may only be cited for asynchronous API consumption, backup targets, or log archival; do not assume POSIX consistency for unstructured object stores.
 5. EMPIRICAL REALITY OVER SURVEY CLAIMS:
-   - If an enterprise has zero empirical deployment or minimal adoption in production for a capability or architectural layer, score that pillar strictly as Initial/Ad-hoc (1.00 to 1.50) regardless of future aspirations. Never award high maturity (Level 4 or 5) to a capability that is purely in planning, PoC, or roadmap phase.
+   - If an enterprise has zero empirical deployment, minimal adoption in production, or executes operations in a 100% manual, undocumented, and ad-hoc manner, score that pillar strictly as Initial (1.00). Do not award 1.50 or higher if basic documented standardization is entirely absent.
+   - Never award high maturity (Level 4 or 5) to a capability that is purely in planning, PoC, or roadmap phase.
 6. PURE AS-IS DIAGNOSTIC INVARIANT (ZERO PRESCRIPTION):
-   - Your mandate is strictly diagnostic for Volume 1 (AS-IS Baseline). You evaluate what exists today, how it functions under load, where its structural fault lines lie, and the operational/commercial consequences of status-quo inertia.
+   - Your mandate is strictly diagnostic for Volume 1 (AS-IS Baseline). You evaluate what exists today, how it functions under load, where its structural fault lines lie, and the operational/compliance exposure.
    - ZERO PRESCRIPTION: Do NOT suggest fixes, target states, migrations, hardware purchases, hiring plans, or CAPEX/OPEX allocations. Ban all prescriptive verbs and modal imperatives ("must", "should", "needs to", "recommend", "require upgrading", "propose", "migrate").
    - Establish urgency exclusively by projecting the blast-radius of current debt if unmitigated.
-7. ANTI-FORMULAIC PROSE & DOMAIN-NATIVE VOICE:
+7. ZERO SPECULATIVE PHYSICAL VOLUMETRIC METRICS (RACKS, M², KW):
+   - NEVER invent exact square meters (m²), rack counts, kilowatt power ratings (kW), or power density ratios unless those exact numeric figures appear verbatim in the empirical evidence dossier.
+   - When volumetric figures are unstated, describe physical facilities strictly in terms of declared topology and functional architecture.
+8. CMMI SCORE PRIMACY INVARIANT:
+   - When a control is scored at Level 3 (Defined / Documented) or Level 4/5 (Managed / Optimized), NEVER claim the control is completely absent, nonexistent, or restricted to informal zero-load checks.
+   - You MUST explicitly acknowledge the existing formal control and frame the residual risk strictly around peak load stress, cross-telemetry integration, or disaster recovery edge-cases.
+9. ANTI-FORMULAIC PROSE & DOMAIN-NATIVE VOICE:
    - Never use a repetitive sentence template across sections. Every tower must read as if written by a senior specialist steeped in the specific architectural physics of that layer (e.g., electromechanical and thermal continuity for Facilities; resource contention and hypervisor headroom for Compute; routing transit and perimeter ingress/egress for Networks; data persistence and storage IOPS for Storage; privilege sprawl and credential governance for Security; core transactional processing and edge operational survivability for Core Systems/Operations).
    - Open directly with the sharpest architectural paradox or bottleneck discovered in the evidence. Never open with generic filler ("In this section...", "The evaluation of [Tower] reveals...").
-8. DOMAIN JURISDICTION & ORTHOGONALITY (KILL THE ECHO CHAMBER):
+10. PHYSICAL HOSTING JURISDICTION MANDATE (TRANSIT VS. HOSTING):
+   - When evaluating physical facilities or local infrastructure (T1/T2), you may ONLY attribute direct system shutdowns, power cuts, or hardware damage to workloads physically hosted ON-PREMISE within the evaluated facility.
+   - Cloud-hosted workloads (SaaS, PaaS, Hyperscalers like GCP, Azure, AWS) are electrically and physically isolated from local facilities. A local facility outage may disrupt local WAN transit or edge user access, but it NEVER causes the cloud application or its databases to suffer a power outage or ungraceful shutdown.
+   - Never conflate the loss of local connectivity to a cloud application with the failure of the cloud application itself.
+11. DOMAIN JURISDICTION & ORTHOGONALITY (KILL THE ECHO CHAMBER):
    - A technical fact, strength, or risk may ONLY be cited if it is a primary native mechanism of THIS specific tower.
    - Do NOT use cross-domain facts as generic filler (e.g. do not cite central monitoring tools or remote DBA personnel in towers where they are not primary architectural drivers).
+12. CRITICALITY-PROPORTIONAL ARCHITECTURAL BENCHMARKING (NO FALSE TIER-IV DEMANDS):
+   - Client Criticality Tier: {context.criticality_tier}
+   - For ENTERPRISE_OPERATIONAL environments (Manufacturing, Process Plants, Logistics, Retail): The target resilience model is Tier II/III (N+1 concurrent maintainability in core server/storage/network clusters, single protected distribution feeds in auxiliary racks). Never demand hyperscale Tier IV 2N dual-bus feeds for secondary/legacy equipment or treat single auxiliary lines as catastrophic outages. Acknowledge existing dual feeds on critical workloads as compliant Level 3 controls.
+   - For MISSION_CRITICAL environments (Central Banking, Acute Healthcare ICUs, Defense): Enforce strict Tier IV 2N fault-tolerant physical redundancy across all components.
 
 ### OUTPUT SCHEMA:
 Output ONLY a valid JSON object matching this structure (write prose in {context.target_language}):
@@ -421,6 +446,9 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                 }
             synthesized_pillars.append(updated_pillar)
 
+        # Enforce cross-pillar domain orthogonality (Kill verbatim echoing across pillars)
+        self._deduplicate_cross_pillar_narratives(synthesized_pillars)
+
         # =========================================================================
         # PHASE 2 (REDUCE): Tower-Level Executive Synthesis from Verified Pillars
         # =========================================================================
@@ -503,3 +531,41 @@ Output ONLY a valid JSON object matching this structure (write prose in {context
                 "operational_benefits": [],
                 "structural_risks": []
             }
+
+    @staticmethod
+    def _deduplicate_cross_pillar_narratives(pillars: list[dict[str, Any]]) -> None:
+        """Purges cross-pillar verbatim sentence echoing to ensure strict domain orthogonality.
+
+        If a sentence (>= 40 characters) has already been stated in an earlier pillar
+        (e.g. foundational compute/datacenter specs in Pillar 1), subsequent pillars
+        prune that sentence to prevent repetitious padding.
+        """
+        import re
+        seen_normalized_sentences: set[str] = set()
+
+        for idx, p in enumerate(pillars):
+            desc = p.get("asis_architecture_description")
+            if not desc or not isinstance(desc, str):
+                continue
+
+            paragraphs = [para.strip() for para in desc.split("\n\n") if para.strip()]
+            cleaned_paragraphs: list[str] = []
+
+            for para in paragraphs:
+                raw_sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", para) if s.strip()]
+                surviving_sentences: list[str] = []
+
+                for s in raw_sentences:
+                    norm = re.sub(r"\W+", "", s).lower()
+                    if len(norm) >= 40:
+                        if idx > 0 and norm in seen_normalized_sentences:
+                            continue
+                        seen_normalized_sentences.add(norm)
+                    surviving_sentences.append(s)
+
+                if surviving_sentences:
+                    cleaned_paragraphs.append(" ".join(surviving_sentences))
+
+            if cleaned_paragraphs:
+                p["asis_architecture_description"] = "\n\n".join(cleaned_paragraphs)
+

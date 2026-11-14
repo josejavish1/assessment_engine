@@ -30,6 +30,9 @@ Your sole objective is to write the authoritative 'As-Is Architecture Descriptio
 
 ### CONSTRUCTIVE & RESPECTFUL CONSULTING TONE (CLIENT SPONSORSHIP MANDATE)
 - ZERO BLAME / NEVER ACCUSATORY: Never judge, scold, or belittle the client's internal team. Strictly avoid punitive or derogatory terms (e.g., severe immaturity, team incompetence, negligence, lack of operational rigor).
+- NO GOSSIP OR SINGULAR INDIVIDUALS: NEVER cite individual employees (e.g., "a DBA in Croatia"), personal knowledge silos, or informal meeting transcripts. Discuss "governance of technical knowledge" and "team topology" abstractly.
+- NO DEROGATORY ADJECTIVES: Never use subjective or demeaning words like "artesanal", "obsolete", "archaic", or "rudimentary". Use objective terms like "manual execution", "legacy", or "decentralized".
+- NO PLATFORM SHAMING: Never shame an internal tool by name (e.g., do not say "obsolete MoinMoin wiki"); say "legacy documentation platforms".
 - RESPECT OPERATIONAL REALITY: Recognize that the current architecture was designed to prioritize production continuity, operational uptime, and baseline stability with the resources available at the time.
 - CONSTRUCTIVE DEBT FRAMING: Frame technical debt, legacy versions, and manual processes as the natural, understandable consequence of business longevity, uninterrupted business operations, and corporate growth, which now encounter modern integration boundaries.
 - The tone must empower the IT Director and CTO, providing them with solid, objective technical rationale to defend modern investment before executive committees.
@@ -115,21 +118,77 @@ Construct a cohesive, elegant, multi-paragraph technical narrative in continuous
         }
         lang_name = locale_map.get(str(target_lang).lower()[:2], "English")
 
+        raw_score = pillar_data.get("score") if pillar_data.get("score") is not None else pillar_data.get("score_exact")
+        pillar_score: float | None = float(raw_score) if raw_score is not None else None
+
+        maturity_guidance = ""
+        if pillar_score is not None:
+            from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+            scale_engine = GovernanceScaleEngine.get_instance()
+            resolved = scale_engine.resolve_maturity(pillar_score, locale=str(target_lang))
+            lvl = resolved.level
+            band_lbl = resolved.label
+
+            level_guidance_map = {
+                1: (
+                    f"- TARGET MATURITY REALITY: LEVEL 1 - {band_lbl.upper()} ({pillar_score:.2f} / 5.00).\n"
+                    "  This capability operates with foundational gaps, manual configurations, and absence of declarative automation.\n"
+                    "  You are STRICTLY FORBIDDEN from claiming 'alta madurez técnica', 'high maturity', or Level 5 capabilities.\n"
+                    "  Objectively explain the foundational operational gaps and manual dependencies justifying this initial maturity stage."
+                ),
+                2: (
+                    f"- TARGET MATURITY REALITY: LEVEL 2 - {band_lbl.upper()} ({pillar_score:.2f} / 5.00).\n"
+                    "  Basic operations are functional and repeatable at team/project level, but rely on decentralized execution without unified policy-as-code.\n"
+                    "  Focus analysis on lack of cross-organizational standardization and reactive operational dependencies."
+                ),
+                3: (
+                    f"- TARGET MATURITY REALITY: LEVEL 3 - {band_lbl.upper()} ({pillar_score:.2f} / 5.00).\n"
+                    "  Standard documented procedures and corporate-wide baselines are active and governed.\n"
+                    "  Acknowledge formal controls; frame residual risks around multi-site stress, edge concurrency, and scale limits."
+                ),
+                4: (
+                    f"- TARGET MATURITY REALITY: LEVEL 4 - {band_lbl.upper()} ({pillar_score:.2f} / 5.00).\n"
+                    "  Capability is quantitatively managed with statistical process control, granular telemetry, SLOs, and error budgets.\n"
+                    "  Analyze how quantitative metrics drive operational stability, and frame risks around systemic drift and complex dependencies."
+                ),
+                5: (
+                    f"- TARGET MATURITY REALITY: LEVEL 5 - {band_lbl.upper()} ({pillar_score:.2f} / 5.00).\n"
+                    "  Operational excellence with continuous automated optimization, self-healing architectures, and proactive chaos engineering.\n"
+                    "  Acknowledge cutting-edge resilience; frame residual challenges around novel multi-cloud or geopolitical external disruption."
+                ),
+            }
+            maturity_guidance = level_guidance_map.get(lvl, "")
+
+        client_name = firmographics.get("client_name") or firmographics.get("name") or "the organization"
+        industry = firmographics.get("industry") or firmographics.get("industry_vertical") or "Enterprise Operations"
+        raw_frameworks = firmographics.get("regulatory_frameworks") or firmographics.get("frameworks") or []
+        frameworks_list = [str(f) for f in raw_frameworks] if isinstance(raw_frameworks, list) else [str(raw_frameworks)]
+        frameworks_str = ", ".join(frameworks_list) if frameworks_list else "Standard Enterprise Governance"
+
+        firmographic_guidance = (
+            f"- TARGET ENTERPRISE PROFILE: {client_name}\n"
+            f"- INDUSTRY VERTICAL: {industry}\n"
+            f"- REGULATORY & COMPLIANCE FRAMEWORKS: {frameworks_str}\n"
+            "  Frame technical risks and operational exposure with appropriate domain context matching this industry vertical."
+        )
+
         prompt = f"""### TARGET ASSIGNMENT
 - **Tower:** [{tower_id}] {tower_name}
 - **Target Pillar:** [{pillar_id}] {pillar_name}
 
-### FIRMOGRAPHIC PROFILE
-{firmographics}
+### ENTERPRISE & REGULATORY PROFILE
+{firmographic_guidance}
+
+### MATURITY & DOMAIN DISCIPLINE
+{maturity_guidance}
+- STRICT DOMAIN FOCUS: Confine analysis exclusively to {pillar_name} within the scope of {tower_name}. Do NOT evaluate or describe assets, platforms, or disciplines that belong to other technology domains.
 
 ### DIRECT PILLAR EVIDENCE (PRIMARY TRUTH)
 {findings_str}
 
-### ADJACENT TOWER CONTEXT (FOR NEGATIVE SPACE INFERENCE ONLY)
-{adjacent_context}
-
 ### EXECUTION INSTRUCTION
 Write the forensic narrative (`asis_architecture_description`) for **{pillar_name}** in {lang_name} (matching standard enterprise report localization).
+Write cohesive, fluent technical prose without artificial structural fragmentation. Use paragraph breaks (`\\n\\n`) naturally where logical shifts occur.
 {density_rule}
 {length_instruction} and zero vendor or factual hallucination. Output ONLY the raw narrative text.
 """
@@ -156,6 +215,8 @@ Write the forensic narrative (`asis_architecture_description`) for **{pillar_nam
         """
         pillar_id = pillar_data.get("pillar_id", "UNKNOWN")
         pillar_name = pillar_data.get("pillar_name", "Unknown")
+        raw_score = pillar_data.get("score") if pillar_data.get("score") is not None else pillar_data.get("score_exact")
+        pillar_score: float | None = float(raw_score) if raw_score is not None else None
         feedback_history: List[str] = []
 
         async def _execute_with_retry() -> PillarSynthesisResult:
@@ -207,7 +268,9 @@ Write the forensic narrative (`asis_architecture_description`) for **{pillar_nam
                         tower_id=tower_id,
                         allowed_evidence_text=evidence_str,
                         evidence_count=len(findings),
+                        score=pillar_score,
                     )
+                    clean_narrative = self.gatekeeper.sanitize_executive_dignity(clean_narrative)
                     logger.info(f"[{tower_id}:{pillar_id}] Pillar synthesis succeeded on attempt {attempt} ({word_count} words).")
                     return PillarSynthesisResult(
                         pillar_id=pillar_id,

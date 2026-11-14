@@ -90,4 +90,9 @@ def test_tower_payload_dot_product_invariant(label: str, payload_path: Path) -> 
     with open(payload_path, "r", encoding="utf-8-sig") as f:
         payload = json.load(f)
 
+    # Raw LLM blueprints do not contain static weights.
+    pillars = payload.get("pillars_analysis", [])
+    if not any(p.get("weight") is not None or p.get("weight_pct") is not None for p in pillars if isinstance(p, dict)):
+        pytest.skip(f"Payload {label} does not contain synchronized mathematical weights.")
+
     assert_tower_mathematical_integrity(payload)

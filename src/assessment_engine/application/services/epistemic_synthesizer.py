@@ -34,16 +34,16 @@ def _normalize_unicode(text: str) -> str:
 
 
 _DEFAULT_DOMAIN_TAXONOMY: Dict[str, List[str]] = {
-    "T1": ["datacenter", "data center", "ups", "hvac", "cooling", "generator", "facilities", "power", "rack"],
-    "T2": ["virtualization", "vmware", "vsphere", "simplivity", "proxmox", "compute", "cluster", "esxi", "vcenter", "hyper-v", "nutanix", "kubernetes"],
-    "T3": ["storage", "netapp", "vnx", "san", "nas", "backup", "cohesity", "veeam", "s3", "metrocluster", "recovery", "replication"],
-    "T4": ["network", "switch", "routing", "lan", "wan", "sd-wan", "huawei", "firewall", "fortinet", "fortigate", "vpn", "equinix", "fiber"],
-    "T5": ["edge", "industrial", "ot", "scada", "plc", "iot", "telemetry", "plant", "manufacturing", "hivision"],
-    "T6": ["identity", "active directory", "entra", "iam", "pam", "mfa", "rbac", "privileged", "cyberark", "credential", "sso"],
-    "T7": ["cloud", "gcp", "azure", "oci", "aws", "sap", "s/4hana", "erp", "iaas", "paas", "saas"],
-    "T8": ["cybersecurity", "security", "edr", "xdr", "soc", "siem", "vulnerability", "patching", "ransomware", "antivirus", "netskope", "ztna"],
-    "T9": ["workplace", "endpoint", "laptop", "desktop", "vdi", "m365", "teams", "helpdesk", "service desk", "ticketing"],
-    "T10": ["modernization", "legacy", "technical debt", "iseries", "as400", "mainframe", "oracle forms", "architecture", "middleware", "wso2", "integration"],
+    "T1": ["datacenter", "data center", "ups", "hvac", "cooling", "generator", "facilities", "power", "rack", "raised floor"],
+    "T2": ["virtualization", "hypervisor", "virtual machine", "compute", "cluster", "container", "kubernetes", "bare metal", "server hosts", "cloud compute"],
+    "T3": ["network", "switch", "routing", "lan", "wan", "sd-wan", "firewall", "vpn", "fiber", "bgp", "mpls", "transit"],
+    "T4": ["storage", "san", "nas", "storage array", "lun", "backup", "data protection", "immutable storage", "lakehouse", "data platform", "replication"],
+    "T5": ["resilience", "business continuity", "drp", "disaster recovery", "failover", "runbook", "cyber vault", "bcp", "recovery point"],
+    "T6": ["security", "cybersecurity", "identity", "active directory", "iam", "pam", "mfa", "rbac", "edr", "siem", "soc", "zero trust"],
+    "T7": ["itsm", "service management", "cmdb", "change management", "incident management", "sla", "observability", "monitoring", "apm", "sre", "telemetry"],
+    "T8": ["finops", "cloud economics", "cost optimization", "software licensing", "cloud billing", "subscription", "it governance", "fiduciary"],
+    "T9": ["workplace", "digital workplace", "endpoint", "laptop", "desktop", "vdi", "collaboration", "helpdesk", "service desk", "client compute"],
+    "T10": ["modernization", "legacy", "technical debt", "core systems", "transactional", "industrial", "ot", "scada", "plc", "plant floor", "mes", "manufacturing"],
 }
 
 _DEFAULT_NEGATIVE_CUES: List[str] = [

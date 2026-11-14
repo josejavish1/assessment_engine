@@ -46,10 +46,11 @@ def test_sparse_evidence_accepts_sober_narrative(gatekeeper: SemanticGatekeeper)
     assert count >= 175
 
 
-def test_dense_evidence_rejects_sub_220_words(gatekeeper: SemanticGatekeeper) -> None:
-    short_text = "Palabra " * 190
+def test_dense_evidence_rejects_sub_175_words(gatekeeper: SemanticGatekeeper) -> None:
+    short_text = "Palabra " * 150
+    long_evidence = "Evidence " * 300
     with pytest.raises(SemanticQualityError, match="Semantic Anemia detected"):
-        gatekeeper.validate(short_text, tower_id="T1", allowed_evidence_text="", evidence_count=5)
+        gatekeeper.validate(short_text, tower_id="T1", allowed_evidence_text=long_evidence, evidence_count=3)
 
 
 def test_forbidden_accusatory_language_rejected(gatekeeper: SemanticGatekeeper) -> None:
@@ -105,3 +106,61 @@ def test_english_consulting_boilerplate_rejected(gatekeeper: SemanticGatekeeper)
     )
     with pytest.raises(SemanticQualityError, match="prescriptive consulting boilerplate"):
         gatekeeper.validate(english_boilerplate_text, tower_id="T1", allowed_evidence_text="", evidence_count=3)
+
+
+def test_pejorative_artesanal_rejected(gatekeeper: SemanticGatekeeper) -> None:
+    text = (
+        ("Palabra " * 120)
+        + "El ecosistema operativo se caracteriza por la ejecución manual y artesanal de la infraestructura. "
+        + ("Palabra " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="artesanal/artisanal"):
+        gatekeeper.validate(text, tower_id="T2", allowed_evidence_text="", evidence_count=3)
+
+
+def test_personal_silo_and_platform_shaming_rejected(gatekeeper: SemanticGatekeeper) -> None:
+    text_person = (
+        ("Palabra " * 120)
+        + "Las operaciones dependen de un DBA en Croacia para resolver los incidentes de base de datos. "
+        + ("Palabra " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="employee references"):
+        gatekeeper.validate(text_person, tower_id="T2", allowed_evidence_text="", evidence_count=3)
+
+    text_wiki = (
+        ("Palabra " * 120)
+        + "Los procedimientos operativos se documentan de forma fragmentada en una wiki MoinMoin obsoleta. "
+        + ("Palabra " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="Shames internal tooling"):
+        gatekeeper.validate(text_wiki, tower_id="T2", allowed_evidence_text="", evidence_count=3)
+
+
+def test_generic_canned_analyst_quotes_rejected(gatekeeper: SemanticGatekeeper) -> None:
+    text = (
+        ("Palabra " * 120)
+        + "Los informes de Gartner constatan que las organizaciones que despliegan cargas cloud ad-hoc sufren un 38% más de fallos. "
+        + ("Palabra " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="generic canned analyst filler"):
+        gatekeeper.validate(text, tower_id="T2", allowed_evidence_text="", evidence_count=3)
+
+
+def test_score_narrative_incoherence_rejected(gatekeeper: SemanticGatekeeper) -> None:
+    text = (
+        ("Palabra " * 120)
+        + "La plataforma demuestra una alta madurez técnica en el aislamiento y gobernanza de contenedores. "
+        + ("Palabra " * 120)
+    )
+    with pytest.raises(SemanticQualityError, match="Score-Narrative Incoherence"):
+        gatekeeper.validate(text, tower_id="T2", allowed_evidence_text="", evidence_count=3, score=1.00)
+
+
+def test_sanitize_executive_dignity(gatekeeper: SemanticGatekeeper) -> None:
+    raw = "El ecosistema muestra ejecución manual y artesanal, con un DBA en Croacia y wiki MoinMoin obsoleta."
+    clean = gatekeeper.sanitize_executive_dignity(raw)
+    assert "artesanal" not in clean
+    assert "Croacia" not in clean
+    assert "MoinMoin" not in clean
+    assert "manual basada en consola" in clean or "manual" in clean
+

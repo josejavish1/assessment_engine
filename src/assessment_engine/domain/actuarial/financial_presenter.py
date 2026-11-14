@@ -42,12 +42,14 @@ class DomainFinancialPresenter:
                 tower_name=report.tower_name,
                 annual_ale=report.annual_ale_formatted,
             )
+            is_spanish = str(locale).startswith("es")
+            rec_hours_str = f"{report.max_recovery_hours:.1f}".replace(".", ",") if is_spanish else f"{report.max_recovery_hours:.1f}"
             p2 = translator(
                 "p015_financial_narrative_stress_scenario",
                 locale=locale,
                 p90_tail_risk=report.p90_tail_risk_formatted,
                 max_sle=report.max_sle_formatted,
-                max_recovery_hours=f"{report.max_recovery_hours:.1f}",
+                max_recovery_hours=rec_hours_str,
             )
             if report.deterministic_opex_formatted:
                 p2 += translator(

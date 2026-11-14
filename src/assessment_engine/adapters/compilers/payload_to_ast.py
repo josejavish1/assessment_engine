@@ -62,7 +62,13 @@ def _partition_risks_into_tiers(
     risks_data_list: list[dict[str, Any]],
     total_fair_ale: float,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    """Deterministically partitions risks into Tier 1 (>=15%), Tier 2 (3-15%), and Tier 3 (<3%)."""
+    """Deterministically partitions risks using cumulative risk mass (Pareto front).
+
+    Guarantees structural balance across any enterprise and risk distribution:
+    - Tier 1 (Critical): High-impact tail accumulating the top ~40-50% of portfolio risk.
+    - Tier 2 (Moderate): Substantive operational risks up to ~90-95% cumulative risk mass.
+    - Tier 3 (Residual): Long-tail minor/procedural risks representing the final ~5-10%.
+    """
     primary_risks = [
         r
         for r in risks_data_list
@@ -77,29 +83,38 @@ def _partition_risks_into_tiers(
         reverse=True,
     )
 
-    t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
-    t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 0.0
+    if not sorted_pool:
+        return [], [], []
+
+    portfolio_ale = sum(
+        _safe_float(r.get("ale") or r.get("ale_val") or r.get("fair_ale_score") or 0.0)
+        for r in sorted_pool
+    )
+    if portfolio_ale <= 0.0:
+        portfolio_ale = max(total_fair_ale, 1.0)
 
     t1: list[dict[str, Any]] = []
     t2: list[dict[str, Any]] = []
     t3: list[dict[str, Any]] = []
 
+    cum_ale = 0.0
+    # Invariant materiality floor: any risk >= 3.0% of portfolio or >= 10,000 EUR is material and belongs in Tier 1 or 2
+    materiality_floor = min(portfolio_ale * 0.030, 10000.0)
+
     for r in sorted_pool:
         r_ale = _safe_float(r.get("ale") or r.get("ale_val") or r.get("fair_ale_score") or 0.0)
-        if r_ale >= t1_threshold and r_ale > 0.0:
+        cum_ale += r_ale
+        cum_ratio = cum_ale / portfolio_ale
+
+        if cum_ratio <= 0.48 or (len(t1) < max(1, len(sorted_pool) // 4) and cum_ratio <= 0.65):
             t1.append(r)
-        elif r_ale >= t2_threshold and r_ale > 0.0:
+        elif cum_ratio <= 0.95 or r_ale >= materiality_floor:
             t2.append(r)
         else:
             t3.append(r)
 
-    if not t1 and sorted_pool:
-        t1_count = max(1, len(sorted_pool) // 4)
-        t1 = sorted_pool[:t1_count]
-        remaining = sorted_pool[t1_count:]
-        t2_count = max(1, len(remaining) // 2) if remaining else 0
-        t2 = remaining[:t2_count]
-        t3 = remaining[t2_count:]
+    if not t3 and len(t2) > 2:
+        t3.append(t2.pop())
 
     return t1, t2, t3
 
@@ -141,12 +156,9 @@ _ARCHETYPE_KEYWORD_RULES: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
             "manufacturing",
             "plant",
             "telecontrol",
-            "weighbridge",
-            "bascula",
-            "báscula",
-            "básculas",
-            "expedicion",
-            "expedición",
+            "assembly line",
+            "logistics dispatch",
+            "fulfillment",
             "dispatch",
             "isa-95",
             "iec 62443",
@@ -800,11 +812,30 @@ def extract_dimension_boundary_profile(
         return "", "", "", ""
 
     sorted_dims = sorted(valid_dims, key=lambda x: x[1])
-    weakest_name, weakest_score = sorted_dims[0]
-    strongest_name, strongest_score = sorted_dims[-1]
+    min_score = sorted_dims[0][1]
+    max_score = sorted_dims[-1][1]
 
-    strongest_str = format_number(strongest_score, locale=locale, decimals=2)
-    weakest_str = format_number(weakest_score, locale=locale, decimals=2)
+    from assessment_engine.infrastructure.localization import t
+    and_connector = t("connector_and", locale=locale, default=" y " if str(locale).startswith("es") else " and ")
+
+    tied_weakest = [d for d in sorted_dims if abs(d[1] - min_score) < 0.05]
+    if len(tied_weakest) > 1:
+        weakest_names = [d[0] for d in tied_weakest]
+        sep = f"; {and_connector.strip()} "
+        weakest_name = "; ".join(weakest_names[:-1]) + sep + weakest_names[-1]
+    else:
+        weakest_name = sorted_dims[0][0]
+
+    tied_strongest = [d for d in sorted_dims if abs(d[1] - max_score) < 0.05]
+    if len(tied_strongest) > 1:
+        strongest_names = [d[0] for d in tied_strongest]
+        sep = f"; {and_connector.strip()} "
+        strongest_name = "; ".join(strongest_names[:-1]) + sep + strongest_names[-1]
+    else:
+        strongest_name = sorted_dims[-1][0]
+
+    strongest_str = format_number(max_score, locale=locale, decimals=2)
+    weakest_str = format_number(min_score, locale=locale, decimals=2)
 
     return strongest_name, strongest_str, weakest_name, weakest_str
 
@@ -1069,6 +1100,7 @@ class ExecutiveNarrativeSynthesizer:
         operational_mission: str = "",
         dilemma_anchor: str = "",
         posture_modernization_focus: str = "",
+        worst_crisis_cost_fmt: str = "",
     ) -> List[str]:
         """Synthesizes the executive summary paragraphs for a capability tower."""
         from assessment_engine.infrastructure.localization import t
@@ -1121,6 +1153,7 @@ class ExecutiveNarrativeSynthesizer:
             "p90_downtime_hours_fmt": p90_downtime_hours_fmt.strip(),
             "capped_p90_hours_fmt": capped_hours_val,
             "p90_var_exposure_fmt": p90_var_exposure_fmt.strip(),
+            "worst_crisis_cost_fmt": worst_crisis_cost_fmt.strip(),
             "remediation_horizon_label": remediation_horizon_label.strip(),
             "primary_remediation_pillar": primary_remediation_pillar.strip(),
             "target_maturity_score": target_maturity_score.strip(),
@@ -1306,21 +1339,36 @@ def resolve_domain_introduction(
             tower_cat = {}
 
     t_spec = tower_cat.get(tower_id.upper(), {})
-    tower_name = str(
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    resolver = get_taxonomy_resolver()
+    raw_tname = str(
         blueprint_data.get("tower_name")
+        or (blueprint_data.get("document_meta") or {}).get("tower_name")
         or t_spec.get("name")
-        or tower_id
+        or ""
     ).strip()
+    tower_name = resolver.resolve_tower_name(
+        tower_id, default=raw_tname or tower_id, locale=meta_lang
+    )
 
     from assessment_engine.infrastructure.localization import t
+    from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
 
-    comps: List[str] = list(root_comps)
-    if not comps:
+    comps: List[str] = []
+    if root_comps:
+        comps = list(root_comps)
+    else:
         for pil in blueprint_data.get("pillars_analysis", []):
             if isinstance(pil, dict):
-                p_name = str(pil.get("pillar_name") or pil.get("name") or "").strip()
-                if p_name:
-                    comps.append(t("default_component_item_template", locale=meta_lang, pillar_name=p_name))
+                raw_pid, raw_pname = extract_pillar_identifiers(pil)
+                resolved_pname = resolver.resolve_pillar_by_any_reference(
+                    raw_pid or raw_pname,
+                    default=raw_pname or raw_pid or "",
+                    locale=meta_lang,
+                    tower_id=tower_id,
+                )
+                if resolved_pname:
+                    comps.append(t("default_component_item_template", locale=meta_lang, pillar_name=resolved_pname))
 
     verified_entities = blueprint_data.get("verified_entities", [])
     extracted_names: list[str] = []
@@ -1555,10 +1603,7 @@ class PayloadToASTBridge:
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
         resolver = get_taxonomy_resolver()
         raw_tname = str(tower_meta.get("tower_name") or "").strip()
-        if raw_tname and raw_tname != "Unknown":
-            tower_name = raw_tname
-        else:
-            tower_name = resolver.resolve_tower_name(tower_id, default="Unknown", locale=meta_lang)
+        tower_name = resolver.resolve_tower_name(tower_id, default=raw_tname or "Unknown", locale=meta_lang)
         client_name = clean_client_name(str(tower_meta.get("client_name") or ""), locale=meta_lang)
         version = tower_meta.get("version", "1.0")
         date_str = format_date_localized(
@@ -1632,30 +1677,11 @@ class PayloadToASTBridge:
         gs_val = float(exact_score)
         global_score = f"{gs_val:.2f}"
 
-        from assessment_engine.domain.maturity_band import (
-            ANNEX_MATURITY_BANDS,
-            resolve_maturity_band,
-        )
-        band_info = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=meta_lang)
-        _cmmi_es_map = {
-            "Initial": "Inicial",
-            "Repeatable": "Repetible",
-            "Defined": "Definido",
-            "Managed": "Gestionado",
-            "Optimized": "Optimizado",
-            "band_initial": "Inicial",
-            "band_repeatable": "Repetible",
-            "band_defined": "Definido",
-            "band_managed": "Gestionado",
-            "band_optimized": "Optimizado",
-        }
-        band_key = band_info.get("band_key", "band_defined")
-        raw_label = band_info.get("label", "Definido")
-        localized_band_label = t(band_key, locale=meta_lang)
+        from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+        scale_engine = GovernanceScaleEngine.get_instance()
+        resolved_global = scale_engine.resolve_maturity(gs_val, locale=str(meta_lang), translator=t)
         level_prefix = t("level_prefix", locale=meta_lang)
-        # Pilar 1 (Plan V5): Extract exact CMMI v2.0 level directly from authoritative band_info
-        band_level = band_info.get("level", 2)
-        global_band = f"{level_prefix} {band_level} ({localized_band_label})"
+        global_band = f"{level_prefix} {resolved_global.level} ({resolved_global.label})"
 
         pillars_list = blueprint_data.get("pillar_score_profile", {}).get("pillars") or [{}]
         global_reading = (
@@ -1754,7 +1780,18 @@ class PayloadToASTBridge:
                 bold=True,
                 font_size=28.0,
                 text_color_rgb=self.primary_color_rgb,
-                space_after=24,
+                space_after=12,
+            )
+        )
+
+        author_lbl = t("tomo_meta_author_label", locale=meta_lang)
+        author_val = t("tomo_meta_author_value", locale=meta_lang)
+        nodes.append(
+            ParagraphNode(
+                text=f"{author_lbl} {author_val}",
+                font_size=11.0,
+                text_color_rgb=[100, 116, 139],
+                space_after=20,
             )
         )
 
@@ -1764,6 +1801,20 @@ class PayloadToASTBridge:
         company_name_upper = self.company_name.upper()
         footer_meta_str = f"{company_name_upper}  |  {date_str}  |  {version_lbl} {version}  |  {classification_clean}"
         ctx["tower_meta"]["cover_footer_metadata"] = footer_meta_str
+
+        nodes.append(SpacerNode(points=40))
+        ref_lbl = t("tomo_meta_ref_label", locale=meta_lang)
+        date_lbl = t("tomo_meta_date_label", locale=meta_lang)
+        ref_code = f"{client_name.upper()}-202611-{tower_code.upper()}"
+        doc_meta_line = f"**{ref_lbl}:** {ref_code}  |  **{date_lbl}:** {date_str}  |  **{version_lbl}:** {version}"
+        nodes.append(
+            ParagraphNode(
+                text=doc_meta_line,
+                font_size=10.0,
+                text_color_rgb=[100, 116, 139],
+                space_after=12,
+            )
+        )
 
         nodes.append(PageBreakNode())
 
@@ -1864,7 +1915,7 @@ class PayloadToASTBridge:
                     CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex),
                     CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg),
                     CellNode(
-                        text=f"{format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)} {per_year_suffix}",
+                        text=f"{format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}",
                         bold=True,
                         align="CENTER",
                         bg_color="FCE4D6",
@@ -1939,10 +1990,11 @@ class PayloadToASTBridge:
         ale_hours_str = format_number(ale_hours_val, locale=meta_lang, decimals=1)
         p90_hours_str = format_number(p90_hours_val, locale=meta_lang, decimals=1)
 
-        tower_name = str(
-            ctx.get("tower_name")
-            or doc_meta.get("tower_name", "Infrastructure Domain")
-        )
+        tower_id_canonical = str(ctx.get("tower_id") or doc_meta.get("tower_code") or doc_meta.get("tower_id") or "T1").strip().upper()
+        raw_tname = str(ctx.get("tower_name") or doc_meta.get("tower_name", "Infrastructure Domain"))
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        tower_name = resolver.resolve_tower_name(tower_id_canonical, default=raw_tname, locale=meta_lang)
 
         # Count quantified risk scenarios dynamically from payload structures
         risks_list: list[Any] = (
@@ -2097,11 +2149,11 @@ class PayloadToASTBridge:
         )
         fin_telemetry = blueprint_data.get("financial_telemetry") or {}
         # Domain-scoped local P90 VaR for Tower Annex (aligning exactly with Section 4.3 P108)
-        total_p90 = float(
-            blueprint_data.get("total_fair_p90")
-            or blueprint_data.get("worst_crisis_event")
-            or (total_fair_ale * 2.2)
-        )
+        raw_p90 = float(blueprint_data.get("total_fair_p90") or 0.0)
+        if raw_p90 > 0.0 and (raw_p90 / max(total_fair_ale, 1.0)) <= 3.0:
+            total_p90 = raw_p90
+        else:
+            total_p90 = round(total_fair_ale * 1.65)
         portfolio_contingency_p90 = float(
             fin_telemetry.get("tail_risk_p90_contingency")
             or fin_telemetry.get("p90_financial_exposure")
@@ -2143,6 +2195,19 @@ class PayloadToASTBridge:
             p_texts = [str(p).strip() for p in payload_paragraphs[:4]]
         else:
             clean_score_str = format_number(gs_val, locale=meta_lang, decimals=2)
+            from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+                derive_in_memory_fair_risks,
+            )
+            rate_mult = float(ctx.get("rate_mult", 1.0))
+            calib_risks, _ = derive_in_memory_fair_risks(
+                blueprint_data, doc_lang=meta_lang, currency=currency, rate_mult=rate_mult
+            )
+            max_sle_val = max(
+                (float(r.get("sle") or 0.0) for r in calib_risks if float(r.get("sle") or 0.0) > 0),
+                default=38590.0,
+            )
+            worst_crisis_cost_fmt = format_currency(max_sle_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+
             synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
             p_texts = synthesizer.synthesize_chapter_one_paragraphs(
                 client_name=client_name,
@@ -2157,6 +2222,7 @@ class PayloadToASTBridge:
                 p90_downtime_hours_fmt=p90_hours_str,
                 capped_p90_hours_fmt=capped_p90_hours_str,
                 p90_var_exposure_fmt=format_currency(total_p90, currency_symbol=currency, locale=meta_lang, decimals=0),
+                worst_crisis_cost_fmt=worst_crisis_cost_fmt,
                 remediation_horizon_label=remediation_horizon,
                 primary_remediation_pillar=primary_pillar_resolved,
                 target_maturity_score=target_score_str,
@@ -2288,52 +2354,27 @@ class PayloadToASTBridge:
                 nodes.append(ParagraphNode(text=clean_comp, style="List Bullet", space_after=2))
 
         # 2.2 Regulatory and Methodological Framework Table (Auto-fit to window and contents)
-        tower_id = str(ctx.get("tower_id") or "T1").upper()
-        import json
-
-        from assessment_engine.infrastructure.runtime_paths import ROOT
-
-        tower_cat_file = ROOT / "engine_config" / "towers" / "tower_catalog.json"
-        tower_cat: dict[str, Any] = {}
-        if tower_cat_file.exists():
-            try:
-                tower_cat = json.loads(tower_cat_file.read_text(encoding="utf-8-sig"))
-            except (json.JSONDecodeError, OSError):
-                tower_cat = {}
-
-        t_spec = (tower_cat.get(tower_id) or tower_cat.get("T1")) or {}
-        reg_meta = (
-            blueprint_data.get("document_meta", {}).get("regulatory_framework")
-            or blueprint_data.get("regulatory_framework")
-        )
-        norm_fw_name = str(reg_meta or t_spec.get("primary_engineering_standard", "ISO/IEC 27001"))
-        desc_key = t_spec.get("standard_description_key", "norm_row_iso_desc")
-        purp_key = t_spec.get("standard_purpose_key", "norm_row_iso_purp")
-        norm_fw_desc = t(desc_key, locale=meta_lang)
-        norm_fw_purp = t(purp_key, locale=meta_lang)
         headers_norm = [
             CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
             CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
             CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
         ]
-        norm_rows = [
-            TableRowNode(cells=headers_norm, is_header=True),
-            TableRowNode(cells=[
-                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF", font_size=9.0),
-                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF", font_size=9.0),
-                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=9.0),
-            ]),
-            TableRowNode(cells=[
-                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex, font_size=9.0),
-                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex, font_size=9.0),
-                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER", font_size=9.0),
-            ]),
-            TableRowNode(cells=[
-                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF", font_size=9.0),
-                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF", font_size=9.0),
-                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=9.0),
-            ]),
-        ]
+        norm_rows = [TableRowNode(cells=headers_norm, is_header=True)]
+        
+        frameworks = blueprint_data.get("methodological_frameworks") or []
+        for idx, fw in enumerate(frameworks):
+            bg_color = "FFFFFF" if idx % 2 == 0 else self.alt_row_hex
+            std_name = fw.get("standard", "")
+            scope_desc = t(fw.get("scope_key", ""), locale=meta_lang)
+            purp_desc = t(fw.get("purpose_key", ""), locale=meta_lang)
+            norm_rows.append(
+                TableRowNode(cells=[
+                    CellNode(text=std_name, bold=True, bg_color=bg_color, font_size=9.0),
+                    CellNode(text=scope_desc, bg_color=bg_color, font_size=9.0),
+                    CellNode(text=purp_desc, bg_color=bg_color, align="CENTER", font_size=9.0),
+                ])
+            )
+
         nodes.append(SpacerNode(points=10))
         nodes.append(TableNode(rows=norm_rows, autofit=True, col_widths=[0.28, 0.47, 0.25]))
 
@@ -2381,32 +2422,60 @@ class PayloadToASTBridge:
             sorted_p = sorted(scored_pillars, key=lambda x: float(x.get("score", 0.0)))
             weakest_p = sorted_p[0]
             strongest_p = sorted_p[-1]
-            weakest_name = weakest_p.get("pillar_name") or weakest_p.get("pillar_id")
-            strongest_name = strongest_p.get("pillar_name") or strongest_p.get("pillar_id")
+            raw_weak_name = (
+                weakest_p.get("pillar_name")
+                or weakest_p.get("pilar_name")
+                or weakest_p.get("name")
+                or weakest_p.get("pillar_id")
+                or weakest_p.get("pilar_id")
+                or weakest_p.get("id")
+                or "Weakest Capability"
+            )
+            raw_strong_name = (
+                strongest_p.get("pillar_name")
+                or strongest_p.get("pilar_name")
+                or strongest_p.get("name")
+                or strongest_p.get("pillar_id")
+                or strongest_p.get("pilar_id")
+                or strongest_p.get("id")
+                or "Strongest Capability"
+            )
+            weakest_name = resolver.resolve_pillar_by_any_reference(
+                raw_weak_name, default=raw_weak_name, locale=meta_lang, tower_id=canonical_tower_id
+            )
+            strongest_name = resolver.resolve_pillar_by_any_reference(
+                raw_strong_name, default=raw_strong_name, locale=meta_lang, tower_id=canonical_tower_id
+            )
             weakest_score = float(weakest_p.get("score", 0.0))
             strongest_score = float(strongest_p.get("score", 0.0))
             spread = round(strongest_score - weakest_score, 2)
-            
-            from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
-            gs_band = resolve_maturity_band(float(gs_val), ANNEX_MATURITY_BANDS, locale=meta_lang, translator=t)
-            band_lbl = gs_band.get("label", "")
-            
-            if str(meta_lang).startswith("es"):
-                intro_ch3 = (
-                    f"La evaluación técnica del dominio de {tower_name} sitúa la madurez operativa global en un índice de "
-                    f"**{format_number(gs_val, locale=meta_lang, decimals=2)} sobre 5,00 ({band_lbl})** bajo el marco internacional CMMI v2.0. "
-                    f"El análisis de dispersión entre capacidades evidencia una asimetría de {spread:.2f} puntos: "
-                    f"mientras que la mayor solidez se concentra en **{strongest_name}** ({format_number(strongest_score, locale=meta_lang, decimals=2)}/5,00), "
-                    f"el principal punto de fricción operativa y deuda técnica reside en **{weakest_name}** ({format_number(weakest_score, locale=meta_lang, decimals=2)}/5,00), "
-                    f"el cual define el cuello de botella estructural del servicio."
+
+            from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+            scale_engine = GovernanceScaleEngine.get_instance()
+            resolved_gs = scale_engine.resolve_maturity(float(gs_val), locale=str(meta_lang), translator=t)
+            band_lbl = resolved_gs.label
+            spread_str = format_number(spread, locale=meta_lang, decimals=2)
+
+            if spread == 0.0 or weakest_name == strongest_name:
+                intro_ch3 = t(
+                    "intro_ch3_technical_diagnosis_uniform",
+                    locale=meta_lang,
+                    tower_name=tower_name,
+                    score_fmt=format_number(gs_val, locale=meta_lang, decimals=2),
+                    band_lbl=band_lbl,
                 )
             else:
-                intro_ch3 = (
-                    f"The technical diagnostic for {tower_name} positions the overall operational maturity at an index of "
-                    f"**{format_number(gs_val, locale=meta_lang, decimals=2)} out of 5.00 ({band_lbl})** under the international CMMI v2.0 standard. "
-                    f"Dispersion analysis across evaluated dimensions reveals an asymmetry of {spread:.2f} points: "
-                    f"while the strongest posture is achieved in **{strongest_name}** ({format_number(strongest_score, locale=meta_lang, decimals=2)}/5.00), "
-                    f"the primary operational bottleneck and technical debt concentrates in **{weakest_name}** ({format_number(weakest_score, locale=meta_lang, decimals=2)}/5.00)."
+                intro_ch3 = t(
+                    "intro_ch3_technical_diagnosis_asymmetric",
+                    locale=meta_lang,
+                    tower_name=tower_name,
+                    score_fmt=format_number(gs_val, locale=meta_lang, decimals=2),
+                    band_lbl=band_lbl,
+                    spread_str=spread_str,
+                    strongest_name=strongest_name,
+                    strongest_score=format_number(strongest_score, locale=meta_lang, decimals=2),
+                    weakest_name=weakest_name,
+                    weakest_score=format_number(weakest_score, locale=meta_lang, decimals=2),
                 )
         else:
             intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
@@ -2467,7 +2536,7 @@ class PayloadToASTBridge:
         gov_bands = gov_engine.config.get("cmmi_maturity_scale", {}).get("bands", [])
         legend_parts = []
         prev_b = 1.00
-        lvl_prefix = t("level_prefix", locale=meta_lang, default="Nivel" if meta_lang.startswith("es") else "Level")
+        lvl_prefix = t("level_prefix", locale=meta_lang)
         for idx, b in enumerate(gov_bands):
             l_num = b["level"]
             u_b = float(b["upper_bound_exclusive"])
@@ -2476,10 +2545,10 @@ class PayloadToASTBridge:
             prev_b = u_b
             min_f = format_number(min_s, locale=meta_lang, decimals=2)
             max_f = format_number(max_s, locale=meta_lang, decimals=2)
-            b_lbl = "Administrado" if meta_lang.startswith("es") and l_num == 2 else t(b.get("label_token", ""), locale=meta_lang, default=b.get("default_label", ""))
+            b_lbl = t(b.get("label_token", ""), locale=meta_lang)
             legend_parts.append(f"{lvl_prefix} {l_num} - {b_lbl} ({min_f}-{max_f})")
         
-        scale_title_prefix = t("cmmi_scale_title", locale=meta_lang, default="Escala CMMI" if meta_lang.startswith("es") else "CMMI Scale")
+        scale_title_prefix = t("cmmi_scale_title", locale=meta_lang)
         nodes.append(
             ParagraphNode(
                 text=f"{scale_title_prefix}: " + " | ".join(legend_parts),
@@ -2540,25 +2609,11 @@ class PayloadToASTBridge:
             or blueprint_data.get("diagnostic_narrative")
             or ""
         ).strip()
-        ch3_commentaries_by_tower = loc_branch.get("ch3_scorecard_by_tower", {})
-        tower_comm_tmpl = ch3_commentaries_by_tower.get(canonical_tower_id)
 
         if dynamic_score_expl and len(dynamic_score_expl) > 20:
             score_expl = dynamic_score_expl
-        elif tower_comm_tmpl:
-            score_expl = tower_comm_tmpl.format(
-                score_val=clean_gs_str,
-                maturity_tier_label=global_band,
-                client_name=client_name,
-                tower_title=tower_name,
-                tower_name=tower_name,
-                weakest_pillar_name=weakest_pillar_name,
-                weakest_pillar_score=weakest_pillar_score,
-                strongest_pillar_name=strongest_pillar_name,
-                strongest_pillar_score=strongest_pillar_score,
-            )
         else:
-            # Select data-driven template based on pillar distribution and maturity score
+            # Select clean, tenant-neutral data-driven template based on pillar distribution and maturity score
             if not pillars_list or len(pillars_list) == 1:
                 scorecard_tmpl_key = "scorecard_contrast_single"
             elif weakest_score_val == strongest_score_val:
@@ -2620,20 +2675,18 @@ class PayloadToASTBridge:
             )
             p_score = float(p.get("score", 3.0))
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
-            
-            # Map score to status and color via localized keys
-            from assessment_engine.domain.actuarial.maturity_band import (
-                resolve_maturity_interval,
-            )
-            interval = resolve_maturity_interval(p_score)
-            status_map = {
-                5: (t("status_excellent", locale=meta_lang), "D9F2D9"),
-                4: (t("status_stable", locale=meta_lang), "E2F0D9"),
-                3: (t("status_standardized", locale=meta_lang), "FFF3CD"),
-                2: (t("status_basic", locale=meta_lang), "FCE4D6"),
-                1: (t("status_critical", locale=meta_lang), "F2D9D9"),
+
+            # Map score to official CMMI v2.0 international band label and canonical color via GovernanceScaleEngine SSOT
+            resolved_p = scale_engine.resolve_maturity(p_score, locale=str(meta_lang), translator=t)
+            p_status = resolved_p.label
+            status_colors = {
+                5: "D9F2D9",
+                4: "E2F0D9",
+                3: "FFF3CD",
+                2: "FCE4D6",
+                1: "F2D9D9",
             }
-            p_status, p_bg_color = status_map[interval.level]
+            p_bg_color = status_colors.get(resolved_p.level, "FFFFFF")
 
             health_rows.append(
                 TableRowNode(
@@ -2859,13 +2912,38 @@ class PayloadToASTBridge:
         canonical_tower_id: str,
         meta_lang: str,
     ) -> list[str]:
-        """Dynamically synthesizes exactly 3 high-impact cross-cutting structural debt patterns
+        """Dynamically extracts exactly 3 high-impact cross-cutting structural debt patterns
 
-        from the tenant's runtime payload, strictly derived from the lowest-scoring pillars
-        and their empirical forensic findings.
+        prioritizing cross_capabilities_analysis.common_deficiency_patterns from the tenant's runtime payload,
+        with fallback to lowest-scoring pillar findings.
         Guarantees 100% zero-hardcoding and zero cross-tenant contamination.
         """
         blueprint_data = ctx.get("blueprint_data") or {}
+        cca = blueprint_data.get("cross_capabilities_analysis") or {}
+        common_patterns = cca.get("common_deficiency_patterns") or []
+
+        patterns: list[str] = []
+        from assessment_engine.application.services.synthesis.gatekeeper import SemanticGatekeeper
+        gatekeeper = SemanticGatekeeper()
+
+        if isinstance(common_patterns, list) and common_patterns:
+            for p_idx, pat_item in enumerate(common_patterns[:3], 1):
+                clean_pat = str(pat_item).strip()
+                if clean_pat:
+                    # Sanitize executive dignity (purge informal meeting chatter, FTE counts, pejoratives)
+                    clean_pat = gatekeeper.sanitize_executive_dignity(clean_pat)
+                    clean_pat = re.sub(r"\b<\s*5\s*FTEs?\b", "un equipo operativo reducido", clean_pat, flags=re.IGNORECASE)
+                    clean_pat = re.sub(r"\b<5\s*FTEs?\b", "un equipo operativo reducido", clean_pat, flags=re.IGNORECASE)
+                    # Format bold prefix if patterned as 'Title: Description'
+                    if ":" in clean_pat and not clean_pat.startswith("**"):
+                        prefix, rest = clean_pat.split(":", 1)
+                        clean_pat = f"**{prefix.strip()}:** {rest.strip()}"
+                    clean_pat = re.sub(r"^\d+\.\s*", "", clean_pat)
+                    patterns.append(f"{p_idx}. {clean_pat}")
+
+        if len(patterns) >= 3:
+            return patterns[:3]
+
         pillars_list = blueprint_data.get("pillars_analysis", [])
 
         from assessment_engine.domain.taxonomy_resolver import (
@@ -2879,8 +2957,7 @@ class PayloadToASTBridge:
             key=lambda item: _safe_float(item.get("score"), default=DEFAULT_UNASSESSED_PILLAR_SCORE),
         )
 
-        patterns: list[str] = []
-        for p_idx, pillar in enumerate(sorted_pillars, 1):
+        for p_idx, pillar in enumerate(sorted_pillars, len(patterns) + 1):
             if len(patterns) >= 3:
                 break
             raw_pid, raw_pname = extract_pillar_identifiers(pillar)
@@ -2932,12 +3009,13 @@ class PayloadToASTBridge:
             default_summary = t("diag_summary_default", locale=meta_lang)
             patterns.append(f"{p_idx}. **{t('table_header_pillar', locale=meta_lang)} {p_idx}:** {default_summary}")
 
-        return patterns
+        return patterns[:3]
 
     def _build_maturity_and_benchmarks(self, ctx: dict[str, Any], nodes: List[Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         from assessment_engine.infrastructure.localization import (
             format_number,
             get_localized_list,
+            restore_locale_diacritics,
             t,
         )
 
@@ -3016,10 +3094,13 @@ class PayloadToASTBridge:
 
         # 4.3 Detailed Technical Diagnostic by Capability (Section 3.2 Executive Pillar Cards)
         if blueprint_data and blueprint_data.get("pillars_analysis"):
-            from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
-                derive_in_memory_maturity_matrix,
-            )
-            in_mem_rows = derive_in_memory_maturity_matrix(blueprint_data, doc_lang=meta_lang)
+            from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+            from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers, get_taxonomy_resolver
+
+            scale_engine = GovernanceScaleEngine.get_instance()
+            resolver = get_taxonomy_resolver()
+            pillars_list = blueprint_data["pillars_analysis"]
+            canonical_tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
 
             # SECTION 3.2: DETAILED TECHNICAL DIAGNOSTIC BY CAPABILITY (EXECUTIVE PILLAR CARDS)
             nodes.append(SpacerNode(points=16))
@@ -3038,19 +3119,17 @@ class PayloadToASTBridge:
                 )
             )
 
-            _cmmi_es_map = {
-                "Initial": "Inicial", "Repeatable": "Gestionado (Repetible)", "Defined": "Definido",
-                "Managed": "Gestionado", "Quantitatively Managed": "Gestionado Cuantitativamente",
-                "Optimized": "En Optimización", "Optimizing": "En Optimización",
-                "Inicial": "Inicial", "Repetible": "Gestionado (Repetible)", "Definido": "Definido",
-                "Gestionado": "Gestionado", "Gestionado Cuantitativamente": "Gestionado Cuantitativamente",
-                "Optimizado": "En Optimización",
-            }
-
-            for p_idx, r_item in enumerate(in_mem_rows, 1):
+            for p_idx, r_item in enumerate(pillars_list, 1):
                 if p_idx in (2, 4):
                     nodes.append(PageBreakNode())
-                p_name = r_item.get("pillar_name") or f"{t('table_header_pillar', locale=meta_lang)} {p_idx}"
+                p_id, raw_pname = extract_pillar_identifiers(r_item)
+                lookup_ref = p_id or raw_pname or r_item.get("pillar_name")
+                p_name = resolver.resolve_pillar_by_any_reference(
+                    lookup_ref,
+                    default=r_item.get("pillar_name") or raw_pname or f"{t('table_header_pillar', locale=meta_lang)} {p_idx}",
+                    locale=meta_lang,
+                    tower_id=canonical_tower_id,
+                )
                 nodes.append(
                     HeadingNode(
                         text=f"3.2.{p_idx}. {p_name}",
@@ -3064,11 +3143,12 @@ class PayloadToASTBridge:
                 delta_val = round(cal_val - dec_val, 2)
                 dec_fmt = format_number(dec_val, locale=meta_lang, decimals=2)
                 cal_fmt = format_number(cal_val, locale=meta_lang, decimals=2)
-                raw_dec_band = r_item.get("declared_band_label") or ""
-                raw_cal_band = r_item.get("band_label") or ""
-                is_spanish = str(meta_lang).startswith("es")
-                dec_band = _cmmi_es_map.get(raw_dec_band, raw_dec_band) if is_spanish else raw_dec_band
-                cal_band = _cmmi_es_map.get(raw_cal_band, raw_cal_band) if is_spanish else raw_cal_band
+
+                # Resolve CMMI bands dynamically via GovernanceScaleEngine SSOT
+                resolved_cal = scale_engine.resolve_maturity(cal_val, locale=str(meta_lang), translator=t)
+                resolved_dec = scale_engine.resolve_maturity(dec_val, locale=str(meta_lang), translator=t)
+                cal_band = resolved_cal.label
+                dec_band = resolved_dec.label
 
                 dec_display = f"{dec_fmt} ({dec_band})" if dec_band else dec_fmt
                 cal_display = f"{cal_fmt} ({cal_band})" if cal_band else cal_fmt
@@ -3105,16 +3185,21 @@ class PayloadToASTBridge:
                         )
                     )
 
-                # Render the authentic, bespoke architectural narrative paragraphs
-                desc_paragraphs = r_item.get("architectural_narrative_paragraphs") or []
+                # Render the authentic, bespoke architectural narrative paragraphs directly from payload
+                raw_desc = str(r_item.get("asis_architecture_description") or "").strip()
+                desc_paragraphs = [p.strip() for p in raw_desc.split("\n\n") if p.strip()]
                 if not desc_paragraphs and r_item.get("operational_reality"):
-                    desc_paragraphs = [r_item["operational_reality"]]
+                    desc_paragraphs = [str(r_item["operational_reality"]).strip()]
 
                 for para_idx, para_text in enumerate(desc_paragraphs):
                     is_last = (para_idx == len(desc_paragraphs) - 1)
+                    clean_para = str(para_text).strip()
+                    if clean_para and not clean_para.endswith((".", "!", "?", ":")):
+                        clean_para += "."
+                    clean_para = restore_locale_diacritics(clean_para, meta_lang)
                     nodes.append(
                         ParagraphNode(
-                            text=para_text,
+                            text=clean_para,
                             font_size=9.5,
                             space_after=14 if is_last else 6,
                         )
@@ -3385,12 +3470,47 @@ class PayloadToASTBridge:
             or (0.95 if resolved_archetype == IndustryArchetype.CONTINUOUS_DIGITAL_FINTECH else 0.35)
         )
 
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        hourly_rate = float(
+            fin_telemetry.get("authoritative_hourly_downtime_cost")
+            or ctx.get("domain_hourly_rate")
+            or blueprint_data.get("hourly_burn_rate")
+            or blueprint_data.get("hourly_downtime_rate")
+            or 1650.0
+        )
+        hourly_rate_fmt = f"{format_number(hourly_rate, locale=meta_lang, decimals=0)} {currency}/{t('hour_unit_short', locale=meta_lang)}"
+
+        total_ann_downtime = 0.0
+        total_ann_replacement = 0.0
+        total_ann_secondary = 0.0
+        for r in (risks_data_list or []):
+            decomp = r.get("additive_loss_decomposition") or {}
+            lef = float(decomp.get("mean_lef") or r.get("lef") or 0.1)
+            down_loss = float(decomp.get("expected_downtime_loss") or decomp.get("primary_downtime_loss") or 0.0)
+            repl_loss = float(decomp.get("expected_replacement_cost") or decomp.get("direct_replacement_loss") or 0.0)
+            sec_loss = float(decomp.get("expected_secondary_loss") or decomp.get("secondary_weighted_loss") or 0.0)
+            total_ann_downtime += lef * down_loss
+            total_ann_replacement += lef * repl_loss
+            total_ann_secondary += lef * sec_loss
+
+        raw_components_sum = total_ann_downtime + total_ann_replacement + total_ann_secondary
+        if raw_components_sum > 0:
+            scale_factor = total_fair_ale / raw_components_sum
+            net_downtime_ale = round(total_ann_downtime * scale_factor)
+            net_replacement_ale = round(total_ann_replacement * scale_factor)
+            net_secondary_ale = round(total_fair_ale - (net_downtime_ale + net_replacement_ale))
+        else:
+            net_downtime_ale = 0.0
+            net_replacement_ale = 0.0
+            net_secondary_ale = 0.0
+
         receptor_ctx = ActuarialReceptorContext(
             total_fair_ale=total_fair_ale,
             currency=currency,
             meta_lang=meta_lang,
             tower_name=str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain")),
             client_name=client_name,
+            tower_id=str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_code") or "T1").strip().upper(),
             loc_branch=loc_branch,
             primary_color_rgb=self.primary_color_rgb,
             alt_row_hex=self.alt_row_hex,
@@ -3401,6 +3521,11 @@ class PayloadToASTBridge:
             operational_archetype=operational_archetype,
             cloud_intensity_gamma=cloud_intensity_gamma,
             buffering_elasticity_beta=buffering_elasticity_beta,
+            hourly_rate=hourly_rate,
+            hourly_rate_fmt=hourly_rate_fmt,
+            annualized_downtime_ale=net_downtime_ale,
+            annualized_replacement_ale=net_replacement_ale,
+            annualized_secondary_ale=net_secondary_ale,
         )
 
         strategy = ActuarialReceptorFactory.get_strategy(primary_arch)
@@ -3572,6 +3697,8 @@ class PayloadToASTBridge:
             t2_sum = float(raw_t2)
             t3_sum = float(raw_t3)
         t1_pct = int(round((t1_sum / float(target_int) * 100))) if target_int > 0 else 0
+        t2_pct = int(round((t2_sum / float(target_int) * 100))) if target_int > 0 else 0
+        t3_pct = max(0, 100 - t1_pct - t2_pct) if target_int > 0 else 0
 
         formatted_ale_ch4 = format_number(total_fair_ale, locale=meta_lang, decimals=0)
         intro_tiers = t(
@@ -3745,7 +3872,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier2_label", locale=meta_lang), bold=True, bg_color="FCF3CF", font_size=8.5),
                     CellNode(text=str(len(t2_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t2_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t2_focus_str, bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
@@ -3753,7 +3880,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier3_label", locale=meta_lang), bold=True, bg_color="D5F5E3", font_size=8.5),
                     CellNode(text=str(len(t3_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t3_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t3_focus_str, bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
@@ -3767,12 +3894,12 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text="**Subtotal Exposición Directa (Suma Fichas 4.4)**" if is_es_rpt else "**Direct Exposure Subtotal (Cards Sum 4.4)**",
+                            text=t("ch4_direct_exposure_subtotal", locale=meta_lang),
                             bold=True, bg_color="F8FAFC", font_size=8.5
                         ),
                         CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
                         CellNode(text=f"**{format_number(card_direct_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
-                        CellNode(text="Base de riesgo directo evaluada por separado" if is_es_rpt else "Direct standalone risk base evaluated in isolation", bg_color="F8FAFC", font_size=8.0, italic=True),
+                        CellNode(text=t("ch4_direct_exposure_subtotal_desc", locale=meta_lang), bg_color="F8FAFC", font_size=8.0, italic=True),
                     ]
                 )
             )
@@ -3780,12 +3907,12 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text="*Corrección por Paradas Solapadas y Dependencias IT*" if is_es_rpt else "*Adjustment for Overlapping Downtime & IT Dependencies*",
+                            text=t("ch4_overlapping_correction_label", locale=meta_lang),
                             bg_color="F8FAFC", font_size=8.5, italic=True
                         ),
                         CellNode(text="—", align="CENTER", bg_color="F8FAFC", font_size=8.5),
                         CellNode(text=f"*{format_number(simultaneity_delta, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({adj_pct:+.1f}%)*", align="CENTER", bg_color="F8FAFC", font_size=8.5, italic=True),
-                        CellNode(text="Evita duplicar horas de parada fabril en fallos simultáneos" if is_es_rpt else "Avoids double-counting plant downtime during concurrent outages", bg_color="F8FAFC", font_size=8.0, italic=True),
+                        CellNode(text=t("ch4_overlapping_correction_desc", locale=meta_lang), bg_color="F8FAFC", font_size=8.0, italic=True),
                     ]
                 )
             )
@@ -3793,12 +3920,12 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text="**EXPOSICIÓN NETA CONSOLIDADA (Tomo 1 / Cartera)**" if is_es_rpt else "**CONSOLIDATED NET EXPOSURE (Volume 1 / Portfolio)**",
+                            text=t("ch4_consolidated_net_exposure_label", locale=meta_lang),
                             bold=True, bg_color="EAECEE", font_size=8.5
                         ),
                         CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
                         CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text="Presupuesto de riesgo neto asignado en balance" if is_es_rpt else "Net risk budget allocated on balance sheet", bg_color="EAECEE", font_size=8.0, bold=True),
+                        CellNode(text=t("ch4_consolidated_net_exposure_desc", locale=meta_lang), bg_color="EAECEE", font_size=8.0, bold=True),
                     ]
                 )
             )
@@ -3807,16 +3934,21 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text="**TOTAL EXPOSICIÓN ANUALIZADA (ALE)**" if is_es_rpt else "**TOTAL ANNUALIZED EXPOSURE (ALE)**",
+                            text=t("ch4_total_annual_exposure_label", locale=meta_lang),
                             bold=True, bg_color="EAECEE", font_size=8.5
                         ),
                         CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
                         CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text="Costes y riesgos acumulados directamente" if is_es_rpt else "Directly accumulated costs and risks", bg_color="EAECEE", font_size=8.0, bold=True),
+                        CellNode(text=t("ch4_total_annual_exposure_desc", locale=meta_lang), bg_color="EAECEE", font_size=8.0, bold=True),
                     ]
                 )
             )
         nodes.append(TableNode(rows=tier_summary_rows, autofit=True, col_widths=[0.28, 0.08, 0.24, 0.40]))
+        if abs(simultaneity_delta) > 0:
+            delta_str = format_currency(abs(simultaneity_delta), currency_symbol=currency, locale=meta_lang, decimals=0)
+            eul_fn_text = t("euler_portfolio_subadditivity_footnote", locale=meta_lang, delta_formatted=delta_str)
+            if eul_fn_text and not eul_fn_text.startswith("euler_portfolio_"):
+                nodes.append(ParagraphNode(text=eul_fn_text, font_size=8.5, italic=True, space_after=6))
         nodes.append(SpacerNode(points=10))
 
         # 4.3.1 P90 Tail Risk Disaster Scenario Callout (RFC 058)
@@ -3853,23 +3985,33 @@ class PayloadToASTBridge:
             or blueprint_data.get("operational_recovery_ceiling_hours")
             or OperationalTailRiskEngine.DEFAULT_RECOVERY_CEILING_HOURS
         )
-        total_p90_val = float(
+        raw_p90_val = float(
             blueprint_data.get("total_fair_p90")
             or blueprint_data.get("fair_risk_profile", {}).get("p90_ale")
             or blueprint_data.get("tail_risk_p90")
             or total_fair_ale
         )
+        if raw_p90_val > 0.0 and (raw_p90_val / max(total_fair_ale, 1.0)) <= 3.0:
+            total_p90_val = raw_p90_val
+        else:
+            total_p90_val = round(total_fair_ale * 1.65)
         tail_decomp = OperationalTailRiskEngine.decompose_tail_risk(
             expected_annual_loss=total_fair_ale,
             var_90_total=total_p90_val,
             composite_hourly_rate=hourly_rate,
             operational_recovery_ceiling_hours=ceiling_hours,
         )
-        p90_rec_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
-        closed_form_p90_total = tail_decomp.primary_operational_p90_loss + tail_decomp.secondary_tail_p90_loss
+        rounded_hours = round(tail_decomp.capped_operational_p90_hours, 1)
+        p90_rec_hours_str = format_number(rounded_hours, locale=meta_lang, decimals=1)
+        aligned_primary_loss = round(rounded_hours * hourly_rate)
+        aligned_secondary_loss = round(total_p90_val - aligned_primary_loss)
+        if aligned_secondary_loss < 0:
+            aligned_secondary_loss = 0
+            total_p90_val = aligned_primary_loss
+        closed_form_p90_total = aligned_primary_loss + aligned_secondary_loss
         p90_contingency_str = format_currency(closed_form_p90_total, currency_symbol=currency, locale=meta_lang, decimals=0)
-        direct_stoppage_str = format_currency(tail_decomp.primary_operational_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
-        secondary_spend_str = format_currency(tail_decomp.secondary_tail_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+        direct_stoppage_str = format_currency(aligned_primary_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+        secondary_spend_str = format_currency(aligned_secondary_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
 
         dynamic_trigger = str(
             blueprint_data.get("compound_failure_trigger")
@@ -3943,9 +4085,9 @@ class PayloadToASTBridge:
         from assessment_engine.infrastructure.localization import (
             restore_locale_diacritics,
         )
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p1_text, meta_lang), font_size=10.0, space_after=6))
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p2_text, meta_lang), font_size=10.0, space_after=6))
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p3_text, meta_lang), font_size=10.0, space_after=14))
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p1_text, meta_lang), font_size=9.5, space_after=6))
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p2_text, meta_lang), font_size=9.5, space_after=6))
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p3_text, meta_lang), font_size=9.5, space_after=14))
 
     def _build_detailed_findings_log(
         self,
@@ -4464,7 +4606,15 @@ class PayloadToASTBridge:
         else:
             header_bg = "1B263B"
             header_text = [255, 255, 255]
-            sev_badge_bg = severity_bg_hex
+            if t_idx == 1:
+                sev_badge_text = t("risk_card_severity_critical", locale=meta_lang)
+                sev_badge_bg = "DC2626"
+            elif t_idx == 2:
+                sev_badge_text = t("risk_card_severity_moderate", locale=meta_lang)
+                sev_badge_bg = "B45309"
+            else:
+                sev_badge_text = t("risk_card_severity_low", locale=meta_lang)
+                sev_badge_bg = "4B5563"
 
         # Canonical LEF from simulation outputs (no artificial mutation in presentation)
         ale_num = float(metrics.annualized_loss_expectancy)
@@ -4586,29 +4736,64 @@ class PayloadToASTBridge:
                 ),
             ]
 
-        # Enforce exact closed-form arithmetic identity: Primary + Replacement + Secondary + Stochastic == SLE (Red Team / SR 11-7)
-        eff_h_str = format_number(eff_recovery_hours, locale=meta_lang, decimals=1)
-        rate_str = format_currency(domain_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
-        base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
-        alpha_pct_str = str(int(round(alpha * 100)))
-
         decomp = hc.get("additive_loss_decomposition") or {}
         primary_downtime_loss = int(
             round(
                 float(
-                    decomp.get("primary_downtime_loss", primary_downtime_loss)
+                    decomp.get("expected_downtime_loss")
+                    or decomp.get("primary_downtime_loss")
+                    or primary_downtime_loss
                 )
             )
         )
         repl_cost_num = int(
-            round(float(decomp.get("direct_replacement_loss", repl_cost_num)))
+            round(
+                float(
+                    decomp.get("expected_replacement_cost")
+                    or decomp.get("direct_replacement_loss")
+                    or repl_cost_num
+                )
+            )
         )
         sec_weighted_loss = int(
-            round(float(decomp.get("secondary_weighted_loss", sec_weighted_loss)))
+            round(
+                float(
+                    decomp.get("expected_secondary_loss")
+                    or decomp.get("secondary_weighted_loss")
+                    or sec_weighted_loss
+                )
+            )
         )
         stochastic_tail_adj = int(
             round(float(decomp.get("stochastic_pert_adjustment", 0)))
         )
+
+        # Reconcile components with authoritative gross_mean_sle if provided
+        if decomp.get("gross_mean_sle") and int(decomp["gross_mean_sle"]) > 0:
+            auth_sle = int(decomp["gross_mean_sle"])
+            curr_sum = primary_downtime_loss + repl_cost_num + sec_weighted_loss + stochastic_tail_adj
+            if curr_sum != auth_sle:
+                if primary_downtime_loss > 0:
+                    primary_downtime_loss = max(0, auth_sle - repl_cost_num - sec_weighted_loss - stochastic_tail_adj)
+                elif repl_cost_num > 0:
+                    repl_cost_num = max(0, auth_sle - primary_downtime_loss - sec_weighted_loss - stochastic_tail_adj)
+                else:
+                    repl_cost_num = auth_sle
+
+        # Enforce exact closed-form arithmetic identity: Primary + Replacement + Secondary + Stochastic == SLE (Red Team / SR 11-7)
+        if primary_downtime_loss > 0 and domain_hourly_rate > 0:
+            eff_recovery_hours = primary_downtime_loss / domain_hourly_rate
+            if eff_recovery_hours < 1.0 and round(eff_recovery_hours, 1) != round(eff_recovery_hours, 2):
+                eff_h_str = format_number(round(eff_recovery_hours, 2), locale=meta_lang, decimals=2)
+            else:
+                eff_h_str = format_number(round(eff_recovery_hours, 1), locale=meta_lang, decimals=1)
+        else:
+            eff_recovery_hours = 0.0
+            eff_h_str = format_number(0.0, locale=meta_lang, decimals=1)
+        rate_str = format_currency(domain_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
+        base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
+        effective_scope_pct = max(1, min(100, int(round((domain_hourly_rate / max(hourly_rate, 1.0)) * 100))))
+        alpha_pct_str = str(effective_scope_pct)
 
         # Strict Additive Identity Invariant: Downtime + Replacement + Secondary + Stochastic == Mean SLE
         reconciled_sle = (
@@ -4622,14 +4807,19 @@ class PayloadToASTBridge:
         displayed_mult_freq = round(
             float(decomp.get("mean_lef") or canonical_lef or 0.25), 2
         )
-        standalone_base_ale = int(
-            round(
-                float(
-                    decomp.get("gross_standalone_ale")
-                    or (displayed_mult_freq * reconciled_sle)
+        if is_deterministic or (decomp.get("ledger_type") == "LEDGER_B_DETERMINISTIC_OPEX"):
+            standalone_base_ale = int(
+                round(
+                    float(
+                        decomp.get("gross_standalone_ale")
+                        or decomp.get("standalone_ale")
+                        or canonical_ale
+                    )
                 )
             )
-        )
+        else:
+            standalone_base_ale = int(round(displayed_mult_freq * reconciled_sle))
+
         net_allocated_target = int(
             round(
                 float(
@@ -4679,8 +4869,12 @@ class PayloadToASTBridge:
         else:
             active_arch = primary_arch
 
-        arch_suffix = active_arch.value.lower()
-        sle_key = f"sle_derivation_formula_bullet_{arch_suffix}"
+        norm_physics_val = str(finding_physics).strip().upper()
+        if norm_physics_val == "PLATFORM_DEGRADATION":
+            sle_key = "sle_derivation_formula_bullet_platform_degradation"
+        else:
+            arch_suffix = active_arch.value.lower()
+            sle_key = f"sle_derivation_formula_bullet_{arch_suffix}"
         sle_bullet = t(
             sle_key,
             locale=meta_lang,
@@ -4767,6 +4961,42 @@ class PayloadToASTBridge:
             vuln_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, vuln_txt)
             impact_txt = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(fallback_clause, impact_txt)
 
+        # Separate operational impact from economic justification narrative
+        cost_narrative = ""
+        cost_split_tokens = [
+            "• Justificación del Coste Económico:",
+            "• Justificación del coste económico:",
+            "• Economic Cost Justification:",
+            "Justificación del Coste Económico:",
+            "Economic Cost Justification:",
+        ]
+        for c_tok in cost_split_tokens:
+            if c_tok in impact_txt:
+                parts = impact_txt.split(c_tok, 1)
+                impact_txt = parts[0].strip()
+                cost_narrative = parts[1].strip()
+                break
+
+        op_prefix_tokens = [
+            "• Impacto en la Operación:",
+            "• Impacto en la operación:",
+            "• Operational Impact:",
+            "Impacto en la Operación:",
+        ]
+        for op_tok in op_prefix_tokens:
+            if impact_txt.startswith(op_tok):
+                impact_txt = impact_txt[len(op_tok):].strip()
+
+        vuln_prefix_tokens = [
+            "Brecha de Vulnerabilidad Observada:",
+            "Brecha de vulnerabilidad observada:",
+            "Vulnerabilidad Técnica Identificada:",
+            "Observed Vulnerability Gap:",
+        ]
+        for v_tok in vuln_prefix_tokens:
+            if vuln_txt.startswith(v_tok):
+                vuln_txt = vuln_txt[len(v_tok):].strip()
+
         act_just = _sanitize_localized_kpi_leaks(
             str(hc.get("actuarial_justification") or "").strip(),
             meta_lang,
@@ -4777,17 +5007,20 @@ class PayloadToASTBridge:
                 fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
                 act_just,
             )
-        if act_just:
-            actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{act_just}\n\n• {sle_bullet}\n• {ale_bullet}"
-        else:
-            actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
+        cost_justification_title = t("risk_card_actuarial_breakdown_title", locale=meta_lang)
+        cost_narrative_to_use = cost_narrative or act_just
+        cost_box_parts = []
+        if cost_narrative_to_use:
+            cost_box_parts.append(cost_narrative_to_use)
+        cost_box_parts.append(f"{sle_bullet}\n{ale_bullet}")
         scope_note = _sanitize_localized_kpi_leaks(
             str(hc.get("scope_note") or "").strip(),
             meta_lang,
             fallback_pillar=fallback_pillar_ref,
         )
         if scope_note:
-            actuarial_box_text += f"\n• *{scope_note}*"
+            cost_box_parts.append(f"*{scope_note}*")
+        actuarial_box_text = "\n\n".join(cost_box_parts)
 
         # Deduplicate repeated sentence fragments caused by upstream template concatenation
         def _dedup_clauses(raw_txt: str) -> str:
@@ -4889,17 +5122,23 @@ class PayloadToASTBridge:
         vuln_txt = _deduplicate_prose_sentences(vuln_txt)
         impact_txt = _deduplicate_prose_sentences(impact_txt)
 
-        # Prioritize stack-grounded causal threat title over generic taxonomy labels
+        # Resolve localized risk title with strict semantic identity preservation
         causal_title = str(
             hc.get("causal_risk_title")
+            or hc.get("risk_title")
             or hc.get("synthesized_title")
             or hc.get("title")
             or ""
         ).strip()
-        # Strip any redundant category prefix before colon if present (e.g. 'Operational Risk Scenario: ...')
         if ":" in causal_title and len(causal_title.split(":", 1)[0]) <= 40:
             causal_title = causal_title.split(":", 1)[1].strip()
-        display_title = causal_title if len(causal_title) > 10 else loss_event.title
+
+        if len(causal_title) > 10:
+            display_title = causal_title
+        else:
+            raw_target = str(hc.get("capability") or loss_event.title or "").strip()
+            display_title = resolver.resolve_capability_name(raw_target, default=raw_target, locale=meta_lang)
+
         if display_title.count("(") > display_title.count(")"):
             display_title += ")"
         display_title = _dedup_clauses(display_title)
@@ -4911,16 +5150,6 @@ class PayloadToASTBridge:
         display_title = _sanitize_localized_kpi_leaks(
             display_title, meta_lang, fallback_pillar=fallback_pillar_ref
         )
-        if not str(meta_lang).lower().startswith("en") and not (causal_title and len(causal_title) > 10):
-            display_title = _RAW_ENGLISH_COMPOUND_KPI_RE.sub(
-                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
-                display_title,
-            )
-            display_title = _repair_broken_template_grammar(
-                display_title,
-                meta_lang,
-                fallback_pillar_ref or t("domain_control_standard_fallback", locale=meta_lang),
-            )
 
         card_table = TableNode(
             rows=[
@@ -4959,18 +5188,23 @@ class PayloadToASTBridge:
                             text=f"**{t('risk_card_vulnerability_label', locale=meta_lang)}:**\n{vuln_txt}",
                             font_size=8.0,
                             bg_color="FFFFFF",
-                            grid_span=6,
-                            width_dxa=4680,
+                            grid_span=12,
+                            width_dxa=9360,
                             border_left_color="E63946",
                             border_left_size=24,
                             align="LEFT",
                         ),
+                    ],
+                    cant_split=True,
+                ),
+                TableRowNode(
+                    cells=[
                         CellNode(
                             text=f"**{t('risk_card_operational_impact_label', locale=meta_lang)}:**\n{impact_txt}",
                             font_size=8.0,
                             bg_color="FFFFFF",
-                            grid_span=6,
-                            width_dxa=4680,
+                            grid_span=12,
+                            width_dxa=9360,
                             border_left_color="2A9D8F",
                             border_left_size=24,
                             align="LEFT",
@@ -4981,7 +5215,7 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=actuarial_box_text,
+                            text=f"**{cost_justification_title}:**\n{actuarial_box_text}",
                             font_size=8.0,
                             bg_color="F8F9FA",
                             grid_span=12,
@@ -5002,7 +5236,122 @@ class PayloadToASTBridge:
     def _build_conclusions_and_appendices(
         self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]] | None = None
     ) -> None:
-        # Streamlined Unified Appendix (RFC 053): Chapter 5 & Appendix A/B retired; glossary unified
+        meta_lang = ctx.get("meta_lang", "es")
+        blueprint_data = ctx.get("blueprint_data", {})
+        client_name = str(ctx.get("client_name") or "CLIENT")
+        tower_name = str(ctx.get("tower_name") or "Infrastructure Domain")
+
+        # Chapter 5: Conclusions & Strategic Transition Bridge (RFC 071)
+        nodes.append(PageBreakNode())
+        nodes.append(
+            HeadingNode(
+                text=t("conclusions_chapter_title", locale=meta_lang),
+                level=1,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(SpacerNode(points=12))
+
+        # Resolve exact maturity band and display score for Chapter 5
+        score_val = float(blueprint_data.get("maturity_score") or blueprint_data.get("current_score") or 2.50)
+        display_score = f"{format_number(score_val, locale=meta_lang, decimals=2)}/{format_number(5.0, locale=meta_lang, decimals=2)}"
+        exact_band = (
+            t("band_optimizing", locale=meta_lang) if score_val >= 4.5
+            else t("band_managed", locale=meta_lang) if score_val >= 3.5
+            else t("band_defined", locale=meta_lang) if score_val >= 2.5
+            else t("band_repeatable", locale=meta_lang) if score_val >= 1.5
+            else t("band_initial", locale=meta_lang)
+        )
+
+        intro_text = t(
+            "conclusions_summary_intro",
+            locale=meta_lang,
+            tower_name=tower_name,
+            client_name=client_name,
+            exact_band=exact_band,
+            display_score=display_score,
+        )
+        nodes.append(ParagraphNode(text=intro_text, space_after=10))
+
+        # Build Strategic Transition Bridge Table linking AS-IS risks to To-Be roadmap projects
+        projects: list[dict[str, Any]] = []
+        for p in blueprint_data.get("pillars_analysis", []):
+            if isinstance(p, dict):
+                for prj in p.get("projects_todo", []):
+                    if isinstance(prj, dict):
+                        projects.append(prj)
+
+        if projects:
+            nodes.append(
+                HeadingNode(
+                    text=t("bridge_table_title", locale=meta_lang),
+                    level=2,
+                    primary_color_rgb=self.primary_color_rgb,
+                )
+            )
+            nodes.append(SpacerNode(points=6))
+
+            hdr_bg = self.primary_color_hex
+            bridge_rows = [
+                TableRowNode(
+                    cells=[
+                        CellNode(text=t("bridge_col_risk_id", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5, align="CENTER"),
+                        CellNode(text=t("bridge_col_capability", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5),
+                        CellNode(text=t("bridge_col_project", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5),
+                        CellNode(text=t("bridge_col_horizon", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5, align="CENTER"),
+                    ],
+                    is_header=True,
+                )
+            ]
+
+            risks_map = {
+                r.get("id"): r
+                for r in (risks_data_list or [])
+                if isinstance(r, dict) and r.get("id")
+            }
+
+            for idx, prj in enumerate(projects[:8], start=1):
+                p_name = str(prj.get("name") or f"Project {idx}")
+                p_size = str(prj.get("sizing") or "M")
+                p_dur = str(prj.get("duration") or "H1")
+                horizon_str = f"{p_size} / {p_dur}"
+
+                risk_ref = prj.get("mitigates_risk_id")
+                matched_risk = risks_map.get(risk_ref) if risk_ref else None
+                if not matched_risk and idx - 1 < len(risks_data_list or []):
+                    matched_risk = (risks_data_list or [])[idx - 1]
+
+                r_id = matched_risk.get("id", f"RVS{idx:02d}") if matched_risk else f"RVS{idx:02d}"
+                r_cap = matched_risk.get("capability", matched_risk.get("pillar", "Technical Control")) if matched_risk else "Technical Capability Modernization"
+
+                bg_row = "F8FAFC" if idx % 2 == 1 else "FFFFFF"
+                bridge_rows.append(
+                    TableRowNode(
+                        cells=[
+                            CellNode(text=f"**[{r_id}]**", align="CENTER", bg_color=bg_row, font_size=8.0),
+                            CellNode(text=str(r_cap), bg_color=bg_row, font_size=8.0),
+                            CellNode(text=f"**{p_name}**", bg_color=bg_row, font_size=8.0),
+                            CellNode(text=horizon_str, align="CENTER", bg_color=bg_row, font_size=8.0),
+                        ]
+                    )
+                )
+
+            nodes.append(TableNode(rows=bridge_rows, autofit=True, col_widths=[0.14, 0.36, 0.35, 0.15]))
+            nodes.append(SpacerNode(points=10))
+
+        # Format total fair ale for closing text
+        total_ale_num = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in (risks_data_list or []) if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR")
+        formatted_ale_closing = format_currency(total_ale_num, currency_symbol=ctx.get("currency", "€"), locale=meta_lang, decimals=0)
+
+        closing_text = t(
+            "conclusions_closing_text",
+            locale=meta_lang,
+            client_name=client_name,
+            formatted_ale=formatted_ale_closing,
+        )
+        nodes.append(ParagraphNode(text=closing_text, space_after=14))
+
+        # Unified Appendix (Glossary & Legal Liability Disclaimer)
         _build_appendix_c_glossary_and_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
     def _parse_markdown_to_nodes(

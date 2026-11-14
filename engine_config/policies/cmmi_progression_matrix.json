@@ -134,12 +134,12 @@
       "L1_to_L2": {
         "en": [
           "Inspect, certify, and maintain clean-agent chemical fire suppression tanks and discharge nozzles",
-          "Deploy aspirating early warning smoke detection (VESDA) across all technical ceiling and underfloor voids",
+          "Deploy aspirating early warning smoke detection (aspirating systems) across all technical ceiling and underfloor voids",
           "Establish documented emergency shutdown and localized power interlock testing procedures"
         ],
         "es": [
           "Inspeccionar, retimbrar y certificar botellas y boquillas de extinción por agente limpio en todas las salas",
-          "Desplegar sistemas de detección precoz de humo por aspiración (VESDA) en ambiente y falsos suelos/techos",
+          "Desplegar sistemas de detección precoz de humo por aspiración en ambiente y falsos suelos/techos",
           "Documentar y ensayar procedimientos de corte de emergencia (EPO) y consignas de desenergización selectiva"
         ]
       },

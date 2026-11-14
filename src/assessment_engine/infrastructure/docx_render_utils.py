@@ -470,7 +470,7 @@ def insert_field_paragraph_after_block(
     return paragraph
 
 
-def add_run(paragraph: Any, text: Any, bold: Any = False, font_size: Any = 10.5) -> Any:
+def add_run(paragraph: Any, text: Any, bold: Any = False, font_size: Any = 9.5) -> Any:
     """Add a text run to a paragraph with specified bolding and font size."""
     run = paragraph.add_run(text)
     run.bold = bold
@@ -479,7 +479,7 @@ def add_run(paragraph: Any, text: Any, bold: Any = False, font_size: Any = 10.5)
 
 
 def apply_body_format(
-    paragraph: Any, justify: Any = True, space_after: Any = 6, font_size: Any = 10.5
+    paragraph: Any, justify: Any = True, space_after: Any = 6, font_size: Any = 9.5
 ) -> Any:
     r"""{'docstring': 'Apply standard body formatting to a `docx.text.paragraph.Paragraph` object.\n\nModifies the Paragraph object in-place. This function sets text alignment,\nvertical spacing, line spacing, and a uniform font size for all\nconstituent text runs. Specifically, it sets spacing-before to 0 points,\nline spacing to 1.05, and alignment to justified or left-aligned based\non the `justify` argument.\n\nArgs:\n    paragraph (docx.text.paragraph.Paragraph): The `python-docx` Paragraph\n        object to be formatted.\n    justify (bool): If True, justifies the paragraph text. Otherwise,\n        left-aligns the text. Defaults to True.\n    space_after (Union[int, float]): The space in points to add after the\n        paragraph. Defaults to 6.\n    font_size (Union[int, float]): The font size in points to apply to all\n        text runs in the paragraph. Defaults to 10.5.\n\nReturns:\n    None.\n\nRaises:\n    AttributeError: If the provided `paragraph` object does not have the\n        expected attributes of a `docx.text.paragraph.Paragraph` instance.\n    TypeError: If `space_after` or `font_size` are not numeric types\n        compatible with the `docx.shared.Pt` constructor.'}."""
     paragraph.alignment = (
@@ -1504,3 +1504,108 @@ def remove_page_break_only_paragraphs(doc) -> Any:
             to_remove.append(paragraph)
     for paragraph in to_remove:
         remove_paragraph(paragraph)
+
+
+def add_spacer(doc: Any, points: int = 12) -> Any:
+    """Add a vertical spacer of a specified point height to a document."""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_after = Pt(points)
+
+
+def clean_t_codes(text: Any) -> Any:
+    """Sanitize a string by removing specific internal annotation patterns."""
+    if not isinstance(text, str):
+        return text
+    text = re.sub(r"\(T\d{1,2}[^\)]*\)", "", text)
+    text = re.sub(r"\bT\d{1,2}\b", "", text)
+    text = re.sub(r"\[\[?REF:[^\]]*\]\]?", "", text)
+    return text.strip()
+
+
+def add_smart_bullet_list(container: Any, items: Any, color_rgb: Any = None, bold_prefix: bool = True) -> Any:
+    """Renders a list of strings as a formatted bulleted list within a python-docx container."""
+    if isinstance(items, str):
+        items = [items]
+    if not items:
+        return
+
+    for item in items:
+        p = container.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        try:
+            p.style = "List Bullet"
+        except KeyError:
+            p.paragraph_format.left_indent = Pt(20)
+            p.paragraph_format.first_line_indent = Pt(-15)
+            b = p.add_run("• ")
+            b.font.size = Pt(10.5)
+            if color_rgb:
+                b.font.color.rgb = color_rgb
+
+        p.paragraph_format.space_after = Pt(6)
+        text = clean_t_codes(str(item).strip())
+
+        sep = ": " if ": " in text else (" - " if " - " in text else None)
+        if sep:
+            parts = text.split(sep, 1)
+            r1 = p.add_run(parts[0] + sep)
+            r1.bold = bold_prefix
+            r1.font.size = Pt(10.5)
+            r2 = p.add_run(parts[1])
+            r2.font.size = Pt(10.5)
+            if color_rgb:
+                r1.font.color.rgb = color_rgb
+                r2.font.color.rgb = color_rgb
+        else:
+            r = p.add_run(text)
+            r.bold = bold_prefix
+            r.font.size = Pt(10.5)
+            if color_rgb:
+                r.font.color.rgb = color_rgb
+
+
+def create_page_number_footer(section: Any, doc_lang: str) -> Any:
+    """Adds a 'Page X of Y' footer to a document section, clearing the first page's footer."""
+    section.different_first_page_header_footer = True
+
+    first_page_footer = section.first_page_footer
+    for p in first_page_footer.paragraphs:
+        clear_paragraph(p)
+
+    footer = section.footer
+    paragraph = footer.paragraphs[0]
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    clear_paragraph(paragraph)
+
+    def add_field(p: Any, field_code: str) -> None:
+        fldChar1 = parse_xml(r'<w:fldChar %s w:fldCharType="begin"/>' % nsdecls("w"))
+        instrText = parse_xml(r'<w:instrText %s xml:space="preserve"> %s </w:instrText>' % (nsdecls("w"), field_code))
+        fldChar2 = parse_xml(r'<w:fldChar %s w:fldCharType="separate"/>' % nsdecls("w"))
+        fldChar3 = parse_xml(r'<w:fldChar %s w:fldCharType="end"/>' % nsdecls("w"))
+        run = p.add_run()
+        run._r.append(fldChar1)
+        run._r.append(instrText)
+        run._r.append(fldChar2)
+        run._r.append(fldChar3)
+        run.font.size = Pt(9)
+        run.font.name = "Arial"
+        run.font.color.rgb = RGBColor(128, 128, 128)
+
+    from assessment_engine.infrastructure.localization import t
+
+    prefix_str = t("footer_page_prefix", locale=doc_lang)
+    prefix_run = paragraph.add_run(prefix_str)
+    prefix_run.font.size = Pt(9)
+    prefix_run.font.name = "Arial"
+    prefix_run.font.color.rgb = RGBColor(128, 128, 128)
+
+    add_field(paragraph, "PAGE")
+
+    mid_str = t("footer_page_of", locale=doc_lang)
+    mid_run = paragraph.add_run(mid_str)
+    mid_run.font.size = Pt(9)
+    mid_run.font.name = "Arial"
+    mid_run.font.color.rgb = RGBColor(128, 128, 128)
+
+    add_field(paragraph, "NUMPAGES")
+

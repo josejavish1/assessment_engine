@@ -425,6 +425,11 @@ class PureTaxonomyResolver:
             if "es" in loc_dict:
                 return loc_dict["es"]
 
+        # Universal fallback: If capability name matches a known pillar concept, resolve dynamically
+        pillar_res = self.resolve_pillar_by_any_reference(norm_cap, default="", locale=norm_locale)
+        if pillar_res:
+            return pillar_res
+
         return default or cap_name
 
     @staticmethod

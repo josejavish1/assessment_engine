@@ -113,17 +113,15 @@ def generate_tower_case_inputs(
 
 
 def resolve_contextual_technology(tower_code: str, pillar_name: str, group_stack: list[dict[str, Any]]) -> str:
-    """Map tower domain to the most relevant technology component using external ontology configuration."""
-    onto_path = REPO_ROOT / "engine_config" / "ontology_taxonomies.json"
-    if onto_path.exists():
-        try:
-            onto_data = json.loads(onto_path.read_text(encoding="utf-8"))
-            t_info = onto_data.get("towers", {}).get(tower_code.upper(), {})
-            c_name = t_info.get("name")
-            if c_name:
-                return c_name
-        except Exception:
-            pass
+    """Map tower domain to the most relevant technology component using canonical TaxonomyResolver."""
+    try:
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        t_name = resolver.resolve_tower_name(tower_code.upper(), locale="es")
+        if t_name and not t_name.startswith("Tower "):
+            return t_name
+    except Exception:
+        pass
     return pillar_name
 
 

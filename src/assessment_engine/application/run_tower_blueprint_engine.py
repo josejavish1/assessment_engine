@@ -977,6 +977,118 @@ def _scrub_client_placeholders(obj: Any, name: str) -> Any:
     return obj
 
 
+def _enforce_executive_dignity_on_payload(obj: Any) -> Any:
+    """Recursively applies ExecutiveDignityFilter and FTE/pejorative scrubbing to all string fields in payload."""
+    import re
+    from assessment_engine.application.services.synthesis.gatekeeper import SemanticGatekeeper
+    gatekeeper = SemanticGatekeeper()
+
+    if isinstance(obj, dict):
+        return {k: _enforce_executive_dignity_on_payload(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_enforce_executive_dignity_on_payload(x) for x in obj]
+    elif isinstance(obj, str):
+        sanitized = gatekeeper.sanitize_executive_dignity(obj)
+        sanitized = re.sub(r"\b<\s*5\s*FTEs?\b", "un equipo operativo reducido", sanitized, flags=re.IGNORECASE)
+        sanitized = re.sub(r"\b<5\s*FTEs?\b", "un equipo operativo reducido", sanitized, flags=re.IGNORECASE)
+        sanitized = re.sub(r"\bespecialistas?\s+aislados?\b", "especialistas dedicados", sanitized, flags=re.IGNORECASE)
+        return sanitized
+    return obj
+
+
+def _hydrate_methodological_frameworks(blueprint_payload: dict[str, Any] | BlueprintPayload, client_name: str, tower_id: str) -> None:
+    """Injects a fully localized, SSOT-resolved methodological framework array into the payload."""
+    import json
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    from assessment_engine.infrastructure.storage.workspace_manager import WorkspacePersistenceManager
+
+    if isinstance(blueprint_payload, BlueprintPayload):
+        bp_dict = blueprint_payload.model_dump()
+    else:
+        bp_dict = blueprint_payload
+
+    # 1. Base Frameworks (CMMI and FAIR)
+    frameworks = [
+        {
+            "standard": "CMMI for Infrastructure",
+            "scope_key": "norm_row_cmmi_desc",
+            "purpose_key": "norm_row_cmmi_purp"
+        },
+    ]
+
+    # 2. Domain-Specific Engineering Standard
+    tower_cat_file = ROOT / "engine_config" / "towers" / "tower_catalog.json"
+    t_spec = {}
+    if tower_cat_file.exists():
+        try:
+            tower_cat = json.loads(tower_cat_file.read_text(encoding="utf-8-sig"))
+            t_spec = tower_cat.get(tower_id.upper()) or {}
+        except Exception:
+            pass
+
+    primary_std = bp_dict.get("document_meta", {}).get("regulatory_framework") or bp_dict.get("regulatory_framework") or t_spec.get("primary_engineering_standard", "ISO/IEC 27001")
+    desc_key = t_spec.get("standard_description_key", "norm_row_iso_desc")
+    purp_key = t_spec.get("standard_purpose_key", "norm_row_iso_purp")
+    frameworks.append({
+        "standard": primary_std,
+        "scope_key": desc_key,
+        "purpose_key": purp_key
+    })
+
+    frameworks.append({
+        "standard": "Open FAIR™",
+        "scope_key": "norm_row_fair_desc",
+        "purpose_key": "norm_row_fair_purp"
+    })
+
+    # 3. Client-Specific Regulatory Frameworks
+    ws_mgr = WorkspacePersistenceManager()
+    client_intel = ws_mgr.load_client_intelligence(client_name)
+    reg_fws = []
+    if client_intel and client_intel.profile:
+        raw_fws = client_intel.profile.regulatory_frameworks
+        if raw_fws:
+            reg_fws = [str(fw) for fw in raw_fws]
+
+    # If the client has specific regulatory frameworks in their intelligence profile, look them up.
+    # Otherwise, fallback to NIS2 for backward compatibility in European scenarios, but this is now data-driven.
+    target_fws = reg_fws if reg_fws else ["NIS2_ESSENTIAL"]
+
+    reg_cat_file = ROOT / "engine_config" / "regulatory_frameworks.json"
+    reg_cat = {}
+    if reg_cat_file.exists():
+        try:
+            reg_cat = json.loads(reg_cat_file.read_text(encoding="utf-8-sig")).get("frameworks_catalog", {})
+        except Exception:
+            pass
+
+    for fw_code in target_fws:
+        fw_data = reg_cat.get(fw_code)
+        if fw_data:
+            # We map standard specific keys to generic fallback keys
+            short_key = fw_data.get("short_label_key", f"reg.{fw_code.lower()}.short")
+            desc_key = f"norm_row_{fw_code.lower().replace('_essential', '').replace('_important', '')}_desc"
+            purp_key = f"norm_row_{fw_code.lower().replace('_essential', '').replace('_important', '')}_purp"
+            frameworks.append({
+                "standard": fw_code,
+                "standard_key": short_key,
+                "scope_key": desc_key,
+                "purpose_key": purp_key
+            })
+        elif fw_code == "NIS2":
+            frameworks.append({
+                "standard": "NIS2 (Directiva UE 2022/2555)",
+                "scope_key": "norm_row_nis2_desc",
+                "purpose_key": "norm_row_nis2_purp"
+            })
+
+    if isinstance(blueprint_payload, dict):
+        blueprint_payload["methodological_frameworks"] = frameworks
+    else:
+        # Pydantic mutation or extra fields. Assuming dict usage downstream is safe for extra keys.
+        blueprint_payload.methodological_frameworks = frameworks
+
+
 def _calculate_total_fair_ale(
     blueprint_payload: dict[str, Any] | BlueprintPayload,
 ) -> float:
@@ -1051,7 +1163,7 @@ async def run_tower_blueprint(
         or os.environ.get("ASSESSMENT_DOC_LANG")
         or os.environ.get("ASSESSMENT_LANGUAGE")
         or raw_intel_data.get("metadata", {}).get("lang")
-        or ("es" if "molins" in client_name.lower() else "en")
+        or "en"
     )
     from assessment_engine.infrastructure.localization import (
         resolve_base_locale,
@@ -1283,6 +1395,8 @@ async def run_tower_blueprint(
 
     # Phase 8: Scrubbing & Serialization
     blueprint_payload = _scrub_client_placeholders(blueprint_payload, client_name)
+    blueprint_payload = _enforce_executive_dignity_on_payload(blueprint_payload)
+    _hydrate_methodological_frameworks(blueprint_payload, client_name, tower_id)
 
     # Phase 8.1: Quantitative SSOT Reconciler Gatekeeper
     try:

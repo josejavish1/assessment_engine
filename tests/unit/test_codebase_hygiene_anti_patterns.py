@@ -103,11 +103,6 @@ def test_no_inline_language_ternaries_in_document_adapters() -> None:
         "render_tower_annex_from_template.py",
         "compilers/ast_table_builders.py",
         "compilers/payload_to_ast.py",
-        "compilers/asis_fair_chapter.py",
-        "compilers/asis_appendices_chapter.py",
-        "compilers/asis_conclusions_chapter.py",
-        "compilers/asis_maturity_chapter.py",
-        "compile_asis_docx_from_modules.py",
         "generate_asis_markdown_modules.py",
     ]
     banned_patterns = [

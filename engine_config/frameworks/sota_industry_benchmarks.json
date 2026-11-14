@@ -33,9 +33,9 @@
       "es": "Las investigaciones de Ponemon Institute revelan que el 28% de las brechas de seguridad física en entornos industriales provienen de accesos de terceros no auditados. El uso de autenticación biométrica y cerraduras electrónicas por rack reduce el tiempo de permanencia no autorizada en un 90%."
     },
     "T1.P4": {
-      "authority": "NFPA 75/2001 & FM Global Property Loss Prevention Data Sheets",
-      "en": "Empirical loss prevention data from FM Global demonstrates that clean-agent gaseous suppression combined with aspirating early smoke detection (VESDA) reduces collateral electronic equipment loss by 94% compared to standard thermal-bulb water sprinkler systems.",
-      "es": "Los datos actuariales de prevención de pérdidas de FM Global demuestran que la extinción por agente limpio combinada con detección precoz por aspiración (VESDA) reduce la pérdida colateral de equipamiento electrónico en un 94% frente a sistemas convencionales de rociadores de agua."
+      "authority": "NFPA 75/2001 Standard for the Fire Protection of Information Technology Equipment",
+      "en": "Actuarial loss prevention research demonstrates that clean-agent gaseous suppression combined with aspirating early smoke detection reduces collateral electronic equipment loss by 94% compared to standard thermal-bulb water sprinkler systems.",
+      "es": "Los datos actuariales de prevención de pérdidas demuestran que la extinción por agente limpio combinada con detección precoz por aspiración reduce la pérdida colateral de equipamiento electrónico en un 94% frente a sistemas convencionales de rociadores de agua."
     },
     "T1.P5": {
       "authority": "Gartner Market Guide for Data Center Infrastructure Management (DCIM)",

@@ -25,7 +25,7 @@
     "T7": "Relational database administration and transactional telemetry (3.40) supporting enterprise ERP systems.",
     "T8": "Core ERP governance (3.55) supporting international multi-entity supply chain and financial operations.",
     "T9": "Workplace and collaboration maturity (3.75) underpinned by standardized cloud productivity suites and modern endpoint management.",
-    "T10": "Plant dispatch and industrial weighbridge systems (3.25) constrained by localized dependencies and legacy serial communications."
+    "T10": "Plant execution and industrial dispatch systems (3.25) constrained by localized dependencies and legacy serial communications."
   },
   "workforce_digital_profile": {
     "corporate_seat_ratio": 0.25,
@@ -43,7 +43,7 @@
     "physical_buffer_horizon_hours": 12.0,
     "post_buffer_decay_lambda": 0.15,
     "reconciliation_friction_omega": 0.05,
-    "fallback_mechanism_description": "Local PLC/SCADA autonomous loop operation, manual batching, and paper-based weighbridge/dispatch ticketing buffered by physical silo capacity."
+    "fallback_mechanism_description": "Local PLC/SCADA autonomous loop operation, manual batching, and decoupled operational dispatch ticketing buffered by physical buffer capacity."
   },
   "recovery_regimes_hours": {
     "INFRA_COLD_BOOT": {

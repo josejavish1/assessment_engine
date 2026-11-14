@@ -66,35 +66,35 @@ polarity_cues:
 
 domain_taxonomy_rules:
   T1:
-    name: "Core Facilities & Datacenter"
-    keywords: ["datacenter", "data center", "ups", "hvac", "cooling", "generator", "facilities", "power", "rack", "colocation"]
+    name: "Physical Data Center & Facilities"
+    keywords: ["datacenter", "data center", "ups", "hvac", "cooling", "generator", "facilities", "power", "rack", "colocation", "raised floor"]
   T2:
-    name: "Compute & Virtualization"
-    keywords: ["virtualization", "vmware", "vsphere", "simplivity", "proxmox", "compute", "cluster", "esxi", "vcenter", "hyper-v", "nutanix", "kubernetes"]
+    name: "Hybrid Compute & Virtualization Platforms"
+    keywords: ["virtualization", "hypervisor", "virtual machine", "compute", "cluster", "container", "kubernetes", "bare metal", "server hosts", "cloud compute"]
   T3:
-    name: "Storage & Data Protection"
-    keywords: ["storage", "netapp", "vnx", "san", "nas", "backup", "cohesity", "veeam", "s3", "metrocluster", "recovery", "replication", "snapshot"]
+    name: "Networks & Connectivity Architecture"
+    keywords: ["network", "switch", "routing", "lan", "wan", "sd-wan", "firewall", "vpn", "fiber", "bgp", "mpls", "transit", "interconnect"]
   T4:
-    name: "Enterprise Networking & Connectivity"
-    keywords: ["network", "switch", "routing", "lan", "wan", "sd-wan", "huawei", "firewall", "fortinet", "fortigate", "vpn", "equinix", "fiber", "bgp", "mpls"]
+    name: "Storage Systems & Data Protection"
+    keywords: ["storage", "san", "nas", "storage array", "lun", "backup", "data protection", "immutable storage", "lakehouse", "data platform", "replication", "snapshot"]
   T5:
-    name: "Edge, Industrial & Operational Technology"
-    keywords: ["edge", "industrial", "ot", "scada", "plc", "iot", "telemetry", "plant", "manufacturing", "branch", "point of sale", "hivision"]
+    name: "Operational Resilience & Disaster Recovery"
+    keywords: ["resilience", "business continuity", "drp", "disaster recovery", "failover", "runbook", "cyber vault", "bcp", "recovery point", "failover drill"]
   T6:
-    name: "Identity & Access Management"
-    keywords: ["identity", "active directory", "entra", "iam", "pam", "mfa", "rbac", "privileged", "cyberark", "credential", "sso", "okta"]
+    name: "Cybersecurity Architecture & Identity Governance"
+    keywords: ["security", "cybersecurity", "identity", "active directory", "iam", "pam", "mfa", "rbac", "edr", "siem", "soc", "zero trust"]
   T7:
-    name: "Cloud Platforms & Core ERP"
-    keywords: ["cloud", "gcp", "azure", "oci", "aws", "sap", "s/4hana", "erp", "iaas", "paas", "saas", "hyperscaler"]
+    name: "ITSM & Observability Operations"
+    keywords: ["itsm", "service management", "cmdb", "change management", "incident management", "sla", "observability", "monitoring", "apm", "sre", "telemetry"]
   T8:
-    name: "Cybersecurity & SecOps"
-    keywords: ["cybersecurity", "security", "edr", "xdr", "soc", "siem", "vulnerability", "patching", "ransomware", "antivirus", "netskope", "ztna", "iso27001"]
+    name: "FinOps & Cloud Economics"
+    keywords: ["finops", "cloud economics", "cost optimization", "software licensing", "cloud billing", "subscription", "it governance", "fiduciary"]
   T9:
-    name: "Digital Workplace & End-User Computing"
-    keywords: ["workplace", "endpoint", "laptop", "desktop", "vdi", "m365", "office 365", "teams", "helpdesk", "service desk", "itsm", "ticketing"]
+    name: "Digital Workplace & End-User Productivity"
+    keywords: ["workplace", "digital workplace", "endpoint", "laptop", "desktop", "vdi", "collaboration", "helpdesk", "service desk", "client compute"]
   T10:
-    name: "Application Modernization & Integration"
-    keywords: ["modernization", "legacy", "technical debt", "iseries", "as400", "mainframe", "oracle forms", "architecture", "middleware", "wso2", "api gateway", "integration"]
+    name: "Core Transactional Systems & Industrial Operations"
+    keywords: ["modernization", "legacy", "technical debt", "core systems", "transactional", "industrial", "ot", "scada", "plc", "plant floor", "mes", "manufacturing", "dispatch"]
 
 canonical_entities:
   - canonical_name: "VMware vSphere"

@@ -88,7 +88,7 @@ def test_i18n_pure_resolution_zero_spanish_leakage() -> None:
 def test_i18n_ast_zero_hardcoded_spanish_fallbacks() -> None:
     """AST INVARIANT: Assert zero hardcoded Spanish UI fallback strings in adapter functions."""
     root = Path(__file__).resolve().parents[2]
-    adapter_file = root / "src" / "assessment_engine" / "adapters" / "compile_asis_docx_from_modules.py"
+    adapter_file = root / "src" / "assessment_engine" / "adapters" / "compilers" / "payload_to_ast.py"
     assert adapter_file.exists(), f"Target adapter {adapter_file} must exist."
 
     tree = ast.parse(adapter_file.read_text(encoding="utf-8"))

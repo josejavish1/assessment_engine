@@ -125,10 +125,10 @@
         },
         "kpis": {
           "T1.P3.K1": {
-            "canonical_name": "Zoned Physical Access Control & Biometric Multi-Factor Authentication",
+            "canonical_name": "Zoned Physical Access Control and Privilege Governance",
             "locales": {
-              "en": "Zoned Physical Access Control & Biometric Multi-Factor Authentication",
-              "es": "Control de Acceso Físico Zonificado y Autenticación Biométrica",
+              "en": "Zoned Physical Access Control and Privilege Governance",
+              "es": "Control de Acceso Físico Zonificado y Gestión de Permisos",
               "pt": "Controle de Acesso Físico Zonificado e Autenticação Biométrica",
               "fr": "Contrôle d'Accès Physique Zoné et Authentification Biométrique",
               "de": "Zonierte physische Zutrittskontrolle & biometrische MFA",
@@ -171,14 +171,14 @@
         },
         "kpis": {
           "T1.P4.K1": {
-            "canonical_name": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization",
+            "canonical_name": "Early Fire Detection and Room Compartmentation",
             "locales": {
-              "en": "Early Fire Detection (VESDA/Aspirating Smoke) & Room Compartmentalization",
-              "es": "Detección Temprana de Incendios (VESDA) y Sectorización de Salas",
-              "pt": "Detecção Precoce de Incêndio (VESDA) e Compartimentação de Salas",
-              "fr": "Détection Incendie Précoce (VESDA) et Compartimentation des Salles",
-              "de": "Frühe Brandfrüherkennung (VESDA) & Raumkompartimentierung",
-              "ja": "超高感度煙検知（VESDA）および防火区画化"
+              "en": "Early Fire Detection and Room Compartmentation",
+              "es": "Detección Temprana de Incendios y Sectorización de Salas",
+              "pt": "Detecção Precoce de Incêndio por Aspiração e Compartimentação de Salas",
+              "fr": "Détection Incendie Précoce par Aspiration et Compartimentation des Salles",
+              "de": "Frühe Brandfrüherkennung durch Ansaugung & Raumkompartimentierung",
+              "ja": "超高感度吸引煙検知および防火区画化"
             }
           },
           "T1.P4.K2": {
@@ -277,6 +277,52 @@
           "fr": "Fondations de Calcul et Virtualisation",
           "de": "Compute-Grundlagen & Virtualisierung",
           "ja": "コンピュート基盤および仮想化"
+        },
+        "kpis": {
+          "T2.P1.K1": {
+            "canonical_name": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
+            "locales": {
+              "en": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
+              "es": "Estandarización del Parque de Cómputo (Clústeres, Servidores y Baselines de Hardware)",
+              "pt": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
+              "fr": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
+              "de": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)",
+              "ja": "Compute Estate Standardization (Clusters, Hosts & Hardware Baselines)"
+            }
+          },
+          "T2.P1.K2": {
+            "canonical_name": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
+            "locales": {
+              "en": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
+              "es": "Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO)",
+              "pt": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
+              "fr": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
+              "de": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)",
+              "ja": "Compute Lifecycle Management (Patching, Firmware & OS Upgrades)"
+            }
+          },
+          "T2.P1.K3": {
+            "canonical_name": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
+            "locales": {
+              "en": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
+              "es": "Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM)",
+              "pt": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
+              "fr": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
+              "de": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)",
+              "ja": "Capacity & Performance Management (CPU/RAM Overcommit & Saturation)"
+            }
+          },
+          "T2.P1.K4": {
+            "canonical_name": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
+            "locales": {
+              "en": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
+              "es": "Disponibilidad de la Plataforma de Cómputo (Alta Disponibilidad de Nodos y Mantenibilidad Concurrente)",
+              "pt": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
+              "fr": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
+              "de": "Compute Platform Availability (Host HA & Concurrent Maintainability)",
+              "ja": "Compute Platform Availability (Host HA & Concurrent Maintainability)"
+            }
+          }
         }
       },
       "T2.P2": {
@@ -288,6 +334,52 @@
           "fr": "Plateforme de Conteneurs et Exploitation Kubernetes",
           "de": "Container-Plattform & Kubernetes-Betrieb",
           "ja": "コンテナプラットフォームおよびKubernetes運用"
+        },
+        "kpis": {
+          "T2.P2.K1": {
+            "canonical_name": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
+            "locales": {
+              "en": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
+              "es": "Servicios Nucleares de Kubernetes (Ingress, Registry, Certificados y Clases de Almacenamiento)",
+              "pt": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
+              "fr": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
+              "de": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)",
+              "ja": "Core Kubernetes Services (Ingress, Registry, Certificates & Storage Classes)"
+            }
+          },
+          "T2.P2.K2": {
+            "canonical_name": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
+            "locales": {
+              "en": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
+              "es": "Gestión del Ciclo de Vida de Clústeres (Actualizaciones de Versión y Obsolescencia de APIs)",
+              "pt": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
+              "fr": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
+              "de": "Cluster Lifecycle Management (Version Upgrades & Deprecations)",
+              "ja": "Cluster Lifecycle Management (Version Upgrades & Deprecations)"
+            }
+          },
+          "T2.P2.K3": {
+            "canonical_name": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
+            "locales": {
+              "en": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
+              "es": "Seguridad de Contenedores y Aislamiento (RBAC, Namespaces y Políticas de Red)",
+              "pt": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
+              "fr": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
+              "de": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)",
+              "ja": "Container Security Baseline & Isolation (RBAC, Namespaces & Network Policies)"
+            }
+          },
+          "T2.P2.K4": {
+            "canonical_name": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
+            "locales": {
+              "en": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
+              "es": "Operaciones de Clústeres y Fiabilidad de Nodos (Runbooks y Triaje de Capacidad)",
+              "pt": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
+              "fr": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
+              "de": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)",
+              "ja": "Cluster Operations & Node Reliability (Runbooks & Node Capacity Triage)"
+            }
+          }
         }
       },
       "T2.P3": {
@@ -299,6 +391,52 @@
           "fr": "Activation du Cloud Hybride et Landing Zones",
           "de": "Hybrid Cloud Enablement & Landing Zones",
           "ja": "ハイブリッドクラウド有効化およびランディングゾーン"
+        },
+        "kpis": {
+          "T2.P3.K1": {
+            "canonical_name": "Cloud Landing Zone Architecture & Multi-Account Structure",
+            "locales": {
+              "en": "Cloud Landing Zone Architecture & Multi-Account Structure",
+              "es": "Arquitectura de Landing Zone y Estructura Multicuenta Multicloud",
+              "pt": "Cloud Landing Zone Architecture & Multi-Account Structure",
+              "fr": "Cloud Landing Zone Architecture & Multi-Account Structure",
+              "de": "Cloud Landing Zone Architecture & Multi-Account Structure",
+              "ja": "Cloud Landing Zone Architecture & Multi-Account Structure"
+            }
+          },
+          "T2.P3.K2": {
+            "canonical_name": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
+            "locales": {
+              "en": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
+              "es": "Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code)",
+              "pt": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
+              "fr": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
+              "de": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)",
+              "ja": "Cloud Governance Guardrails & Technical Policy Enforcement (Policy-as-Code)"
+            }
+          },
+          "T2.P3.K3": {
+            "canonical_name": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
+            "locales": {
+              "en": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
+              "es": "Patrones de Despliegue Híbrido e Interoperabilidad Multicloud",
+              "pt": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
+              "fr": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
+              "de": "Hybrid Deployment Patterns & Cross-Cloud Interoperability",
+              "ja": "Hybrid Deployment Patterns & Cross-Cloud Interoperability"
+            }
+          },
+          "T2.P3.K4": {
+            "canonical_name": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
+            "locales": {
+              "en": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
+              "es": "Gobernanza de Consumo Cloud (Etiquetado, Showback y Límites Presupuestarios)",
+              "pt": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
+              "fr": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
+              "de": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)",
+              "ja": "Cloud Consumption Governance (Tagging, Showback & Budget Guardrails)"
+            }
+          }
         }
       },
       "T2.P4": {
@@ -310,6 +448,63 @@
           "fr": "Automatisation, Approvisionnement et Libre-service",
           "de": "Automatisierung, Bereitstellung & Plattform-Self-Service",
           "ja": "自動化・プロビジョニングおよびセルフサービス"
+        },
+        "kpis": {
+          "T2.P4.K1": {
+            "canonical_name": "Infrastructure as Code (IaC) Provisioning Coverage",
+            "locales": {
+              "en": "Infrastructure as Code (IaC) Provisioning Coverage",
+              "es": "Aprovisionamiento Declarativo mediante Infraestructura como Código (IaC)",
+              "pt": "Infrastructure as Code (IaC) Provisioning Coverage",
+              "fr": "Infrastructure as Code (IaC) Provisioning Coverage",
+              "de": "Infrastructure as Code (IaC) Provisioning Coverage",
+              "ja": "Infrastructure as Code (IaC) Provisioning Coverage"
+            }
+          },
+          "T2.P4.K2": {
+            "canonical_name": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
+            "locales": {
+              "en": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
+              "es": "Madurez del Catálogo de Servicios y Tiempos de Entrega Autoservicio",
+              "pt": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
+              "fr": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
+              "de": "Service Catalog Maturity & Self-Service Provisioning Lead Time",
+              "ja": "Service Catalog Maturity & Self-Service Provisioning Lead Time"
+            }
+          },
+          "T2.P4.K3": {
+            "canonical_name": "Golden Image Pipeline & Standard Baseline Configuration",
+            "locales": {
+              "en": "Golden Image Pipeline & Standard Baseline Configuration",
+              "es": "Pipeline de Imágenes Golden y Baselines de Configuración Inmutable",
+              "pt": "Golden Image Pipeline & Standard Baseline Configuration",
+              "fr": "Golden Image Pipeline & Standard Baseline Configuration",
+              "de": "Golden Image Pipeline & Standard Baseline Configuration",
+              "ja": "Golden Image Pipeline & Standard Baseline Configuration"
+            }
+          },
+          "T2.P4.K4": {
+            "canonical_name": "Platform Engineering Operating Model (Platform as a Product)",
+            "locales": {
+              "en": "Platform Engineering Operating Model (Platform as a Product)",
+              "es": "Modelo Operativo de Ingeniería de Plataforma (Platform as a Product)",
+              "pt": "Platform Engineering Operating Model (Platform as a Product)",
+              "fr": "Platform Engineering Operating Model (Platform as a Product)",
+              "de": "Platform Engineering Operating Model (Platform as a Product)",
+              "ja": "Platform Engineering Operating Model (Platform as a Product)"
+            }
+          },
+          "T2.P4.K5": {
+            "canonical_name": "Developer Experience (DevEx) & Internal Platform Adoption",
+            "locales": {
+              "en": "Developer Experience (DevEx) & Internal Platform Adoption",
+              "es": "Experiencia de Desarrollo (DevEx) y Adopción Interna de la Plataforma",
+              "pt": "Developer Experience (DevEx) & Internal Platform Adoption",
+              "fr": "Developer Experience (DevEx) & Internal Platform Adoption",
+              "de": "Developer Experience (DevEx) & Internal Platform Adoption",
+              "ja": "Developer Experience (DevEx) & Internal Platform Adoption"
+            }
+          }
         }
       },
       "T2.P5": {
@@ -321,6 +516,52 @@
           "fr": "Exploitation de Plateforme, Observabilité et Fiabilité",
           "de": "Plattformbetrieb, Observability & Zuverlässigkeit",
           "ja": "プラットフォーム運用・可観測性および信頼性"
+        },
+        "kpis": {
+          "T2.P5.K1": {
+            "canonical_name": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
+            "locales": {
+              "en": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
+              "es": "Cobertura de Observabilidad de Plataforma (Métricas, Logs, Trazas y Alarmas)",
+              "pt": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
+              "fr": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
+              "de": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)",
+              "ja": "Platform Observability Coverage (Metrics, Logs, Traces & Alerts)"
+            }
+          },
+          "T2.P5.K2": {
+            "canonical_name": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
+            "locales": {
+              "en": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
+              "es": "Objetivos de Nivel de Servicio (SLOs) y Presupuestos de Error de Plataforma",
+              "pt": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
+              "fr": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
+              "de": "Platform Service Level Objectives (SLOs) & Error Budget Tracking",
+              "ja": "Platform Service Level Objectives (SLOs) & Error Budget Tracking"
+            }
+          },
+          "T2.P5.K3": {
+            "canonical_name": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
+            "locales": {
+              "en": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
+              "es": "Respuesta a Incidentes de Plataforma, Post-Mortems Sin Culpa y Runbooks",
+              "pt": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
+              "fr": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
+              "de": "Platform Incident Response, Blameless Post-Mortems & Runbooks",
+              "ja": "Platform Incident Response, Blameless Post-Mortems & Runbooks"
+            }
+          },
+          "T2.P5.K4": {
+            "canonical_name": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
+            "locales": {
+              "en": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
+              "es": "Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías",
+              "pt": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
+              "fr": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
+              "de": "Predictive Capacity Forecasting & Proactive Anomaly Prevention",
+              "ja": "Predictive Capacity Forecasting & Proactive Anomaly Prevention"
+            }
+          }
         }
       }
     },
@@ -695,6 +936,52 @@
           "fr": "Architecture de Stockage et Niveaux de Service",
           "de": "Speicherarchitektur & Service Levels",
           "ja": "ストレージアーキテクチャおよびサービスレベル"
+        },
+        "kpis": {
+          "T4.P1.K1": {
+            "canonical_name": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
+            "locales": {
+              "en": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
+              "es": "Catálogo de Servicios de Almacenamiento y Acuerdos de Nivel de Servicio (SLAs)",
+              "pt": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
+              "fr": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
+              "de": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)",
+              "ja": "Storage Service Catalog & Tiered Service Level Agreements (SLAs)"
+            }
+          },
+          "T4.P1.K2": {
+            "canonical_name": "Storage Protocol Governance (Block, File & Object Alignment)",
+            "locales": {
+              "en": "Storage Protocol Governance (Block, File & Object Alignment)",
+              "es": "Gobernanza de Protocolos de Almacenamiento (Bloque, Fichero y Objeto)",
+              "pt": "Storage Protocol Governance (Block, File & Object Alignment)",
+              "fr": "Storage Protocol Governance (Block, File & Object Alignment)",
+              "de": "Storage Protocol Governance (Block, File & Object Alignment)",
+              "ja": "Storage Protocol Governance (Block, File & Object Alignment)"
+            }
+          },
+          "T4.P1.K3": {
+            "canonical_name": "Storage Fabric Resiliency & High-Availability Architecture",
+            "locales": {
+              "en": "Storage Fabric Resiliency & High-Availability Architecture",
+              "es": "Resiliencia de la Red de Almacenamiento (Fabric) y Alta Disponibilidad",
+              "pt": "Storage Fabric Resiliency & High-Availability Architecture",
+              "fr": "Storage Fabric Resiliency & High-Availability Architecture",
+              "de": "Storage Fabric Resiliency & High-Availability Architecture",
+              "ja": "Storage Fabric Resiliency & High-Availability Architecture"
+            }
+          },
+          "T4.P1.K4": {
+            "canonical_name": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
+            "locales": {
+              "en": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
+              "es": "Estandarización del Aprovisionamiento (Nomenclatura, Cuotas y Plantillas)",
+              "pt": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
+              "fr": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
+              "de": "Provisioning Standardization (Naming, Quotas & Allocation Templates)",
+              "ja": "Provisioning Standardization (Naming, Quotas & Allocation Templates)"
+            }
+          }
         }
       },
       "T4.P2": {
@@ -706,6 +993,52 @@
           "fr": "Performance, Capacité et Cycle de Vie du Stockage",
           "de": "Leistung, Kapazität & Lifecycle-Management",
           "ja": "パフォーマンス・容量およびライフサイクル管理"
+        },
+        "kpis": {
+          "T4.P2.K1": {
+            "canonical_name": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
+            "locales": {
+              "en": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
+              "es": "Cumplimiento de SLAs de Rendimiento (IOPS, Latencia y Throughput)",
+              "pt": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
+              "fr": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
+              "de": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)",
+              "ja": "Storage Performance SLA Compliance (IOPS, Latency & Throughput)"
+            }
+          },
+          "T4.P2.K2": {
+            "canonical_name": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
+            "locales": {
+              "en": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
+              "es": "Gobernanza de Capacidad (Espacio Asignado vs Margen Útil)",
+              "pt": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
+              "fr": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
+              "de": "Capacity Utilization Governance (Allocated vs Usable Headroom)",
+              "ja": "Capacity Utilization Governance (Allocated vs Usable Headroom)"
+            }
+          },
+          "T4.P2.K3": {
+            "canonical_name": "Storage Capacity Forecasting & Proactive Growth Modeling",
+            "locales": {
+              "en": "Storage Capacity Forecasting & Proactive Growth Modeling",
+              "es": "Previsión de Capacidad de Almacenamiento y Modelado de Crecimiento",
+              "pt": "Storage Capacity Forecasting & Proactive Growth Modeling",
+              "fr": "Storage Capacity Forecasting & Proactive Growth Modeling",
+              "de": "Storage Capacity Forecasting & Proactive Growth Modeling",
+              "ja": "Storage Capacity Forecasting & Proactive Growth Modeling"
+            }
+          },
+          "T4.P2.K4": {
+            "canonical_name": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
+            "locales": {
+              "en": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
+              "es": "Ciclo de Vida de Cabinas de Almacenamiento (Firmware, Upgrades y Renovación)",
+              "pt": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
+              "fr": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
+              "de": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)",
+              "ja": "Storage Array Lifecycle (Firmware, Upgrades & Hardware Refresh)"
+            }
+          }
         }
       },
       "T4.P3": {
@@ -717,6 +1050,52 @@
           "fr": "Services de Données : Snapshots, Réplication et Efficacité",
           "de": "Datendienste: Snapshots, Replikation & Effizienz",
           "ja": "データサービス：スナップショット・レプリケーションおよび効率化"
+        },
+        "kpis": {
+          "T4.P3.K1": {
+            "canonical_name": "Snapshot Policy Governance & Application Consistency Verification",
+            "locales": {
+              "en": "Snapshot Policy Governance & Application Consistency Verification",
+              "es": "Snapshot Policy Governance & Application Consistency Verification",
+              "pt": "Snapshot Policy Governance & Application Consistency Verification",
+              "fr": "Snapshot Policy Governance & Application Consistency Verification",
+              "de": "Snapshot Policy Governance & Application Consistency Verification",
+              "ja": "Snapshot Policy Governance & Application Consistency Verification"
+            }
+          },
+          "T4.P3.K2": {
+            "canonical_name": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+            "locales": {
+              "en": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+              "es": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+              "pt": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+              "fr": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+              "de": "Storage Replication Management (RPO, Sync/Async SLA Testing)",
+              "ja": "Storage Replication Management (RPO, Sync/Async SLA Testing)"
+            }
+          },
+          "T4.P3.K3": {
+            "canonical_name": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+            "locales": {
+              "en": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+              "es": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+              "pt": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+              "fr": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+              "de": "Data Efficiency Optimization (Deduplication, Compression & Tiering)",
+              "ja": "Data Efficiency Optimization (Deduplication, Compression & Tiering)"
+            }
+          },
+          "T4.P3.K4": {
+            "canonical_name": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+            "locales": {
+              "en": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+              "es": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+              "pt": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+              "fr": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+              "de": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation",
+              "ja": "Storage Quality of Service (QoS) & Noisy-Neighbor Mitigation"
+            }
+          }
         }
       },
       "T4.P4": {
@@ -728,6 +1107,41 @@
           "fr": "Sécurité et Contrôle d'Accès aux Plateformes de Données",
           "de": "Sicherheit & Zugriffskontrolle für Datenplattformen",
           "ja": "データプラットフォームのセキュリティおよびアクセス制御"
+        },
+        "kpis": {
+          "T4.P4.K1": {
+            "canonical_name": "Storage Access Control & Multi-Tenancy Isolation",
+            "locales": {
+              "en": "Storage Access Control & Multi-Tenancy Isolation",
+              "es": "Storage Access Control & Multi-Tenancy Isolation",
+              "pt": "Storage Access Control & Multi-Tenancy Isolation",
+              "fr": "Storage Access Control & Multi-Tenancy Isolation",
+              "de": "Storage Access Control & Multi-Tenancy Isolation",
+              "ja": "Storage Access Control & Multi-Tenancy Isolation"
+            }
+          },
+          "T4.P4.K2": {
+            "canonical_name": "Data Encryption at Rest & Key Management Integration",
+            "locales": {
+              "en": "Data Encryption at Rest & Key Management Integration",
+              "es": "Data Encryption at Rest & Key Management Integration",
+              "pt": "Data Encryption at Rest & Key Management Integration",
+              "fr": "Data Encryption at Rest & Key Management Integration",
+              "de": "Data Encryption at Rest & Key Management Integration",
+              "ja": "Data Encryption at Rest & Key Management Integration"
+            }
+          },
+          "T4.P4.K3": {
+            "canonical_name": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+            "locales": {
+              "en": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+              "es": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+              "pt": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+              "fr": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+              "de": "Storage Audit Logging, Tamper-Resistance & Access Tracking",
+              "ja": "Storage Audit Logging, Tamper-Resistance & Access Tracking"
+            }
+          }
         }
       },
       "T4.P5": {
@@ -739,6 +1153,52 @@
           "fr": "Intégration de Plateforme et Exploitation du Stockage",
           "de": "Plattformintegration & Speicherbetrieb",
           "ja": "プラットフォーム統合およびストレージ運用"
+        },
+        "kpis": {
+          "T4.P5.K1": {
+            "canonical_name": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+            "locales": {
+              "en": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+              "es": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+              "pt": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+              "fr": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+              "de": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)",
+              "ja": "Hypervisor Storage Integration (Datastores, Multipathing & VAAI)"
+            }
+          },
+          "T4.P5.K2": {
+            "canonical_name": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+            "locales": {
+              "en": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+              "es": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+              "pt": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+              "fr": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+              "de": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)",
+              "ja": "Kubernetes Storage Integration (CSI Drivers & Dynamic Provisioning)"
+            }
+          },
+          "T4.P5.K3": {
+            "canonical_name": "Automated Storage Provisioning & Self-Service Workflows",
+            "locales": {
+              "en": "Automated Storage Provisioning & Self-Service Workflows",
+              "es": "Automated Storage Provisioning & Self-Service Workflows",
+              "pt": "Automated Storage Provisioning & Self-Service Workflows",
+              "fr": "Automated Storage Provisioning & Self-Service Workflows",
+              "de": "Automated Storage Provisioning & Self-Service Workflows",
+              "ja": "Automated Storage Provisioning & Self-Service Workflows"
+            }
+          },
+          "T4.P5.K4": {
+            "canonical_name": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+            "locales": {
+              "en": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "es": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "pt": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "fr": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "de": "Cross-Domain Storage Operations & Cross-Functional Runbooks",
+              "ja": "Cross-Domain Storage Operations & Cross-Functional Runbooks"
+            }
+          }
         }
       }
     },
@@ -767,6 +1227,52 @@
           "fr": "Gouvernance BC/DR et Stratégie de Continuité",
           "de": "BC/DR-Governance & Kontinuitätsstrategie",
           "ja": "BC/DRガバナンスおよび事業継続戦略"
+        },
+        "kpis": {
+          "T5.P1.K1": {
+            "canonical_name": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+            "locales": {
+              "en": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "es": "Definición de RTO/RPO y Análisis de Impacto en el Negocio (BIA)",
+              "pt": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "fr": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "de": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "ja": "Service RTO/RPO Definition & Business Impact Analysis (BIA)"
+            }
+          },
+          "T5.P1.K2": {
+            "canonical_name": "Continuity Scope & Critical Third-Party Dependency Mapping",
+            "locales": {
+              "en": "Continuity Scope & Critical Third-Party Dependency Mapping",
+              "es": "Alcance de Continuidad y Mapeo de Dependencias de Terceros",
+              "pt": "Continuity Scope & Critical Third-Party Dependency Mapping",
+              "fr": "Continuity Scope & Critical Third-Party Dependency Mapping",
+              "de": "Continuity Scope & Critical Third-Party Dependency Mapping",
+              "ja": "Continuity Scope & Critical Third-Party Dependency Mapping"
+            }
+          },
+          "T5.P1.K3": {
+            "canonical_name": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+            "locales": {
+              "en": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+              "es": "Modelo Operativo de Continuidad (RACI y Escalado de Crisis)",
+              "pt": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+              "fr": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+              "de": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+              "ja": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)"
+            }
+          },
+          "T5.P1.K4": {
+            "canonical_name": "Continuity Testing Program & Continuous Drills Verification",
+            "locales": {
+              "en": "Continuity Testing Program & Continuous Drills Verification",
+              "es": "Programa de Pruebas de Continuidad y Simulacros Periódicos",
+              "pt": "Continuity Testing Program & Continuous Drills Verification",
+              "fr": "Continuity Testing Program & Continuous Drills Verification",
+              "de": "Continuity Testing Program & Continuous Drills Verification",
+              "ja": "Continuity Testing Program & Continuous Drills Verification"
+            }
+          }
         }
       },
       "T5.P2": {
@@ -778,6 +1284,52 @@
           "fr": "Sauvegarde et Restauration Opérationnelle",
           "de": "Backup & Restore Betriebsbereitschaft",
           "ja": "バックアップおよび復旧の運用態勢"
+        },
+        "kpis": {
+          "T5.P2.K1": {
+            "canonical_name": "Backup Coverage Across Mission-Critical Production Systems",
+            "locales": {
+              "en": "Backup Coverage Across Mission-Critical Production Systems",
+              "es": "Cobertura de Copias de Seguridad en Sistemas Críticos",
+              "pt": "Backup Coverage Across Mission-Critical Production Systems",
+              "fr": "Backup Coverage Across Mission-Critical Production Systems",
+              "de": "Backup Coverage Across Mission-Critical Production Systems",
+              "ja": "Backup Coverage Across Mission-Critical Production Systems"
+            }
+          },
+          "T5.P2.K2": {
+            "canonical_name": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
+            "locales": {
+              "en": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
+              "es": "Tasa de Éxito de Backups, Cumplimiento de SLAs y Remediación",
+              "pt": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
+              "fr": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
+              "de": "Backup Job Success Rate, SLA Adherence & Failure Remediation",
+              "ja": "Backup Job Success Rate, SLA Adherence & Failure Remediation"
+            }
+          },
+          "T5.P2.K3": {
+            "canonical_name": "Scheduled Restore Drill Cadence & Data Verification Evidence",
+            "locales": {
+              "en": "Scheduled Restore Drill Cadence & Data Verification Evidence",
+              "es": "Cadencia de Simulacros de Restauración y Verificación de Datos",
+              "pt": "Scheduled Restore Drill Cadence & Data Verification Evidence",
+              "fr": "Scheduled Restore Drill Cadence & Data Verification Evidence",
+              "de": "Scheduled Restore Drill Cadence & Data Verification Evidence",
+              "ja": "Scheduled Restore Drill Cadence & Data Verification Evidence"
+            }
+          },
+          "T5.P2.K4": {
+            "canonical_name": "Achievable Production Recovery Point Objective (RPO) Compliance",
+            "locales": {
+              "en": "Achievable Production Recovery Point Objective (RPO) Compliance",
+              "es": "Cumplimiento del Objetivo de Punto de Recuperación (RPO)",
+              "pt": "Achievable Production Recovery Point Objective (RPO) Compliance",
+              "fr": "Achievable Production Recovery Point Objective (RPO) Compliance",
+              "de": "Achievable Production Recovery Point Objective (RPO) Compliance",
+              "ja": "Achievable Production Recovery Point Objective (RPO) Compliance"
+            }
+          }
         }
       },
       "T5.P3": {
@@ -789,6 +1341,52 @@
           "fr": "Reprise après Sinistre (DR) et Basculement",
           "de": "Disaster Recovery & Failover",
           "ja": "ディザスタリカバリおよびフェイルオーバー"
+        },
+        "kpis": {
+          "T5.P3.K1": {
+            "canonical_name": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+            "locales": {
+              "en": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+              "es": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+              "pt": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+              "fr": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+              "de": "Disaster Recovery Scope, Tiering & Automated Workload Priority",
+              "ja": "Disaster Recovery Scope, Tiering & Automated Workload Priority"
+            }
+          },
+          "T5.P3.K2": {
+            "canonical_name": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+            "locales": {
+              "en": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+              "es": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+              "pt": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+              "fr": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+              "de": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)",
+              "ja": "Empirical DR Drill RTO/RPO Achievement (Measured Evidence)"
+            }
+          },
+          "T5.P3.K3": {
+            "canonical_name": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+            "locales": {
+              "en": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "es": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "pt": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "fr": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "de": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "ja": "Automated DR Orchestration, Runbooks & Repeatable Failover"
+            }
+          },
+          "T5.P3.K4": {
+            "canonical_name": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+            "locales": {
+              "en": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+              "es": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+              "pt": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+              "fr": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+              "de": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)",
+              "ja": "Secondary DR Site Readiness (Capacity, Licensing & Drift Control)"
+            }
+          }
         }
       },
       "T5.P4": {
@@ -800,6 +1398,52 @@
           "fr": "Cyber-Résilience et Immuabilité Ransomware",
           "de": "Cyber Recovery & Ransomware-Unveränderlichkeit",
           "ja": "サイバーリカバリおよびイミュータブル保護"
+        },
+        "kpis": {
+          "T5.P4.K1": {
+            "canonical_name": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+            "locales": {
+              "en": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+              "es": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+              "pt": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+              "fr": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+              "de": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)",
+              "ja": "Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation)"
+            }
+          },
+          "T5.P4.K2": {
+            "canonical_name": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+            "locales": {
+              "en": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "es": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "pt": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "fr": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "de": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "ja": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access"
+            }
+          },
+          "T5.P4.K3": {
+            "canonical_name": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+            "locales": {
+              "en": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "es": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "pt": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "fr": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "de": "Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "ja": "Clean-Room Rebuild Capability & Isolated Integrity Validation"
+            }
+          },
+          "T5.P4.K4": {
+            "canonical_name": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+            "locales": {
+              "en": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+              "es": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+              "pt": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+              "fr": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+              "de": "Ransomware Simulation Drills & Rapid Reconstruction Exercises",
+              "ja": "Ransomware Simulation Drills & Rapid Reconstruction Exercises"
+            }
+          }
         }
       },
       "T5.P5": {
@@ -811,6 +1455,41 @@
           "fr": "Haute Disponibilité et Résilience Architecturale",
           "de": "Hochverfügbarkeit & architektonische Resilienz",
           "ja": "高可用性およびアーキテクチャレジリエンス"
+        },
+        "kpis": {
+          "T5.P5.K1": {
+            "canonical_name": "Single Points of Failure Elimination Across Critical Services",
+            "locales": {
+              "en": "Single Points of Failure Elimination Across Critical Services",
+              "es": "Single Points of Failure Elimination Across Critical Services",
+              "pt": "Single Points of Failure Elimination Across Critical Services",
+              "fr": "Single Points of Failure Elimination Across Critical Services",
+              "de": "Single Points of Failure Elimination Across Critical Services",
+              "ja": "Single Points of Failure Elimination Across Critical Services"
+            }
+          },
+          "T5.P5.K2": {
+            "canonical_name": "Controlled Active-Active Failover Verification (Production HA)",
+            "locales": {
+              "en": "Controlled Active-Active Failover Verification (Production HA)",
+              "es": "Controlled Active-Active Failover Verification (Production HA)",
+              "pt": "Controlled Active-Active Failover Verification (Production HA)",
+              "fr": "Controlled Active-Active Failover Verification (Production HA)",
+              "de": "Controlled Active-Active Failover Verification (Production HA)",
+              "ja": "Controlled Active-Active Failover Verification (Production HA)"
+            }
+          },
+          "T5.P5.K3": {
+            "canonical_name": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+            "locales": {
+              "en": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+              "es": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+              "pt": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+              "fr": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+              "de": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction",
+              "ja": "Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction"
+            }
+          }
         }
       }
     },
@@ -839,6 +1518,63 @@
           "fr": "Gestion des Identités et des Accès (IAM)",
           "de": "Identity & Access Management (IAM)",
           "ja": "アイデンティティ＆アクセス管理（IAM）"
+        },
+        "kpis": {
+          "T6.P1.K1": {
+            "canonical_name": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
+            "locales": {
+              "en": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
+              "es": "Cobertura de MFA Anti-Phishing en Infraestructura Crítica",
+              "pt": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
+              "fr": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
+              "de": "Phishing-Resistant MFA Coverage Across Critical Infrastructure",
+              "ja": "Phishing-Resistant MFA Coverage Across Critical Infrastructure"
+            }
+          },
+          "T6.P1.K2": {
+            "canonical_name": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
+            "locales": {
+              "en": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
+              "es": "Gobernanza Automatizada del Ciclo de Vida de Identidad (JML)",
+              "pt": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
+              "fr": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
+              "de": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance",
+              "ja": "Automated Joiner-Mover-Leaver (JML) Identity Lifecycle Governance"
+            }
+          },
+          "T6.P1.K3": {
+            "canonical_name": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
+            "locales": {
+              "en": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
+              "es": "Principio de Mínimo Privilegio y Recertificación Periódica de Roles",
+              "pt": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
+              "fr": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
+              "de": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal",
+              "ja": "Least-Privilege Enforcement, Role Recertification & Standing Privilege Removal"
+            }
+          },
+          "T6.P1.K4": {
+            "canonical_name": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
+            "locales": {
+              "en": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
+              "es": "Gobernanza de Acceso de Proveedores (Acceso Efímero Just-in-Time)",
+              "pt": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
+              "fr": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
+              "de": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)",
+              "ja": "Third-Party Vendor Access Governance (Ephemeral, Just-in-Time Access)"
+            }
+          },
+          "T6.P1.K5": {
+            "canonical_name": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
+            "locales": {
+              "en": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
+              "es": "Gobernanza de Cuentas de Servicio, Secretos y Certificados",
+              "pt": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
+              "fr": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
+              "de": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)",
+              "ja": "Non-Human Identity Governance (Service Accounts, Secrets & Certificate Rotation)"
+            }
+          }
         }
       },
       "T6.P2": {
@@ -850,6 +1586,52 @@
           "fr": "Gestion des Accès Privilégiés (PAM) et Secrets",
           "de": "Privileged Access Management (PAM) & Secrets",
           "ja": "特権アクセス管理（PAM）およびシークレット管理"
+        },
+        "kpis": {
+          "T6.P2.K1": {
+            "canonical_name": "PAM Enclosure Coverage Across Administrative Accounts",
+            "locales": {
+              "en": "PAM Enclosure Coverage Across Administrative Accounts",
+              "es": "Cobertura de Bóveda PAM en Cuentas de Administración",
+              "pt": "PAM Enclosure Coverage Across Administrative Accounts",
+              "fr": "PAM Enclosure Coverage Across Administrative Accounts",
+              "de": "PAM Enclosure Coverage Across Administrative Accounts",
+              "ja": "PAM Enclosure Coverage Across Administrative Accounts"
+            }
+          },
+          "T6.P2.K2": {
+            "canonical_name": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
+            "locales": {
+              "en": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
+              "es": "Custodia Automatizada de Secretos y Rotación Dinámica de Credenciales",
+              "pt": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
+              "fr": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
+              "de": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation",
+              "ja": "Automated Secrets Vaulting, Dynamic Credential Generation & Rotation"
+            }
+          },
+          "T6.P2.K3": {
+            "canonical_name": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
+            "locales": {
+              "en": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
+              "es": "Registro de Sesiones Privilegiadas y Trazabilidad Forense",
+              "pt": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
+              "fr": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
+              "de": "Privileged Session Recording, Keystroke Logging & Audit Traceability",
+              "ja": "Privileged Session Recording, Keystroke Logging & Audit Traceability"
+            }
+          },
+          "T6.P2.K4": {
+            "canonical_name": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
+            "locales": {
+              "en": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
+              "es": "Elevación Just-in-Time (JIT) y Procedimientos Break-Glass Monitorizados",
+              "pt": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
+              "fr": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
+              "de": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures",
+              "ja": "Just-in-Time (JIT) Privilege Elevation & Monitored Break-Glass Procedures"
+            }
+          }
         }
       },
       "T6.P3": {
@@ -861,6 +1643,52 @@
           "fr": "Durcissement et Configuration Sécurisée",
           "de": "Hardening & sichere Konfigurations-Baselines",
           "ja": "ハーデニングおよびセキュア構成基準"
+        },
+        "kpis": {
+          "T6.P3.K1": {
+            "canonical_name": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
+            "locales": {
+              "en": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
+              "es": "Despliegue de Baselines de Bastionado CIS por Tipología de Activo",
+              "pt": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
+              "fr": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
+              "de": "CIS Benchmark Hardening Baselines Deployment by Asset Class",
+              "ja": "CIS Benchmark Hardening Baselines Deployment by Asset Class"
+            }
+          },
+          "T6.P3.K2": {
+            "canonical_name": "Continuous Compliance Index & Automated Baseline Auditing",
+            "locales": {
+              "en": "Continuous Compliance Index & Automated Baseline Auditing",
+              "es": "Índice de Cumplimiento Continuo y Auditoría Automatizada de Baselines",
+              "pt": "Continuous Compliance Index & Automated Baseline Auditing",
+              "fr": "Continuous Compliance Index & Automated Baseline Auditing",
+              "de": "Continuous Compliance Index & Automated Baseline Auditing",
+              "ja": "Continuous Compliance Index & Automated Baseline Auditing"
+            }
+          },
+          "T6.P3.K3": {
+            "canonical_name": "Unauthorized Configuration Drift Detection & Automated Remediation",
+            "locales": {
+              "en": "Unauthorized Configuration Drift Detection & Automated Remediation",
+              "es": "Detección y Remediación Automatizada de Deriva de Configuración",
+              "pt": "Unauthorized Configuration Drift Detection & Automated Remediation",
+              "fr": "Unauthorized Configuration Drift Detection & Automated Remediation",
+              "de": "Unauthorized Configuration Drift Detection & Automated Remediation",
+              "ja": "Unauthorized Configuration Drift Detection & Automated Remediation"
+            }
+          },
+          "T6.P3.K4": {
+            "canonical_name": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
+            "locales": {
+              "en": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
+              "es": "Gobernanza de Excepciones de Bastionado y Controles Compensatorios",
+              "pt": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
+              "fr": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
+              "de": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)",
+              "ja": "Hardening Exception Governance (Compensating Controls & Time-Bounded Approvals)"
+            }
+          }
         }
       },
       "T6.P4": {
@@ -872,6 +1700,52 @@
           "fr": "Gestion des Vulnérabilités et Mises à Jour",
           "de": "Schwachstellen- & Patch-Management",
           "ja": "脆弱性およびパッチ管理"
+        },
+        "kpis": {
+          "T6.P4.K1": {
+            "canonical_name": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
+            "locales": {
+              "en": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
+              "es": "Inventario Integral de Activos y Escaneo Automatizado de Vulnerabilidades",
+              "pt": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
+              "fr": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
+              "de": "Comprehensive Asset Inventory & Automated Vulnerability Scanning",
+              "ja": "Comprehensive Asset Inventory & Automated Vulnerability Scanning"
+            }
+          },
+          "T6.P4.K2": {
+            "canonical_name": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
+            "locales": {
+              "en": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
+              "es": "Cumplimiento Forzado de SLAs de Parcheo Priorizados por Riesgo",
+              "pt": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
+              "fr": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
+              "de": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)",
+              "ja": "Risk-Prioritized Patch SLA Enforcement (Critical & High Exposure)"
+            }
+          },
+          "T6.P4.K3": {
+            "canonical_name": "Vulnerability Backlog Remediation Rate & Aging Metrics",
+            "locales": {
+              "en": "Vulnerability Backlog Remediation Rate & Aging Metrics",
+              "es": "Tasa de Remediación de Vulnerabilidades y Métricas de Envejecimiento",
+              "pt": "Vulnerability Backlog Remediation Rate & Aging Metrics",
+              "fr": "Vulnerability Backlog Remediation Rate & Aging Metrics",
+              "de": "Vulnerability Backlog Remediation Rate & Aging Metrics",
+              "ja": "Vulnerability Backlog Remediation Rate & Aging Metrics"
+            }
+          },
+          "T6.P4.K4": {
+            "canonical_name": "Compensating Control Governance & Virtual Patching SLAs",
+            "locales": {
+              "en": "Compensating Control Governance & Virtual Patching SLAs",
+              "es": "Gobernanza de Controles Compensatorios y Parcheo Virtual",
+              "pt": "Compensating Control Governance & Virtual Patching SLAs",
+              "fr": "Compensating Control Governance & Virtual Patching SLAs",
+              "de": "Compensating Control Governance & Virtual Patching SLAs",
+              "ja": "Compensating Control Governance & Virtual Patching SLAs"
+            }
+          }
         }
       },
       "T6.P5": {
@@ -883,6 +1757,52 @@
           "fr": "Segmentation Réseau, Journalisation et Audit",
           "de": "Netzwerksegmentierung, Logging & Auditierung",
           "ja": "ネットワーク分離・ロギングおよび監査"
+        },
+        "kpis": {
+          "T6.P5.K1": {
+            "canonical_name": "Workload Microsegmentation & East-West Traffic Filtering",
+            "locales": {
+              "en": "Workload Microsegmentation & East-West Traffic Filtering",
+              "es": "Microsegmentación de Cargas y Filtrado de Tráfico Este-Oeste",
+              "pt": "Workload Microsegmentation & East-West Traffic Filtering",
+              "fr": "Workload Microsegmentation & East-West Traffic Filtering",
+              "de": "Workload Microsegmentation & East-West Traffic Filtering",
+              "ja": "Workload Microsegmentation & East-West Traffic Filtering"
+            }
+          },
+          "T6.P5.K2": {
+            "canonical_name": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
+            "locales": {
+              "en": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
+              "es": "Aislamiento del Plano de Gestión (Bastiones y Jump Boxes)",
+              "pt": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
+              "fr": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
+              "de": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)",
+              "ja": "Management Plane Isolation (Bastion Hosts & Out-of-Band Jump Boxes)"
+            }
+          },
+          "T6.P5.K3": {
+            "canonical_name": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
+            "locales": {
+              "en": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
+              "es": "Ingesta Centralizada de Telemetría de Seguridad (Integración SIEM/SOC)",
+              "pt": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
+              "fr": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
+              "de": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)",
+              "ja": "Centralized Security Telemetry Ingestion (SIEM / SOC Integration)"
+            }
+          },
+          "T6.P5.K4": {
+            "canonical_name": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+            "locales": {
+              "en": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+              "es": "Retención Inmutable de Pistas de Auditoría e Integridad Forense",
+              "pt": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+              "fr": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+              "de": "Audit Trail Retention, Immutability & Forensic Integrity Verification",
+              "ja": "Audit Trail Retention, Immutability & Forensic Integrity Verification"
+            }
+          }
         }
       }
     },
@@ -911,6 +1831,52 @@
           "fr": "Gouvernance des Services, Catalogue et SLAs/SLOs",
           "de": "Service Governance, Katalog & SLA-Management",
           "ja": "サービスガバナンス・カタログおよびSLA管理"
+        },
+        "kpis": {
+          "T7.P1.K1": {
+            "canonical_name": "Service Catalog Completeness, Classification & Service Ownership",
+            "locales": {
+              "en": "Service Catalog Completeness, Classification & Service Ownership",
+              "es": "Service Catalog Completeness, Classification & Service Ownership",
+              "pt": "Service Catalog Completeness, Classification & Service Ownership",
+              "fr": "Service Catalog Completeness, Classification & Service Ownership",
+              "de": "Service Catalog Completeness, Classification & Service Ownership",
+              "ja": "Service Catalog Completeness, Classification & Service Ownership"
+            }
+          },
+          "T7.P1.K2": {
+            "canonical_name": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+            "locales": {
+              "en": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "es": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "pt": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "fr": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "de": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics",
+              "ja": "Service Level Agreement (SLA/SLO) Adherence & Response Metrics"
+            }
+          },
+          "T7.P1.K3": {
+            "canonical_name": "Structured Service Review Cadence & Executive Governance",
+            "locales": {
+              "en": "Structured Service Review Cadence & Executive Governance",
+              "es": "Structured Service Review Cadence & Executive Governance",
+              "pt": "Structured Service Review Cadence & Executive Governance",
+              "fr": "Structured Service Review Cadence & Executive Governance",
+              "de": "Structured Service Review Cadence & Executive Governance",
+              "ja": "Structured Service Review Cadence & Executive Governance"
+            }
+          },
+          "T7.P1.K4": {
+            "canonical_name": "Operating Model Accountability & Operational RACI Governance",
+            "locales": {
+              "en": "Operating Model Accountability & Operational RACI Governance",
+              "es": "Operating Model Accountability & Operational RACI Governance",
+              "pt": "Operating Model Accountability & Operational RACI Governance",
+              "fr": "Operating Model Accountability & Operational RACI Governance",
+              "de": "Operating Model Accountability & Operational RACI Governance",
+              "ja": "Operating Model Accountability & Operational RACI Governance"
+            }
+          }
         }
       },
       "T7.P2": {
@@ -922,6 +1888,52 @@
           "fr": "Centre de Services et Gestion des Incidents",
           "de": "Service Desk & Störungsmanagement",
           "ja": "サービスデスクおよびインシデント管理"
+        },
+        "kpis": {
+          "T7.P2.K1": {
+            "canonical_name": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+            "locales": {
+              "en": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "es": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "pt": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "fr": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "de": "Mean Time to Restore (MTTR) by Service Criticality Tier",
+              "ja": "Mean Time to Restore (MTTR) by Service Criticality Tier"
+            }
+          },
+          "T7.P2.K2": {
+            "canonical_name": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+            "locales": {
+              "en": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "es": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "pt": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "fr": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "de": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation",
+              "ja": "First Contact Resolution (FCR) Rate & Tier-1 Shift-Left Automation"
+            }
+          },
+          "T7.P2.K3": {
+            "canonical_name": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+            "locales": {
+              "en": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "es": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "pt": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "fr": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "de": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews",
+              "ja": "Major Incident Management (MIM) Orchestration, Triage & Post-Incident Reviews"
+            }
+          },
+          "T7.P2.K4": {
+            "canonical_name": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+            "locales": {
+              "en": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+              "es": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+              "pt": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+              "fr": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+              "de": "Incident Backlog Burndown Rate & Aging Ticket Governance",
+              "ja": "Incident Backlog Burndown Rate & Aging Ticket Governance"
+            }
+          }
         }
       },
       "T7.P3": {
@@ -933,6 +1945,52 @@
           "fr": "Gestion des Changements, Versions et CMDB",
           "de": "Change-, Release- & Configuration-Management (CMDB)",
           "ja": "変更・リリースおよび構成管理（CMDB）"
+        },
+        "kpis": {
+          "T7.P3.K1": {
+            "canonical_name": "Change Success Rate (CSR) & Incident Induction Rate",
+            "locales": {
+              "en": "Change Success Rate (CSR) & Incident Induction Rate",
+              "es": "Change Success Rate (CSR) & Incident Induction Rate",
+              "pt": "Change Success Rate (CSR) & Incident Induction Rate",
+              "fr": "Change Success Rate (CSR) & Incident Induction Rate",
+              "de": "Change Success Rate (CSR) & Incident Induction Rate",
+              "ja": "Change Success Rate (CSR) & Incident Induction Rate"
+            }
+          },
+          "T7.P3.K2": {
+            "canonical_name": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+            "locales": {
+              "en": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+              "es": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+              "pt": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+              "fr": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+              "de": "Change Risk Assessment Automation (Standard vs Emergency Approval)",
+              "ja": "Change Risk Assessment Automation (Standard vs Emergency Approval)"
+            }
+          },
+          "T7.P3.K3": {
+            "canonical_name": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+            "locales": {
+              "en": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+              "es": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+              "pt": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+              "fr": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+              "de": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping",
+              "ja": "CMDB Accuracy, Automated Discovery & Service Dependency Mapping"
+            }
+          },
+          "T7.P3.K4": {
+            "canonical_name": "Emergency Change Control Governance & Post-Change Justification",
+            "locales": {
+              "en": "Emergency Change Control Governance & Post-Change Justification",
+              "es": "Emergency Change Control Governance & Post-Change Justification",
+              "pt": "Emergency Change Control Governance & Post-Change Justification",
+              "fr": "Emergency Change Control Governance & Post-Change Justification",
+              "de": "Emergency Change Control Governance & Post-Change Justification",
+              "ja": "Emergency Change Control Governance & Post-Change Justification"
+            }
+          }
         }
       },
       "T7.P4": {
@@ -944,6 +2002,52 @@
           "fr": "Gestion des Problèmes et Fiabilité (SRE)",
           "de": "Problem Management & Site Reliability Engineering (SRE)",
           "ja": "問題管理およびサイト信頼性エンジニアリング（SRE）"
+        },
+        "kpis": {
+          "T7.P4.K1": {
+            "canonical_name": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+            "locales": {
+              "en": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+              "es": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+              "pt": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+              "fr": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+              "de": "Repeat Incident Suppression Rate & Incident Recurrence Trends",
+              "ja": "Repeat Incident Suppression Rate & Incident Recurrence Trends"
+            }
+          },
+          "T7.P4.K2": {
+            "canonical_name": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+            "locales": {
+              "en": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "es": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "pt": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "fr": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "de": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems",
+              "ja": "Root Cause Analysis (RCA) Quality, Traceability & Blameless Post-Mortems"
+            }
+          },
+          "T7.P4.K3": {
+            "canonical_name": "Problem Backlog Execution Rate & Corrective Action Closure",
+            "locales": {
+              "en": "Problem Backlog Execution Rate & Corrective Action Closure",
+              "es": "Problem Backlog Execution Rate & Corrective Action Closure",
+              "pt": "Problem Backlog Execution Rate & Corrective Action Closure",
+              "fr": "Problem Backlog Execution Rate & Corrective Action Closure",
+              "de": "Problem Backlog Execution Rate & Corrective Action Closure",
+              "ja": "Problem Backlog Execution Rate & Corrective Action Closure"
+            }
+          },
+          "T7.P4.K4": {
+            "canonical_name": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+            "locales": {
+              "en": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+              "es": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+              "pt": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+              "fr": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+              "de": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction",
+              "ja": "Site Reliability Engineering (SRE) Maturity: Error Budgets & Toil Reduction"
+            }
+          }
         }
       },
       "T7.P5": {
@@ -955,6 +2059,63 @@
           "fr": "Observabilité, Gestion des Événements et AIOps",
           "de": "Observability, Event Management & AIOps",
           "ja": "可観測性・イベント管理およびAIOps"
+        },
+        "kpis": {
+          "T7.P5.K1": {
+            "canonical_name": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+            "locales": {
+              "en": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+              "es": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+              "pt": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+              "fr": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+              "de": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)",
+              "ja": "Full-Stack Observability Coverage (Metrics, Logs, Distributed Traces)"
+            }
+          },
+          "T7.P5.K2": {
+            "canonical_name": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+            "locales": {
+              "en": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+              "es": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+              "pt": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+              "fr": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+              "de": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention",
+              "ja": "Event Noise Reduction, Alert De-Duplication & Fatigue Prevention"
+            }
+          },
+          "T7.P5.K3": {
+            "canonical_name": "Automated Operational Runbooks & Self-Healing Remediation",
+            "locales": {
+              "en": "Automated Operational Runbooks & Self-Healing Remediation",
+              "es": "Automated Operational Runbooks & Self-Healing Remediation",
+              "pt": "Automated Operational Runbooks & Self-Healing Remediation",
+              "fr": "Automated Operational Runbooks & Self-Healing Remediation",
+              "de": "Automated Operational Runbooks & Self-Healing Remediation",
+              "ja": "Automated Operational Runbooks & Self-Healing Remediation"
+            }
+          },
+          "T7.P5.K4": {
+            "canonical_name": "Proactive Incident Detection Prior to End-User Impact",
+            "locales": {
+              "en": "Proactive Incident Detection Prior to End-User Impact",
+              "es": "Proactive Incident Detection Prior to End-User Impact",
+              "pt": "Proactive Incident Detection Prior to End-User Impact",
+              "fr": "Proactive Incident Detection Prior to End-User Impact",
+              "de": "Proactive Incident Detection Prior to End-User Impact",
+              "ja": "Proactive Incident Detection Prior to End-User Impact"
+            }
+          },
+          "T7.P5.K5": {
+            "canonical_name": "End-to-End Event Correlation Across Infrastructure & Business Services",
+            "locales": {
+              "en": "End-to-End Event Correlation Across Infrastructure & Business Services",
+              "es": "End-to-End Event Correlation Across Infrastructure & Business Services",
+              "pt": "End-to-End Event Correlation Across Infrastructure & Business Services",
+              "fr": "End-to-End Event Correlation Across Infrastructure & Business Services",
+              "de": "End-to-End Event Correlation Across Infrastructure & Business Services",
+              "ja": "End-to-End Event Correlation Across Infrastructure & Business Services"
+            }
+          }
         }
       }
     },
@@ -983,6 +2144,52 @@
           "fr": "Stratégie Technologique et Feuille de Route",
           "de": "Technologiestrategie & strategische Roadmap",
           "ja": "テクノロジー戦略および戦略的ロードマップ"
+        },
+        "kpis": {
+          "T8.P1.K1": {
+            "canonical_name": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+            "locales": {
+              "en": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+              "es": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+              "pt": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+              "fr": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+              "de": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation",
+              "ja": "Target Architecture (To-Be) Roadmap Governance & Budget Allocation"
+            }
+          },
+          "T8.P1.K2": {
+            "canonical_name": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+            "locales": {
+              "en": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+              "es": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+              "pt": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+              "fr": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+              "de": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)",
+              "ja": "IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives)"
+            }
+          },
+          "T8.P1.K3": {
+            "canonical_name": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+            "locales": {
+              "en": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+              "es": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+              "pt": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+              "fr": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+              "de": "Technology Obsolescence & Proactive Lifecycle Refresh Governance",
+              "ja": "Technology Obsolescence & Proactive Lifecycle Refresh Governance"
+            }
+          },
+          "T8.P1.K4": {
+            "canonical_name": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+            "locales": {
+              "en": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+              "es": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+              "pt": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+              "fr": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+              "de": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement",
+              "ja": "Architecture Review Board (ARB) & Engineering Guardrails Enforcement"
+            }
+          }
         }
       },
       "T8.P2": {
@@ -994,6 +2201,52 @@
           "fr": "Gouvernance IT, Portefeuille et Prise de Décision",
           "de": "IT-Governance, Portfolio & Entscheidungsrahmen",
           "ja": "ITガバナンス・ポートフォリオおよび意思決定フレームワーク"
+        },
+        "kpis": {
+          "T8.P2.K1": {
+            "canonical_name": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+            "locales": {
+              "en": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "es": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "pt": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "fr": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "de": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)",
+              "ja": "Adaptive Portfolio Governance (Value-Driven Investment Prioritization)"
+            }
+          },
+          "T8.P2.K2": {
+            "canonical_name": "Decision Framework Traceability, Delegation & Executive Accountability",
+            "locales": {
+              "en": "Decision Framework Traceability, Delegation & Executive Accountability",
+              "es": "Decision Framework Traceability, Delegation & Executive Accountability",
+              "pt": "Decision Framework Traceability, Delegation & Executive Accountability",
+              "fr": "Decision Framework Traceability, Delegation & Executive Accountability",
+              "de": "Decision Framework Traceability, Delegation & Executive Accountability",
+              "ja": "Decision Framework Traceability, Delegation & Executive Accountability"
+            }
+          },
+          "T8.P2.K3": {
+            "canonical_name": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+            "locales": {
+              "en": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "es": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "pt": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "fr": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "de": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)",
+              "ja": "Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk)"
+            }
+          },
+          "T8.P2.K4": {
+            "canonical_name": "IT Demand Management, Sizing & Capacity Allocation Governance",
+            "locales": {
+              "en": "IT Demand Management, Sizing & Capacity Allocation Governance",
+              "es": "IT Demand Management, Sizing & Capacity Allocation Governance",
+              "pt": "IT Demand Management, Sizing & Capacity Allocation Governance",
+              "fr": "IT Demand Management, Sizing & Capacity Allocation Governance",
+              "de": "IT Demand Management, Sizing & Capacity Allocation Governance",
+              "ja": "IT Demand Management, Sizing & Capacity Allocation Governance"
+            }
+          }
         }
       },
       "T8.P3": {
@@ -1005,6 +2258,52 @@
           "fr": "Gouvernance des Risques, Conformité et Contrôle",
           "de": "Risiko-Governance, Compliance & Kontrolle",
           "ja": "リスクガバナンス・コンプライアンスおよび内部統制"
+        },
+        "kpis": {
+          "T8.P3.K1": {
+            "canonical_name": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+            "locales": {
+              "en": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "es": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "pt": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "fr": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "de": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)",
+              "ja": "Enterprise Technology Risk Register (Service-Tiered Risk Scoring)"
+            }
+          },
+          "T8.P3.K2": {
+            "canonical_name": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+            "locales": {
+              "en": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "es": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "pt": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "fr": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "de": "Risk Mitigation Program Execution, Tracking & Verified Closure",
+              "ja": "Risk Mitigation Program Execution, Tracking & Verified Closure"
+            }
+          },
+          "T8.P3.K3": {
+            "canonical_name": "Continuous Regulatory Compliance & Internal Control Attestation",
+            "locales": {
+              "en": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "es": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "pt": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "fr": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "de": "Continuous Regulatory Compliance & Internal Control Attestation",
+              "ja": "Continuous Regulatory Compliance & Internal Control Attestation"
+            }
+          },
+          "T8.P3.K4": {
+            "canonical_name": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+            "locales": {
+              "en": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+              "es": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+              "pt": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+              "fr": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+              "de": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)",
+              "ja": "Critical Dependency Management (Concentration Risk & Single Points of Dependency)"
+            }
+          }
         }
       },
       "T8.P4": {
@@ -1016,6 +2315,63 @@
           "fr": "FinOps et Économie des Infrastructures",
           "de": "Cloud FinOps & Infrastruktur-Ökonomie",
           "ja": "クラウドFinOpsおよびインフラコスト最適化"
+        },
+        "kpis": {
+          "T8.P4.K1": {
+            "canonical_name": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+            "locales": {
+              "en": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+              "es": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+              "pt": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+              "fr": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+              "de": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics",
+              "ja": "Total Cost of Ownership (TCO) Visibility & Unit Cost Metrics"
+            }
+          },
+          "T8.P4.K2": {
+            "canonical_name": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+            "locales": {
+              "en": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+              "es": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+              "pt": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+              "fr": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+              "de": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)",
+              "ja": "Cloud Resource Optimization (Rightsizing & Idle Asset Elimination)"
+            }
+          },
+          "T8.P4.K3": {
+            "canonical_name": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+            "locales": {
+              "en": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+              "es": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+              "pt": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+              "fr": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+              "de": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)",
+              "ja": "Rate Optimization & Commitment Management (Savings Plans, Reserved Instances)"
+            }
+          },
+          "T8.P4.K4": {
+            "canonical_name": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+            "locales": {
+              "en": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+              "es": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+              "pt": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+              "fr": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+              "de": "Cloud Financial Forecasting, Budgeting & Anomaly Detection",
+              "ja": "Cloud Financial Forecasting, Budgeting & Anomaly Detection"
+            }
+          },
+          "T8.P4.K5": {
+            "canonical_name": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+            "locales": {
+              "en": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "es": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "pt": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "fr": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "de": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability",
+              "ja": "FinOps Cultural Adoption & Engineering Unit-Economics Accountability"
+            }
+          }
         }
       },
       "T8.P5": {
@@ -1027,6 +2383,52 @@
           "fr": "Réalisation de la Valeur, Métriques Dirigeantes et Amélioration Continue",
           "de": "Wertrealisierung, Executive KPIs & kontinuierliche Verbesserung",
           "ja": "価値創出・エグゼクティブKPIおよび継続的改善"
+        },
+        "kpis": {
+          "T8.P5.K1": {
+            "canonical_name": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+            "locales": {
+              "en": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+              "es": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+              "pt": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+              "fr": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+              "de": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)",
+              "ja": "Executive Technology Dashboard (Value, TCO, Risk & Velocity Metrics)"
+            }
+          },
+          "T8.P5.K2": {
+            "canonical_name": "Objective and Key Results (OKRs) Measurement & Alignment",
+            "locales": {
+              "en": "Objective and Key Results (OKRs) Measurement & Alignment",
+              "es": "Objective and Key Results (OKRs) Measurement & Alignment",
+              "pt": "Objective and Key Results (OKRs) Measurement & Alignment",
+              "fr": "Objective and Key Results (OKRs) Measurement & Alignment",
+              "de": "Objective and Key Results (OKRs) Measurement & Alignment",
+              "ja": "Objective and Key Results (OKRs) Measurement & Alignment"
+            }
+          },
+          "T8.P5.K3": {
+            "canonical_name": "Post-Implementation Value Realization & Business Case Attainment",
+            "locales": {
+              "en": "Post-Implementation Value Realization & Business Case Attainment",
+              "es": "Post-Implementation Value Realization & Business Case Attainment",
+              "pt": "Post-Implementation Value Realization & Business Case Attainment",
+              "fr": "Post-Implementation Value Realization & Business Case Attainment",
+              "de": "Post-Implementation Value Realization & Business Case Attainment",
+              "ja": "Post-Implementation Value Realization & Business Case Attainment"
+            }
+          },
+          "T8.P5.K4": {
+            "canonical_name": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+            "locales": {
+              "en": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+              "es": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+              "pt": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+              "fr": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+              "de": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog",
+              "ja": "Structured Continuous Improvement Lifecycle & Operational Excellence Backlog"
+            }
+          }
         }
       }
     },
@@ -1055,6 +2457,52 @@
           "fr": "Gestion du Cycle de Vie des Postes et Appareils",
           "de": "Endpoint- & Geräte-Lifecycle-Management",
           "ja": "エンドポイントおよびデバイスライフサイクル管理"
+        },
+        "kpis": {
+          "T9.P1.K1": {
+            "canonical_name": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+            "locales": {
+              "en": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+              "es": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+              "pt": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+              "fr": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+              "de": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)",
+              "ja": "Endpoint Standardization (Approved Hardware, Standard Golden OS & Configurations)"
+            }
+          },
+          "T9.P1.K2": {
+            "canonical_name": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+            "locales": {
+              "en": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+              "es": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+              "pt": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+              "fr": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+              "de": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration",
+              "ja": "Zero-Touch Device Provisioning & Out-of-the-Box Setup Duration"
+            }
+          },
+          "T9.P1.K3": {
+            "canonical_name": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+            "locales": {
+              "en": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+              "es": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+              "pt": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+              "fr": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+              "de": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)",
+              "ja": "Endpoint Security Posture (BitLocker/FileVault, EDR & Patch Compliance)"
+            }
+          },
+          "T9.P1.K4": {
+            "canonical_name": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+            "locales": {
+              "en": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+              "es": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+              "pt": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+              "fr": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+              "de": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal",
+              "ja": "Hardware Refresh Lifecycle, Obsolescence & Certified Asset Disposal"
+            }
+          }
         }
       },
       "T9.P2": {
@@ -1066,6 +2514,52 @@
           "fr": "Identité du Poste de Travail et Expérience d'Accès",
           "de": "Workplace-Identität & Zugriffs-Erfahrung",
           "ja": "ワークプレイスアイデンティティおよびアクセス体験"
+        },
+        "kpis": {
+          "T9.P2.K1": {
+            "canonical_name": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+            "locales": {
+              "en": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+              "es": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+              "pt": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+              "fr": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+              "de": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications",
+              "ja": "Enterprise Single Sign-On (SSO) Coverage Across SaaS & Enterprise Applications"
+            }
+          },
+          "T9.P2.K2": {
+            "canonical_name": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+            "locales": {
+              "en": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+              "es": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+              "pt": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+              "fr": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+              "de": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA",
+              "ja": "Adaptive Risk-Based Conditional Access & Phishing-Resistant MFA"
+            }
+          },
+          "T9.P2.K3": {
+            "canonical_name": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+            "locales": {
+              "en": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+              "es": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+              "pt": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+              "fr": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+              "de": "Self-Service Password Reset (SSPR) & User Account Self-Remediation",
+              "ja": "Self-Service Password Reset (SSPR) & User Account Self-Remediation"
+            }
+          },
+          "T9.P2.K4": {
+            "canonical_name": "User Access Request Incident Rate & Access Provisioning Lead Time",
+            "locales": {
+              "en": "User Access Request Incident Rate & Access Provisioning Lead Time",
+              "es": "User Access Request Incident Rate & Access Provisioning Lead Time",
+              "pt": "User Access Request Incident Rate & Access Provisioning Lead Time",
+              "fr": "User Access Request Incident Rate & Access Provisioning Lead Time",
+              "de": "User Access Request Incident Rate & Access Provisioning Lead Time",
+              "ja": "User Access Request Incident Rate & Access Provisioning Lead Time"
+            }
+          }
         }
       },
       "T9.P3": {
@@ -1077,6 +2571,52 @@
           "fr": "Productivité, Collaboration et Gestion des Connaissances",
           "de": "Produktivitäts-, Kollaborations- & Wissensplattformen",
           "ja": "生産性・コラボレーションおよびナレッジプラットフォーム"
+        },
+        "kpis": {
+          "T9.P3.K1": {
+            "canonical_name": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+            "locales": {
+              "en": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+              "es": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+              "pt": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+              "fr": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+              "de": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)",
+              "ja": "Collaboration Platform Governance (Teams/Slack Lifecycle & Sprawl Mitigation)"
+            }
+          },
+          "T9.P3.K2": {
+            "canonical_name": "Enterprise Content & Document Management (DLP & Classification)",
+            "locales": {
+              "en": "Enterprise Content & Document Management (DLP & Classification)",
+              "es": "Enterprise Content & Document Management (DLP & Classification)",
+              "pt": "Enterprise Content & Document Management (DLP & Classification)",
+              "fr": "Enterprise Content & Document Management (DLP & Classification)",
+              "de": "Enterprise Content & Document Management (DLP & Classification)",
+              "ja": "Enterprise Content & Document Management (DLP & Classification)"
+            }
+          },
+          "T9.P3.K3": {
+            "canonical_name": "Unified Communications Quality of Service (QoS for Voice & Video)",
+            "locales": {
+              "en": "Unified Communications Quality of Service (QoS for Voice & Video)",
+              "es": "Unified Communications Quality of Service (QoS for Voice & Video)",
+              "pt": "Unified Communications Quality of Service (QoS for Voice & Video)",
+              "fr": "Unified Communications Quality of Service (QoS for Voice & Video)",
+              "de": "Unified Communications Quality of Service (QoS for Voice & Video)",
+              "ja": "Unified Communications Quality of Service (QoS for Voice & Video)"
+            }
+          },
+          "T9.P3.K4": {
+            "canonical_name": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+            "locales": {
+              "en": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "es": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "pt": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "fr": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "de": "Digital Workplace Platform Utilization & Feature Adoption Depth",
+              "ja": "Digital Workplace Platform Utilization & Feature Adoption Depth"
+            }
+          }
         }
       },
       "T9.P4": {
@@ -1088,6 +2628,52 @@
           "fr": "Exploitation, Support et Libre-service Utilisateur",
           "de": "Workplace-Betrieb, Support & Self-Service",
           "ja": "ワークプレイス運用・サポートおよびセルフサービス"
+        },
+        "kpis": {
+          "T9.P4.K1": {
+            "canonical_name": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+            "locales": {
+              "en": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "es": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "pt": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "fr": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "de": "Workplace Support SLA Adherence (Incident & Request Resolution)",
+              "ja": "Workplace Support SLA Adherence (Incident & Request Resolution)"
+            }
+          },
+          "T9.P4.K2": {
+            "canonical_name": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+            "locales": {
+              "en": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "es": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "pt": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "fr": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "de": "Self-Service Support Portal & Knowledge Base Deflection Ratio",
+              "ja": "Self-Service Support Portal & Knowledge Base Deflection Ratio"
+            }
+          },
+          "T9.P4.K3": {
+            "canonical_name": "Endpoint Self-Healing & Automated Client-Side Remediation",
+            "locales": {
+              "en": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "es": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "pt": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "fr": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "de": "Endpoint Self-Healing & Automated Client-Side Remediation",
+              "ja": "Endpoint Self-Healing & Automated Client-Side Remediation"
+            }
+          },
+          "T9.P4.K4": {
+            "canonical_name": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+            "locales": {
+              "en": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "es": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "pt": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "fr": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "de": "Workplace Problem Management & Endpoint Crash Trend Reduction",
+              "ja": "Workplace Problem Management & Endpoint Crash Trend Reduction"
+            }
+          }
         }
       },
       "T9.P5": {
@@ -1099,6 +2685,52 @@
           "fr": "Expérience Numérique Collaborateur (DEX) et Adoption",
           "de": "Digital Employee Experience (DEX) & Adoption",
           "ja": "デジタル従業員体験（DEX）および定着化"
+        },
+        "kpis": {
+          "T9.P5.K1": {
+            "canonical_name": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+            "locales": {
+              "en": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+              "es": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+              "pt": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+              "fr": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+              "de": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage",
+              "ja": "Digital Employee Experience (DEX) Real-Time Telemetry Coverage"
+            }
+          },
+          "T9.P5.K2": {
+            "canonical_name": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+            "locales": {
+              "en": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+              "es": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+              "pt": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+              "fr": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+              "de": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics",
+              "ja": "Endpoint Boot Times, Application Crash Frequency & Latency Metrics"
+            }
+          },
+          "T9.P5.K3": {
+            "canonical_name": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+            "locales": {
+              "en": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+              "es": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+              "pt": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+              "fr": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+              "de": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)",
+              "ja": "End-User Satisfaction Metrics (CSAT / Workplace NPS Surveys)"
+            }
+          },
+          "T9.P5.K4": {
+            "canonical_name": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+            "locales": {
+              "en": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+              "es": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+              "pt": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+              "fr": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+              "de": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)",
+              "ja": "DEX Continuous Improvement (Detect-Prioritize-Remediate Operating Cycle)"
+            }
+          }
         }
       }
     },
@@ -1127,6 +2759,52 @@
           "fr": "Plateformes Transactionnelles Core et Traitement Haute Disponibilité",
           "de": "Kern-Transaktionsplattformen & Hochdurchsatz-Verarbeitung",
           "ja": "基幹トランザクションプラットフォームおよび高スループット処理"
+        },
+        "kpis": {
+          "T10.P1.K1": {
+            "canonical_name": "Operational Procedures & Runbook Governance with Evidential Coverage",
+            "locales": {
+              "en": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "es": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "pt": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "fr": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "de": "Operational Procedures & Runbook Governance with Evidential Coverage",
+              "ja": "Operational Procedures & Runbook Governance with Evidential Coverage"
+            }
+          },
+          "T10.P1.K2": {
+            "canonical_name": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+            "locales": {
+              "en": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "es": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "pt": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "fr": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "de": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation",
+              "ja": "Mean Time to Restore (MTTR) on Critical Incidents & Tiered Escalation"
+            }
+          },
+          "T10.P1.K3": {
+            "canonical_name": "Incident Recurrence Suppression & Root-Cause Problem Management",
+            "locales": {
+              "en": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "es": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "pt": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "fr": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "de": "Incident Recurrence Suppression & Root-Cause Problem Management",
+              "ja": "Incident Recurrence Suppression & Root-Cause Problem Management"
+            }
+          },
+          "T10.P1.K4": {
+            "canonical_name": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+            "locales": {
+              "en": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "es": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "pt": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "fr": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "de": "Key-Person Risk Governance & Knowledge Redundancy Continuity",
+              "ja": "Key-Person Risk Governance & Knowledge Redundancy Continuity"
+            }
+          }
         }
       },
       "T10.P2": {
@@ -1138,6 +2816,52 @@
           "fr": "Gouvernance des Changements et Configurations Héritées",
           "de": "Core Change-, Release- & Konfigurationskontrolle",
           "ja": "レガシー変更・リリースおよび構成統制"
+        },
+        "kpis": {
+          "T10.P2.K1": {
+            "canonical_name": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+            "locales": {
+              "en": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+              "es": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+              "pt": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+              "fr": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+              "de": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates",
+              "ja": "Change Traceability, Impact Assessment & Multi-Tier Approval Gates"
+            }
+          },
+          "T10.P2.K2": {
+            "canonical_name": "Change Success Rate (CSR) & Incident Inducement Minimization",
+            "locales": {
+              "en": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "es": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "pt": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "fr": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "de": "Change Success Rate (CSR) & Incident Inducement Minimization",
+              "ja": "Change Success Rate (CSR) & Incident Inducement Minimization"
+            }
+          },
+          "T10.P2.K3": {
+            "canonical_name": "Automated Rollback Capability & Release Contingency Runbooks",
+            "locales": {
+              "en": "Automated Rollback Capability & Release Contingency Runbooks",
+              "es": "Automated Rollback Capability & Release Contingency Runbooks",
+              "pt": "Automated Rollback Capability & Release Contingency Runbooks",
+              "fr": "Automated Rollback Capability & Release Contingency Runbooks",
+              "de": "Automated Rollback Capability & Release Contingency Runbooks",
+              "ja": "Automated Rollback Capability & Release Contingency Runbooks"
+            }
+          },
+          "T10.P2.K4": {
+            "canonical_name": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+            "locales": {
+              "en": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+              "es": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+              "pt": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+              "fr": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+              "de": "Configuration Control (CMDB Baselines) & Environment Drift Parity",
+              "ja": "Configuration Control (CMDB Baselines) & Environment Drift Parity"
+            }
+          }
         }
       },
       "T10.P3": {
@@ -1149,6 +2873,52 @@
           "fr": "Capacité, Performance et Traitements Batch",
           "de": "Kapazität, Performance & Batch-Verarbeitung",
           "ja": "容量・パフォーマンスおよびバッチ処理管理"
+        },
+        "kpis": {
+          "T10.P3.K1": {
+            "canonical_name": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+            "locales": {
+              "en": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+              "es": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+              "pt": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+              "fr": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+              "de": "Batch Window SLA Compliance & Critical Path Scheduling Optimization",
+              "ja": "Batch Window SLA Compliance & Critical Path Scheduling Optimization"
+            }
+          },
+          "T10.P3.K2": {
+            "canonical_name": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+            "locales": {
+              "en": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+              "es": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+              "pt": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+              "fr": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+              "de": "Capacity Planning, Resource Headroom & Utilization Forecasting",
+              "ja": "Capacity Planning, Resource Headroom & Utilization Forecasting"
+            }
+          },
+          "T10.P3.K3": {
+            "canonical_name": "End-to-End Performance Observability & Bottleneck Detection",
+            "locales": {
+              "en": "End-to-End Performance Observability & Bottleneck Detection",
+              "es": "End-to-End Performance Observability & Bottleneck Detection",
+              "pt": "End-to-End Performance Observability & Bottleneck Detection",
+              "fr": "End-to-End Performance Observability & Bottleneck Detection",
+              "de": "End-to-End Performance Observability & Bottleneck Detection",
+              "ja": "End-to-End Performance Observability & Bottleneck Detection"
+            }
+          },
+          "T10.P3.K4": {
+            "canonical_name": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+            "locales": {
+              "en": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+              "es": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+              "pt": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+              "fr": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+              "de": "Cost/Capacity Optimization & Unit-Economics Efficiency Control",
+              "ja": "Cost/Capacity Optimization & Unit-Economics Efficiency Control"
+            }
+          }
         }
       },
       "T10.P4": {
@@ -1160,6 +2930,52 @@
           "fr": "Intégration, Interopérabilité et Exposition d'APIs Modernes",
           "de": "Integration, Interoperabilität & moderne APIs",
           "ja": "レガシー統合・相互運用性および最新API連携"
+        },
+        "kpis": {
+          "T10.P4.K1": {
+            "canonical_name": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+            "locales": {
+              "en": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+              "es": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+              "pt": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+              "fr": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+              "de": "Interface Governance (API Catalog, Strict Contracts & Versioning)",
+              "ja": "Interface Governance (API Catalog, Strict Contracts & Versioning)"
+            }
+          },
+          "T10.P4.K2": {
+            "canonical_name": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+            "locales": {
+              "en": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "es": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "pt": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "fr": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "de": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)",
+              "ja": "Integration Resiliency (Retries, Message Queues & Fault-Tolerance)"
+            }
+          },
+          "T10.P4.K3": {
+            "canonical_name": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+            "locales": {
+              "en": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+              "es": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+              "pt": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+              "fr": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+              "de": "Distributed Tracing & End-to-End Hybrid Transaction Observability",
+              "ja": "Distributed Tracing & End-to-End Hybrid Transaction Observability"
+            }
+          },
+          "T10.P4.K4": {
+            "canonical_name": "Enterprise IAM Integration & Authentication Security on Core Systems",
+            "locales": {
+              "en": "Enterprise IAM Integration & Authentication Security on Core Systems",
+              "es": "Enterprise IAM Integration & Authentication Security on Core Systems",
+              "pt": "Enterprise IAM Integration & Authentication Security on Core Systems",
+              "fr": "Enterprise IAM Integration & Authentication Security on Core Systems",
+              "de": "Enterprise IAM Integration & Authentication Security on Core Systems",
+              "ja": "Enterprise IAM Integration & Authentication Security on Core Systems"
+            }
+          }
         }
       },
       "T10.P5": {
@@ -1171,6 +2987,52 @@
           "fr": "Stratégie de Modernisation, Dette Technique et Durabilité",
           "de": "Modernisierungsstrategie, technische Schulden & Nachhaltigkeit",
           "ja": "近代化戦略・技術的負債および持続可能性"
+        },
+        "kpis": {
+          "T10.P5.K1": {
+            "canonical_name": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+            "locales": {
+              "en": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+              "es": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+              "pt": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+              "fr": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+              "de": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps",
+              "ja": "Vendor Support Lifecycle, End-of-Life (EoL) & Remediated Roadmaps"
+            }
+          },
+          "T10.P5.K2": {
+            "canonical_name": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+            "locales": {
+              "en": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+              "es": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+              "pt": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+              "fr": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+              "de": "Target Architecture Evolution & Domain-Driven Decoupling Strategy",
+              "ja": "Target Architecture Evolution & Domain-Driven Decoupling Strategy"
+            }
+          },
+          "T10.P5.K3": {
+            "canonical_name": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+            "locales": {
+              "en": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+              "es": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+              "pt": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+              "fr": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+              "de": "Engineering Skills Continuity & Specialized Talent Risk Mitigation",
+              "ja": "Engineering Skills Continuity & Specialized Talent Risk Mitigation"
+            }
+          },
+          "T10.P5.K4": {
+            "canonical_name": "Core Software Licensing Governance & Contractual Optimization",
+            "locales": {
+              "en": "Core Software Licensing Governance & Contractual Optimization",
+              "es": "Core Software Licensing Governance & Contractual Optimization",
+              "pt": "Core Software Licensing Governance & Contractual Optimization",
+              "fr": "Core Software Licensing Governance & Contractual Optimization",
+              "de": "Core Software Licensing Governance & Contractual Optimization",
+              "ja": "Core Software Licensing Governance & Contractual Optimization"
+            }
+          }
         }
       }
     },

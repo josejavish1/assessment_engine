@@ -1,8 +1,10 @@
-"""DEPRECATED: Legacy In-Memory Functional Core for AS-IS Deliverable Compilation.
+"""Internal Actuarial Calculation & Data Extraction Provider for AST Compilers.
 
-All document generation has converged onto the Declarative AST Engine (RFC-026 / PayloadToASTBridge).
-This module is retained strictly as an internal calculation and extraction provider
-for PayloadToASTBridge and Volume1AsisASTCompiler until Phase 3 modularization.
+Provides shared pure-function helpers for PayloadToASTBridge and Volume1AsisASTCompiler:
+- CMMI maturity band resolution and label formatting
+- P90 compound failure hours and tail risk estimation
+- Multilingual currency and frequency formatting
+- Health check and risk payload extraction logic
 """
 
 from __future__ import annotations
@@ -564,6 +566,13 @@ def derive_in_memory_fair_risks(
         localizer=lambda key, **kwargs: t(key, locale=doc_lang, **kwargs),
     )
 
+    root_hourly_rate = float(
+        (b_data.get("financial_telemetry") or {}).get("authoritative_hourly_downtime_cost")
+        or b_data.get("explicit_hourly_downtime_cost")
+        or b_data.get("hourly_burn_rate")
+        or 1650.0
+    )
+
     r_counter = 1
     for pillar in b_data.get("pillars_analysis", []):
         p_id, raw_pname = extract_pillar_identifiers(pillar)
@@ -614,7 +623,21 @@ def derive_in_memory_fair_risks(
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
             # If finding is survey boilerplate, infer concrete technical failure from universal question rubrics
-            if physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE:
+            has_substantive_finding = bool(
+                finding_text
+                and not _is_placeholder_boilerplate(finding_text)
+                and len(finding_text.split()) >= 4
+            )
+            has_substantive_risk = bool(
+                business_risk
+                and not _is_placeholder_boilerplate(business_risk)
+                and not _is_severity_enum_token(business_risk, doc_lang)
+                and len(business_risk.split()) >= 4
+            )
+            if (
+                physics_profile.epistemic_state == EpistemicEvidenceState.SURVEY_INFERRED_BOILERPLATE
+                and (not has_substantive_finding or not has_substantive_risk)
+            ):
                 from assessment_engine.application.services.question_risk_inferrer import (
                     QuestionRiskInferrer,
                 )
@@ -664,15 +687,17 @@ def derive_in_memory_fair_risks(
             ).strip().upper()
             is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")
 
+            raw_burn_rate = float(
+                (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
+                or root_hourly_rate
+            )
+
             # 1. Primary Downtime Loss (or labor toil hours for engineering friction)
             if physics_profile.allows_downtime_burn:
                 rto_h = float(
                     (vec_in.get("rto_hours_mode") or {}).get("effective_value")
                     or eff_hc.get("recovery_time_hours")
-                    or 0.0
-                )
-                raw_burn_rate = float(
-                    (vec_in.get("hourly_burn_rate") or {}).get("effective_value")
+                    or physics_profile.default_rto_hours
                     or 0.0
                 )
                 raw_alpha = float(
@@ -724,7 +749,9 @@ def derive_in_memory_fair_risks(
                 sec_weighted_loss = 0
             else:
                 sec_weighted_loss = (
-                    int(round(0.10 * raw_sec * rate_mult)) if raw_sec > 0 else 0
+                    int(round(0.10 * raw_sec * rate_mult))
+                    if raw_sec > 0
+                    else (int(round(primary_downtime_loss * 0.15)) if primary_downtime_loss > 0 else 0)
                 )
 
             # SR 11-7 Actuarial 3-Layer Physics Resolution (Topology, Buffer Attenuation, Bow-Tie Escalation)
@@ -834,22 +861,22 @@ def derive_in_memory_fair_risks(
                     calc_lef = 12.0
                     calc_sle = 130.0
                     component_sum_sle = 130
+                    primary_downtime_loss = 0
+                    repl_cost_loss = 130
+                    sec_weighted_loss = 0
+                    eff_downtime_hours = 0.0
                 elif raw_lef is not None and float(raw_lef) > 0.0:
                     calc_lef = float(raw_lef)
                     calc_sle = float(component_sum_sle)
                 else:
-                    eff_tef = (
-                        float(tef_val)
-                        if tef_val is not None and float(tef_val) > 0.0
-                        else 1.2
-                    )
-                    vuln_val = float(
-                        (vec_in.get("vulnerability_Susceptibility") or {}).get(
-                            "effective_value"
-                        )
-                        or 0.18
-                    )
-                    calc_lef = round(min(2.5, max(0.05, eff_tef * vuln_val)), 4)
+                    qual_tef = int(round(float(tef_val))) if tef_val is not None and float(tef_val) > 0.0 else 3
+                    qual_vuln = int(round(float(eff_hc.get("vulnerability_level") or eff_hc.get("vulnerability") or 3)))
+                    
+                    base_lef = float(getattr(physics_profile, "default_lef_annual", 0.10))
+                    tef_factor = (qual_tef / 3.0) if qual_tef > 0 else 1.0
+                    vuln_factor = (qual_vuln / 3.0) if qual_vuln > 0 else 1.0
+                    
+                    calc_lef = round(min(3.0, max(0.02, base_lef * tef_factor * vuln_factor)), 3)
                     calc_sle = float(component_sum_sle)
 
             # 4. Standalone ALE is strictly round(LEF * SLE) for outages, or direct annual waste for FinOps
@@ -949,12 +976,16 @@ def derive_in_memory_fair_risks(
                 "rto_hours": rto_h,
                 "hourly_burn_rate": burn_rate,
                 "primary_downtime_loss": primary_downtime_loss,
+                "expected_downtime_loss": primary_downtime_loss,
                 "direct_replacement_loss": repl_cost_loss,
+                "expected_replacement_cost": repl_cost_loss,
                 "secondary_weighted_loss": sec_weighted_loss,
+                "expected_secondary_loss": sec_weighted_loss,
                 "stochastic_pert_adjustment": 0,
                 "gross_mean_sle": int(round(calc_sle)),
                 "mean_lef": round(calc_lef, 4),
                 "standalone_ale": standalone_ale,
+                "gross_standalone_ale": standalone_ale,
                 "euler_diversification_credit": -capped_disc,
                 "euler_discount_pct": (
                     round((capped_disc / standalone_ale) * 100.0, 1)
@@ -978,7 +1009,18 @@ def derive_in_memory_fair_risks(
                 # The taxonomy profile could provide the industry context, but typically we fallback to default if not injected
                 pass
             
-            # Use raw unformatted finding if it was survey inferred, else fallback to standard string
+            # Prioritize authentic upstream business risk if present and substantive
+            raw_cand_risk = str(eff_hc.get("business_risk") or eff_hc.get("primary_impact") or "").strip()
+            is_substantive_risk = bool(
+                raw_cand_risk
+                and not _is_placeholder_boilerplate(raw_cand_risk)
+                and not _is_severity_enum_token(raw_cand_risk, doc_lang)
+                and len(raw_cand_risk.split()) >= 6
+                and not raw_cand_risk.startswith("• Impacto en la Operación")
+                and not raw_cand_risk.startswith("• Operational Impact")
+            )
+            authentic_risk = raw_cand_risk if is_substantive_risk else None
+
             final_business_risk = PlainLanguageRiskNarrative.format_plain_narrative(
                 tower_code=current_tower_id,
                 kpi_name=capability,
@@ -989,6 +1031,12 @@ def derive_in_memory_fair_risks(
                 rto_hours=rto_h,
                 hourly_rate=burn_rate,
                 doc_lang=doc_lang,
+                loss_physics=physics_profile.loss_physics,
+                architectural_role=topo_profile.architectural_role if topo_profile else None,
+                authentic_business_risk=authentic_risk,
+                lef=calc_lef,
+                translator=t,
+                currency_formatter=lambda val, loc_c: format_currency(val, currency_symbol=currency, locale=loc_c, decimals=0),
             )
 
             risk_item: dict[str, Any] = {
@@ -1437,60 +1485,6 @@ def _build_operational_reality(pillar: dict[str, Any], doc_lang: str) -> str:
     return desc
 
 
-def _build_diagnostic_rationale(
-    pillar: dict[str, Any],
-    exact_score: float,
-    declared_score: float,
-    band_label: str,
-    clean_finding: str,
-    doc_lang: str,
-) -> str:
-    """Build fluid, respectful Fact-First diagnostic prose explaining the calibration and findings."""
-    delta = round(exact_score - declared_score, 2)
-    score_fmt = format_number(exact_score, locale=doc_lang, decimals=2)
-    dec_fmt = format_number(declared_score, locale=doc_lang, decimals=2)
-
-    finding_str = clean_finding.rstrip(".").strip()
-    if finding_str and not finding_str.isupper():
-        finding_clause = finding_str[0].lower() + finding_str[1:]
-    else:
-        finding_clause = finding_str
-
-    if delta <= -DIVERGENCE_RATIONALE_THRESHOLD:
-        return t(
-            "diag_rationale_divergence_gap",
-            locale=doc_lang,
-            dec_fmt=dec_fmt,
-            finding_clause=finding_clause,
-            score_fmt=score_fmt,
-            band_label=band_label,
-        )
-    elif delta >= DIVERGENCE_RATIONALE_THRESHOLD:
-        return t(
-            "diag_rationale_divergence_conservative",
-            locale=doc_lang,
-            dec_fmt=dec_fmt,
-            finding_clause=finding_clause,
-            score_fmt=score_fmt,
-            band_label=band_label,
-        )
-    else:
-        if exact_score < 2.0:
-            tmpl_key = "diag_rationale_fact_first_low"
-        elif exact_score < 3.4:
-            tmpl_key = "diag_rationale_fact_first_mid"
-        else:
-            tmpl_key = "diag_rationale_fact_first_high"
-
-        return t(
-            tmpl_key,
-            locale=doc_lang,
-            score_fmt=score_fmt,
-            band_label=band_label,
-            finding_clause=finding_clause,
-        )
-
-
 _CJK_CHAR_RE: Final[re.Pattern[str]] = re.compile(
     r"[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff\uac00-\ud7af]"
 )
@@ -1500,7 +1494,6 @@ _SENTENCE_BOUNDARY_RE: Final[re.Pattern[str]] = re.compile(
 CJK_CHARS_PER_LEXICAL_UNIT: Final[float] = 2.20
 
 
-@lru_cache(maxsize=16)
 def _get_transition_markers_regex(locale: str) -> re.Pattern[str] | None:
     """Compiles a locale-specific regular expression for discourse transition markers
 
@@ -1669,17 +1662,7 @@ def _reconcile_contradictory_replication_claims(
 def _calibrate_empirical_maturity_score(
     raw_score: float, pillar: dict[str, Any], clean_narrative: str, clean_breach: str
 ) -> float:
-    """Enforce CMMI & FinOps empirical score ceilings when evidence confirms total absence of tooling."""
-    combined = " ".join(
-        [
-            str(pillar.get("asis_architecture_description") or ""),
-            str(pillar.get("literal_evidence") or ""),
-            clean_narrative,
-            clean_breach,
-        ]
-    )
-    if _TOTAL_ABSENCE_OF_TELEMETRY_RE.search(combined) and raw_score > 1.50:
-        return min(raw_score, 1.35)
+    """Pass-through preserving authoritative upstream SSOT score without presentation mutations."""
     return raw_score
 
 
@@ -1769,17 +1752,8 @@ def _reconcile_telemetry_tool_contradictions(
     fallback_neg: str,
     doc_lang: str,
 ) -> tuple[float, str]:
-    """Enforces CMMI Level 1.00 floor and scrubs synthetic KPI export headers when empirical findings admit zero tooling."""
-    target_gap = clean_gap if (clean_gap and clean_gap != fallback_neg) else fallback_neg
+    """Scrubs synthetic KPI export headers while preserving authoritative upstream score."""
     scrubbed_state = _KPI_EXPORT_ARTIFACT_RE.sub("", clean_state).strip()
-
-    if _ABSENCE_OF_TELEMETRY_RE.search(target_gap) or _ABSENCE_OF_TELEMETRY_RE.search(clean_state):
-        calibrated_score = min(score, 1.25) if score >= 2.0 else score
-        if scrubbed_state != clean_state or _KPI_EXPORT_ARTIFACT_RE.match(clean_state):
-            calibrated_score = 1.00
-            scrubbed_state = ""
-        return calibrated_score, scrubbed_state
-
     return score, scrubbed_state or clean_state
 
 
@@ -1804,66 +1778,17 @@ def _sanitize_architectural_narrative(
     if not desc:
         return []
 
-    raw_paras = _chunk_monolithic_paragraph(desc, doc_lang)
-
-    prefixes = _resolve_adversative_prefixes(doc_lang)
-    raw_art_map = t("compiler_demonstrative_replacements", locale=doc_lang, default={})
-    art_map: dict[str, str] = raw_art_map if isinstance(raw_art_map, dict) else {}
+    raw_paras = [p.strip() for p in desc.split("\n\n") if p.strip()]
 
     cleaned_paras: list[str] = []
     for para in raw_paras:
-        p_clean = _scrub_template_glitches_and_token_leaks(para.strip(), doc_lang)
+        p_clean = _scrub_template_glitches_and_token_leaks(para, doc_lang)
         p_clean = _KPI_EXPORT_ARTIFACT_RE.sub("", p_clean).strip()
-        # Eliminate unedited mail-merge double-preposition artifacts across Romance and English locales
-        p_clean = re.sub(
-            r"\b(?:por|en|de|con|para|a|by|in|of|with|for)\s+(?=en\s+|por\s+|de\s+|con\s+|para\s+|in\s+|by\s+|of\s+|with\s+|for\s+)",
-            "",
-            p_clean,
-            flags=re.IGNORECASE,
-        )
-        p_clean = re.sub(
-            r"\b(condicionad[oa]s?|afectad[oa]s?|limitad[oa]s?|penalizad[oa]s?|constrained|conditioned)\s+(?:por|by)\s+(?=en\s+la\s+|en\s+el\s+|en\s+las\s+|en\s+los\s+|in\s+the\s+|in\s+most\s+)",
-            r"\1 ",
-            p_clean,
-            flags=re.IGNORECASE,
-        )
-        # Strip leaked English KPI title-case tokens preceded by Romance prepositions or connectors (restricted to framework nouns)
-        p_clean = re.sub(
-            r"\b(?:seg[úu]n|en|de|por|con|ante)\s+(?:[A-Z][a-z0-9\-]+\s+){1,5}(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b(?:\s*\([^)]*\))?\.?",
-            "",
-            p_clean,
-        ).strip()
-        p_clean = re.sub(
-            r"\s*(?:&|and)\s+(?:[A-Z][a-z0-9\-]+\s+){1,4}(?:Mitigation|Management|Governance|Compliance|Optimization|Automation|Resilience|Architecture|Operations|Control|Monitoring)\b\.?",
-            ".",
-            p_clean,
-        ).strip()
-        words = p_clean.split(None, 1)
-        if words:
-            first_w = f"{words[0].lower().rstrip(' ,;:.')} "
-            if first_w in art_map and len(words) > 1:
-                target_art = art_map[first_w].strip()
-                replacement = target_art.capitalize() if words[0][0].isupper() else target_art.lower()
-                p_clean = f"{replacement} {words[1]}"
-
-        for pref in prefixes:
-            if p_clean.lower().startswith(pref):
-                remainder = p_clean[len(pref):].lstrip(" ,;:-")
-                if remainder:
-                    p_clean = remainder[0].upper() + remainder[1:]
-                break
-
         if _estimate_lexical_units(p_clean) >= 4:
             cleaned_paras.append(p_clean)
 
     full_ctx = f"{desc} {fallback_pos} {fallback_neg} {pillar.get('literal_evidence', '')}"
     cleaned_paras = _reconcile_contradictory_replication_claims(cleaned_paras, full_ctx, doc_lang)
-
-    sota_bench = _build_sota_benchmark_paragraph(canonical_pillar_id, doc_lang)
-    if sota_bench and len(cleaned_paras) < 3:
-        sota_clean = _scrub_template_glitches_and_token_leaks(sota_bench, doc_lang)
-        if sota_clean and not any(sota_clean[:40].lower() in p.lower() for p in cleaned_paras):
-            cleaned_paras.append(sota_clean)
 
     return cleaned_paras if cleaned_paras else [_scrub_template_glitches_and_token_leaks(desc, doc_lang)]
 
@@ -2098,44 +2023,13 @@ def derive_in_memory_maturity_matrix(
         exact_score, clean_state = _reconcile_telemetry_tool_contradictions(
             exact_score, clean_state, clean_f, fallback_neg, doc_lang
         )
-        # Prevent contradictory lifecycle praise in DEX/EUC pillars when hardware refresh or telemetry gaps exist
-        if canonical_p_id.endswith(("P4", "P6")) or "DEX" in canonical_p_id or "EUC" in current_tower_id or current_tower_id == "T9":
-            if re.search(
-                r"\b(?:ausencia\s+de\s+telemetr[ií]a|sin\s+telemetr[ií]a|falta\s+de\s+herramientas\s+de\s+experiencia\s+digital|absence\s+of\s+.*telemetry|no\s+.*telemetry|lack\s+of\s+.*dex\s+tools|sin\s+ciclo\s+formal\s+de\s+renovaci[oó]n|absence\s+of\s+a\s+formal\s+.*refresh)\b",
-                f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}",
-                re.IGNORECASE,
-            ):
-                exact_score = min(exact_score, 1.50)
-                clean_state = re.sub(
-                    r"\b(?:disciplina\s+ejemplar|exemplary\s+discipline|alta\s+madurez|high\s+maturity)\b",
-                    "gestión operativa reactiva" if doc_lang.startswith("es") else "reactive operational management",
-                    clean_state,
-                    flags=re.IGNORECASE,
-                )
-        # Prevent over-scoring in Observability/AIOps when operations rely on reactive scripts or manual log cleanup
-        if (
-            canonical_p_id.endswith("T7.P1")
-            or ("T7" in current_tower_id and canonical_p_id.endswith("P1"))
-            or re.search(r"\b(?:observability|observabilidad|aiops)\b", pillar_name, re.IGNORECASE)
-        ):
-            if re.search(
-                r"\b(?:manual(?:ly)?\s+(?:clear|delete|clean|purge)|borrado\s+manual|limpieza\s+manual|reactive\s+script|scripts?\s+reactivos?|sin\s+correlaci[oó]n|lack\s+of\s+.*correlation|no\s+.*aiops|sin\s+aiops|logrotate|llenado\s+de\s+disco|disk\s+full)\b",
-                f"{clean_state} {clean_f} {pillar.get('literal_evidence', '')}",
-                re.IGNORECASE,
-            ):
-                exact_score = min(exact_score, 1.50)
-                clean_state = re.sub(
-                    r"\b(?:madurez\s+avanzada|advanced\s+maturity|proactive\s+observability|observabilidad\s+proactiva)\b",
-                    "monitorización básica reactiva" if doc_lang.startswith("es") else "basic reactive monitoring",
-                    clean_state,
-                    flags=re.IGNORECASE,
-                )
         # Synchronize calibrated score and CMMI band label back into the source pillar payload so Executive Summary,
         # Table 4, and global averages remain 100% mathematically consistent with Table 5/6.
         pillar["score"] = exact_score
         pillar["calibrated_score"] = exact_score
         if raw_declared is None:
-            pillar["declared_score"] = declared_score
+            declared_score = exact_score
+            pillar["declared_score"] = exact_score
         band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         band_label = band_info.get("label", "")
         pillar["maturity_level"] = band_label
@@ -2217,64 +2111,36 @@ def derive_in_memory_maturity_matrix(
 
         # TRI-MODAL ENROUTER LOGIC (Argon Persona Mandate)
         delta = abs(exact_score - declared_score)
-        is_alpha_hammer = False
-        if max_delta >= 1.5 and delta == max_delta:
-            is_alpha_hammer = True
-        elif max_delta < 1.5 and exact_score <= 2.0 and exact_score == min_score:
-            is_alpha_hammer = True
+        # We no longer force artificial robotic phrases or Gartner boilerplate via 'is_alpha_hammer'.
+        # The narrative relies purely on the LLM's synthesis from 'arch_paras'.
 
-        diag_rationale = _build_diagnostic_rationale(
-            pillar, exact_score, declared_score, band_label, clean_f, doc_lang
-        )
+        # Cross-paragraph sentence deduplication to prevent verbatim finding cloning
+        final_arch_paras: list[str] = []
+        global_seen_sentences: set[str] = set()
+        for p_text in arch_paras:
+            cleaned_p = re.sub(r"([.)])([A-ZÁÉÍÓÚ])", r"\1 \2", p_text)
+            p_sents = [s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned_p) if s.strip()]
+            filtered_sents: list[str] = []
+            for s in p_sents:
+                norm_s = re.sub(r"\W+", "", s).lower()
+                if len(norm_s) > 25:
+                    if norm_s in global_seen_sentences:
+                        continue
+                    global_seen_sentences.add(norm_s)
+                filtered_sents.append(s)
+            reconstructed_p = " ".join(filtered_sents).strip()
+            if reconstructed_p:
+                final_arch_paras.append(reconstructed_p)
+        arch_paras = final_arch_paras
 
-        if is_alpha_hammer:
-            sota_benchmark = _build_sota_benchmark_paragraph(canonical_p_id, doc_lang)
-            if sota_benchmark and diag_rationale:
-                norm_sota = re.sub(r"\W+", "", sota_benchmark).lower()
-                norm_diag = re.sub(r"\W+", "", diag_rationale).lower()
-                already_has_diag = (
-                    any(
-                        (norm_diag[:40] in re.sub(r"\W+", "", existing).lower())
-                        or (
-                            ("autoevaluaci" in existing.lower() or "self-assessment" in existing.lower())
-                            and ("calibra" in existing.lower() or "calibrat" in existing.lower())
-                        )
-                        for existing in arch_paras
-                    )
-                    if norm_diag
-                    else False
-                )
-                already_has_sota = (
-                    any(
-                        norm_sota[:40] in re.sub(r"\W+", "", existing).lower()
-                        for existing in arch_paras
-                    )
-                    if norm_sota
-                    else False
-                )
-
-                if already_has_diag:
-                    if not already_has_sota:
-                        arch_paras.append(
-                            _scrub_template_glitches_and_token_leaks(sota_benchmark, doc_lang)
-                        )
-                else:
-                    if already_has_sota:
-                        fused_para = _scrub_template_glitches_and_token_leaks(
-                            diag_rationale, doc_lang
-                        )
-                    else:
-                        fused_para = _scrub_template_glitches_and_token_leaks(
-                            f"{sota_benchmark} {diag_rationale}", doc_lang
-                        )
-                    if len(arch_paras) > 1:
-                        arch_paras = [arch_paras[0], fused_para]
-                    elif arch_paras:
-                        arch_paras.append(fused_para)
-                    else:
-                        arch_paras = [fused_para]
-
-        target_lvl = min(5, int(exact_score) + 1)
+        raw_target = pillar.get("target_score") or pillar.get("target_maturity_level") or pillar.get("target_level")
+        if raw_target is not None:
+            try:
+                target_lvl = max(1, min(5, int(round(float(raw_target)))))
+            except (ValueError, TypeError):
+                target_lvl = min(5, int(exact_score) + 1)
+        else:
+            target_lvl = min(5, int(exact_score) + 1)
         target_label = str(target_lvl)
 
         rows.append(

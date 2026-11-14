@@ -17,8 +17,8 @@
       "es": "La inestabilidad eléctrica en acometidas y cuadros generales impacta de forma inmediata en la disponibilidad de hipervisores de Cómputo (Torre 2) y provoca la detención de los sistemas de expedición y básculas en planta (Torre 10)."
     },
     "T1.P2": {
-      "en": "Thermal degradation and uncontained aisle recirculation accelerate hardware failure in NetApp storage controllers (Tower 4) and induce thermal throttling across Compute clusters (Tower 2).",
-      "es": "Las deficiencias térmicas y la falta de confinamiento de pasillos aceleran la degradación de las controladoras de almacenamiento NetApp (Torre 4) e inducen paradas por sobretemperatura en los clústeres de Cómputo (Torre 2)."
+      "en": "Thermal degradation and uncontained aisle recirculation accelerate hardware failure in primary SAN storage controllers (Tower 4) and induce thermal throttling across Compute clusters (Tower 2).",
+      "es": "Las deficiencias térmicas y la falta de confinamiento de pasillos aceleran la degradación de las controladoras de almacenamiento principal SAN (Torre 4) e inducen paradas por sobretemperatura en los clústeres de Cómputo (Torre 2)."
     },
     "T1.P3": {
       "en": "Unmonitored physical access to edge server rooms circumvents logical cybersecurity controls (Tower 6) and exposes core switching backbones (Tower 3) to physical tampering.",
@@ -29,8 +29,8 @@
       "es": "Las carencias de hermeticidad en salas técnicas comprometen la supervivencia de las cabinas de Almacenamiento (Torre 4) y amenazan los equipos de telecomunicaciones de cabecera (Torre 3)."
     },
     "T1.P5": {
-      "en": "Lack of centralized DCIM telemetry creates blind spots for IT capacity planners, directly delaying server hardware refresh programs in Compute (Tower 2) and FinOps budgets (Tower 8).",
-      "es": "La falta de telemetría DCIM centralizada genera puntos ciegos que retrasan los planes de renovación de Cómputo (Torre 2) e introducen sobrecostes imprevistos de inversión en FinOps (Torre 8)."
+      "en": "Lack of centralized DCIM telemetry creates blind spots for IT capacity planners, directly delaying server hardware refresh programs in Compute (Tower 2) and inflating Capex/Opex allocations in IT Financial Management (Tower 8).",
+      "es": "La falta de telemetría DCIM centralizada genera puntos ciegos que retrasan los planes de renovación de Cómputo (Torre 2) e introducen sobrecostes imprevistos de inversión en la gestión financiera de TI (Torre 8)."
     },
     "T2.P1": {
       "en": "Hypervisor host resource saturation restricts high-availability failover buffers in Resilience (Tower 5) and creates latency spikes in transactional Oracle databases (Tower 4).",
@@ -58,15 +58,15 @@
     },
     "T3.P2": {
       "en": "Single-carrier WAN links to remote branches and operating facilities create systemic single points of failure, halting local operational clearing operations (Tower 10) during line cuts.",
-      "es": "La dependencia de enlaces WAN únicos en fábricas remotas crea puntos únicos de fallo que paralizan la expedición y básculas (Torre 10) ante cualquier corte de fibra del operador."
+      "es": "La dependencia de enlaces WAN únicos en fábricas remotas crea puntos únicos de fallo que paralizan la expedición y operaciones locales (Torre 10) ante cualquier corte de fibra del operador."
     },
     "T3.P3": {
-      "en": "Optical link latency spikes between split datacenters cause synchronous storage write locks in NetApp MetroCluster (Tower 4) and destabilize hypervisor stretched clusters (Tower 2).",
-      "es": "Las fluctuaciones de latencia en la fibra entre CPDs provocan bloqueos de escritura síncrona en las cabinas NetApp (Torre 4) e inestabilidad en los clústeres extendidos de Cómputo (Torre 2)."
+      "en": "Optical link latency spikes between split datacenters cause synchronous storage write locks in synchronous storage replication clusters (Tower 4) and destabilize hypervisor stretched clusters (Tower 2).",
+      "es": "Las fluctuaciones de latencia en la fibra entre CPDs provocan bloqueos de escritura síncrona en las cabinas de almacenamiento síncrono (Torre 4) e inestabilidad en los clústeres extendidos de Cómputo (Torre 2)."
     },
     "T3.P4": {
       "en": "Public internet VPN dependencies for core cloud workloads introduce latency jitter affecting remote employee productivity in Digital Workplace (Tower 9) and SaaS ERP responsiveness (Tower 8).",
-      "es": "La dependencia de túneles VPN sobre internet público introduce fluctuaciones que degradan la experiencia del Puesto de Trabajo (Torre 9) y la agilidad de acceso a SAP en la nube (Torre 8)."
+      "es": "La dependencia de túneles VPN sobre internet público introduce fluctuaciones que degradan la experiencia del Puesto de Trabajo (Torre 9) y la agilidad de acceso a aplicaciones ERP en la nube (Torre 8)."
     },
     "T3.P5": {
       "en": "Manual switch configuration drift without version control complicates firewall rule audits in Security (Tower 6) and slows incident resolution in ITSM (Tower 7).",
@@ -190,11 +190,11 @@
     },
     "T9.P5": {
       "en": "Unmonitored endpoint application crashes create hidden employee friction, leading to delayed logistics reporting and dispatch friction in factory offices (Tower 10).",
-      "es": "La falta de telemetría de rendimiento en puestos genera lentitud oculta en oficinas de fábrica, retrasando el procesamiento de albaranes de expedición (Torre 10)."
+      "es": "La falta de telemetría de rendimiento en puestos genera lentitud oculta en oficinas de fábrica, retrasando el procesamiento de órdenes de expedición logística (Torre 10)."
     },
     "T10.P1": {
-      "en": "Unplanned downtime on legacy IBM iSeries dispatch engines directly stops core transactional clearing, halting operational settlement workflows and factory revenue.",
-      "es": "Cualquier parada imprevista en el servidor IBM iSeries de expedición detiene inmediatamente las básculas de fábrica, paralizando la salida de camiones y la facturación."
+      "en": "Unplanned downtime on core transactional dispatch engines directly stops operational clearing, halting fulfillment workflows and business revenue.",
+      "es": "Cualquier parada imprevista en el servidor transaccional de expedición detiene inmediatamente la operativa de planta, paralizando la entrega de producto y la facturación."
     },
     "T10.P2": {
       "en": "Manual change deployment on legacy RPG/Cobol code risks transactional corruption in core accounting databases, impacting financial reporting in Governance (Tower 8).",
