@@ -3228,7 +3228,15 @@
     "ch4_default_external_milestone": "Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
     "default_executive_verdict": "La infraestructura de {tower_name} en {client_name} presenta una base operativa funcional pero con limitaciones de automatización y gobernanza.",
     "exec_summary_key_findings_lead": "Principales áreas estratégicas de exposición operativa:",
-    "exec_summary_strategic_conclusion": "La modernización estructural de {tower_name} es un imperativo de negocio para contener la fricción operativa actual y garantizar la resiliencia requerida por las normativas de continuidad industrial."
+    "exec_summary_strategic_conclusion": "La modernización estructural de {tower_name} es un imperativo de negocio para contener la fricción operativa actual y garantizar la resiliencia requerida por las normativas de continuidad industrial.",
+    "kpi_regulatory_header": "POSTURA REGULATORIA",
+    "kpi_inaction_header": "EXPOSICIÓN STATU QUO",
+    "reg_gap_high": "Brecha Alta ({reg})",
+    "reg_gap_partial": "Conformidad Parcial ({reg})",
+    "reg_gap_low": "Audit-Ready ({reg})",
+    "heatmap_section_title": "Radiografía de Madurez por Capacidad (Heatmap AS-IS)",
+    "decision_horizon_lead": "Ventana de Decisión y Mandato:",
+    "decision_horizon_body": "Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de {regulation}."
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6435,7 +6443,15 @@
     "ch4_default_external_milestone": "Statutory governance and operational resilience compliance requirements.",
     "default_executive_verdict": "The {tower_name} infrastructure at {client_name} presents a functional operational baseline but with automation and governance limitations.",
     "exec_summary_key_findings_lead": "Key strategic areas of operational exposure:",
-    "exec_summary_strategic_conclusion": "The structural modernization of {tower_name} is a business imperative to contain operational friction and guarantee the resilience required by industrial continuity directives."
+    "exec_summary_strategic_conclusion": "The structural modernization of {tower_name} is a business imperative to contain operational friction and guarantee the resilience required by industrial continuity directives.",
+    "kpi_regulatory_header": "REGULATORY POSTURE",
+    "kpi_inaction_header": "STATUS QUO EXPOSURE",
+    "reg_gap_high": "High Gap ({reg})",
+    "reg_gap_partial": "Partial Alignment ({reg})",
+    "reg_gap_low": "Audit-Ready ({reg})",
+    "heatmap_section_title": "Capability Maturity X-Ray (AS-IS Heatmap)",
+    "decision_horizon_lead": "Decision Horizon & Strategic Mandate:",
+    "decision_horizon_body": "Recommended 12 to 18-month execution horizon to deploy target architecture before mandatory {regulation} compliance audits."
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9639,7 +9655,15 @@
     "ch4_default_external_milestone": "Requisitos regulatórios de governança e diretrizes de resiliência operacional.",
     "default_executive_verdict": "A infraestrutura de {tower_name} em {client_name} apresenta uma base operacional funcional, mas com limitações de automação e governança.",
     "exec_summary_key_findings_lead": "Principais áreas estratégicas de exposição operacional:",
-    "exec_summary_strategic_conclusion": "A modernização estrutural de {tower_name} é um imperativo de negócios para conter o atrito operacional e garantir a resiliência exigida pelas diretrizes de continuidade industrial."
+    "exec_summary_strategic_conclusion": "A modernização estrutural de {tower_name} é um imperativo de negócios para conter o atrito operacional e garantir a resiliência exigida pelas diretrizes de continuidade industrial.",
+    "kpi_regulatory_header": "POSTURA REGULATÓRIA",
+    "kpi_inaction_header": "EXPOSIÇÃO STATU QUO",
+    "reg_gap_high": "Lacuna Alta ({reg})",
+    "reg_gap_partial": "Conformidade Parcial ({reg})",
+    "reg_gap_low": "Audit-Ready ({reg})",
+    "heatmap_section_title": "Radiografia de Maturidade por Capacidade (Heatmap AS-IS)",
+    "decision_horizon_lead": "Janela de Decisão e Mandato Estratégico:",
+    "decision_horizon_body": "Horizonte de atuação recomendado de 12 a 18 meses para executar a modernização antes das auditorias de conformidade com {regulation}."
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12841,7 +12865,15 @@
     "ch4_default_external_milestone": "Exigences réglementaires de gouvernance et directives de résilience opérationnelle.",
     "default_executive_verdict": "L'infrastructure de {tower_name} chez {client_name} présente une base opérationnelle fonctionnelle mais avec des limites d'automatisation et de gouvernance.",
     "exec_summary_key_findings_lead": "Principaux domaines stratégiques d'exposition opérationnelle:",
-    "exec_summary_strategic_conclusion": "La modernisation structurelle de {tower_name} est un impératif commercial pour contenir la friction opérationnelle et garantir la résilience requise par les directives de continuité industrielle."
+    "exec_summary_strategic_conclusion": "La modernisation structurelle de {tower_name} est un impératif commercial pour contenir la friction opérationnelle et garantir la résilience requise par les directives de continuité industrielle.",
+    "kpi_regulatory_header": "POSTURE RÉGLEMENTAIRE",
+    "kpi_inaction_header": "EXPOSITION DU STATU QUO",
+    "reg_gap_high": "Écart Élevé ({reg})",
+    "reg_gap_partial": "Conformité Partielle ({reg})",
+    "reg_gap_low": "Prêt pour Audit ({reg})",
+    "heatmap_section_title": "Radiographie de Maturité par Capacité (Heatmap AS-IS)",
+    "decision_horizon_lead": "Fenêtre de Décision et Mandat Stratégique :",
+    "decision_horizon_body": "Horizon d'exécution recommandé de 12 à 18 mois pour déployer l'architecture cible avant les audits de conformité {regulation}."
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -16034,7 +16066,15 @@
     "ch4_default_external_milestone": "法令に基づくガバナンス要件および運用レジリエンス適合要件。",
     "default_executive_verdict": "{client_name}の{tower_name}インフラは機能的な運用ベースラインを示していますが、自動化とガバナンスに制限があります。",
     "exec_summary_key_findings_lead": "運用上のリスクが存在する主要な戦略的領域：",
-    "exec_summary_strategic_conclusion": "{tower_name}の構造的近代化は、運用上の摩擦を抑制し、産業継続性指令で求められるレジリエンスを保証するためのビジネス上の必須事項です。"
+    "exec_summary_strategic_conclusion": "{tower_name}の構造的近代化は、運用上の摩擦を抑制し、産業継続性指令で求められるレジリエンスを保証するためのビジネス上の必須事項です。",
+    "kpi_regulatory_header": "規制コンプライアンス",
+    "kpi_inaction_header": "現状維持リスク露出額",
+    "reg_gap_high": "重大なギャップ（{reg}）",
+    "reg_gap_partial": "部分的一致（{reg}）",
+    "reg_gap_low": "監査対応完了（{reg}）",
+    "heatmap_section_title": "能力別成熟度レントゲン（AS-ISヒートマップ）",
+    "decision_horizon_lead": "意思決定期間および戦略的マンデート：",
+    "decision_horizon_body": "{regulation}の必須コンプライアンス監査に先立ち、ターゲットアーキテクチャを展開するための推奨実施期間は12〜18か月です。"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19230,7 +19270,15 @@
     "ch4_default_external_milestone": "Gesetzliche Governance-Vorgaben und betriebliche Resilienz-Richtlinien.",
     "default_executive_verdict": "Die Infrastruktur von {tower_name} bei {client_name} weist eine funktionale Betriebsbasis auf, jedoch mit Einschränkungen bei Automatisierung und Governance.",
     "exec_summary_key_findings_lead": "Zentrale strategische Bereiche der operativen Exposition:",
-    "exec_summary_strategic_conclusion": "Die strukturelle Modernisierung von {tower_name} ist ein geschäftlicher Imperativ, um operative Reibung einzudämmen und die durch Richtlinien zur industriellen Kontinuität geforderte Resilienz zu gewährleisten."
+    "exec_summary_strategic_conclusion": "Die strukturelle Modernisierung von {tower_name} ist ein geschäftlicher Imperativ, um operative Reibung einzudämmen und die durch Richtlinien zur industriellen Kontinuität geforderte Resilienz zu gewährleisten.",
+    "kpi_regulatory_header": "REGULATORISCHE POSTUR",
+    "kpi_inaction_header": "STATUS-QUO-EXPOSITION",
+    "reg_gap_high": "Hohe Lücke ({reg})",
+    "reg_gap_partial": "Teilweise Konformität ({reg})",
+    "reg_gap_low": "Auditbereit ({reg})",
+    "heatmap_section_title": "Fähigkeiten-Reifegrad-Röntgenbild (AS-IS Heatmap)",
+    "decision_horizon_lead": "Entscheidungshorizont & strategisches Mandat:",
+    "decision_horizon_body": "Empfohlener Ausführungshorizont von 12 bis 18 Monaten zur Implementierung der Zielarchitektur vor verpflichtenden {regulation}-Audits."
   },
   "executive_summary_narrative": {
     "es": {

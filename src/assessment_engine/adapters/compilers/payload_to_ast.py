@@ -1865,7 +1865,7 @@ class PayloadToASTBridge:
         tower_id = str(ctx.get("tower_id") or blueprint_data.get("tower_id") or "T1").upper()
 
         #
-        # 3. CHAPTER 1: EXECUTIVE SUMMARY (ONE-PAGE EXECUTIVE SNAPSHOT)
+        # 3. CHAPTER 1: EXECUTIVE SUMMARY (UNIVERSAL TIER-1 EXECUTIVE COCKPIT)
         #
         nodes.append(
             HeadingNode(
@@ -1881,14 +1881,6 @@ class PayloadToASTBridge:
             or blueprint_data.get("currency")
             or "USD"
         )
-        total_fair_ale = (
-            _safe_float(blueprint_data.get("total_fair_ale"))
-            or _safe_float(blueprint_data.get("annualized_loss_expectancy"))
-            or _safe_float(blueprint_data.get("fair_risk_profile", {}).get("total_ale"))
-            or _safe_float(blueprint_data.get("total_ale"))
-            or 0.0
-        )
-
         doc_meta = blueprint_data.get("document_meta") or {}
         tower_id_canonical = str(ctx.get("tower_id") or doc_meta.get("tower_code") or doc_meta.get("tower_id") or "T1").strip().upper()
         raw_tname = str(ctx.get("tower_name") or doc_meta.get("tower_name", "Infrastructure Domain"))
@@ -1896,84 +1888,140 @@ class PayloadToASTBridge:
         resolver = get_taxonomy_resolver()
         tower_name = resolver.resolve_tower_name(tower_id_canonical, default=raw_tname, locale=meta_lang)
 
-        # COMPONENT 1: THE DIRECT VERDICT PARAGRAPH
+        # COMPONENT A: DIRECT OPERATIONAL DIAGNOSIS (BLUF SCQA)
         exec_sum = (
             blueprint_data.get("executive_snapshot")
             or (annex_data.get("executive_summary") if annex_data else {})
             or {}
         )
         bespoke_bottom_line = str(exec_sum.get("bottom_line") or "").strip()
-        from assessment_engine.infrastructure.localization import (
-            restore_locale_diacritics,
-        )
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
         verdict_text = (
             bespoke_bottom_line
             if len(bespoke_bottom_line) > 40
             else t("default_executive_verdict", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         )
         verdict_text = restore_locale_diacritics(verdict_text, meta_lang)
-        nodes.append(ParagraphNode(text=verdict_text, font_size=10.0, space_after=12))
+        nodes.append(ParagraphNode(text=verdict_text, font_size=9.5, space_after=8))
 
-        # COMPONENT 2: THE SCORECARD TABLE (Global Maturity & Annual Exposure)
+        # COMPONENT B: 4-METRIC EXECUTIVE SCORECARD (GARTNER + DELOITTE SSOT)
+        synth = blueprint_data.get("chapter4_synthesis")
+        if not synth:
+            from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+            from assessment_engine.infrastructure.config_loader import load_country_labor_rates
+            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+            synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx, rates_catalog=rates_cat)
+        
+        min_inaction = float(synth.get("total_status_quo_exposure_min") or 0.0)
+        max_inaction = float(synth.get("total_status_quo_exposure_max") or 0.0)
+        per_year_suffix = t("per_year_suffix", locale=meta_lang)
+        inaction_display = f"~{format_currency(min_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(max_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}"
+
+        reg_frameworks = blueprint_data.get("regulatory_frameworks") or blueprint_data.get("methodological_frameworks") or []
+        primary_reg = "NIS2"
+        if reg_frameworks and isinstance(reg_frameworks, list):
+            for rf in reg_frameworks:
+                if isinstance(rf, dict) and rf.get("standard"):
+                    primary_reg = str(rf["standard"]).split()[0].strip()
+                    break
+                elif isinstance(rf, str) and len(rf) > 1:
+                    primary_reg = str(rf).split()[0].strip()
+                    break
+
+        if gs_val < 2.5:
+            reg_status = t("reg_gap_high", locale=meta_lang, reg=primary_reg)
+            reg_bg = "FEE2E2"
+        elif gs_val < 3.5:
+            reg_status = t("reg_gap_partial", locale=meta_lang, reg=primary_reg)
+            reg_bg = "FEF3C7"
+        else:
+            reg_status = t("reg_gap_low", locale=meta_lang, reg=primary_reg)
+            reg_bg = "DCFCE7"
+
         band_bg = "FFF3CD" if gs_val < 3.4 else "E2F0D9"
         max_score_str = format_number(5.0, locale=meta_lang, decimals=1)
         score_display = display_score_str if " / " in display_score_str else f"{display_score_str} / {max_score_str}"
-        per_year_suffix = t("per_year_suffix", locale=meta_lang)
-        ale_str = f"{format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}"
 
         scorecard_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("kpi_exposure_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_inaction_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
+                    CellNode(text=t("kpi_regulatory_header", locale=meta_lang), bold=True, is_header=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER", font_size=8.0),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=11.0),
-                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=11.0),
-                    CellNode(text=ale_str, bold=True, align="CENTER", bg_color="FCE4D6", font_size=11.0),
+                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=9.5),
+                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=9.5),
+                    CellNode(text=inaction_display, bold=True, align="CENTER", bg_color="FCE4D6", font_size=9.0),
+                    CellNode(text=reg_status, bold=True, align="CENTER", bg_color=reg_bg, font_size=9.0),
                 ]
             ),
         ]
-        nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
-        nodes.append(SpacerNode(points=14))
+        nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.20, 0.28, 0.28, 0.24]))
+        nodes.append(SpacerNode(points=8))
 
-        # COMPONENT 3: THE 3 KEY REALITIES (BULLETS)
+        # COMPONENT C: DYNAMIC N-PILLAR CAPABILITY MICRO-HEATMAP (GARTNER COMPACT)
+        nodes.append(ParagraphNode(text=f"**{t('heatmap_section_title', locale=meta_lang)}**", font_size=9.5, space_after=4, keep_with_next=True))
+        pillars_raw = [p for p in blueprint_data.get("pillars_analysis", []) if isinstance(p, dict)]
+        if pillars_raw:
+            n_cols = max(1, min(5, len(pillars_raw)))
+            col_width = round(1.0 / n_cols, 3)
+            heatmap_headers = []
+            heatmap_data = []
+            for p in pillars_raw[:n_cols]:
+                p_score = _safe_float(p.get("pilar_score") or p.get("score"), default=2.0)
+                p_name_raw = str(p.get("pilar_name") or p.get("name") or "Capability").strip()
+                p_name_clean = resolver.resolve_pillar_by_any_reference(p_name_raw, locale=meta_lang, default=p_name_raw)
+                p_score_str = format_number(p_score, locale=meta_lang, decimals=2)
+                
+                if p_score < 2.0:
+                    c_bg = "FEE2E2"
+                elif p_score < 3.4:
+                    c_bg = "FEF3C7"
+                else:
+                    c_bg = "DCFCE7"
+
+                heatmap_headers.append(CellNode(text=p_name_clean, bold=True, font_size=7.5, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
+                heatmap_data.append(CellNode(text=f"**{p_score_str}**", bold=True, font_size=9.0, align="CENTER", bg_color=c_bg))
+
+            heatmap_rows = [
+                TableRowNode(cells=heatmap_headers, is_header=True),
+                TableRowNode(cells=heatmap_data),
+            ]
+            nodes.append(TableNode(rows=heatmap_rows, col_widths=[col_width] * n_cols))
+            nodes.append(SpacerNode(points=8))
+
+        # COMPONENT D: THE 3 STRATEGIC REALITIES (THE RULE OF THREE WITH ANCHORS)
         lead_in = t("exec_summary_key_findings_lead", locale=meta_lang)
-        nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=10.0, space_after=6, keep_with_next=True))
+        nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=9.5, space_after=4, keep_with_next=True))
 
-        risks_list = (
-            blueprint_data.get("risk_register")
-            or blueprint_data.get("risks")
-            or (blueprint_data.get("fair_risk_profile") or {}).get("scenarios")
-            or []
-        )
-        if not risks_list:
-            risks_list = [hc for p in blueprint_data.get("pillars_analysis", []) for hc in (p.get("health_check_asis") or [])]
-        
-        findings_briefs = []
-        for r in risks_list:
-            brief = str(r.get("finding") or r.get("risk_observed") or r.get("business_risk") or "").strip()
-            if brief and len(brief) > 15 and brief not in findings_briefs:
-                findings_briefs.append(brief)
-            if len(findings_briefs) >= 3:
-                break
-        if not findings_briefs:
-            findings_briefs.append(t("default_critical_vulnerability", locale=meta_lang))
+        cards_pool = synth.get("strategic_risk_cards") or []
+        if not cards_pool:
+            cards_pool = [
+                {"title": str(hc.get("finding") or "Core Finding"), "technical_evidence": str(hc.get("business_risk") or "")}
+                for p in blueprint_data.get("pillars_analysis", [])
+                for hc in (p.get("health_check_asis") or [])
+            ]
 
-        for f_idx, fb in enumerate(findings_briefs[:3]):
-            b_text = fb.strip().rstrip(".")
-            formatted_bullet = f"**{b_text.split(':', 1)[0].strip()}:** {b_text.split(':', 1)[1].strip()}." if ":" in b_text else f"{b_text}."
+        for card_item in cards_pool[:3]:
+            c_title = str(card_item.get("title") or "Riesgo Operativo").strip()
+            c_desc = str(card_item.get("technical_evidence") or card_item.get("operational_impact_chain") or "").strip().rstrip(".")
+            if len(c_desc) > 160:
+                c_desc = c_desc[:157] + "..."
+            formatted_bullet = f"**{c_title}:** {c_desc}."
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=6))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=8.5, space_after=4))
 
-        # COMPONENT 4: STRATEGIC CONCLUSION (NO HEAVY ACTUARIAL JARGON)
+        # COMPONENT E: UNIVERSAL DECISION HORIZON & STRATEGIC MANDATE (BAIN COST OF DELAY)
         nodes.append(SpacerNode(points=6))
-        conclusion_tmpl = exec_sum.get("p4_modernization_mandate") or t("exec_summary_strategic_conclusion", locale=meta_lang, tower_name=tower_name)
-        conclusion_text = restore_locale_diacritics(conclusion_tmpl, meta_lang)
-        nodes.append(ParagraphNode(text=conclusion_text, font_size=10.0, space_after=12))
+        horizon_lead = t("decision_horizon_lead", locale=meta_lang)
+        horizon_body = t("decision_horizon_body", locale=meta_lang, regulation=primary_reg)
+        horizon_full = f"**{horizon_lead}** {horizon_body}"
+        horizon_full = restore_locale_diacritics(horizon_full, meta_lang)
+        nodes.append(ParagraphNode(text=horizon_full, font_size=9.0, space_after=8))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())

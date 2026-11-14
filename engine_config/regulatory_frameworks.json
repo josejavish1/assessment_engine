@@ -24,7 +24,7 @@
       "full_name_key": "reg.nis2_important.full",
       "authority": "ENISA / National CSIRTs",
       "citation": "Directive (EU) 2022/2555 (Annex II)",
-      "risk_weight_multiplier": 1.20
+      "risk_weight_multiplier": 1.2
     },
     "IEC_62443": {
       "code": "IEC 62443",
@@ -32,7 +32,7 @@
       "full_name_key": "reg.iec62443.full",
       "authority": "ISA / IEC",
       "citation": "ISA/IEC 62443 Series (OT/IACS)",
-      "risk_weight_multiplier": 1.30
+      "risk_weight_multiplier": 1.3
     },
     "GDPR": {
       "code": "GDPR",
@@ -56,7 +56,7 @@
       "full_name_key": "reg.iso27001.full",
       "authority": "ISO / IEC",
       "citation": "ISO/IEC 27001:2022",
-      "risk_weight_multiplier": 1.00
+      "risk_weight_multiplier": 1.0
     },
     "ISO_22237": {
       "code": "ISO 22237",
@@ -88,7 +88,7 @@
       "full_name_key": "reg.lgpd.full",
       "authority": "ANPD (Brazil)",
       "citation": "Lei Geral de Proteção de Dados (Lei nº 13.709/2018)",
-      "risk_weight_multiplier": 1.20
+      "risk_weight_multiplier": 1.2
     },
     "CFM_RDC330": {
       "code": "ANVISA RDC 330 / CFM",
@@ -128,7 +128,7 @@
       "full_name_key": "reg.hipaa.full",
       "authority": "U.S. HHS / OCR",
       "citation": "45 CFR Part 160 and Part 164",
-      "risk_weight_multiplier": 1.30
+      "risk_weight_multiplier": 1.3
     },
     "PCI_DSS": {
       "code": "PCI-DSS v4.0",
@@ -136,77 +136,308 @@
       "full_name_key": "reg.pcidss.full",
       "authority": "PCI Security Standards Council",
       "citation": "PCI-DSS v4.0",
-      "risk_weight_multiplier": 1.20
+      "risk_weight_multiplier": 1.2
+    },
+    "FISC": {
+      "code": "FISC",
+      "short_label_key": "reg.fisc.short",
+      "full_name_key": "reg.fisc.full",
+      "authority": "Center for Financial Industry Information Systems (Japan)",
+      "citation": "FISC Safety Standards for Financial Information Systems",
+      "risk_weight_multiplier": 1.3
+    },
+    "APPI": {
+      "code": "APPI",
+      "short_label_key": "reg.appi.short",
+      "full_name_key": "reg.appi.full",
+      "authority": "Personal Information Protection Commission (Japan)",
+      "citation": "Act on the Protection of Personal Information",
+      "risk_weight_multiplier": 1.15
     }
   },
   "resolution_matrix": {
     "financial_services": {
-      "EU": ["DORA", "NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "ES": ["DORA", "NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "FR": ["DORA", "NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "DE": ["DORA", "NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "IT": ["DORA", "NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "GB": ["FCA_PRA_OPRES", "DORA", "UK_GDPR", "ISO_27001"],
-      "US": ["SEC_CYBER", "PCI_DSS", "ISO_27001"],
-      "BR": ["BACEN_4893", "LGPD", "ISO_27001"],
-      "DEFAULT": ["ISO_27001", "PCI_DSS"]
+      "EU": [
+        "DORA",
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "ES": [
+        "DORA",
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "FR": [
+        "DORA",
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "DE": [
+        "DORA",
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "IT": [
+        "DORA",
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "GB": [
+        "FCA_PRA_OPRES",
+        "DORA",
+        "UK_GDPR",
+        "ISO_27001"
+      ],
+      "US": [
+        "SEC_CYBER",
+        "PCI_DSS",
+        "ISO_27001"
+      ],
+      "BR": [
+        "BACEN_4893",
+        "LGPD",
+        "ISO_27001"
+      ],
+      "DEFAULT": [
+        "ISO_27001",
+        "PCI_DSS"
+      ]
     },
     "heavy_manufacturing": {
-      "EU": ["NIS2_IMPORTANT", "IEC_62443", "ISO_27001", "GDPR"],
-      "ES": ["NIS2_IMPORTANT", "IEC_62443", "ISO_27001", "GDPR"],
-      "FR": ["NIS2_IMPORTANT", "IEC_62443", "ISO_27001", "GDPR"],
-      "DE": ["NIS2_IMPORTANT", "IEC_62443", "ISO_27001", "GDPR"],
-      "IT": ["NIS2_IMPORTANT", "IEC_62443", "ISO_27001", "GDPR"],
-      "GB": ["IEC_62443", "ISO_27001", "UK_GDPR"],
-      "US": ["IEC_62443", "ISO_27001", "ISO_22237"],
-      "BR": ["IEC_62443", "ISO_27001", "LGPD"],
-      "DEFAULT": ["IEC_62443", "ISO_27001", "ISO_22237"]
+      "EU": [
+        "NIS2_IMPORTANT",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "ES": [
+        "NIS2_IMPORTANT",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "FR": [
+        "NIS2_IMPORTANT",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "DE": [
+        "NIS2_IMPORTANT",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "IT": [
+        "NIS2_IMPORTANT",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "GB": [
+        "IEC_62443",
+        "ISO_27001",
+        "UK_GDPR"
+      ],
+      "US": [
+        "IEC_62443",
+        "ISO_27001",
+        "ISO_22237"
+      ],
+      "BR": [
+        "IEC_62443",
+        "ISO_27001",
+        "LGPD"
+      ],
+      "DEFAULT": [
+        "IEC_62443",
+        "ISO_27001",
+        "ISO_22237"
+      ]
     },
     "energy_utilities": {
-      "EU": ["NIS2_ESSENTIAL", "IEC_62443", "ISO_27001", "GDPR"],
-      "ES": ["NIS2_ESSENTIAL", "IEC_62443", "ENS", "GDPR"],
-      "FR": ["NIS2_ESSENTIAL", "IEC_62443", "ISO_27001", "GDPR"],
-      "DE": ["NIS2_ESSENTIAL", "IEC_62443", "ISO_27001", "GDPR"],
-      "US": ["NERC_CIP", "IEC_62443", "ISO_27001"],
-      "GB": ["IEC_62443", "ISO_27001", "UK_GDPR"],
-      "DEFAULT": ["IEC_62443", "ISO_27001"]
+      "EU": [
+        "NIS2_ESSENTIAL",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "ES": [
+        "NIS2_ESSENTIAL",
+        "IEC_62443",
+        "ENS",
+        "GDPR"
+      ],
+      "FR": [
+        "NIS2_ESSENTIAL",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "DE": [
+        "NIS2_ESSENTIAL",
+        "IEC_62443",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "US": [
+        "NERC_CIP",
+        "IEC_62443",
+        "ISO_27001"
+      ],
+      "GB": [
+        "IEC_62443",
+        "ISO_27001",
+        "UK_GDPR"
+      ],
+      "DEFAULT": [
+        "IEC_62443",
+        "ISO_27001"
+      ]
     },
     "healthcare_lifesciences": {
-      "EU": ["NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "ES": ["NIS2_ESSENTIAL", "ENS", "GDPR", "ISO_27001"],
-      "FR": ["NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "DE": ["NIS2_ESSENTIAL", "GDPR", "ISO_27001"],
-      "GB": ["UK_GDPR", "ISO_27001"],
-      "US": ["HIPAA_HITECH", "ISO_27001"],
-      "BR": ["LGPD", "CFM_RDC330", "ISO_27001"],
-      "DEFAULT": ["ISO_27001"]
+      "EU": [
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "ES": [
+        "NIS2_ESSENTIAL",
+        "ENS",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "FR": [
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "DE": [
+        "NIS2_ESSENTIAL",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "GB": [
+        "UK_GDPR",
+        "ISO_27001"
+      ],
+      "US": [
+        "HIPAA_HITECH",
+        "ISO_27001"
+      ],
+      "BR": [
+        "LGPD",
+        "CFM_RDC330",
+        "ISO_27001"
+      ],
+      "DEFAULT": [
+        "ISO_27001"
+      ]
     },
     "logistics_transport": {
-      "EU": ["NIS2_ESSENTIAL", "ISO_27001", "GDPR"],
-      "FR": ["NIS2_ESSENTIAL", "ISO_27001", "GDPR"],
-      "ES": ["NIS2_ESSENTIAL", "ISO_27001", "GDPR"],
-      "DE": ["NIS2_ESSENTIAL", "ISO_27001", "GDPR"],
-      "US": ["ISO_27001", "PCI_DSS"],
-      "GB": ["ISO_27001", "UK_GDPR"],
-      "BR": ["LGPD", "ISO_27001"],
-      "DEFAULT": ["ISO_27001"]
+      "EU": [
+        "NIS2_ESSENTIAL",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "FR": [
+        "NIS2_ESSENTIAL",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "ES": [
+        "NIS2_ESSENTIAL",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "DE": [
+        "NIS2_ESSENTIAL",
+        "ISO_27001",
+        "GDPR"
+      ],
+      "US": [
+        "ISO_27001",
+        "PCI_DSS"
+      ],
+      "GB": [
+        "ISO_27001",
+        "UK_GDPR"
+      ],
+      "BR": [
+        "LGPD",
+        "ISO_27001"
+      ],
+      "DEFAULT": [
+        "ISO_27001"
+      ]
     },
     "retail_ecommerce": {
-      "EU": ["PCI_DSS", "NIS2_IMPORTANT", "GDPR", "ISO_27001"],
-      "ES": ["PCI_DSS", "NIS2_IMPORTANT", "GDPR", "ISO_27001"],
-      "FR": ["PCI_DSS", "NIS2_IMPORTANT", "GDPR", "ISO_27001"],
-      "US": ["PCI_DSS", "ISO_27001"],
-      "GB": ["PCI_DSS", "UK_GDPR", "ISO_27001"],
-      "BR": ["PCI_DSS", "LGPD", "ISO_27001"],
-      "DEFAULT": ["PCI_DSS", "ISO_27001"]
+      "EU": [
+        "PCI_DSS",
+        "NIS2_IMPORTANT",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "ES": [
+        "PCI_DSS",
+        "NIS2_IMPORTANT",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "FR": [
+        "PCI_DSS",
+        "NIS2_IMPORTANT",
+        "GDPR",
+        "ISO_27001"
+      ],
+      "US": [
+        "PCI_DSS",
+        "ISO_27001"
+      ],
+      "GB": [
+        "PCI_DSS",
+        "UK_GDPR",
+        "ISO_27001"
+      ],
+      "BR": [
+        "PCI_DSS",
+        "LGPD",
+        "ISO_27001"
+      ],
+      "DEFAULT": [
+        "PCI_DSS",
+        "ISO_27001"
+      ]
     },
     "default": {
-      "ES": ["ISO_27001", "GDPR"],
-      "EU": ["ISO_27001", "GDPR"],
-      "GB": ["ISO_27001", "UK_GDPR"],
-      "US": ["ISO_27001"],
-      "BR": ["ISO_27001", "LGPD"],
-      "DEFAULT": ["ISO_27001"]
+      "ES": [
+        "ISO_27001",
+        "GDPR"
+      ],
+      "EU": [
+        "ISO_27001",
+        "GDPR"
+      ],
+      "GB": [
+        "ISO_27001",
+        "UK_GDPR"
+      ],
+      "US": [
+        "ISO_27001"
+      ],
+      "BR": [
+        "ISO_27001",
+        "LGPD"
+      ],
+      "DEFAULT": [
+        "ISO_27001"
+      ]
     }
-  }
+  },
+  "sector_matrix": {}
 }
