@@ -764,12 +764,12 @@
       "T3.P3": {
         "canonical_name": "DCI & Resilient Transport",
         "locales": {
-          "es": "Interconexión de CPDs (DCI) y Transporte Resiliente",
+          "es": "DCI (Interconexión de CPDs) y Transporte Resiliente",
           "en": "DCI & Resilient Transport",
-          "pt": "Interconexão de Data Centers (DCI) e Transporte Resiliente",
-          "fr": "Interconnexion de Data Centers (DCI) et Transport Résilient",
-          "de": "DCI & redundanter Transport",
-          "ja": "DCIおよび高信頼トランスポート"
+          "pt": "DCI (Interconexão de Data Centers) e Transporte Resiliente",
+          "fr": "DCI (Interconnexion de Datacenters) et Transport Résilient",
+          "de": "DCI (Rechenzentrums-Kopplung) & resilienter Transport",
+          "ja": "DCI（データセンター間相互接続）および高耐障害性トランスポート"
         },
         "kpis": {
           "T3.P3.K1": {
@@ -2411,11 +2411,11 @@
             "canonical_name": "Post-Implementation Value Realization & Business Case Attainment",
             "locales": {
               "en": "Post-Implementation Value Realization & Business Case Attainment",
-              "es": "Post-Implementation Value Realization & Business Case Attainment",
-              "pt": "Post-Implementation Value Realization & Business Case Attainment",
-              "fr": "Post-Implementation Value Realization & Business Case Attainment",
-              "de": "Post-Implementation Value Realization & Business Case Attainment",
-              "ja": "Post-Implementation Value Realization & Business Case Attainment"
+              "es": "Realización de Valor Post-Implantación y Justificación de Negocio",
+              "pt": "Realização de Valor Pós-Implementação e Justificativa de Negócio",
+              "fr": "Réalisation de la Valeur Post-Déploiement et Atteinte du Business Case",
+              "de": "Post-Implementierungs-Wertrealisierung & Business-Case-Erreichung",
+              "ja": "導入後価値実現およびビジネスケース達成度評価"
             }
           },
           "T8.P5.K4": {

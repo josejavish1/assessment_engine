@@ -4318,7 +4318,11 @@ class PayloadToASTBridge:
         ev_max = _safe_float(card.get("event_loss_max"), default=0.0)
         ann_min = _safe_float(card.get("annual_exposure_min"), default=0.0)
         ann_max = _safe_float(card.get("annual_exposure_max"), default=0.0)
-        milestone = card.get("external_forcing_milestone")
+        raw_milestone = card.get("external_forcing_milestone")
+        if not raw_milestone or str(raw_milestone).strip() == "Statutory governance and operational resilience compliance requirements.":
+            milestone = t("ch4_default_external_milestone", locale=meta_lang)
+        else:
+            milestone = str(raw_milestone).strip()
 
         yr_str = t("year_lbl", locale=meta_lang)
         formatted_ev = f"~{format_currency(ev_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ev_max, currency_symbol=currency, locale=meta_lang, decimals=0)}"

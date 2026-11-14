@@ -288,7 +288,7 @@ class Chapter4Synthesizer:
         target_count = 4 if len(sorted_findings) >= 4 else (3 if len(sorted_findings) >= 3 else len(sorted_findings))
         selected_findings = sorted_findings[:target_count] if sorted_findings else []
 
-        fallback_milestone = milestone_text or "Statutory governance and operational resilience compliance requirements."
+        fallback_milestone = milestone_text or None
 
         for idx, f in enumerate(selected_findings, start=1):
             raw_cap = str(f.get("capability") or f.get("target_state") or "").strip()

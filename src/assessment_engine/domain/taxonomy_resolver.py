@@ -453,8 +453,16 @@ class PureTaxonomyResolver:
 
         # Universal fallback: If capability name matches a known pillar concept, resolve dynamically
         pillar_res = self.resolve_pillar_by_any_reference(norm_cap, default="", locale=norm_locale)
-        if pillar_res:
+        if pillar_res and pillar_res != norm_cap:
             return pillar_res
+
+        # Check pillar concepts with parentheticals removed for acronym variants (e.g. DCI (Data Center Interconnect) & Resilient Transport)
+        clean_cap_no_parens = re.sub(r"\(.*?\)", "", norm_cap).strip()
+        clean_cap_no_parens = re.sub(r"\s+", " ", clean_cap_no_parens)
+        if clean_cap_no_parens:
+            clean_pillar = self.resolve_pillar_by_any_reference(clean_cap_no_parens, default="", locale=norm_locale)
+            if clean_pillar and clean_pillar != clean_cap_no_parens:
+                return clean_pillar
 
         # Fail-closed gate: Never return raw KPI codes like T5.P4.K2 to executive deliverables
         if re.match(r"^T\d+\.P\d+\.K\d+", cap_name, re.IGNORECASE):

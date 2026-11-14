@@ -3224,7 +3224,8 @@
     "ch4_anchor_toil_desc": "Ajustes operativos manuales, tareas de mantenimiento preventivo y soporte reactivo recurrente en {domain}.",
     "ch4_anchor_outage_desc": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en {domain}.",
     "ch4_anchor_contractual_desc": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en {domain}.",
-    "ch4_affected_perimeter_prefix": "Infraestructura de Producción y Operaciones"
+    "ch4_affected_perimeter_prefix": "Infraestructura de Producción y Operaciones",
+    "ch4_default_external_milestone": "Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa."
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6427,7 +6428,8 @@
     "ch4_anchor_toil_desc": "Ongoing manual resource adjustments, operational maintenance toil, and reactive troubleshooting across {domain}.",
     "ch4_anchor_outage_desc": "Operational contingency and disruption risk upon component failure or hardware degradation in {domain}.",
     "ch4_anchor_contractual_desc": "Projected overspend arising from end-of-life (EOL) milestones, extended vendor support, or mandatory licensing model transitions in {domain}.",
-    "ch4_affected_perimeter_prefix": "Production and Operations Infrastructure"
+    "ch4_affected_perimeter_prefix": "Production and Operations Infrastructure",
+    "ch4_default_external_milestone": "Statutory governance and operational resilience compliance requirements."
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9627,7 +9629,8 @@
     "ch4_anchor_toil_desc": "Ajustes operacionais manuais, esforço de manutenção preventiva e suporte reativo recorrente em {domain}.",
     "ch4_anchor_outage_desc": "Risco de contingência e interrupção operacional diante de degradação de componentes ou falhas de hardware em {domain}.",
     "ch4_anchor_contractual_desc": "Sobrecusto projetado decorrente de marcos de fim de ciclo de vida (EOL), suporte estendido ou transição forçada de licenciamento em {domain}.",
-    "ch4_affected_perimeter_prefix": "Infraestrutura de Produção e Operações"
+    "ch4_affected_perimeter_prefix": "Infraestrutura de Produção e Operações",
+    "ch4_default_external_milestone": "Requisitos regulatórios de governança e diretrizes de resiliência operacional."
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12825,7 +12828,8 @@
     "ch4_anchor_toil_desc": "Ajustements opérationnels manuels, maintenance préventive et support réactif récurrent dans {domain}.",
     "ch4_anchor_outage_desc": "Risque de contingence et d'interruption opérationnelle en cas de dégradation de composants ou de panne matérielle dans {domain}.",
     "ch4_anchor_contractual_desc": "Surcoût projeté découlant des jalons de fin de vie (EOL), du support étendu ou de transitions obligatoires de licences dans {domain}.",
-    "ch4_affected_perimeter_prefix": "Infrastructure de Production et Opérations"
+    "ch4_affected_perimeter_prefix": "Infrastructure de Production et Opérations",
+    "ch4_default_external_milestone": "Exigences réglementaires de gouvernance et directives de résilience opérationnelle."
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -16014,7 +16018,8 @@
     "ch4_anchor_toil_desc": "{domain}における手作業によるリソース調整、保守トイルおよび事後対応トラブルシューティング。",
     "ch4_anchor_outage_desc": "{domain}におけるコンポーネント障害またはハードウェア劣化に伴う運用停止リスク。",
     "ch4_anchor_contractual_desc": "{domain}におけるサポート終了（EOL）マイルストーン、延長サポート、または強制的なライセンス移行に伴う予測超過コスト。",
-    "ch4_affected_perimeter_prefix": "本番および運用インフラストラクチャ"
+    "ch4_affected_perimeter_prefix": "本番および運用インフラストラクチャ",
+    "ch4_default_external_milestone": "法令に基づくガバナンス要件および運用レジリエンス適合要件。"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19206,7 +19211,8 @@
     "ch4_anchor_toil_desc": "Laufende manuelle Ressourcenanpassungen, betrieblicher Wartungsaufwand und reaktive Fehlerbehebung in {domain}.",
     "ch4_anchor_outage_desc": "Betriebliches Kontingenz- und Unterbrechungsrisiko bei Komponentenausfall oder Hardware-Degradation in {domain}.",
     "ch4_anchor_contractual_desc": "Prognostizierte Mehrkosten aufgrund von End-of-Life (EOL)-Meilensteinen, erweitertem Support oder erzwungenen Lizenzmodell-Übergängen in {domain}.",
-    "ch4_affected_perimeter_prefix": "Produktions- und Betriebsinfrastruktur"
+    "ch4_affected_perimeter_prefix": "Produktions- und Betriebsinfrastruktur",
+    "ch4_default_external_milestone": "Gesetzliche Governance-Vorgaben und betriebliche Resilienz-Richtlinien."
   },
   "executive_summary_narrative": {
     "es": {
