@@ -21,6 +21,10 @@ _DEFAULT_ENGLISH_COST_TEMPLATES: Mapping[str, str] = {
     "narrative_cost_just_finops_and_obsolescence": "An annual economic inefficiency of {ale_formatted}/year is estimated from idle capacity and avoidable commitments.",
     "narrative_cost_just_engineering_velocity": "During service requests or maintenance windows, financial impact materializes as lost engineering hours ({sle_formatted} per event). Given a recurrence of {freq_str}, annualized net exposure is {ale_formatted}/year.",
     "narrative_cost_just_compliance_and_governance": "Financial exposure reflects remediation equipment, technical triage, and compliance governance ({sle_formatted} per event). Given an estimated frequency of {freq_str}, annualized net exposure is {ale_formatted}/year.",
+    "narrative_op_risk_healthcare": "Clinical operational risk in {kpi_name} impacting electronic health records (EHR/PACS) and patient care: {clean_desc}.",
+    "narrative_op_risk_banking": "Financial operational risk in {kpi_name} impacting core banking ledgers, point-of-sale card authorization, and payment clearing: {clean_desc}.",
+    "narrative_op_risk_general_desc": "Operational availability risk across {kpi_name} inducing facility downtime, dispatch delays, and transport friction: {clean_desc}.",
+    "narrative_op_risk_general_sla": "Operational service disruption and SLA degradation impacting {kpi_name}.",
 }
 
 

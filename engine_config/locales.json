@@ -3211,7 +3211,10 @@
     "narrative_op_risk_healthcare": "Riesgo operacional clínico en {kpi_name} impactando en historia clínica electrónica (EHR/PACS) y atención de pacientes: {clean_desc}.",
     "narrative_op_risk_banking": "Riesgo operacional financiero en {kpi_name} impactando en registros contables bancarios, autorización en terminales de punto de venta y liquidación de pagos: {clean_desc}.",
     "narrative_op_risk_general_desc": "Riesgo de disponibilidad operativa en {kpi_name} induciendo paradas de instalación, retrasos de expedición y fricción de transporte: {clean_desc}.",
-    "narrative_op_risk_general_sla": "Disrupción del servicio operativo y degradación de SLA impactando en {kpi_name}."
+    "narrative_op_risk_general_sla": "Disrupción del servicio operativo y degradación de SLA impactando en {kpi_name}.",
+    "cmmi_level_1_label": "Nivel 1 - Inicial",
+    "cmmi_level_2_label": "Nivel 2 - Gestionado",
+    "cmmi_level_3_label": "Nivel 3 - Definido"
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6401,7 +6404,10 @@
     "narrative_op_risk_healthcare": "Clinical operational risk in {kpi_name} impacting electronic health records (EHR/PACS) and patient care: {clean_desc}.",
     "narrative_op_risk_banking": "Financial operational risk in {kpi_name} impacting core banking ledgers, point-of-sale card authorization, and payment clearing: {clean_desc}.",
     "narrative_op_risk_general_desc": "Operational availability risk across {kpi_name} inducing facility downtime, dispatch delays, and transport friction: {clean_desc}.",
-    "narrative_op_risk_general_sla": "Operational service disruption and SLA degradation impacting {kpi_name}."
+    "narrative_op_risk_general_sla": "Operational service disruption and SLA degradation impacting {kpi_name}.",
+    "cmmi_level_1_label": "Level 1 - Initial",
+    "cmmi_level_2_label": "Level 2 - Managed",
+    "cmmi_level_3_label": "Level 3 - Defined"
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9588,7 +9594,10 @@
     "narrative_op_risk_healthcare": "Risco operacional clínico em {kpi_name} impactando prontuários eletrônicos (EHR/PACS) e atendimento aos pacientes: {clean_desc}.",
     "narrative_op_risk_banking": "Risco operacional financeiro em {kpi_name} impactando livros contábeis bancários, autorização de POS e compensação de pagamentos: {clean_desc}.",
     "narrative_op_risk_general_desc": "Risco de disponibilidade operacional em {kpi_name} induzindo paradas de instalações, atrasos de despacho e fricção de transporte: {clean_desc}.",
-    "narrative_op_risk_general_sla": "Disrupção do serviço operacional e degradação de SLA impactando {kpi_name}."
+    "narrative_op_risk_general_sla": "Disrupção do serviço operacional e degradação de SLA impactando {kpi_name}.",
+    "cmmi_level_1_label": "Nível 1 - Inicial",
+    "cmmi_level_2_label": "Nível 2 - Gerenciado",
+    "cmmi_level_3_label": "Nível 3 - Definido"
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12773,7 +12782,10 @@
     "narrative_op_risk_healthcare": "Risque opérationnel clinique dans {kpi_name} impactant les dossiers de santé électroniques (DSE/PACS) et les soins aux patients : {clean_desc}.",
     "narrative_op_risk_banking": "Risque opérationnel financier dans {kpi_name} impactant les registres bancaires centraux, l'autorisation TPE et le règlement des paiements : {clean_desc}.",
     "narrative_op_risk_general_desc": "Risque de disponibilité opérationnelle dans {kpi_name} entraînant des arrêts d'installations, des retards d'expédition et des frictions de transport : {clean_desc}.",
-    "narrative_op_risk_general_sla": "Perturbation du service opérationnel et dégradation des SLA impactant {kpi_name}."
+    "narrative_op_risk_general_sla": "Perturbation du service opérationnel et dégradation des SLA impactant {kpi_name}.",
+    "cmmi_level_1_label": "Niveau 1 - Initial",
+    "cmmi_level_2_label": "Niveau 2 - Géré",
+    "cmmi_level_3_label": "Niveau 3 - Défini"
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -15949,7 +15961,10 @@
     "narrative_op_risk_healthcare": "{kpi_name}における臨床運用リスク。電子カルテ（EHR/PACS）および患者ケアに影響：{clean_desc}。",
     "narrative_op_risk_banking": "{kpi_name}における財務運用リスク。勘定系元帳、POS端末承認、および決済処理に影響：{clean_desc}。",
     "narrative_op_risk_general_desc": "{kpi_name}における運用可用性リスク。設備停止、出荷遅延、および輸送摩擦を誘発：{clean_desc}。",
-    "narrative_op_risk_general_sla": "{kpi_name}に影響を与える運用サービス中断およびSLA低下。"
+    "narrative_op_risk_general_sla": "{kpi_name}に影響を与える運用サービス中断およびSLA低下。",
+    "cmmi_level_1_label": "レベル1 - 初期",
+    "cmmi_level_2_label": "レベル2 - 管理された",
+    "cmmi_level_3_label": "レベル3 - 定義された"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19128,7 +19143,10 @@
     "narrative_op_risk_healthcare": "Klinisches operatives Risiko in {kpi_name} mit Auswirkungen auf elektronische Patientenakten (EPA/PACS) und Patientenversorgung: {clean_desc}.",
     "narrative_op_risk_banking": "Finanzielles operatives Risiko in {kpi_name} mit Auswirkungen auf Kernbanken-Hauptbücher, POS-Autorisierung und Zahlungsabwicklung: {clean_desc}.",
     "narrative_op_risk_general_desc": "Operatives Verfügbarkeitsrisiko in {kpi_name}, das zu Anlagenstillständen, Versandverzögerungen und Transportreibung führt: {clean_desc}.",
-    "narrative_op_risk_general_sla": "Operative Dienstunterbrechung und SLA-Verschlechterung mit Auswirkungen auf {kpi_name}."
+    "narrative_op_risk_general_sla": "Operative Dienstunterbrechung und SLA-Verschlechterung mit Auswirkungen auf {kpi_name}.",
+    "cmmi_level_1_label": "Stufe 1 - Initial",
+    "cmmi_level_2_label": "Stufe 2 - Gemanagt",
+    "cmmi_level_3_label": "Stufe 3 - Definiert"
   },
   "executive_summary_narrative": {
     "es": {

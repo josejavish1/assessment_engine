@@ -587,6 +587,21 @@ def load_currency_rates() -> dict[str, float]:
 
 
 @functools.lru_cache(maxsize=1)
+def load_country_labor_rates() -> dict[str, Any]:
+    """Loads and caches country labor rates and disruption cost baselines from engine_config/country_labor_rates.json."""
+    path = ENGINE_CONFIG_DIR / "country_labor_rates.json"
+    if not path.is_file():
+        return {}
+    try:
+        data = _load_json(path)
+        if isinstance(data, dict):
+            return data.get("rates_by_country", {})
+    except Exception as ex:
+        logger.warning("Failed to load country labor rates: %s", ex)
+    return {}
+
+
+@functools.lru_cache(maxsize=1)
 def load_regulatory_jurisdictions() -> dict[str, dict[str, list[str]]]:
     """Loads and caches jurisdiction regulatory catalogs from engine_config/frameworks/regulatory_jurisdictions.json."""
     path = ENGINE_CONFIG_DIR / "frameworks" / "regulatory_jurisdictions.json"

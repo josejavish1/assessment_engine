@@ -9,7 +9,7 @@ Adheres strictly to Tier-1 Architectural Standards:
 3. Universal Multi-Tenant Scalability:
    - Pure dynamic synthesis from tenant findings and evidence (zero canned client prose dictionaries).
    - Econometric Disruption Resolution: Dynamically derived from enterprise annual revenue and operating intensity.
-   - Resolves country-specific loaded labor rates dynamically from engine_config/country_labor_rates.json.
+   - Resolves country-specific loaded labor rates dynamically from infrastructure configuration loader.
    - Dynamic logarithmic magnitude scaling (scales from EUR/USD to JPY and mid-market to Global 500).
    - Triangulates evidence from empirical interview transcripts, attested survey responses, or CMMI ontologies.
 4. Produces immutable, strongly-typed Chapter4SynthesisPayload dictionaries.
@@ -17,16 +17,13 @@ Adheres strictly to Tier-1 Architectural Standards:
 
 from __future__ import annotations
 
-import json
 import logging
 import math
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+from assessment_engine.infrastructure.config_loader import load_country_labor_rates
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-RATES_FILE = REPO_ROOT / "engine_config" / "country_labor_rates.json"
+logger = logging.getLogger(__name__)
 
 
 def round_to_order_of_magnitude(val: float, precision: int = 1) -> float:
@@ -34,8 +31,9 @@ def round_to_order_of_magnitude(val: float, precision: int = 1) -> float:
 
     Prevents micro-brackets on high-denomination currencies (JPY, KRW) and avoids
     false precision on enterprise scales ($100M+).
+    Guards strictly against None, NaN, Infinite, and non-positive numbers.
     """
-    if val <= 0:
+    if val is None or not isinstance(val, (int, float)) or math.isnan(val) or math.isinf(val) or val <= 0.0:
         return 0.0
     magnitude = math.pow(10, math.floor(math.log10(val)))
     step = magnitude / 2 if precision == 1 else magnitude / 10
@@ -60,26 +58,10 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
 class Chapter4Synthesizer:
     """Upstream domain service that synthesizes Chapter 4 executive status quo anchors and strategic risk cards."""
 
-    _cached_rates: Optional[Dict[str, Any]] = None
-
-    @classmethod
-    def _load_country_rates(cls) -> Dict[str, Any]:
-        if cls._cached_rates is None:
-            if RATES_FILE.exists():
-                try:
-                    with open(RATES_FILE, "r", encoding="utf-8") as f:
-                        cls._cached_rates = json.load(f).get("rates_by_country", {})
-                except Exception as e:
-                    logger.warning("Failed to load country labor rates: %s", e)
-                    cls._cached_rates = {}
-            else:
-                cls._cached_rates = {}
-        return cls._cached_rates or {}
-
     @classmethod
     def get_country_rate_card(cls, country_code: Optional[str] = None) -> Dict[str, Any]:
         """Resolves authoritative country labor rates and disruption cost baselines."""
-        rates = cls._load_country_rates()
+        rates = load_country_labor_rates()
         code = str(country_code or "").strip().upper()
         if code in rates:
             return rates[code]
@@ -105,7 +87,7 @@ class Chapter4Synthesizer:
         doc_meta = blueprint_data.get("document_meta") or {}
         tower_id = str(ctx.get("tower_id") or doc_meta.get("tower_id") or "T1").strip().upper()
         tower_name = str(ctx.get("tower_name") or doc_meta.get("tower_name") or "Infrastructure Domain").strip()
-        country_code = str(ctx.get("country_code") or doc_meta.get("country_code") or "ES").strip().upper()
+        country_code = str(ctx.get("country_code") or doc_meta.get("country_code") or "DEFAULT").strip().upper()
 
         rate_card = cls.get_country_rate_card(country_code)
         hourly_rate = float(rate_card.get("systems_engineer_hourly_rate", 42.0))
@@ -145,8 +127,9 @@ class Chapter4Synthesizer:
         # Anchor 2: Availability & Outage Disruption Exposure (1 event every 12 to 18 months, MTTR 4 to 6 hours)
         rto_val = _safe_float(blueprint_data.get("worst_crisis_rto_hours"), default=5.0)
         eff_rto = max(4.0, min(14.0, rto_val))
-        event_impact_min = round_to_order_of_magnitude((eff_rto - 1.0) * disruption_rate + 3000.0)
-        event_impact_max = round_to_order_of_magnitude((eff_rto + 1.0) * disruption_rate + 5000.0)
+        # Relative emergency logistical and technical overhead factor (15% to 25%), scale and currency agnostic
+        event_impact_min = round_to_order_of_magnitude((eff_rto - 1.0) * disruption_rate * 1.15)
+        event_impact_max = round_to_order_of_magnitude((eff_rto + 1.0) * disruption_rate * 1.25)
         if event_impact_max <= event_impact_min:
             event_impact_max = event_impact_min + round_to_order_of_magnitude(event_impact_min * 0.3)
 
@@ -172,7 +155,7 @@ class Chapter4Synthesizer:
         # Dynamic Contractual Evaluation: evaluates whether contractual milestones or vendor dependencies exist
         has_contractual_exposure = bool(
             milestone_text
-            or any("contract" in str(f).lower() or "licens" in str(f).lower() or "broadcom" in str(f).lower() for f in findings_pool)
+            or any(k in str(f).lower() for f in findings_pool for k in ("contract", "licens", "vendor", "subscription"))
         )
 
         total_exposure_min = toil_min + outage_min + (contractual_min if has_contractual_exposure else 0.0)

@@ -514,7 +514,7 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
             return full_str
         correct_label = _resolve_cmmi_maturity_label(score_val, locale=locale)
         replaced = re.sub(
-            r"\((?:Nivel|Level)\s*\d\s*[---]\s*[^)]+\)",
+            r"\((?:Nivel|Level)\s*\d\s*[\-]\s*[^)]+\)",
             f"({correct_label})",
             full_str,
             flags=re.IGNORECASE,
@@ -537,7 +537,7 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
         return replaced
 
     text = re.sub(
-        r"\b(\d[.,]\d{1,2})\s*(?:sobre|out\s+of|/)\s*5[.,]0{1,2}\s*\((?:Nivel|Level)\s*\d\s*[---]\s*[^)]+\)[^.;]*",
+        r"\b(\d[.,]\d{1,2})\s*(?:sobre|out\s+of|/)\s*5[.,]0{1,2}\s*\((?:Nivel|Level)\s*\d\s*[\-]\s*[^)]+\)[^.;]*",
         _fix_score_level_clause,
         text,
         flags=re.IGNORECASE,
@@ -583,7 +583,7 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
         return f"{prefix}{score_raw}{suffix}{correct_label}"
 
     pattern = re.compile(
-        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5(?:[.,]0+)?\s*)?\(\s*)(Nivel\s+[1-5]\s*[---:]\s*[^)]+|Level\s+[1-5]\s*[---:]\s*[^)]+)",
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5(?:[.,]0+)?\s*)?\(\s*)(Nivel\s+[1-5]\s*[\-:]\s*[^)]+|Level\s+[1-5]\s*[\-:]\s*[^)]+)",
         re.IGNORECASE,
     )
     text = pattern.sub(_replace_score_level, text)
@@ -599,16 +599,15 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
         return f"{score_raw}{mid}{correct_label}"
 
     nearby_pattern = re.compile(
-        r"\b(\d[.,]\d{2})(\s*(?:puntos|/\s*5[.,]0\b|sobre\s+5[.,]0)?\s*(?:,\s*|\s+situ[áa]ndose\s+en\s+|\s+correspondiente\s+a\s+|\s+clasificado\s+como\s+|\s*[---]\s*))"
-        r"(?:Nivel\s+[1-5]\s*(?:[---:]\s*[A-Za-zÁÉÍÓÚáéíóúñÑ]+|\([A-Za-zÁÉÍÓÚáéíóúñÑ]+\))|Level\s+[1-5]\s*(?:[---:]\s*[A-Za-z]+|\([A-Za-z]+\)))",
+        r"\b(\d[.,]\d{2})(\s*(?:puntos|/\s*5[.,]0\b|sobre\s+5[.,]0)?\s*(?:,\s*|\s+situ[áa]ndose\s+en\s+|\s+correspondiente\s+a\s+|\s+clasificado\s+como\s+|\s*[\-]\s*))"
+        r"(?:Nivel\s+[1-5]\s*(?:[\-:]\s*[A-Za-zÁÉÍÓÚáéíóúñÑ]+|\([A-Za-zÁÉÍÓÚáéíóúñÑ]+\))|Level\s+[1-5]\s*(?:[\-:]\s*[A-Za-z]+|\([A-Za-z]+\)))",
         re.IGNORECASE,
     )
     text = nearby_pattern.sub(_replace_nearby_score_level, text)
 
-    if is_es:
-        text = re.sub(r"\bNivel\s+1\s*[---]\s*Initial\b", "Nivel 1 - Inicial", text, flags=re.IGNORECASE)
-        text = re.sub(r"\bNivel\s+2\s*[---]\s*(?:Managed|Repeatable)\b", "Nivel 2 - Gestionado", text, flags=re.IGNORECASE)
-        text = re.sub(r"\bNivel\s+3\s*[---]\s*Defined\b", "Nivel 3 - Definido", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+1\s*[\-]\s*Initial\b", t("cmmi_level_1_label", locale=locale, default="Level 1 - Initial"), text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+2\s*[\-]\s*(?:Managed|Repeatable)\b", t("cmmi_level_2_label", locale=locale, default="Level 2 - Managed"), text, flags=re.IGNORECASE)
+    text = re.sub(r"\bNivel\s+3\s*[\-]\s*Defined\b", t("cmmi_level_3_label", locale=locale, default="Level 3 - Defined"), text, flags=re.IGNORECASE)
     return text
 
 
