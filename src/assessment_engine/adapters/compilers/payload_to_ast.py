@@ -1747,19 +1747,20 @@ class PayloadToASTBridge:
         # 1. Corporate Executive Cover Page
         nodes.append(SpacerNode(points=40))
 
-        # 1. Main Document Title (36.0 pt, Bold, #2E404D)
+        # 1. Main Document Title (32.0 pt, Bold, #2E404D, Left Aligned)
         title_text = vocab.get("title", "Current State Assessment Report (AS-IS)")
         nodes.append(
             ParagraphNode(
                 text=title_text,
                 bold=True,
-                font_size=36.0,
+                font_size=32.0,
+                align="LEFT",
                 text_color_rgb=[46, 64, 77],
                 space_after=8,
             )
         )
 
-        # 2. Technical Annex Subtitle (Heading level 1, #0072BC)
+        # 2. Technical Annex Subtitle (22.0 pt, Bold, Primary Brand Color, Left Aligned)
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
         resolver = get_taxonomy_resolver()
         tower_code = blueprint_data.get("document_meta", {}).get("tower_code", "T1")
@@ -1773,35 +1774,23 @@ class PayloadToASTBridge:
             ParagraphNode(
                 text=f"{annex_prefix} {localized_tower_name}",
                 bold=True,
-                font_size=16.0,
+                font_size=22.0,
+                align="LEFT",
                 text_color_rgb=self.primary_color_rgb,
                 style="cover_subtitle",
-                space_after=24,
+                space_after=28,
             )
         )
 
-        nodes.append(SpacerNode(points=30))
-
-        # 3. Client Identity (28.0 pt, Bold, Client Label in #2E404D, Name in primary brand color)
+        # 3. Client Identity (12.0 pt, Refined, Left Aligned)
         client_lbl = t("client_lbl", locale=meta_lang)
         nodes.append(
             ParagraphNode(
-                text=f"**{client_lbl.strip()}** {client_name.upper()}",
-                bold=True,
-                font_size=28.0,
-                text_color_rgb=self.primary_color_rgb,
-                space_after=12,
-            )
-        )
-
-        author_lbl = t("tomo_meta_author_label", locale=meta_lang)
-        author_val = t("tomo_meta_author_value", locale=meta_lang)
-        nodes.append(
-            ParagraphNode(
-                text=f"{author_lbl} {author_val}",
-                font_size=11.0,
+                text=f"{client_lbl.strip()} **{client_name.upper()}**",
+                font_size=12.0,
+                align="LEFT",
                 text_color_rgb=[100, 116, 139],
-                space_after=20,
+                space_after=32,
             )
         )
 
@@ -1811,20 +1800,6 @@ class PayloadToASTBridge:
         company_name_upper = self.company_name.upper()
         footer_meta_str = f"{company_name_upper}  |  {date_str}  |  {version_lbl} {version}  |  {classification_clean}"
         ctx["tower_meta"]["cover_footer_metadata"] = footer_meta_str
-
-        nodes.append(SpacerNode(points=40))
-        ref_lbl = t("tomo_meta_ref_label", locale=meta_lang)
-        date_lbl = t("tomo_meta_date_label", locale=meta_lang)
-        ref_code = f"{client_name.upper()}-202611-{tower_code.upper()}"
-        doc_meta_line = f"**{ref_lbl}:** {ref_code}  |  **{date_lbl}:** {date_str}  |  **{version_lbl}:** {version}"
-        nodes.append(
-            ParagraphNode(
-                text=doc_meta_line,
-                font_size=10.0,
-                text_color_rgb=[100, 116, 139],
-                space_after=12,
-            )
-        )
 
         nodes.append(PageBreakNode())
 
@@ -2137,9 +2112,23 @@ class PayloadToASTBridge:
         norm_rows = [TableRowNode(cells=headers_norm, is_header=True)]
         
         frameworks = blueprint_data.get("methodological_frameworks") or []
+        if not frameworks:
+            from assessment_engine.application.run_tower_blueprint_engine import (
+                _hydrate_methodological_frameworks,
+            )
+            target_tid = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id") or "T1").strip().upper()
+            dummy_bp = {}
+            _hydrate_methodological_frameworks(dummy_bp, client_name, target_tid)
+            frameworks = dummy_bp.get("methodological_frameworks") or []
+
         for idx, fw in enumerate(frameworks):
             bg_color = "FFFFFF" if idx % 2 == 0 else self.alt_row_hex
-            std_name = fw.get("standard", "")
+            std_name = str(fw.get("standard") or "").strip()
+            if std_name == "NIS2_ESSENTIAL":
+                std_name = t("reg.nis2_essential.short", locale=meta_lang)
+            elif fw.get("standard_key"):
+                std_name = t(fw["standard_key"], locale=meta_lang)
+
             scope_desc = t(fw.get("scope_key", ""), locale=meta_lang)
             purp_desc = t(fw.get("purpose_key", ""), locale=meta_lang)
             norm_rows.append(

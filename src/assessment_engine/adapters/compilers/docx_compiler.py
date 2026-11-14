@@ -923,9 +923,10 @@ class DocxCompiler(DocumentCompiler):
             p.paragraph_format.keep_with_next = True
             p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(24)
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
             run = p.add_run(node.text)
             set_run_font_comprehensive(run, font_name="Arial")
-            run.font.size = Pt(16.0)
+            run.font.size = Pt(22.0)
             run.bold = True
             run.font.color.rgb = RGBColor(0, 114, 188)
             return
@@ -1005,7 +1006,7 @@ class DocxCompiler(DocumentCompiler):
             align_const = WD_ALIGN_PARAGRAPH.RIGHT
         elif align_str == "JUSTIFY":
             align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
-        elif align_str == "LEFT" and is_short_label:
+        elif align_str == "LEFT":
             align_const = WD_ALIGN_PARAGRAPH.LEFT
 
         p.paragraph_format.alignment = align_const

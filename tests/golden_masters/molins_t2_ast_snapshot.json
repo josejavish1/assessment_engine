@@ -30,8 +30,8 @@
         64,
         77
       ],
-      "align": "JUSTIFY",
-      "font_size": 36.0
+      "align": "LEFT",
+      "font_size": 32.0
     },
     {
       "type": "paragraph",
@@ -39,67 +39,29 @@
       "bold": true,
       "italic": false,
       "style": "cover_subtitle",
-      "space_after": 24,
+      "space_after": 28,
       "text_color_rgb": [
         0,
         114,
         188
       ],
-      "align": "JUSTIFY",
-      "font_size": 16.0
-    },
-    {
-      "type": "spacer",
-      "points": 30
+      "align": "LEFT",
+      "font_size": 22.0
     },
     {
       "type": "paragraph",
-      "text": "**Cliente:** MOLINS",
-      "bold": true,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "align": "JUSTIFY",
-      "font_size": 28.0
-    },
-    {
-      "type": "paragraph",
-      "text": "Autor: NTT DATA Enterprise Architecture & Technology Advisory",
+      "text": "Cliente: **MOLINS**",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 20,
+      "space_after": 32,
       "text_color_rgb": [
         100,
         116,
         139
       ],
-      "align": "JUSTIFY",
-      "font_size": 11.0
-    },
-    {
-      "type": "spacer",
-      "points": 40
-    },
-    {
-      "type": "paragraph",
-      "text": "**Referencia:** MOLINS-202611-T2  |  **Fecha de Emisión:** Noviembre 2026  |  **Versión:** 1.0",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": [
-        100,
-        116,
-        139
-      ],
-      "align": "JUSTIFY",
-      "font_size": 10.0
+      "align": "LEFT",
+      "font_size": 12.0
     },
     {
       "type": "page_break"
@@ -767,6 +729,190 @@
             }
           ],
           "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "CMMI for Infrastructure",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Madurez de procesos operativos, control de cambios y disciplina de mantenimiento en salas y plataformas técnicas.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Escala analítica del nivel 1 al 5.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "CIS Controls v8 / NIST SP 800-125",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Estándar de endurecimiento de sistemas operativos, seguridad de hipervisores y configuración segura de cómputo.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Baseline de Cómputo",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Open FAIR™",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Cuantificación financiera y simulación actuarial de paradas operativas e interrupción de procesos críticos de negocio.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Cálculo probabilístico del ALE y ROI.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "Directiva NIS2",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Resiliencia física, continuidad de operaciones y reporte de incidentes en entidades críticas y esenciales.",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Cumplimiento legal y gobernanza de ciberresiliencia",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
           "height_dxa": null,
           "cant_split": true
         }
