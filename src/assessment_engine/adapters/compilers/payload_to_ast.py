@@ -1914,19 +1914,39 @@ class PayloadToASTBridge:
         
         min_inaction = float(synth.get("total_status_quo_exposure_min") or 0.0)
         max_inaction = float(synth.get("total_status_quo_exposure_max") or 0.0)
-        per_year_suffix = t("per_year_suffix", locale=meta_lang)
-        inaction_display = f"~{format_currency(min_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(max_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}"
+        year_lbl = t("year_lbl", locale=meta_lang)
+        inaction_display = f"~{format_currency(min_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(max_inaction, currency_symbol=currency, locale=meta_lang, decimals=0)} / {year_lbl}"
 
         reg_frameworks = blueprint_data.get("regulatory_frameworks") or blueprint_data.get("methodological_frameworks") or []
-        primary_reg = "NIS2"
+        primary_reg = None
         if reg_frameworks and isinstance(reg_frameworks, list):
             for rf in reg_frameworks:
+                if isinstance(rf, dict) and rf.get("code"):
+                    primary_reg = str(rf["code"]).strip()
+                    break
                 if isinstance(rf, dict) and rf.get("standard"):
-                    primary_reg = str(rf["standard"]).split()[0].strip()
+                    primary_reg = str(rf["standard"]).strip()
                     break
-                elif isinstance(rf, str) and len(rf) > 1:
-                    primary_reg = str(rf).split()[0].strip()
+                if isinstance(rf, str) and len(rf) > 1:
+                    primary_reg = rf.strip()
                     break
+
+        if not primary_reg:
+            from assessment_engine.infrastructure.config_loader import load_regulatory_jurisdictions
+            jurisdictions_catalog = load_regulatory_jurisdictions()
+            tenant_country = str(doc_meta.get("country_code") or ctx.get("country_code") or "ES").strip()
+            org_prof = blueprint_data.get("organization_profile") or {}
+            tenant_industry = str(org_prof.get("industry") or "MANUFACTURING_LOGISTICS").strip().upper()
+            
+            matched_list = []
+            for j_locale, j_sectors in jurisdictions_catalog.items():
+                if tenant_country.lower() in j_locale.lower():
+                    matched_list = j_sectors.get(tenant_industry) or j_sectors.get("MANUFACTURING_LOGISTICS", [])
+                    break
+            if not matched_list:
+                matched_list = jurisdictions_catalog.get("INTERNATIONAL_NEUTRAL", {}).get(tenant_industry, ["ISO/IEC 27001"])
+            
+            primary_reg = matched_list[0] if matched_list else "ISO/IEC 27001"
 
         if gs_val < 2.5:
             reg_status = t("reg_gap_high", locale=meta_lang, reg=primary_reg)
@@ -1971,10 +1991,14 @@ class PayloadToASTBridge:
             col_width = round(1.0 / n_cols, 3)
             heatmap_headers = []
             heatmap_data = []
-            for p in pillars_raw[:n_cols]:
+            for idx, p in enumerate(pillars_raw[:n_cols], start=1):
+                pid = str(p.get("pillar_id") or p.get("pilar_id") or f"{tower_id_canonical}.P{idx}").strip().upper()
                 p_score = _safe_float(p.get("pilar_score") or p.get("score"), default=2.0)
-                p_name_raw = str(p.get("pilar_name") or p.get("name") or "Capability").strip()
-                p_name_clean = resolver.resolve_pillar_by_any_reference(p_name_raw, locale=meta_lang, default=p_name_raw)
+                p_clean_name = resolver.resolve_pillar_name(tower_id_canonical, pid, locale=meta_lang)
+                if not p_clean_name or p_clean_name == pid:
+                    p_name_raw = str(p.get("pilar_name") or p.get("name") or "Capability").strip()
+                    clean_raw = re.sub(r"\(.*?\)", "", p_name_raw).strip()
+                    p_clean_name = resolver.resolve_pillar_by_any_reference(clean_raw or p_name_raw, locale=meta_lang, default=p_name_raw)
                 p_score_str = format_number(p_score, locale=meta_lang, decimals=2)
                 
                 if p_score < 2.0:
@@ -1984,7 +2008,7 @@ class PayloadToASTBridge:
                 else:
                     c_bg = "DCFCE7"
 
-                heatmap_headers.append(CellNode(text=p_name_clean, bold=True, font_size=7.5, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
+                heatmap_headers.append(CellNode(text=p_clean_name, bold=True, font_size=7.5, align="CENTER", bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]))
                 heatmap_data.append(CellNode(text=f"**{p_score_str}**", bold=True, font_size=9.0, align="CENTER", bg_color=c_bg))
 
             heatmap_rows = [
@@ -1999,18 +2023,20 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=9.5, space_after=4, keep_with_next=True))
 
         cards_pool = synth.get("strategic_risk_cards") or []
+        fallback_risk_title = t("default_operational_risk_title", locale=meta_lang)
         if not cards_pool:
             cards_pool = [
-                {"title": str(hc.get("finding") or "Core Finding"), "technical_evidence": str(hc.get("business_risk") or "")}
+                {"title": fallback_risk_title, "technical_evidence": str(hc.get("finding") or hc.get("business_risk") or "")}
                 for p in blueprint_data.get("pillars_analysis", [])
                 for hc in (p.get("health_check_asis") or [])
             ]
 
         for card_item in cards_pool[:3]:
-            c_title = str(card_item.get("title") or "Riesgo Operativo").strip()
+            c_title = str(card_item.get("title") or fallback_risk_title).strip()
             c_desc = str(card_item.get("technical_evidence") or card_item.get("operational_impact_chain") or "").strip().rstrip(".")
-            if len(c_desc) > 160:
-                c_desc = c_desc[:157] + "..."
+            if len(c_desc) > 150:
+                truncated = c_desc[:147]
+                c_desc = truncated.rsplit(" ", 1)[0] + "..." if " " in truncated else truncated + "..."
             formatted_bullet = f"**{c_title}:** {c_desc}."
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
             nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=8.5, space_after=4))
