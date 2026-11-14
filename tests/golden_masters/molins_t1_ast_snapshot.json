@@ -151,6 +151,10 @@
       "is_appendix": false
     },
     {
+      "type": "spacer",
+      "points": 6
+    },
+    {
       "type": "table",
       "headers": null,
       "rows": [
@@ -159,7 +163,7 @@
             {
               "text": "PUNTUACIÓN ACTUAL",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -176,7 +180,7 @@
             {
               "text": "BANDA DE MADUREZ",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -191,9 +195,26 @@
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN ANUAL ESTIMADA",
+              "text": "EXPOSICIÓN STATU QUO",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "POSTURA REGULATORIA",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -217,7 +238,7 @@
             {
               "text": "2,61 / 5,00",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -230,7 +251,7 @@
             {
               "text": "Nivel 3 (Definido)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FFF3CD",
               "text_color_rgb": null,
@@ -241,11 +262,24 @@
               "border_left_size": null
             },
             {
-              "text": "268.316 €/año",
+              "text": "~55.000 € - 80.000 € / año",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Conformidad Parcial (Directiva NIS2)",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
@@ -262,9 +296,229 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.33,
-        0.33,
-        0.34
+        0.2,
+        0.28,
+        0.28,
+        0.24
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "paragraph",
+      "text": "La infraestructura física y electromecánica de los dos centros de datos de Molins en Sant Vicenç dels Horts presenta una base estructural funcional respaldada por sistemas de alimentación ininterrumpida y grupos electrógenos dedicados, pero manifiesta deficiencias transversales en visibilidad telemétrica, automatización y gobernanza operativa. Las instalaciones operan con islas de información en sistemas de gestión de edificios (BMS) locales desacoplados de la plataforma corporativa de observabilidad (Zabbix, Prometheus, Grafana), carencia de medición granular de potencia y temperatura a nivel de bastidor bajo directrices ASHRAE TC 9.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "9, rutas de alimentación simple en equipamiento heredado y una gestión del mantenimiento basada en registros documentales dispersos. Esta configuración eleva la exposición a fallos latentes no mitigados que comprometen la continuidad de los clústeres hiperconvergentes HPE SimpliVity y las cabinas de almacenamiento NetApp, componentes nucleares que soportan la mayor parte del procesamiento transaccional e industrial on-premise del grupo.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez por Capacidad (AS-IS)**",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Energía y Continuidad Eléctrica",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Climatización, Refrigeración y Control Ambiental",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Seguridad Física y Control de Accesos",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Protección Contra Incendios y Seguridad Ambiental",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Operación de Facilities, Monitorización y Mantenimiento",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**2,50**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**1,67**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**2,33**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**4,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "DCFCE7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**2,33**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -276,51 +530,18 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura física y electromecánica de los dos centros de datos de Molins en Sant Vicenç dels Horts presenta una base estructural funcional respaldada por sistemas de alimentación ininterrumpida y grupos electrógenos dedicados, pero manifiesta deficiencias transversales en visibilidad telemétrica, automatización y gobernanza operativa. Las instalaciones operan con islas de información en sistemas de gestión de edificios (BMS) locales desacoplados de la plataforma corporativa de observabilidad (Zabbix, Prometheus, Grafana), carencia de medición granular de potencia y temperatura a nivel de bastidor bajo directrices ASHRAE TC 9.9, rutas de alimentación simple en equipamiento heredado y una gestión del mantenimiento basada en registros documentales dispersos. Esta configuración eleva la exposición a fallos latentes no mitigados que comprometen la continuidad de los clústeres hiperconvergentes HPE SimpliVity y las cabinas de almacenamiento NetApp, componentes nucleares que soportan la mayor parte del procesamiento transaccional e industrial on-premise del grupo.",
+      "text": "**Principales áreas estratégicas de exposición operativa:**",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 8,
+      "space_after": 6,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
     },
     {
       "type": "paragraph",
-      "text": "El análisis técnico destaca las siguientes áreas prioritarias para reforzar la resiliencia del servicio:",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 4,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Ausencia de confinamiento aerotérmico y falta de instrumentación térmica frontal en bastidores que generan puntos calientes críticos sobre los nodos HPE SimpliVity y almacenamiento NetApp.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Distribución eléctrica en bastidor sin redundancia 2N estricta en equipamiento auxiliar y legacy junto con la carencia de telemetría en tiempo real de potencia activa consumida frente a capacidad instalada.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Desacoplamiento tecnológico total entre los controladores electromecánicos locales (BMS, centralitas de incendios, cuadros eléctricos) y la plataforma corporativa de observabilidad e ITSM.",
+      "text": "**Monitorización Termohigrométrica Granular y Cumplimiento ASHRAE TC 9.9:** Inexistencia de telemetría termohigrométrica granular en tiempo real y ausencia de registro histórico auditable bajo estándares ASHRAE TC 9.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -331,10 +552,10 @@
     },
     {
       "type": "paragraph",
-      "text": "Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada del servicio conlleva un coste operativo directo de **1.650 €/h** (detallado en la Sección 4.1). En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **Centro de Datos Físico e Instalaciones** representan una **exposición de riesgo latente estimada en 268.316 € anualizados**, cifra que refleja la pérdida media esperada por la fricción operativa e incidencias a lo largo de un año dentro de este dominio.\n\nAdicionalmente, ante un **escenario de estrés financiero severo (Percentil 90 / P90)**, la acumulación estocástica de múltiples contingencias técnicas a lo largo de un ejercicio anual podría elevar las pérdidas agregadas del dominio hasta **425.367 €**. En términos de liquidez operativa inmediata, el impacto económico derivado de la materialización del peor incidente individual aislado (Pérdida Máxima por Evento / Max SLE) se estima en **31.930 €**, con un tiempo de recuperación técnica de hasta **24,0 horas**.",
+      "text": "**Gobernanza Automatizada del Ciclo de Vida de Identidad (JML):** Inexistencia de un marco formalizado y automatizado de permisos de trabajo electrónicos (e-PtW) para gestionar y controlar el acceso de contratistas y proveedores a las salas técnicas.",
       "bold": false,
       "italic": false,
-      "style": "Normal",
+      "style": "List Bullet",
       "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
@@ -342,11 +563,26 @@
     },
     {
       "type": "paragraph",
-      "text": "En conclusión, el diagnóstico del estado actual demuestra que la plataforma cuenta con una base operativa consolidada sobre la cual evolucionar. Mientras que la capacidad más desarrollada alcanza 4,00 sobre 5,0 (Protección Contra Incendios y Seguridad Ambiental), la madurez global del dominio (2,61 sobre 5,0) presenta su mayor margen de avance en Climatización, Refrigeración y Control Ambiental (1,67 sobre 5,0). Mantener la inercia del statu quo prolongaría la dependencia de intervenciones manuales reactivas y elevaría los tiempos de recuperación ante incidencias, por lo que abordar estas oportunidades de automatización permitirá afianzar la continuidad que requiere el negocio.",
+      "text": "**Trazabilidad del Mantenimiento Preventivo de Facilities:** El control y seguimiento de las actuaciones de mantenimiento preventivo sobre la infraestructura electromecánica, climatización, bancos de baterías de SAIs y grupos electrógenos se efectúa a través de registros manuales heterogéneos e informes aislados remitidos por contratistas externos.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "paragraph",
+      "text": "**Ventana de Decisión y Mandato:** Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de Directiva NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 10,
+      "space_after": 12,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -378,7 +614,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Centro de Datos Físico e Instalaciones de Molins. La evaluación analiza las capacidades instaladas, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
+      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Centro de Datos Físico e Instalaciones en Molins. La evaluación analiza la base instalada en sedes corporativas y entornos de producción, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -426,7 +662,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Energía y Continuidad Eléctrica",
+      "text": "Energía y Continuidad Eléctrica",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -437,7 +673,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Climatización, Refrigeración y Control Ambiental",
+      "text": "Climatización, Refrigeración y Control Ambiental",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -448,7 +684,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Seguridad Física y Control de Accesos",
+      "text": "Seguridad Física y Control de Accesos",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -459,7 +695,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Protección Contra Incendios y Seguridad Ambiental",
+      "text": "Protección Contra Incendios y Seguridad Ambiental",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -470,7 +706,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Operación de Facilities, Monitorización y Mantenimiento",
+      "text": "Operación de Facilities, Monitorización y Mantenimiento",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -544,190 +780,6 @@
           "is_header": true,
           "height_dxa": null,
           "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "CMMI for Infrastructure",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Madurez de procesos operativos, control de cambios y disciplina de mantenimiento en salas y plataformas técnicas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Escala analítica del nivel 1 al 5.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TIA-942-B / ASHRAE TC 9.9",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Envolvente térmica, rangos psicrométricos y dinámica de flujo ambiental según estándares de criticidad.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Prevención de fallos de hardware.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Open FAIR™",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cuantificación financiera y simulación actuarial de paradas operativas e interrupción de procesos críticos de negocio.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cálculo probabilístico del ALE y ROI.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "NIS2 (Directiva UE 2022/2555)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Resiliencia física, continuidad de operaciones y reporte de incidentes en entidades críticas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cumplimiento legal",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
         }
       ],
       "style_profile": "Table Grid",
@@ -788,7 +840,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 2 - Administrado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
+      "text": "**Nivel 2 - Gestionado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -818,7 +870,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 4 - Gestionado Cuantitativamente (3,50 - 4,49):** Procesos medidos, controlados estadísticamente y gobernados cuantitativamente mediante métricas.",
+      "text": "**Nivel 4 - Avanzado y Medido (3,50 - 4,49):** Operación orientada a datos, con telemetría en tiempo real, SLAs objetivos y control proactivo de la plataforma.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -833,7 +885,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 5 - En Optimización (4,50 - 5,00):** Mejora continua, autorremediación automatizada e innovación sistemática orientada a resiliencia.",
+      "text": "**Nivel 5 - Optimizado y Resiliente (4,50 - 5,00):** Autorremediación automatizada, resiliencia estructural ante fallos y mejora continua sistemática.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -878,7 +930,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Energía y Continuidad Eléctrica (Peso: 24%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como Autonomía Eléctrica Garantizada (UPS y Generadores); Cadencia de Pruebas de Conmutación y Fallos Controlados; Redundancia de Distribución Eléctrica y Eliminación de SPOF y Utilización de Capacidad Eléctrica y Gestión de Holgura.",
+      "text": "**Energía y Continuidad Eléctrica (Peso: 24%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -893,7 +945,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Climatización, Refrigeración y Control Ambiental (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como Cumplimiento de Rangos Ambientales y Telemetría Térmica Continua; Mitigación de Hotspots Térmicos y Densidad por Rack y Resiliencia de Climatización (N+1 / 2N) y Mantenibilidad Concurrente.",
+      "text": "**Climatización, Refrigeración y Control Ambiental (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -908,7 +960,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Seguridad Física y Control de Accesos (Peso: 16%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como Control de Acceso Físico Zonificado y Gestión de Permisos; Protocolos de Acompañamiento, Registro de Accesos y Permisos de Trabajo y Cobertura CCTV, Registro de Accesos y Retención Inmutable de Evidencias.",
+      "text": "**Seguridad Física y Control de Accesos (Peso: 16%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -923,7 +975,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Protección Contra Incendios y Seguridad Ambiental (Peso: 22%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como Detección Temprana de Incendios y Sectorización de Salas; Extinción Automática por Gas Limpio y Certificación de Descarga y Mitigación de Inundación, Detección de Fugas de Agua y Contaminantes.",
+      "text": "**Protección Contra Incendios y Seguridad Ambiental (Peso: 22%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -938,7 +990,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Operación de Facilities, Monitorización y Mantenimiento (Peso: 18%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como Telemetría Continua de Infraestructura (DCIM/BMS) y Gestión de Alarmas; Mantenimiento Preventivo, Acuerdos de Nivel de Servicio (SLA) y Repuestos y Planificación de Capacidad Física y Ciclo de Vida (Espacio, Energía, Clima).",
+      "text": "**Operación de Facilities, Monitorización y Mantenimiento (Peso: 18%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -1075,7 +1127,7 @@
     },
     {
       "type": "paragraph",
-      "text": "cmmi_scale_title: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Gestionado Cuantitativamente (3,50-4,49) | Nivel 5 - En Optimización (4,50-5,00)",
+      "text": "Escala de Madurez CMMI: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Avanzado y Medido (3,50-4,49) | Nivel 5 - Optimizado y Resiliente (4,50-5,00)",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -1090,7 +1142,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Con una puntuación técnica de 2,61 sobre 5,0 (Nivel 3 (Definido)), las instalaciones de Molins se sitúan en el límite de tramo del Nivel 3. La solvencia de los sistemas de extinción y redundancia eléctrica (Protección Contra Incendios y Seguridad Ambiental, 4,00/5,0) contrasta con la fragilidad térmica en salas de proceso (Climatización, Refrigeración y Control Ambiental, 1,67/5,0), donde la ausencia de confinamiento de pasillos y el déficit de climatización de precisión en cuartos de planta amenazan la continuidad de los servidores expuestos a partículas fabriles.",
+      "text": "Con una valoración técnica consolidada de 2,61 sobre 5,0 (Nivel 3 (Definido)), el dominio de Centro de Datos Físico e Instalaciones en Molins cuenta con una base tecnológica estructurada y procedimentada. La disciplina operativa alcanzada en Protección Contra Incendios y Seguridad Ambiental (4,00/5,0) proporciona una sólida plataforma de partida, situando el reto del área en optimizar la eficiencia y resolver la fricción residual en Climatización, Refrigeración y Control Ambiental (1,67/5,0) para maximizar el valor de negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1240,7 +1292,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1286,7 +1338,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1332,7 +1384,7 @@
               "border_left_size": null
             },
             {
-              "text": "Gestionado Cuantitativamente",
+              "text": "Avanzado y Medido",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1378,7 +1430,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1429,16 +1481,12 @@
       "type": "paragraph",
       "text": "Más allá del diagnóstico individual por pilar, la auditoría identifica los principales patrones de fricción operativa y vulnerabilidades físicas en la infraestructura electromecánica:",
       "bold": false,
-      "italic": true,
+      "italic": false,
       "style": "Normal",
-      "space_after": 6,
+      "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 6
     },
     {
       "type": "paragraph",
@@ -1554,17 +1602,6 @@
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Los estudios de resiliencia de Uptime Institute señalan que los fallos en la distribución eléctrica originan el 44% de las caídas catastróficas de centros de datos. La distribución de doble rama (2N) activo-activo reduce la probabilidad de caída de servidores en más de un 85% frente a acometidas con puntos únicos de fallo.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
       "space_after": 14,
       "text_color_rgb": null,
       "align": "JUSTIFY",
@@ -1586,7 +1623,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 1,67 (Administrado)",
+      "text": "**Madurez Operativa:** 1,67 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1597,7 +1634,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura física de Molins en Sant Vicenç dels Horts comprende dos centros de datos principales separados aproximadamente por 500 metros lineales, conectados mediante un enlace de fibra oscura directa de 10 Gbps sin redundancia en anillo. La climatización de ambas salas técnicas se sustenta en unidades perimetrales de aire acondicionado para salas de cómputo (CRAC / CRAH) por expansion directa o agua enfriada, las cuales suministran caudal de aire frío a través de un esquema tradicional de falso suelo plenum. El monitorización térmico actual se limita estrictamente a los sensores termostaticos integrados de retorno de aire en las propias maquinas perimetrales, careciendo de instrumentación granular a nivel de rack o en el plano frontal de admisión de los servidores.",
+      "text": "La infraestructura física de Molins en Sant Vicenç dels Horts comprende dos centros de datos principales separados aproximadamente por 500 metros lineales, conectados mediante un enlace de fibra oscura directa de 10 Gbps sin redundancia en anillo. La climatización de ambas salas técnicas se sustenta en unidades perimetrales de aire acondicionado para salas de cómputo (CRAC / CRAH) por expansión directa o agua enfriada, las cuales suministran caudal de aire frío a través de un esquema tradicional de falso suelo plenum. El monitorización térmico actual se limita estrictamente a los sensores termostaticos integrados de retorno de aire en las propias maquinas perimetrales, careciendo de instrumentación granular a nivel de rack o en el plano frontal de admisión de los servidores.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1608,7 +1645,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La gestión de esta capacidad se encuentra en un régimen inicial (1,67 sobre 5,0 - Administrado). La operativa se ve severamente condicionada por las brechas de instrumentación y control operativo identificadas, lo que exige establecer controles fundacionales y estandarización técnica en el Tomo 2.",
+      "text": "Se evidencia una ausencia sistemática de paneles ciegos en las unidades de rack vacias y una falta de sellado en los pasacables y penetraciones del falso suelo. Esta configuración propicia una recirculacion aerotermica descontrolada, donde el flujo de aire caliente expulsado por los equipos posteriores se mezcla con el aire de suministro, creando puntos calientes localizados y disminuyendo el salto térmico util (Delta T). Asimismo, no se dispone de certificación empírica de mantenimiento concurrente: ante la eventual desconexión por fallo o mantenimiento de una unidad CRAC individual durante periodos de alta temperatura estival exterior, el sistema carece de capacidad demostrada para redistribuir la carga térmica sin sobrepasar los umbrales operativos recomendados de los microprocesadores.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1630,7 +1667,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 2,33 (Administrado)",
+      "text": "**Madurez Operativa:** 2,33 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1656,17 +1693,6 @@
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Las investigaciones de Ponemon Institute revelan que el 28% de las brechas de seguridad física en entornos industriales provienen de accesos de terceros no auditados. El uso de autenticación biométrica y cerraduras electrónicas por rack reduce el tiempo de permanencia no autorizada en un 90%.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
       "space_after": 14,
       "text_color_rgb": null,
       "align": "JUSTIFY",
@@ -1688,7 +1714,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 4,00 (Gestionado Cuantitativamente)",
+      "text": "**Madurez Operativa:** 4,00 (Avanzado y Medido)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1699,7 +1725,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura física de los dos centros de procesamiento de datos de Molins ubicados en Sant Vicenç dels Horts dispone de una protección avanzada y compartimentada contra incendios. Ambas salas técnicas cuentan con sistemas de detección precoz y zonificada combinada con detectores ópticos y termovelocimétricos, satisfaciendo estrictos criterios de sectorización cortafuegos. El subsistema de supresión de incendios utiliza cilindros de agente gaseoso limpio, complementados con compuertas de sobrepresión mecánicas y enclavamientos de parada de emergencia de climatización y ventilación.",
+      "text": "La infraestructura física de los dos centros de procesamiento de datos de Molins ubicados en Sant Vicenç dels Horts dispone de una protección avanzada y compartimentada contra incendios. Ambas salas técnicas cuentan con sistemas de detección precoz y zonificada combinada con detectores ópticos y termovelocimétricos, satisfaciendo estrictos criterios de sectorización cortafuegos. El subsistema de supresión de incendios utiliza cilindros de agente gaseoso limpio, complementados con compuertas de sobrepresión mecánicas y enclavamientos de parada de emergencia de climatización y ventilación. No obstante, la supervisión de estas protecciones opera en un modelo desconectado: los paneles maestros de alarma y los transductores de presión en botellas residen en envolventes murales aisladas sin enlace de datos IP hacia la plataforma corporativa de observabilidad.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1710,18 +1736,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La supervisión de estas protecciones opera en un modelo desconectado: los paneles maestros de alarma y los transductores de presión en botellas residen en envolventes murales aisladas sin enlace de datos IP hacia la plataforma corporativa de observabilidad. De manera paralela, la gestión de riesgos ambientales por líquidos presenta un vacío tecnológico crítico: las cámaras de falso suelo y las bandejas perimetrales de condensados de las climatizadoras carecen de cableado sensor conductivo continuo y de sondas volumétricas de inundación, dependiendo exclusivamente de rondas visuales periódicas de mantenimiento externo. Esta calificación de Nivel 4 (Gestionado Cuantitativamente) reconoce la solvencia de la instalación física de ingeniería contra el fuego (detección precoz zonificada y extinción automática mediante agente gaseoso limpio), si bien el seguimiento preventivo diario comparte las limitaciones procedimentales y la falta de telemetría digitalizada diagnosticadas en el mantenimiento general de facilities.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Los datos actuariales de prevención de pérdidas demuestran que la extinción por agente limpio combinada con detección precoz por aspiración reduce la pérdida colateral de equipamiento electrónico en un 94% frente a sistemas convencionales de rociadores de agua.",
+      "text": "De manera paralela, la gestión de riesgos ambientales por líquidos presenta un vacío tecnológico crítico: las cámaras de falso suelo y las bandejas perimetrales de condensados de las climatizadoras carecen de cableado sensor conductivo continuo y de sondas volumétricas de inundación, dependiendo exclusivamente de rondas visuales periódicas de mantenimiento externo. Esta calificación de Nivel 4 (Gestionado Cuantitativamente) reconoce la solvencia de la instalación física de ingeniería contra el fuego (detección precoz zonificada y extinción automática mediante agente gaseoso limpio), si bien el seguimiento preventivo diario comparte las limitaciones procedimentales y la falta de telemetría digitalizada diagnosticadas en el mantenimiento general de facilities.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1743,7 +1758,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 2,33 (Administrado)",
+      "text": "**Madurez Operativa:** 2,33 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1754,7 +1769,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura electromecánica y de facilities de Molins da soporte a dos centros de procesamiento de datos situados en el campus de Sant Vicenç dels Horts, separados aproximadamente por 500 metros lineales y enlazados mediante un tendido de fibra optica dedicada de 10 Gbps en topología punto a punto sin anillo. El entorno electromecánico dispone de sistemas de alimentación ininterrumpida (SAI/UPS) modulares y grupos electrógenos de emergencia a gasoleo disenados para absorber el corte del suministro exterior mediante conmutadores de transferencia automática (ATS).",
+      "text": "La infraestructura electromecánica y de facilities de Molins da soporte a dos centros de procesamiento de datos situados en el campus de Sant Vicenç dels Horts, separados aproximadamente por 500 metros lineales y enlazados mediante un tendido de fibra optica dedicada de 10 Gbps en topología punto a punto sin anillo. El entorno electromecánico dispone de sistemas de alimentación ininterrumpida (SAI/UPS) modulares y grupos electrógenos de emergencia a gasoleo disenados para absorber el corte del suministro exterior mediante conmutadores de transferencia automática (ATS). La disipación térmica se opera a través de unidades perimetrales de climatización para salas de cómputo (CRAC/CRAH) con expansión directa y condensadoras exteriores. A nivel de operación y telemetría, las instalaciones cuentan con un sistema de gestión de edificios (BMS) y herramientas DCIM de nivel elemental que monitorizan de forma local las variables de potencia de salida de SAIs, presencia de red, temperatura general de sala y alarmas de maquinas de clima.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1765,18 +1780,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La disipación térmica se opera a través de unidades perimetrales de climatización para salas de cómputo (CRAC/CRAH) con expansion directa y condensadoras exteriores. A nivel de operación y telemetría, las instalaciones cuentan con un sistema de gestión de edificios (BMS) y herramientas DCIM de nivel elemental que monitorizan de forma local las variables de potencia de salida de SAIs, presencia de red, temperatura general de sala y alarmas de maquinas de clima. Por consiguiente, las alertas ambientales y de suministro se restringen a interfaces graficas locales y paneles fisicos sin correlacion automática con el rendimiento de la computacion o la degradación de servicios.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "El control de las actuaciones de mantenimiento preventivo y correctivo sobre SAIs, conmutadores eléctricos, climatizadores y grupos diésel se gestiona mediante partes de trabajo en papel e informes en formato PDF remitidos por proveedores de mantenimiento externos, sin una plataforma corporativa de Gestión de Mantenimiento Asistido por Ordenador (GMAO/EAM) que asegure firmas digitales, registro histórico de impedancia de baterías o calibración de sensores. Finalmente, si bien se ejecutan pruebas anuales de conmutación documentadas, no se realizan simulacros operativos periódicos en caliente que sometan a los grupos electrógenos y conmutadores ATS a la demanda eléctrica y térmica máxima de producción.",
+      "text": "Por consiguiente, las alertas ambientales y de suministro se restringen a interfaces graficas locales y paneles físicos sin correlacion automática con el rendimiento de la computacion o la degradación de servicios. El control de las actuaciones de mantenimiento preventivo y correctivo sobre SAIs, conmutadores eléctricos, climatizadores y grupos diésel se gestiona mediante partes de trabajo en papel e informes en formato PDF remitidos por proveedores de mantenimiento externos, sin una plataforma corporativa de Gestión de Mantenimiento Asistido por Ordenador (GMAO/EAM) que asegure firmas digitales, registro histórico de impedancia de baterías o calibración de sensores. Finalmente, si bien se ejecutan pruebas anuales de conmutación documentadas, no se realizan simulacros operativos periódicos en caliente que sometan a los grupos electrógenos y conmutadores ATS a la demanda eléctrica y térmica máxima de producción.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1808,8 +1812,12 @@
       "font_size": 9.5
     },
     {
+      "type": "spacer",
+      "points": 10
+    },
+    {
       "type": "heading",
-      "text": "4.1. Coste Estimado por Indisponibilidad y Parada de Servicio",
+      "text": "4.1. Evaluación del Coste del Statu Quo e Inacción",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -1820,41 +1828,11 @@
     },
     {
       "type": "paragraph",
-      "text": "La exposición actuarial para Centro de Datos Físico e Instalaciones se modela mediante el receptor Open FAIR™ de Indisponibilidad y Parada Operativa, capturando el impacto financiero de la interrupción del servicio.",
+      "text": "Mantener la infraestructura de Centro de Datos Físico e Instalaciones en su estado actual (AS-IS) sin abordar la modernización conlleva una exposición económica y operativa latente. La inacción impone una sangría silenciosa por tareas manuales y soporte reactivo continuo, elevando la probabilidad de que una incidencia escale a crisis de negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 4
-    },
-    {
-      "type": "paragraph",
-      "text": "*ALE = LEF × (Duración_Parada × Tasa_Erosión_Horaria + Esfuerzo_Recuperación + Penalizaciones_SLA)*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "CENTER",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 8
-    },
-    {
-      "type": "paragraph",
-      "text": "Ajuste del Coste según el Alcance del Fallo: El coste horario de referencia (1.650 €/h) corresponde a una paralización total de toda la actividad de la empresa. Como la gran mayoría de incidencias no detienen el 100% del negocio, el modelo ajusta el coste por hora según el alcance real de cada fallo: un 70% (1.155 €/h) para caídas en sistemas troncales críticos, un 40% (660 €/h) para incidencias intermedias con degradación parcial, y un 20% (330 €/h) para fallos aislados en componentes secundarios. De esta forma, cada ficha de riesgo refleja de forma realista el impacto económico correspondiente a su área técnica.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
+      "space_after": 10,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -1866,9 +1844,9 @@
         {
           "cells": [
             {
-              "text": "Vector Actuarial (Open FAIR™)",
+              "text": "Vector de Exposición del Estado Actual (AS-IS)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1878,31 +1856,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3120,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Parámetro",
+              "text": "Supuestos y Base de Estimación Técnica",
               "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Fundamento Técnico y Operativo de la Estimación",
-              "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1912,14 +1873,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3900,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Exposición Anualizada Estimada (ALE)",
+              "text": "Exposición Anualizada Estimada",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1929,24 +1890,7 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Peso",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -1958,33 +1902,7 @@
         {
           "cells": [
             {
-              "text": "Pérdida Transaccional Directa y Penalizaciones SLA",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "PARADA",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Impacto financiero por la inactividad del servicio en activos críticos.",
+              "text": "**1. Carga Operativa de Mantenimiento Manual (Toil)**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -1997,10 +1915,10 @@
               "border_left_size": null
             },
             {
-              "text": "61.571 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Ajustes operativos manuales, tareas de mantenimiento preventivo y soporte reactivo recurrente en Centro de Datos Físico e Instalaciones.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2010,9 +1928,9 @@
               "border_left_size": null
             },
             {
-              "text": "22,9%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~35.000 € - 45.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2030,9 +1948,9 @@
         {
           "cells": [
             {
-              "text": "Gabinete de Crisis y Esfuerzo de Recuperación",
-              "bold": true,
-              "font_size": 8.5,
+              "text": "**2. Exposición ante Contingencias de Disponibilidad**",
+              "bold": false,
+              "font_size": 8.0,
               "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -2043,10 +1961,10 @@
               "border_left_size": null
             },
             {
-              "text": "EQUIPOS",
+              "text": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en Centro de Datos Físico e Instalaciones.",
               "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2056,7 +1974,27 @@
               "border_left_size": null
             },
             {
-              "text": "Toil de ingeniería no planificado requerido para restaurar el estado y resolver causas raíz.",
+              "text": "~20.000 € - 35.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**3. Sobrecoste Contractual Previsible**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -2069,10 +2007,10 @@
               "border_left_size": null
             },
             {
-              "text": "196.471 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en Centro de Datos Físico e Instalaciones.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2082,9 +2020,9 @@
               "border_left_size": null
             },
             {
-              "text": "73,2%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~30.000 € - 55.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2102,139 +2040,28 @@
         {
           "cells": [
             {
-              "text": "Fricción Comercial y Erosión Reputacional",
+              "text": "**EXPOSICIÓN GLOBAL ESTIMADA DEL STATU QUO**",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
-              "bg_color": "F2F2F2",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
-              "grid_span": 1,
+              "grid_span": 2,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 7020,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "GUARDIAS",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Erosión secundaria derivada de la inestabilidad sistémica prolongada.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "10.274 €",
+              "text": "**~55.000 € - 80.000 € / año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
-              "bg_color": "FFFFFF",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "3,9%",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Expectativa de Pérdida Anualizada Total (ALE)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "TOTAL",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Base paramétrica estimada aplicada a la duración proyectada (MTTR estimado) de cada escenario de riesgo del catálogo.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "268.316 €",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "100,0%",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -2247,11 +2074,9 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.24,
-        0.12,
-        0.4,
-        0.14,
-        0.1
+        0.33,
+        0.42,
+        0.25
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -2259,44 +2084,11 @@
     },
     {
       "type": "spacer",
-      "points": 6
-    },
-    {
-      "type": "paragraph",
-      "text": "*cost_distribution_note*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "**Nota sobre las Estimaciones Económicas:** Las cifras económicas y los tiempos de recuperación presentados en este capítulo son estimaciones objetivas basadas en modelos de riesgo para ayudar a priorizar inversiones técnicas. No representan pérdidas contables ya producidas, sino el impacto potencial que podría generarse si ocurren fallos operativos graves.",
-      "bold": false,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "*Exposición Operativa de Alta Intensidad (β=0.35): La disponibilidad continua es crítica para evitar la interrupción inmediata de las operaciones de negocio y la pérdida directa de ingresos comerciales.*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 10,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
+      "points": 12
     },
     {
       "type": "heading",
-      "text": "4.2. Matriz de Priorización de Riesgos y Mapa de Calor",
+      "text": "4.2. Matriz de Concentración y Severidad de Riesgos",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -3517,12 +3309,13 @@
       "points": 12
     },
     {
-      "type": "page_break"
+      "type": "spacer",
+      "points": 8
     },
     {
       "type": "heading",
-      "text": "4.3 Concentración y Priorización de Riesgos del Dominio",
-      "level": 2,
+      "text": "Distribución y Concentración de la Cartera de Riesgos",
+      "level": 3,
       "primary_color_rgb": [
         0,
         114,
@@ -3532,7 +3325,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El inventario de riesgos técnicos identificados en el dominio de Centro de Datos Físico e Instalaciones arroja una exposición económica anualizada total estimada en 268.316 €/año. A efectos de dimensionar la concentración del riesgo en el estado actual (AS-IS), la exposición se agrupa en tres niveles de criticidad financiera sin considerar planes de implantación futuros:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -3653,7 +3446,7 @@
               "border_left_size": null
             },
             {
-              "text": "147.330 €/año (55%)",
+              "text": "148.894 €/año (55%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3712,7 +3505,7 @@
               "border_left_size": null
             },
             {
-              "text": "114.818 €/año (43%)",
+              "text": "114.692 €/año (43%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3771,7 +3564,7 @@
               "border_left_size": null
             },
             {
-              "text": "6.168 €/año (2%)",
+              "text": "6.263 €/año (2%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3830,7 +3623,7 @@
               "border_left_size": null
             },
             {
-              "text": "**304.283 €/año**",
+              "text": "**304.204 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3876,7 +3669,7 @@
               "border_left_size": null
             },
             {
-              "text": "—",
+              "text": "-",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3889,7 +3682,7 @@
               "border_left_size": null
             },
             {
-              "text": "*-35.967 €/año (-11.8%)*",
+              "text": "*-34.355 €/año (-11.3%)*",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3948,7 +3741,7 @@
               "border_left_size": null
             },
             {
-              "text": "**268.316 €/año**",
+              "text": "**269.849 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3993,7 +3786,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (35.967 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
+      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (34.355 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -4045,7 +3838,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El impacto económico total de este escenario ascendería a 425.367 €. Esta cifra se divide de forma clara en dos conceptos: 39.600 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 385.767 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
+      "text": "El impacto económico total de este escenario ascendería a 428.532 €. Esta cifra se divide de forma clara en dos conceptos: 39.600 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 388.932 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4055,8 +3848,11 @@
       "font_size": 9.5
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "heading",
-      "text": "4.4. Fichas de Riesgos Técnicos Cuantificados",
+      "text": "4.3. Catálogo de Fichas de Riesgo Técnico-Operativas",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -4067,7 +3863,7 @@
     },
     {
       "type": "paragraph",
-      "text": "A continuación se presenta el desglose técnico-actuarial exhaustivo para cada uno de los 8 escenarios de riesgo modelados en el alcance de evaluación. Cada ficha integra la trazabilidad causal (Bow-Tie) y la ecuación de cuantificación financiera estimada:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4077,118 +3873,148 @@
       "font_size": 9.5
     },
     {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 1 - Prioridad de Modernización Crítica (Impacto Existencial en Producción)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 147.330 € / año (55% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
       "type": "table",
       "headers": null,
       "rows": [
         {
           "cells": [
             {
-              "text": "[RVS04] Resiliencia de Refrigeración HVAC y Mantenimiento Concurrente",
+              "text": "**[RSK-T1-01] Monitorización Termohigrométrica Granular y Cumplimiento ASHRAE TC 9.9**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (35,2%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Centro de Datos Físico e Instalaciones",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nInexistencia de telemetría termohigrométrica granular en tiempo real y ausencia de registro histórico auditable bajo estándares ASHRAE TC 9.9 en ambas salas técnicas de Sant Vicenç dels Horts. La medición ambiental depende exclusivamente de sondas estáticas ubicadas en el retorno de las unidades perimetrales CRAC, desconociendo el gradiente térmico real en el plano frontal de admisión de los bastidores de cómputo.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nExposición a sobrecalentamiento no detectado en procesadores y fuentes de alimentación que puede inducir estrangulamiento térmico (thermal throttling), degradación del ciclo de vida util del silicio y paradas intempestivas no planificadas de servidores hiperconvergentes que soportan el ERP y los sistemas de pesaje en planta.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~25.000 € - 35.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n94.563 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n31.930 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~20.000 € - 35.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,30 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4200,57 +4026,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia de certificacion y pruebas operativas de mantenimiento concurrente en las maquinas de climatización perimetral de ambas salas técnicas. La salida de servicio planificada o contingente de una unidad CRAC durante periodos de alta temperatura ambiental exterior compromete la disipación térmica de los clústeres hiperconvergentes.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Interrupcion forzada de la operación de la sala técnica ante labores de reparacion de compresores o ventiladores en dias de calor extremo, obligando a apagar preventivamente cargas computacionales críticas por falta de respaldo térmico redundante N+1 efectivo. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +25.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 31.930 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,30 eventos/año\n - Exposición anualizada standalone (3,30 eventos/año × 31.930 €): 105.369 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -10.806 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 94.563 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4261,20 +4047,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4289,86 +4062,142 @@
         {
           "cells": [
             {
-              "text": "[RVS07] Trazabilidad del Mantenimiento Preventivo de Facilities",
+              "text": "**[RSK-T1-02] Gobernanza Automatizada del Ciclo de Vida de Identidad (JML)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (19,7%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Centro de Datos Físico e Instalaciones",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nInexistencia de un marco formalizado y automatizado de permisos de trabajo electrónicos (e-PtW) para gestionar y controlar el acceso de contratistas y proveedores a las salas técnicas. La verificación física y el acompañamiento dependen exclusivamente del equipo de infraestructura de TI de menos de cinco integrantes, operando sin caducidad automatizada de credenciales físicas al finalizar la ventana de intervención.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nSobrecarga operativa recurrente en el reducido equipo técnico de infraestructura que desvía recursos de proyectos estratégicos de modernización, e incremento de incidentes por intervenciones técnicas fuera de horario o sin supervisión en entornos de producción.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~25.000 € - 35.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n52.767 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n24.990 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~20.000 € - 35.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,50 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4380,57 +4209,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nEl control y seguimiento de las actuaciones de mantenimiento preventivo sobre la infraestructura electromecánica, climatización, bancos de baterías de SAIs y grupos electrógenos se efectúa a través de registros manuales heterogéneos e informes aislados remitidos por contratistas externos. La organización carece de una plataforma unificada de Gestión de Mantenimiento Asistido por Ordenador (GMAO) o Operación de Facilities, Monitorización y Mantenimiento (EAM) con firmas electrónicas, registro auditable de curvas de degradación e impedancia de baterías y calibración formal de transductores. Esta fragmentación documental es resultado del histórico crecimiento operativo de las plantas industriales y dificulta la justificación auditable del estado de los activos ante los estándares de continuidad del negocio y los requerimientos regulatorios de la directiva NIS2 tras la integración corporativa de Secil.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Fallo latente no diagnosticado en módulos de potencia, condensadores de filtrado o celdas de baterías durante una transición de red eléctrica, provocando un corte no planificado en los centros de datos con pérdida de conectividad local con los servicios de fábrica, bloqueo en el pesaje de básculas y parada en la expedición continua de cemento. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +18.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +390 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 24.990 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,50 eventos/año\n - Exposición anualizada standalone (2,50 eventos/año × 24.990 €): 62.475 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -9.708 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 52.767 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4441,226 +4230,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 2 - Optimización Operativa y Resiliencia (Redundancia N+1 y Telemetría)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 114.818 € / año (43% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS08] Validación Operativa y Ensayos de Carga en Conmutación",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (17,2%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n46.220 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n21.990 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,51 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nSi bien Molins cuenta con pruebas anuales documentadas de conmutación de acometidas eléctricas, se constata la ausencia de un marco formalizado de simulacros operativos periódicos bajo condiciones de carga real máxima y contingencia térmica estival. La incertidumbre sobre el comportamiento dinámico de los conmutadores ATS y la transferencia en caliente hacia los grupos electrógenos ante perturbaciones imprevistas de red constituye una brecha de resiliencia operativa que requiere validación empírica periódica.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Riesgo de anomalías en la transferencia o desincronización de fases en los conmutadores ATS durante una perturbación severa de la red comercial, lo que podría ocasionar una caída de tensión no planificada en los servidores y cabinas de almacenamiento con impacto transitorio en la operativa de fábrica. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +390 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 21.990 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,51 eventos/año\n - Exposición anualizada standalone (2,51 eventos/año × 21.990 €): 55.195 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -8.975 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 46.220 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4675,86 +4245,142 @@
         {
           "cells": [
             {
-              "text": "[RVS01] Energía y Continuidad Eléctrica",
+              "text": "**[RSK-T1-03] Trazabilidad del Mantenimiento Preventivo de Facilities**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN MODERADA (8,6%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Centro de Datos Físico e Instalaciones",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nEl control y seguimiento de las actuaciones de mantenimiento preventivo sobre la infraestructura electromecánica, climatización, bancos de baterías de SAIs y grupos electrógenos se efectúa a través de registros manuales heterogéneos e informes aislados remitidos por contratistas externos. La organización carece de una plataforma unificada de Gestión de Mantenimiento Asistido por Ordenador (GMAO) o Enterprise Asset Management (EAM) con firmas electrónicas, registro auditable de curvas de degradación e impedancia de baterías y calibración formal de transductores. Esta fragmentación documental es resultado del histórico crecimiento operativo de las plantas industriales y dificulta la justificación auditable del estado de los activos ante los estándares de continuidad del negocio y los requerimientos regulatorios de la directiva NIS2 tras la integración corporativa de Secil.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nFallo latente no diagnosticado en módulos de potencia, condensadores de filtrado o celdas de baterías durante una transición de red eléctrica, provocando un corte no planificado en los centros de datos con pérdida de conectividad local con los servicios de fábrica, bloqueo en el pesaje de básculas y parada en la expedición continua de cemento.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 25.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n22.945 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n31.930 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~15.000 € - 30.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1 cada 1,2 años (0,80/año)",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4766,57 +4392,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia de controles operativos formalizados y falta de supervisión continua en Energía y Continuidad Eléctrica.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Exposición operativa y riesgo de interrupción del servicio ante incidencias no contenidas en Energía y Continuidad Eléctrica. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +25.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 31.930 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,2 años (0,80/año)\n - Exposición anualizada standalone (1 cada 1,2 años (0,80/año) × 31.930 €): 25.544 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -2.599 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 22.945 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4827,20 +4413,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4855,86 +4428,142 @@
         {
           "cells": [
             {
-              "text": "[RVS03] Gestión Aerotérmica, Confinamiento y Mitigación de Puntos Calientes",
+              "text": "**[RSK-T1-04] Gestión Aerotérmica, Confinamiento y Mitigación de Puntos Calientes**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN MODERADA (6,7%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Centro de Datos Físico e Instalaciones",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nAusencia estructural de confinamiento físico de pasillos y carencia de accesorios de gestión de flujo aerotérmico, incluyendo paneles ciegos en bastidores y selladores de penetraciones de falso suelo. La libre mezcla entre el aire frío impulsado y las descargas calientes posteriores genera bolsas de calor localizadas en los bastidores con mayor densidad de vCPU y almacenamiento.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIneficiencia energética severa que incrementa el ratio PUE (Power Usage Effectiveness), forzando a los sistemas de enfriamiento a operar a consignas de temperatura artificialmente bajas y aumentando el estres térmico sobre los componentes electrónicos mas cargados.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 25.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n18.072 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.825 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~15.000 € - 30.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,31 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4946,57 +4575,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nAusencia estructural de confinamiento físico de pasillos y carencia de accesorios de gestión de flujo aerotérmico, incluyendo paneles ciegos en bastidores y selladores de penetraciones de falso suelo. La libre mezcla entre el aire frío impulsado y las descargas calientes posteriores genera bolsas de calor localizadas en los bastidores con mayor densidad de VCPU y almacenamiento.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Ineficiencia energética severa que incrementa el ratio PUE (Power Usage Effectiveness), forzando a los sistemas de enfriamiento a operar a consignas de temperatura artificialmente bajas y aumentando el estres térmico sobre los componentes electrónicos mas cargados. narrative_header_economic_cost narrative_cost_just_outage_minor.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,5h a 1.650 €/h): 825 €\n - Costes directos de reemplazo y respuesta técnica: +5.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 5.825 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,31 eventos/año\n - Exposición anualizada standalone (3,31 eventos/año × 5.825 €): 19.281 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.209 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 18.072 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -5007,586 +4596,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS05] Gobernanza de Permisos de Trabajo y Ciclo de Vida de Credenciales de Terceros",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (5,4%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n14.376 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.703 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,53 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nInexistencia de un marco formalizado y automatizado de permisos de trabajo electrónicos (e-PtW) para gestionar y controlar el acceso de contratistas y proveedores a las salas técnicas. La verificación física y el acompañamiento dependen exclusivamente del equipo de infraestructura de TI de menos de cinco integrantes, operando sin caducidad automatizada de credenciales físicas al finalizar la ventana de intervención.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Sobrecarga operativa recurrente en el reducido equipo técnico de infraestructura que desvía recursos de proyectos estratégicos de modernización, e incremento de incidentes por intervenciones técnicas fuera de horario o sin supervisión en entornos de producción. narrative_header_economic_cost narrative_cost_just_compliance_and_governance.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Exposición por Incidente y Brecha (SLE):**\n - Tiempo de contención y respuesta técnica inicial: 0 €\n - Costes directos de análisis forense (DFIR) y restitución: +2.500 €\n - Pérdida secundaria ponderada (contingencia regulatoria / sanciones): +3.203 €\n - Ajuste estocástico de colas y dispersión: +0 €\n = **Exposición Media por Incidente (Mean SLE):** 5.703 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,53 eventos/año\n - Exposición anualizada standalone (2,53 eventos/año × 5.703 €): 14.429 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -53 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 14.376 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS02] Monitorización Termohigrométrica Granular y Cumplimiento ASHRAE TC 9.9",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (4,9%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n13.205 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n4.325 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,31 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nInexistencia de telemetría termohigrométrica granular en tiempo real y ausencia de registro histórico auditable bajo estándares ASHRAE TC 9.9 en ambas salas técnicas de Sant Vicenç dels Horts. La medición ambiental depende exclusivamente de sondas estáticas ubicadas en el retorno de las unidades perimetrales CRAC, desconociendo el gradiente térmico real en el plano frontal de admisión de los bastidores de cómputo.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Exposición a sobrecalentamiento no detectado en procesadores y fuentes de alimentación que puede inducir estrangulamiento térmico (thermal throttling), degradación del ciclo de vida util del silicio y paradas intempestivas no planificadas de servidores hiperconvergentes que soportan el ERP y los sistemas de pesaje en planta. narrative_header_economic_cost narrative_cost_just_outage_minor.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,5h a 1.650 €/h): 825 €\n - Costes directos de reemplazo y respuesta técnica: +3.500 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 4.325 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,31 eventos/año\n - Exposición anualizada standalone (3,31 eventos/año × 4.325 €): 14.316 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.111 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 13.205 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 3 - Backlog de Mantenimiento y Gobernanza (Procedimientos y Ciclo de Vida)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 6.168 € / año (2% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS06] Mitigación de Inundación, Detección de Fugas de Agua y Contaminantes",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "risk_card_severity_low (2,3%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "4B5563",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n6.168 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n11.990 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1 cada 1,6 años (0,64/año)",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nLas zonas de paso y áreas técnicas cuentan con sensores ambientales de detección puntual, si bien la cobertura no es homogénea en todos los perímetros críticos ni está integrada en una plataforma centralizada de telemetría continua, requiriendo verificación manual periódica para prevenir riesgos por condensación o fugas de refrigerante.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Una filtración inadvertida o rotura en los circuitos de condensados puede generar contacto de agua con las líneas de alimentación eléctrica y canalizaciones de red bajo falso suelo, provocando cortocircuitos y la parada imprevista de los clústeres hiperconvergentes HPE SimpliVity y almacenamiento NetApp. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.650 €/h): 6.600 €\n - Costes directos de reemplazo y respuesta técnica: +5.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +390 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 11.990 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,6 años (0,64/año)\n - Exposición anualizada standalone (1 cada 1,6 años (0,64/año) × 11.990 €): 7.674 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.506 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 6.168 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -5969,7 +4979,7 @@
               "border_left_size": null
             },
             {
-              "text": "Gobernanza de Permisos de Trabajo y Ciclo de Vida de Credenciales de Terceros",
+              "text": "Gobernanza Automatizada del Ciclo de Vida de Identidad (JML)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6208,7 +5218,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **268.316 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
+      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **269.849 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -6679,6 +5689,39 @@
             },
             {
               "text": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
+              "bold": false,
+              "font_size": 9.0,
+              "align": "LEFT",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "MTTR",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Mean Time to Recovery (Tiempo medio de recuperación técnica y restitución del servicio tras una contingencia o parada).",
               "bold": false,
               "font_size": 9.0,
               "align": "LEFT",

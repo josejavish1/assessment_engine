@@ -151,6 +151,10 @@
       "is_appendix": false
     },
     {
+      "type": "spacer",
+      "points": 6
+    },
+    {
       "type": "table",
       "headers": null,
       "rows": [
@@ -159,7 +163,7 @@
             {
               "text": "PUNTUACIÓN ACTUAL",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -176,7 +180,7 @@
             {
               "text": "BANDA DE MADUREZ",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -191,9 +195,26 @@
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN ANUAL ESTIMADA",
+              "text": "EXPOSICIÓN STATU QUO",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "POSTURA REGULATORIA",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -217,7 +238,7 @@
             {
               "text": "1,80 / 5,00",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -230,7 +251,7 @@
             {
               "text": "Nivel 2 (Gestionado)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FFF3CD",
               "text_color_rgb": null,
@@ -241,11 +262,24 @@
               "border_left_size": null
             },
             {
-              "text": "303.316 €/año",
+              "text": "~60.000 € - 95.000 € / año",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Brecha Alta (Directiva NIS2)",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
@@ -262,9 +296,218 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.33,
-        0.33,
-        0.34
+        0.2,
+        0.28,
+        0.28,
+        0.24
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "paragraph",
+      "text": "La infraestructura híbrida de cómputo y plataformas de Molins se encuentra en una encrucijada operativa y técnica caracterizada por una alta concentración de riesgo en centros de datos locales (80%-90% on-premise), saturación crítica de recursos de CPU y memoria en los clústeres hiperconvergentes HPE SimpliVity de Sant Vicenç dels Horts, y una administración manual no declarativa tanto en hipervisores como en extensiones multicloud (GCP, Azure y OCI). Esta situación restringe la capacidad de conmutación desatendida ante fallos y absorción de nuevas operaciones corporativas como la integración de Secil, requiriendo una modernización estructural de cómputo y plataformas.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez por Capacidad (AS-IS)**",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Fundamentos de Cómputo y Virtualización",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Plataforma de Contenedores y Operaciones Kubernetes",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Habilitación de Cloud Híbrido y Landing Zones",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Automatización, Aprovisionamiento y Autoservicio",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Operaciones de Plataforma, Observabilidad y Confiabilidad",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**2,75**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**1,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**1,50**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**1,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**2,75**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -276,51 +519,18 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura híbrida de cómputo y plataformas de Molins se encuentra en una encrucijada operativa y técnica caracterizada por una alta concentración de riesgo en centros de datos locales (80%-90% on-premise), saturación crítica de recursos de CPU y memoria en los clústeres hiperconvergentes HPE SimpliVity de Sant Vicenç dels Horts, y una administración manual no declarativa tanto en hipervisores como en extensiones multicloud (GCP, Azure y OCI). Esta situación restringe la capacidad de conmutación desatendida ante fallos y absorción de nuevas operaciones corporativas como la integración de Secil, requiriendo una modernización estructural bajo el modelo Sovereign Hybrid Edge que preserve la soberanía del dato en planta y automatice el ciclo de vida de la infraestructura.",
+      "text": "**Principales áreas estratégicas de exposición operativa:**",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 8,
+      "space_after": 6,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
     },
     {
       "type": "paragraph",
-      "text": "El análisis técnico destaca las siguientes áreas prioritarias para reforzar la resiliencia del servicio:",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 4,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Falta de reserva garantizada de alta disponibilidad (HA Admission Control) en los 6 nodos SimpliVity locales, obligando a intervenciones y apagados manuales de entornos para permitir la supervivencia de cargas de producción ante caídas de hosts.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Asimetría y fragmentación en la gobernanza multicloud, operando suscripciones en GCP, Azure y OCI sin Landing Zones declarativas ni barreras preventivas de Policy-as-Code, elevando la superficie de incumplimiento de la directiva NIS2.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Dependencia crítica de conocimiento tácito concentrado en perfiles técnicos individuales para la recuperación de sistemas centrales, sin runbooks ejecutables ni procedimientos estandarizados de autoservicio.",
+      "text": "**Madurez del Catálogo de Servicios y Tiempos de Entrega Autoservicio:** Deficiencia estructural de un catálogo de servicios de plataforma unificado y ausencia de mecanismos de autoservicio gobernados.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -331,10 +541,10 @@
     },
     {
       "type": "paragraph",
-      "text": "Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada del servicio conlleva un coste operativo directo de **1.650 €/h** (detallado en la Sección 4.1). En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **Cómputo Híbrido y Plataformas** representan una **exposición de riesgo latente estimada en 303.316 € anualizados**, cifra que refleja la pérdida media esperada por la fricción operativa e incidencias a lo largo de un año dentro de este dominio.\n\nAdicionalmente, ante un **escenario de estrés financiero severo (Percentil 90 / P90)**, la acumulación estocástica de múltiples contingencias técnicas a lo largo de un ejercicio anual podría elevar las pérdidas agregadas del dominio hasta **483.764 €**. En términos de liquidez operativa inmediata, el impacto económico derivado de la materialización del peor incidente individual aislado (Pérdida Máxima por Evento / Max SLE) se estima en **19.392 €**, con un tiempo de recuperación técnica de hasta **24,0 horas**.",
+      "text": "**Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code):** Nivel elemental de gobernanza técnica basado en directivas aisladas configuradas de manera manual en consolas web.",
       "bold": false,
       "italic": false,
-      "style": "Normal",
+      "style": "List Bullet",
       "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
@@ -342,11 +552,26 @@
     },
     {
       "type": "paragraph",
-      "text": "En conclusión, el diagnóstico del estado actual demuestra que la plataforma cuenta con una base operativa consolidada sobre la cual evolucionar. Mientras que la capacidad más desarrollada alcanza 2,75 sobre 5,0 (Fundamentos de Cómputo y Virtualización; y Operaciones de Plataforma, Observabilidad y Confiabilidad), la madurez global del dominio (1,80 sobre 5,0) presenta su mayor margen de avance en Plataforma de Contenedores y Operaciones Kubernetes; y Automatización, Aprovisionamiento y Autoservicio (1,00 sobre 5,0). Mantener la inercia del statu quo prolongaría la dependencia de intervenciones manuales reactivas y elevaría los tiempos de recuperación ante incidencias, por lo que abordar estas oportunidades de automatización permitirá afianzar la continuidad que requiere el negocio.",
+      "text": "**Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO):** El mantenimiento del ciclo de vida del entorno de cómputo evidencia procedimientos manuales y reactivos en la aplicación de parches del hipervisor VMware ESXi y en la actualización de firmware de los nodos físicos HPE SimpliVity.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "paragraph",
+      "text": "**Ventana de Decisión y Mandato:** Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de Directiva NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 10,
+      "space_after": 12,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -378,7 +603,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Cómputo Híbrido y Plataformas de Molins. La evaluación analiza las capacidades instaladas, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
+      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Cómputo Híbrido y Plataformas en Molins. La evaluación analiza la base instalada en sedes corporativas y entornos de producción, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -426,7 +651,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Fundamentos de Cómputo y Virtualización",
+      "text": "Fundamentos de Cómputo y Virtualización",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -437,7 +662,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Plataforma de Contenedores y Operaciones Kubernetes",
+      "text": "Plataforma de Contenedores y Operaciones Kubernetes",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -448,7 +673,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Habilitación de Cloud Híbrido y Landing Zones",
+      "text": "Habilitación de Cloud Híbrido y Landing Zones",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -459,7 +684,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Automatización, Aprovisionamiento y Autoservicio",
+      "text": "Automatización, Aprovisionamiento y Autoservicio",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -470,7 +695,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Operaciones de Plataforma, Observabilidad y Confiabilidad",
+      "text": "Operaciones de Plataforma, Observabilidad y Confiabilidad",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -544,190 +769,6 @@
           "is_header": true,
           "height_dxa": null,
           "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "CMMI for Infrastructure",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Madurez de procesos operativos, control de cambios y disciplina de mantenimiento en salas y plataformas técnicas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Escala analítica del nivel 1 al 5.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "CIS Controls v8 / NIST SP 800-125",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Estándar de endurecimiento de sistemas operativos, seguridad de hipervisores y configuración segura de cómputo.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Baseline de Cómputo",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Open FAIR™",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cuantificación financiera y simulación actuarial de paradas operativas e interrupción de procesos críticos de negocio.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cálculo probabilístico del ALE y ROI.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "NIS2 (Directiva UE 2022/2555)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Resiliencia física, continuidad de operaciones y reporte de incidentes en entidades críticas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cumplimiento legal",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
         }
       ],
       "style_profile": "Table Grid",
@@ -788,7 +829,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 2 - Administrado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
+      "text": "**Nivel 2 - Gestionado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -818,7 +859,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 4 - Gestionado Cuantitativamente (3,50 - 4,49):** Procesos medidos, controlados estadísticamente y gobernados cuantitativamente mediante métricas.",
+      "text": "**Nivel 4 - Avanzado y Medido (3,50 - 4,49):** Operación orientada a datos, con telemetría en tiempo real, SLAs objetivos y control proactivo de la plataforma.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -833,7 +874,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 5 - En Optimización (4,50 - 5,00):** Mejora continua, autorremediación automatizada e innovación sistemática orientada a resiliencia.",
+      "text": "**Nivel 5 - Optimizado y Resiliente (4,50 - 5,00):** Autorremediación automatizada, resiliencia estructural ante fallos y mejora continua sistemática.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -878,7 +919,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Fundamentos de Cómputo y Virtualización (Peso: 20%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como Estandarización del Parque de Cómputo (Clústeres, Servidores y Baselines de Hardware); Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO); Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM) y Disponibilidad de la Plataforma de Cómputo (Alta Disponibilidad de Nodos y Mantenibilidad Concurrente).",
+      "text": "**Fundamentos de Cómputo y Virtualización (Peso: 20%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -893,7 +934,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Plataforma de Contenedores y Operaciones Kubernetes (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como Servicios Nucleares de Kubernetes (Ingress, Registry, Certificados y Clases de Almacenamiento); Gestión del Ciclo de Vida de Clústeres (Actualizaciones de Versión y Obsolescencia de APIs); Seguridad de Contenedores y Aislamiento (RBAC, Namespaces y Políticas de Red) y Operaciones de Clústeres y Fiabilidad de Nodos (Runbooks y Triaje de Capacidad).",
+      "text": "**Plataforma de Contenedores y Operaciones Kubernetes (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -908,7 +949,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Habilitación de Cloud Híbrido y Landing Zones (Peso: 20%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como Arquitectura de Landing Zone y Estructura Multicuenta Multicloud; Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code); Patrones de Despliegue Híbrido e Interoperabilidad Multicloud y Gobernanza de Consumo Cloud (Etiquetado, Showback y Límites Presupuestarios).",
+      "text": "**Habilitación de Cloud Híbrido y Landing Zones (Peso: 20%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -923,7 +964,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Automatización, Aprovisionamiento y Autoservicio (Peso: 20%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como Aprovisionamiento Declarativo mediante Infraestructura como Código (IaC); Madurez del Catálogo de Servicios y Tiempos de Entrega Autoservicio; Pipeline de Imágenes Golden y Baselines de Configuración Inmutable; Modelo Operativo de Ingeniería de Plataforma (Platform as a Product) y Experiencia de Desarrollo (DevEx) y Adopción Interna de la Plataforma.",
+      "text": "**Automatización, Aprovisionamiento y Autoservicio (Peso: 20%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -938,7 +979,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Operaciones de Plataforma, Observabilidad y Confiabilidad (Peso: 20%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como Cobertura de Observabilidad de Plataforma (Métricas, Logs, Trazas y Alarmas); Objetivos de Nivel de Servicio (SLOs) y Presupuestos de Error de Plataforma; Respuesta a Incidentes de Plataforma, Post-Mortems Sin Culpa y Runbooks y Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías.",
+      "text": "**Operaciones de Plataforma, Observabilidad y Confiabilidad (Peso: 20%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -1075,7 +1116,7 @@
     },
     {
       "type": "paragraph",
-      "text": "cmmi_scale_title: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Gestionado Cuantitativamente (3,50-4,49) | Nivel 5 - En Optimización (4,50-5,00)",
+      "text": "Escala de Madurez CMMI: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Avanzado y Medido (3,50-4,49) | Nivel 5 - Optimizado y Resiliente (4,50-5,00)",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -1090,7 +1131,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Evaluada en 1,80 sobre 5,0 (Nivel 2 (Gestionado)), la plataforma de cómputo opera al límite de su capacidad física en Molins. La estabilidad demostrada por los hipervisores en la operativa cotidiana (Operaciones de Plataforma, Observabilidad y Confiabilidad, 2,75/5,0) contrasta con el agotamiento crítico de memoria RAM y la carencia de entornos de contenedores (Plataforma de Contenedores y Operaciones Kubernetes, 1,00/5,0), eliminando el margen de seguridad para absorber caídas de nodos sin degradar el servicio.",
+      "text": "Con una calificación técnica de 1,80 sobre 5,0 (Nivel 2 (Gestionado)), el dominio de Cómputo Híbrido y Plataformas en Molins opera bajo un nivel de exposición operativa severa. Si bien se constatan avances procedimentales en Operaciones de Plataforma, Observabilidad y Confiabilidad (2,75/5,0), la resiliencia global se ve críticamente comprometida por la inmadurez en Plataforma de Contenedores y Operaciones Kubernetes (1,00/5,0), exigiendo priorizar su modernización estructural.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1286,7 +1327,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1429,16 +1470,12 @@
       "type": "paragraph",
       "text": "Más allá de la evaluación por capacidad, el análisis constata los patrones estructurales de rigidez arquitectónica y dimensionamiento que condicionan la plataforma de cómputo:",
       "bold": false,
-      "italic": true,
+      "italic": false,
       "style": "Normal",
-      "space_after": 6,
+      "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 6
     },
     {
       "type": "paragraph",
@@ -1472,7 +1509,7 @@
     },
     {
       "type": "paragraph",
-      "text": "3. Concentración extrema del conocimiento operativo en un equipo central reducido (<5 FTEs) y especialistas aislados, sin documentación ejecutable ni autoservicio.",
+      "text": "3. Concentración del conocimiento técnico operativo en especialistas individuales, sin documentación centralizada ejecutable ni procesos de autoservicio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1539,7 +1576,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura de cómputo y virtualización central de Molins opera en un modelo predominantemente local (80% a 90% on-premise) distribuido entre dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts. Ambos CPDs se encuentran distanciados aproximadamente 500 metros y permanecen interconectados mediante una tirada directa de fibra óptica punto a punto de 10 Gbps que carece de redundancia en anillo físico. El parque computacional está conformado por 6 nodos hiperconvergentes HPE SimpliVity agrupados en tres clústeres independientes de 2 nodos cada uno, gestionados centralmente mediante VMware vCenter y ejecutando hipervisores VMware ESXi.",
+      "text": "La infraestructura de cómputo y virtualización central de Molins opera en un modelo predominantemente local (80% a 90% on-premise) distribuido entre dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts. Ambos CPDs se encuentran distanciados aproximadamente 500 metros y permanecen interconectados mediante una tirada directa de fibra óptica punto a punto de 10 Gbps que carece de redundancia en anillo físico.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1550,7 +1587,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Esta plataforma soporta un censo superior a las 300 máquinas virtuales que sustentan los servicios operativos, de planta y corporativos del grupo. A nivel de dimensionamiento, la plataforma física experimenta una acusada tensión de capacidad en memoria RAM y cómputo útil. Como consecuencia directa de esta ocupación, las políticas de control de admisión para alta disponibilidad (HA Admission Control) se encuentran relajadas o sin reserva garantizada, lo que impide una conmutación desatendida entre salas técnicas ante la caída imprevista de un nodo o de un CPD completo sin requerir la intervención manual y el apagado selectivo de instancias no productivas.",
+      "text": "El parque computacional está conformado por 6 nodos hiperconvergentes HPE SimpliVity agrupados en tres clústeres independientes de 2 nodos cada uno, gestionados centralmente mediante VMware vCenter y ejecutando hipervisores VMware ESXi. Esta plataforma soporta un censo superior a las 300 máquinas virtuales que sustentan los servicios operativos, de planta y corporativos del grupo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1561,7 +1598,29 @@
     },
     {
       "type": "paragraph",
-      "text": "El mantenimiento operativo del ciclo de vida presenta una naturaleza reactiva y manual, acumulando desfases en el microcódigo de servidores y en las versiones del hipervisor ESXi. En el plano estratégico, la plataforma afronta dos hitos críticos de obsolescencia y costes: la expiración contractual de las licencias de VMware/Broadcom en mayo de 2027 y las ventanas escalonadas de fin de soporte (EOS) del hardware físico HPE SimpliVity entre los años 2028 y 2030. Actualmente, la organización evalúa escenarios de relevo tecnológico que abarcan la ampliación del entorno SimpliVity, migraciones hacia Nutanix o Syneto, y una prueba de concepto basada en Proxmox sobre servidores estándar en entornos de cantera.",
+      "text": "A nivel de dimensionamiento, la plataforma física experimenta una acusada tensión de capacidad en memoria RAM y cómputo útil. Como consecuencia directa de esta saturación, las políticas de control de admisión para alta disponibilidad (HA Admission Control) se encuentran relajadas o sin reserva garantizada, lo que impide una conmutación desatendida entre salas técnicas ante la caída imprevista de un nodo o de un CPD completo sin requerir la intervención manual y el apagado selectivo de instancias no productivas.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Asimismo, el mantenimiento operativo del ciclo de vida presenta una naturaleza reactiva y manual, acumulando desfases en el microcódigo de servidores y en las versiones del hipervisor ESXi.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 6,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "En el plano estratégico, la plataforma afronta dos horizontes críticos de obsolescencia y costes: la expiración contractual de las licencias de VMware/Broadcom en mayo de 2027 y las ventanas escalonadas de fin de soporte (EOS) del hardware físico HPE SimpliVity entre los años 2028 y 2030. Actualmente, la organización evalúa escenarios de relevo tecnológico que abarcan la ampliación del entorno SimpliVity, migraciones hacia Nutanix o Syneto, y una prueba de concepto basada en Proxmox sobre servidores estándar en entornos de cantera.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1585,19 +1644,120 @@
       "is_appendix": false
     },
     {
-      "type": "paragraph",
-      "text": "**Madurez Operativa:** 1,00 (Inicial)",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.0
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Autoevaluación Declarada",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Madurez Técnica Calibrada",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Divergencia de Diagnóstico",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "4,25 (Avanzado y Medido)",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "1,00 (Inicial)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": null,
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Brecha Operativa (-3,25)",
+              "bold": true,
+              "font_size": 8.5,
+              "align": "CENTER",
+              "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.33,
+        0.33,
+        0.34
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 8
     },
     {
       "type": "paragraph",
-      "text": "El entorno de contenedores y orquestación sobre Kubernetes de Molins da soporte a aplicaciones modernas y microservicios empresariales que complementan los sistemas centrales. La plataforma demuestra una alta madurez técnica en el aislamiento y gobernanza de seguridad básica (KPI T2. P2. K3 evaluado con nivel 5.0), aplicando segmentación mediante namespaces dedicados, políticas de red (NetworkPolicies) y control de acceso basado en roles (RBAC) con separación de perfiles administrativos y de desarrollo. No obstante, el ciclo de vida y la administración de los servicios auxiliares críticos del clúster—especialmente los controladores de ingreso (Ingress Controllers), la automatización de certificados TLS con cert-manager y las clases de almacenamiento aprovisionadas mediante el plugin CSI NetApp Trident—se gestionan mediante secuencias de comandos y manifiestos aplicados manualmente de forma desacoplada.",
+      "text": "El entorno de contenedores y orquestación sobre Kubernetes de Molins da soporte a aplicaciones auxiliares y microservicios empresariales que complementan los sistemas centrales. Aunque la autoevaluación inicial del cliente reflejó una percepción favorable fundamentada en la configuración de políticas de acceso (RBAC) y la segmentación básica mediante namespaces, la auditoría técnica constata que la operativa carece de un modelo de gobernanza estandarizado para el ciclo de vida del clúster.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1608,7 +1768,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La gestión de esta capacidad se encuentra en un régimen inicial (1,00 sobre 5,0 - Inicial). La operativa se ve severamente condicionada por las brechas de instrumentación y control operativo identificadas, lo que exige establecer controles fundacionales y estandarización técnica en el Tomo 2.",
+      "text": "En la actualidad, la administración de los servicios auxiliares críticos, tales como los controladores de ingreso (Ingress Controllers), la renovación de certificados TLS y las clases de almacenamiento CSI, se ejecuta mediante manifiestos aplicados manualmente sin trazabilidad en pipelines GitOps ni integración continua. La ausencia de repositorios declarativos y de políticas como código sitúa la gestión de esta capacidad en un régimen inicial (1,00 sobre 5,00), evidenciando la necesidad de establecer controles fundacionales y estandarización técnica en la arquitectura objetivo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1630,7 +1790,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 1,50 (Administrado)",
+      "text": "**Madurez Operativa:** 1,50 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1641,7 +1801,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La arquitectura actual de habilitacion cloud y zonas de aterrizaje de Molins presenta una topologia multicloud fragmentada y desacoplada de la infraestructura física central ubicada en Sant Vicenc dels Horts. Adicionalmente, la integracion tras la adquisicion de Secil en Portugal incorpora operaciones gestionadas de manera externalizada por el proveedor NOS. No existe una arquitectura formal de Landing Zone gobernada por codigo declarativo, lo que significa que el aprovisionamiento de recursos de red virtual (VPCs, VNETs y VCNs), la asignacion de rangos CIDR y la segregacion de ambientes (desarrollo, pruebas y produccion) se realizan de forma manual y ad-hoc.",
+      "text": "La arquitectura actual de habilitación cloud y zonas de aterrizaje de Molins presenta una topología multicloud fragmentada y desacoplada de la infraestructura física central ubicada en Sant Vicenç dels Horts. Adicionalmente, la integración tras la adquisición de Secil en Portugal incorpora operaciones gestionadas de manera externalizada por el proveedor NOS.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1652,7 +1812,7 @@
     },
     {
       "type": "paragraph",
-      "text": "En el plano de seguridad, la plataforma dispone de controles elementales nativos configurados puntualmente en cada consola, careciendo de barreras preventivas automatizadas basadas en Policy-as-Code que impidan la exposicion de endpoints publicos no autorizados o el almacenamiento desprotegido. A nivel financiero y operativo, no se encuentra implementada una taxonomia corporativa de etiquetado homogenea ni herramientas de reporte showback o alertas presupuestarias en tiempo real, lo que diluye la trazabilidad del gasto de nube entre las unidades de negocio globales.",
+      "text": "No existe una arquitectura formal de Landing Zone gobernada por código declarativo, por lo que el aprovisionamiento de recursos de red virtual (VPCs, VNETs y VCNs), la asignación de rangos CIDR y la segregación de ambientes se realizan de forma manual y ad-hoc.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1663,7 +1823,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Los informes de Gartner constatan que las organizaciones que despliegan cargas cloud ad-hoc sin una Landing Zone automatizada sufren un 38% más de fallos graves de seguridad y triplican el tiempo de entrega de nuevos servicios frente a arquitecturas estandarizadas con infraestructura como código.",
+      "text": "En el plano de seguridad y gobierno financiero, la plataforma dispone de controles elementales nativos configurados puntualmente en cada consola de proveedor, careciendo de barreras preventivas automatizadas basadas en Policy-as-Code que impidan la exposición de endpoints públicos no autorizados. A nivel operativo, no se encuentra implementada una taxonomía corporativa de etiquetado homogénea ni herramientas de reporte showback o alertas presupuestarias en tiempo real, lo que diluye la trazabilidad del gasto de nube entre las unidades de negocio globales y condiciona la escalabilidad del modelo híbrido.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1699,7 +1859,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El ecosistema operativo actual de Molins se caracteriza por la ejecución manual y artesanal del aprovisionamiento de infraestructura en todos sus entornos. En el ámbito on-premise, alojado en los dos centros de procesamiento de datos de Sant Vicenç dels Horts sobre 6 nodos hiperconvergentes HPE SimpliVity y cabinas NetApp con hipervisores VMware ESXi, la creación y modificación de máquinas virtuales se realiza mediante interacciones directas en las interfaces gráficas de VMware vCenter. No se cuenta con repositorios versionados de plantillas ni con pipelines de automatización para la compilación, securización (hardening) o validación de imágenes de sistemas operativos.",
+      "text": "El ecosistema operativo actual de Molins se caracteriza por la ejecución manual del aprovisionamiento de infraestructura en todos sus entornos. En el ámbito on-premise, la creación y modificación de máquinas virtuales se realiza mediante interacciones directas en las interfaces gráficas de gestión de hipervisores. No se cuenta con repositorios versionados de plantillas ni con pipelines de automatización para la compilación, securización (hardening) o validación de imágenes de sistemas operativos.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1710,7 +1870,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La gestión de esta capacidad se encuentra en un régimen inicial (1,00 sobre 5,0 - Inicial). La operativa se ve severamente condicionada por las brechas de instrumentación y control operativo identificadas, lo que exige establecer controles fundacionales y estandarización técnica en el Tomo 2.",
+      "text": "Esta operativa basada en consolas interactivas prolonga los tiempos de entrega de nuevos servicios y aumenta la variabilidad en las configuraciones base. La ausencia de un catálogo de autoservicio y de herramientas declarativas de Infraestructura como Código (IaC) impide a los equipos de desarrollo desplegar entornos de forma autónoma, concentrando las solicitudes en el equipo central de infraestructura y justificando la calificación inicial (1,00 sobre 5,00) de esta capacidad.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1743,7 +1903,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El entorno actual de operaciones de plataforma y observabilidad de Molins descansa sobre un modelo hibrido con un peso on-premise superior al 85 por ciento, centralizado fisicamente en los dos centros de procesamiento de datos de Sant Vicenc dels Horts, distanciados 500 metros entre si e interconectados mediante un enlace punto a punto de fibra optica dedicada de 10 Gbps sin topologia de anillo. El stack de computo hiperconvergente esta compuesto por seis nodos HPE SimpliVity distribuidos en tres clústeres de dos nodos bajo hipervisores VMware vSphere ESXi, sobre los que se ejecutan mas de 300 maquinas virtuales en estado de saturacion de CPU y memoria RAM.",
+      "text": "El entorno de operaciones de plataforma y observabilidad de Molins supervisa las cargas de trabajo empresariales distribuidas entre entornos locales y servicios auxiliares. La monitorización actual se apoya en agentes convencionales que capturan métricas de disponibilidad de infraestructura y consumo de recursos, pero opera desacoplada de los procesos de negocio y sin correlación unificada de trazas distribuidas o eventos de seguridad en tiempo real.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1754,18 +1914,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La telemetria actual opera desacoplada de los procesos de negocio. Asimismo, la respuesta operativa ante incidentes y la recuperacion de servicios dependen de conocimiento tacito altamente concentrado en un equipo interno de infraestructura con menos de cinco ingenieros y especialistas externos unicos (un DBA en Croacia y un arquitecto de Kubernetes), con procedimientos documentados de forma dispar en una wiki MoinMoin obsoleta y repositorios preliminares sin automatizacion ejecutable.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Las investigaciones de Google SRE y DORA demuestran que las organizaciones con observabilidad integrada y scripts autorreparables eliminan el 70% del trabajo manual repetitivo, logrando una reducción del 62% en el tiempo medio de recuperación de servicios (MTTR).",
+      "text": "La respuesta operativa ante incidencias complejas y la resolución de contingencias descansan en procedimientos documentados de forma descentralizada y en el soporte de especialistas técnicos externos dedicados. La falta de runbooks ejecutables versionados en código y de tableros consolidados de indicadores de nivel de servicio (SLO/SLI) dificulta la detección proactiva de degradaciones de rendimiento, delimitando la visibilidad operativa y justificando la necesidad de avanzar hacia una plataforma integrada de telemetría y fiabilidad en la plataforma objetivo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1797,8 +1946,12 @@
       "font_size": 9.5
     },
     {
+      "type": "spacer",
+      "points": 10
+    },
+    {
       "type": "heading",
-      "text": "4.1. Coste Estimado por Indisponibilidad y Parada de Servicio",
+      "text": "4.1. Evaluación del Coste del Statu Quo e Inacción",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -1809,41 +1962,11 @@
     },
     {
       "type": "paragraph",
-      "text": "La exposición actuarial para Cómputo Híbrido y Plataformas se modela mediante el receptor Open FAIR™ de Indisponibilidad y Parada Operativa, capturando el impacto financiero de la interrupción del servicio.",
+      "text": "Mantener la infraestructura de Cómputo Híbrido y Plataformas en su estado actual (AS-IS) sin abordar la modernización conlleva una exposición económica y operativa latente. La inacción impone una sangría silenciosa por tareas manuales y soporte reactivo continuo, elevando la probabilidad de que una incidencia escale a crisis de negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 4
-    },
-    {
-      "type": "paragraph",
-      "text": "*ALE = LEF × (Duración_Parada × Tasa_Erosión_Horaria + Esfuerzo_Recuperación + Penalizaciones_SLA)*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "CENTER",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 8
-    },
-    {
-      "type": "paragraph",
-      "text": "Ajuste del Coste según el Alcance del Fallo: El coste horario de referencia (1.650 €/h) corresponde a una paralización total de toda la actividad de la empresa. Como la gran mayoría de incidencias no detienen el 100% del negocio, el modelo ajusta el coste por hora según el alcance real de cada fallo: un 70% (1.155 €/h) para caídas en sistemas troncales críticos, un 40% (660 €/h) para incidencias intermedias con degradación parcial, y un 20% (330 €/h) para fallos aislados en componentes secundarios. De esta forma, cada ficha de riesgo refleja de forma realista el impacto económico correspondiente a su área técnica.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
+      "space_after": 10,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -1855,9 +1978,9 @@
         {
           "cells": [
             {
-              "text": "Vector Actuarial (Open FAIR™)",
+              "text": "Vector de Exposición del Estado Actual (AS-IS)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1867,31 +1990,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3120,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Parámetro",
+              "text": "Supuestos y Base de Estimación Técnica",
               "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Fundamento Técnico y Operativo de la Estimación",
-              "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1901,14 +2007,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3900,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Exposición Anualizada Estimada (ALE)",
+              "text": "Exposición Anualizada Estimada",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1918,24 +2024,7 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Peso",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -1947,33 +2036,7 @@
         {
           "cells": [
             {
-              "text": "Pérdida Transaccional Directa y Penalizaciones SLA",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "PARADA",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Impacto financiero por la inactividad del servicio en activos críticos.",
+              "text": "**1. Carga Operativa de Mantenimiento Manual (Toil)**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -1986,10 +2049,10 @@
               "border_left_size": null
             },
             {
-              "text": "33.604 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Ajustes operativos manuales, tareas de mantenimiento preventivo y soporte reactivo recurrente en Cómputo Híbrido y Plataformas.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -1999,9 +2062,9 @@
               "border_left_size": null
             },
             {
-              "text": "11,1%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~35.000 € - 45.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2019,9 +2082,9 @@
         {
           "cells": [
             {
-              "text": "Gabinete de Crisis y Esfuerzo de Recuperación",
-              "bold": true,
-              "font_size": 8.5,
+              "text": "**2. Exposición ante Contingencias de Disponibilidad**",
+              "bold": false,
+              "font_size": 8.0,
               "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -2032,10 +2095,10 @@
               "border_left_size": null
             },
             {
-              "text": "EQUIPOS",
+              "text": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en Cómputo Híbrido y Plataformas.",
               "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2045,7 +2108,27 @@
               "border_left_size": null
             },
             {
-              "text": "Toil de ingeniería no planificado requerido para restaurar el estado y resolver causas raíz.",
+              "text": "~10.000 € - 20.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**3. Sobrecoste Contractual Previsible**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -2058,10 +2141,10 @@
               "border_left_size": null
             },
             {
-              "text": "256.951 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en Cómputo Híbrido y Plataformas.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2071,9 +2154,9 @@
               "border_left_size": null
             },
             {
-              "text": "84,7%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~15.000 € - 30.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2091,139 +2174,28 @@
         {
           "cells": [
             {
-              "text": "Fricción Comercial y Erosión Reputacional",
+              "text": "**EXPOSICIÓN GLOBAL ESTIMADA DEL STATU QUO**",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
-              "bg_color": "F2F2F2",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
-              "grid_span": 1,
+              "grid_span": 2,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 7020,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "GUARDIAS",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Erosión secundaria derivada de la inestabilidad sistémica prolongada.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "12.761 €",
+              "text": "**~60.000 € - 95.000 € / año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
-              "bg_color": "FFFFFF",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "4,2%",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Expectativa de Pérdida Anualizada Total (ALE)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "TOTAL",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Base paramétrica estimada aplicada a la duración proyectada (MTTR estimado) de cada escenario de riesgo del catálogo.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "303.316 €",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "100,0%",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -2236,11 +2208,9 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.24,
-        0.12,
-        0.4,
-        0.14,
-        0.1
+        0.33,
+        0.42,
+        0.25
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -2248,44 +2218,11 @@
     },
     {
       "type": "spacer",
-      "points": 6
-    },
-    {
-      "type": "paragraph",
-      "text": "*cost_distribution_note*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "**Nota sobre las Estimaciones Económicas:** Las cifras económicas y los tiempos de recuperación presentados en este capítulo son estimaciones objetivas basadas en modelos de riesgo para ayudar a priorizar inversiones técnicas. No representan pérdidas contables ya producidas, sino el impacto potencial que podría generarse si ocurren fallos operativos graves.",
-      "bold": false,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "*Exposición Operativa de Alta Intensidad (β=0.35): La disponibilidad continua es crítica para evitar la interrupción inmediata de las operaciones de negocio y la pérdida directa de ingresos comerciales.*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 10,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
+      "points": 12
     },
     {
       "type": "heading",
-      "text": "4.2. Matriz de Priorización de Riesgos y Mapa de Calor",
+      "text": "4.2. Matriz de Concentración y Severidad de Riesgos",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -2553,7 +2490,7 @@
               "border_left_size": null
             },
             {
-              "text": "RVS06, RVS09",
+              "text": "RVS01, RVS02, RVS06, RVS09",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -2642,7 +2579,7 @@
               "border_left_size": null
             },
             {
-              "text": "RVS01, RVS02, RVS03, RVS04, RVS11",
+              "text": "RVS03, RVS04, RVS11",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -3506,12 +3443,13 @@
       "points": 12
     },
     {
-      "type": "page_break"
+      "type": "spacer",
+      "points": 8
     },
     {
       "type": "heading",
-      "text": "4.3 Concentración y Priorización de Riesgos del Dominio",
-      "level": 2,
+      "text": "Distribución y Concentración de la Cartera de Riesgos",
+      "level": 3,
       "primary_color_rgb": [
         0,
         114,
@@ -3521,7 +3459,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El inventario de riesgos técnicos identificados en el dominio de Cómputo Híbrido y Plataformas arroja una exposición económica anualizada total estimada en 303.316 €/año. A efectos de dimensionar la concentración del riesgo en el estado actual (AS-IS), la exposición se agrupa en tres niveles de criticidad financiera sin considerar planes de implantación futuros:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -3642,7 +3580,7 @@
               "border_left_size": null
             },
             {
-              "text": "150.009 €/año (49%)",
+              "text": "154.003 €/año (48%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3655,7 +3593,7 @@
               "border_left_size": null
             },
             {
-              "text": "Pipeline de Imágenes Golden y Baselines de Configuración Inmutable, Ciclo de Vida de Clústeres K8s y Obsolescencia de APIs, Alta Disponibilidad de Nodos (Host HA) y Mantenibilidad Concurrente.",
+              "text": "Gestión de Imágenes Base y Obsolescencia de Sistemas Operativos, Gestión del Ciclo de Vida de Clústeres (Actualizaciones de Versión y Obsolescencia de APIs), Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO).",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3688,7 +3626,7 @@
               "border_left_size": null
             },
             {
-              "text": "7",
+              "text": "6",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3701,7 +3639,7 @@
               "border_left_size": null
             },
             {
-              "text": "150.580 €/año (50%)",
+              "text": "156.543 €/año (48%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3714,7 +3652,7 @@
               "border_left_size": null
             },
             {
-              "text": "Respuesta a Incidentes de Plataforma, Post-Mortems y Runbooks, Estandarización del Parque de Cómputo y Ciclo de Vida de Servidores, Saturación de Capacidad y Sobreasignación Crítica de CPU/RAM en Clústeres...",
+              "text": "Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM), Respuesta a Incidentes de Plataforma, Post-Mortems Sin Culpa y Runbooks, Disponibilidad de la Plataforma de Cómputo (Alta Disponibilidad de Nodos y Mantenibilidad Concurrente)...",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3747,7 +3685,7 @@
               "border_left_size": null
             },
             {
-              "text": "2",
+              "text": "3",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3760,7 +3698,7 @@
               "border_left_size": null
             },
             {
-              "text": "2.727 €/año (1%)",
+              "text": "12.356 €/año (4%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3773,7 +3711,7 @@
               "border_left_size": null
             },
             {
-              "text": "Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías, Gestión y Gobernanza de Servicios Nucleares de Kubernetes.",
+              "text": "Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code), Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías, Servicios Nucleares de Kubernetes (Ingress, Registry, Certificados y Clases de Almacenamiento).",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3819,7 +3757,7 @@
               "border_left_size": null
             },
             {
-              "text": "**315.132 €/año**",
+              "text": "**335.268 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3865,7 +3803,7 @@
               "border_left_size": null
             },
             {
-              "text": "—",
+              "text": "-",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3878,7 +3816,7 @@
               "border_left_size": null
             },
             {
-              "text": "*-11.816 €/año (-3.7%)*",
+              "text": "*-12.366 €/año (-3.7%)*",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3937,7 +3875,7 @@
               "border_left_size": null
             },
             {
-              "text": "**303.316 €/año**",
+              "text": "**322.902 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3982,7 +3920,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (11.816 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
+      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (12.366 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -4034,7 +3972,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El impacto económico total de este escenario ascendería a 483.764 €. Esta cifra se divide de forma clara en dos conceptos: 39.600 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 444.164 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
+      "text": "El impacto económico total de este escenario ascendería a 518.566 €. Esta cifra se divide de forma clara en dos conceptos: 39.600 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 478.966 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4044,8 +3982,11 @@
       "font_size": 9.5
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "heading",
-      "text": "4.4. Fichas de Riesgos Técnicos Cuantificados",
+      "text": "4.3. Catálogo de Fichas de Riesgo Técnico-Operativas",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -4056,7 +3997,7 @@
     },
     {
       "type": "paragraph",
-      "text": "A continuación se presenta el desglose técnico-actuarial exhaustivo para cada uno de los 12 escenarios de riesgo modelados en el alcance de evaluación. Cada ficha integra la trazabilidad causal (Bow-Tie) y la ecuación de cuantificación financiera estimada:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4066,118 +4007,148 @@
       "font_size": 9.5
     },
     {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 1 - Prioridad de Modernización Crítica (Impacto Existencial en Producción)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 150.009 € / año (49% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
       "type": "table",
       "headers": null,
       "rows": [
         {
           "cells": [
             {
-              "text": "[RVS09] Pipeline de Imágenes Golden y Baselines de Configuración Inmutable",
+              "text": "**[RSK-T2-01] Madurez del Catálogo de Servicios y Tiempos de Entrega Autoservicio**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (24,1%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Cómputo Híbrido y Plataformas",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nDeficiencia estructural de un catálogo de servicios de plataforma unificado y ausencia de mecanismos de autoservicio gobernados. El cien por ciento de las solicitudes de máquinas virtuales, aprovisionamiento de bases de datos y ampliaciones de almacenamiento se tramitan mediante correos electrónicos y tickets de atención manual, dependiendo exclusivamente de la intervención directa del reducido equipo técnico de infraestructura de menos de cinco ingenieros.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nProvoca saturación operativa constante en el equipo de sistemas, retrasos de semanas en la habilitación de entornos para desarrolladores y contratistas externos, y una falta de visibilidad financiera previa al aprovisionamiento de recursos tecnológicos.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 20.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n73.145 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n17.292 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~10.000 € - 20.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n4,23 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4189,57 +4160,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia absoluta de pipelines automatizados de integración y entrega continua para la creación, securización (hardening), validación de parches y certificación periódica de plantillas base (golden images). Se observa una coexistencia desgobernada de plantillas obsoletas e instancias en producción basadas en distribuciones sin soporte del fabricante como CentOS 5 y CentOS 6 sin políticas de inmutabilidad ni remediación automatizada de drift.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Expone a la infraestructura productiva y a las operaciones de planta a vulnerabilidades críticas de ciberseguridad conocidas y no corregibles, incrementando la superficie de ataque y comprometiendo el cumplimiento de estándares regulatorios como la directiva europea NIS2. narrative_header_economic_cost narrative_cost_just_finops_and_obsolescence.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (2,0h a 1.050 €/h): 2.100 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +192 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 17.292 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 4,23 eventos/año\n - Exposición anualizada standalone (4,23 eventos/año × 17.292 €): 73.145 €/año\n - Ajuste por independencia estadística: 0 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 73.145 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4250,20 +4181,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4278,86 +4196,142 @@
         {
           "cells": [
             {
-              "text": "[RVS06] Ciclo de Vida de Clústeres K8s y Obsolescencia de APIs",
+              "text": "**[RSK-T2-02] Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (16,1%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Cómputo Híbrido y Plataformas",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nNivel elemental de gobernanza técnica basado en directivas aisladas configuradas de manera manual en consolas web. La plataforma carece de guardrails automatizados mediante Policy-as-Code en el pipeline de aprovisionamiento, posibilitando la creacion inadvertida de almacenamiento sin cifrado, asignación de IPs publicas no autorizadas o despliegue en regiones cloud geográficamente no permitidas.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIncumplimiento de las directivas europeas de resiliencia y ciberseguridad industrial NIS2, sumado al riesgo de fuga o exfiltracion de datos críticos corporativos por exposicion accidental de almacenamiento en la nube publica.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 20.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n48.724 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n15.525 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~10.000 € - 20.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,15 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4369,57 +4343,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia de mecanismos automáticos de inspección estática integrados en pipelines de entrega continua para detectar con antelación el uso de llamadas a APIs de Kubernetes en vías de obsolescencia o definiciones de recursos personalizadas (CRDs) en retirada.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact El análisis manual y esporádico previo a las actualizaciones del plano de control eleva el riesgo de fallos en el despliegue de cargas de trabajo críticas tras una actualización de versión, obligando a reversiones de emergencia que detienen la entrega de nuevas funcionalidades comerciales. narrative_header_economic_cost narrative_cost_just_outage_minor.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,5h a 1.050 €/h): 525 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 15.525 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,15 eventos/año\n - Exposición anualizada standalone (3,15 eventos/año × 15.525 €): 48.904 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -180 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 48.724 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4430,20 +4364,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4458,86 +4379,142 @@
         {
           "cells": [
             {
-              "text": "[RVS04] Alta Disponibilidad de Nodos (Host HA) y Mantenibilidad Concurrente",
+              "text": "**[RSK-T2-03] Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (9,3%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Cómputo Híbrido y Plataformas",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nEl mantenimiento del ciclo de vida del entorno de cómputo evidencia procedimientos manuales y reactivos en la aplicación de parches del hipervisor VMware ESXi y en la actualización de firmware de los nodos físicos HPE SimpliVity. La ausencia de canalizaciones declarativas y de orquestación de actualizaciones continuas (rolling upgrades) prolonga los tiempos de exposición frente a vulnerabilidades críticas del kernel y genera riesgos de incompatibilidad entre controladores de entrada/salida y microcódigo de hardware.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nExposición no mitigada a vulnerabilidades de seguridad que comprometen el cumplimiento de la directiva NIS2 y riesgo de paradas operativas no programadas en las plantas industriales derivadas de fallos de estabilidad en controladores no homologados.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~9.000 € - 15.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n28.140 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n19.392 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~7.000 € - 15.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1,53 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4549,57 +4526,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nLa topología de alta disponibilidad de cómputo se encuentra fragmentada en parejas independientes de 2 nodos y depende exclusivamente de un enlace directo de fibra óptica de 10 Gbps sin anillo físico entre los CPDs de Sant Vicenç dels Horts. La infraestructura carece de un plano de cómputo unificado con mecanismos de arbitraje contra escenarios de split-brain que permita una conmutación transparente entre ambas ubicaciones.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Vulnerabilidad ante cortes accidentales del tendido de fibra entre edificios que desencadenaría particionamiento del clúster y bloqueo de operaciones de cómputo, imposibilitando el balanceo desatendido de cargas críticas. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.050 €/h): 4.200 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +192 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 19.392 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,53 eventos/año\n - Exposición anualizada standalone (1,53 eventos/año × 19.392 €): 29.670 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.530 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 28.140 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4610,226 +4547,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 2 - Optimización Operativa y Resiliencia (Redundancia N+1 y Telemetría)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 150.580 € / año (50% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS11] Respuesta a Incidentes de Plataforma, Post-Mortems y Runbooks",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (9,2%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n27.806 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n19.392 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1,51 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nProcedimientos de respuesta a incidentes de plataforma no estandarizados y caracterizados por una severa dependencia de conocimiento tacito individual. Se constata la ausencia de runbooks ejecutables automatizados y la falta de practicas sistematicas de postmortem sin culpabilidad. La remediacion de entornos criticos como motores legacy Oracle 10g/11g, plataformas Forms and Reports y el cluster de Kubernetes descansa de forma exclusiva en dos especialistas tecnicos (un DBA externo en Croacia y un arquitecto de contenedores), con documentacion dispersa en una wiki MoinMoin heredada.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Elevado tiempo medio de resolucion (MTTR) y riesgo critico de interrupcion operativa prolongada en caso de indisponibilidad simultanea de especialistas clave durante incidentes severos, amenazando la continuidad transaccional de las operaciones corporativas y de fabrica. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.050 €/h): 4.200 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +192 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 19.392 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,51 eventos/año\n - Exposición anualizada standalone (1,51 eventos/año × 19.392 €): 29.282 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.476 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 27.806 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4844,86 +4562,142 @@
         {
           "cells": [
             {
-              "text": "[RVS03] Estandarización del Parque de Cómputo y Ciclo de Vida de Servidores",
+              "text": "**[RSK-T2-04] Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "OPTIMIZACIÓN FINOPS (8,4%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Cómputo Híbrido y Plataformas",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nSaturación estructural de capacidad en memoria RAM y recursos de CPU en los 6 nodos HPE SimpliVity distribuidos en Sant Vicenç dels Horts. La plataforma opera sin un margen dinámico adecuado en las reservas de control de admisión de alta disponibilidad (HA Admission Control), imposibilitando la absorción automática de las cargas de trabajo productivas ante la contingencia o pérdida imprevista de un host o de una de las salas técnicas.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nNecesidad de apagar manualmente máquinas virtuales de entornos no productivos durante contingencias para liberar memoria, dilatando los tiempos de recuperación del servicio y generando riesgo de degradación transaccional en sistemas críticos como básculas de pesaje de fábrica.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~9.000 € - 15.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "0D9488",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**COSTE ANUAL ESTIMADO**\n25.419 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**TIPO DE EXPOSICIÓN**\nDesperdicio de Recursos TI",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~7.000 € - 15.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**IMPACTO EN FÁBRICA**\nSin parada de planta",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4935,57 +4709,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nIncertidumbre contractual y riesgo de incremento exponencial de costes operativos derivado del vencimiento del contrato de licenciamiento de VMware/Broadcom en mayo de 2027, sumado al fin de soporte escalonado del equipamiento físico HPE SimpliVity entre 2028 y 2030, existiendo evaluaciones preliminares de alternativas tecnológicas sin un plan formal de transición consolidado.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Aumento imprevisto en los presupuestos operativos por incrementos tarifarios de renovación de licencias o riesgo de quedar en configuraciones de hardware no soportadas por el fabricante, afectando la continuidad del negocio a nivel corporativo. narrative_header_economic_cost narrative_cost_just_finops_and_obsolescence.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (2,0h a 1.050 €/h): 2.100 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +192 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 17.292 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,47 eventos/año\n - Exposición anualizada standalone (1,47 eventos/año × 17.292 €): 25.419 €/año\n - OpEx determinista aislado (Euler Invariante): 0 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 25.419 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4996,1306 +4730,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS02] Saturación de Capacidad y Sobreasignación Crítica de CPU/RAM en Clústeres",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (7,8%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n23.658 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n19.392 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1,52 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nSaturación estructural de capacidad en memoria RAM y recursos de CPU en los 6 nodos HPE SimpliVity distribuidos en Sant Vicenç dels Horts. La plataforma opera sin un margen dinámico adecuado en las reservas de control de admisión de alta disponibilidad (HA Admission Control), imposibilitando la absorción automática de las cargas de trabajo productivas ante la contingencia o pérdida imprevista de un host o de una de las salas técnicas.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Necesidad de apagar manualmente máquinas virtuales de entornos no productivos durante contingencias para liberar memoria, dilatando los tiempos de recuperación del servicio y generando riesgo de degradación transaccional en sistemas críticos como básculas de pesaje de fábrica. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.050 €/h): 4.200 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +192 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 19.392 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,52 eventos/año\n - Exposición anualizada standalone (1,52 eventos/año × 19.392 €): 29.476 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -5.818 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 23.658 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS01] Gestión del Ciclo de Vida de Cómputo, Parcheo y Firmware de Hipervisores",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (7,7%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n23.449 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n15.525 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1,51 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nEl mantenimiento del ciclo de vida del entorno de cómputo evidencia procedimientos manuales y reactivos en la aplicación de parches del hipervisor VMware ESXi y en la actualización de firmware de los nodos físicos HPE SimpliVity. La ausencia de canalizaciones declarativas y de orquestación de actualizaciones continuas (rolling upgrades) prolonga los tiempos de exposición frente a vulnerabilidades críticas del kernel y genera riesgos de incompatibilidad entre controladores de entrada/salida y microcódigo de hardware.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Exposición no mitigada a vulnerabilidades de seguridad que comprometen el cumplimiento de la directiva NIS2 y riesgo de paradas operativas no programadas en las plantas industriales derivadas de fallos de estabilidad en controladores no homologados. narrative_header_economic_cost narrative_cost_just_outage_minor.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,5h a 1.050 €/h): 525 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 15.525 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,51 eventos/año\n - Exposición anualizada standalone (1,51 eventos/año × 15.525 €): 23.443 €/año\n - Ajuste por contagio inter-dominio (Recargo de Euler): +6 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 23.449 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS10] Madurez del Catálogo de Servicios y Tiempos de Entrega Autoservicio",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (7,6%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n23.189 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.666 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n4,21 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nDeficiencia estructural de un catálogo de servicios de plataforma unificado y ausencia de mecanismos de autoservicio gobernados. El cien por ciento de las solicitudes de máquinas virtuales, aprovisionamiento de bases de datos y ampliaciones de almacenamiento se tramitan mediante correos electrónicos y tickets de atención manual, dependiendo exclusivamente de la intervención directa del reducido equipo técnico de infraestructura de menos de cinco ingenieros.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Provoca saturación operativa constante en el equipo de sistemas, retrasos de semanas en la habilitación de entornos para desarrolladores y contratistas externos, y una falta de visibilidad financiera previa al aprovisionamiento de recursos tecnológicos. narrative_header_economic_cost narrative_cost_just_engineering_velocity.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Toil Operativo y Fricción (SLE):**\n - Esfuerzo acumulado de ingeniería (2,6h a 65 €/h): 166 €\n - Costes directos de soporte y herramientas: +5.500 €\n - Pérdida secundaria ponderada (SLA / retrasos / retrabajo): +0 €\n - Ajuste estocástico de dispersión: +0 €\n = **Sobrecoste Medio por Incidente (Mean SLE):** 5.666 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 4,21 eventos/año\n - Exposición anualizada standalone (4,21 eventos/año × 5.666 €): 23.854 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -665 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 23.189 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS07] Operaciones de Clústeres y Autorrecuperación de Incidencias",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (5,8%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n17.459 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.666 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,16 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nElevada concentración operativa del gobierno y mantenimiento de la plataforma de contenedores en un único especialista técnico dentro de un equipo de infraestructura con capacidad efectiva menor a cinco ingenieros, combinada con la falta de runbooks automatizados ejecutables ante saturación de nodos worker.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Cualquier incidencia por presión de memoria o CPU en los nodos de cómputo durante períodos de alta demanda depende de la disponibilidad personal del especialista, dilatando el tiempo medio de resolución (MTTR) y exponiendo a las aplicaciones industriales a degradaciones operativas prolongadas. narrative_header_economic_cost narrative_cost_just_engineering_velocity.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Toil Operativo y Fricción (SLE):**\n - Esfuerzo acumulado de ingeniería (2,6h a 65 €/h): 166 €\n - Costes directos de soporte y herramientas: +5.500 €\n - Pérdida secundaria ponderada (SLA / retrasos / retrabajo): +0 €\n - Ajuste estocástico de dispersión: +0 €\n = **Sobrecoste Medio por Incidente (Mean SLE):** 5.666 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,16 eventos/año\n - Exposición anualizada standalone (3,16 eventos/año × 5.666 €): 17.905 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -446 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 17.459 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS08] Barreras de Gobernanza Cloud y Políticas como Código (Policy-as-Code)",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (3,2%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n9.600 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n3.203 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,53 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nNivel elemental de gobernanza técnica basado en directivas aisladas configuradas de manera manual en consolas web. La plataforma carece de guardrails automatizados mediante Policy-as-Code en el pipeline de aprovisionamiento, posibilitando la creacion inadvertida de almacenamiento sin cifrado, asignacion de IPs publicas no autorizadas o despliegue en regiones cloud geograficamente no permitidas.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Incumplimiento de las directivas europeas de resiliencia y ciberseguridad industrial NIS2, sumado al riesgo de fuga o exfiltracion de datos criticos corporativos por exposicion accidental de almacenamiento en la nube publica. narrative_header_economic_cost narrative_cost_just_compliance_and_governance.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Exposición por Incidente y Brecha (SLE):**\n - Tiempo de contención y respuesta técnica inicial: 0 €\n - Costes directos de análisis forense (DFIR) y restitución: +0 €\n - Pérdida secundaria ponderada (contingencia regulatoria / sanciones): +3.203 €\n - Ajuste estocástico de colas y dispersión: +0 €\n = **Exposición Media por Incidente (Mean SLE):** 3.203 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,53 eventos/año\n - Exposición anualizada standalone (3,53 eventos/año × 3.203 €): 11.307 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -1.707 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 9.600 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 3 - Backlog de Mantenimiento y Gobernanza (Procedimientos y Ciclo de Vida)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 2.727 € / año (1% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS12] Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "risk_card_severity_low (0,6%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "4B5563",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n1.905 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n15.875 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1 cada 8,3 años (0,12/año)",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nMecanismos de proyección de capacidad con modelado analítico limitado y gestión basada predominantemente en alarmas reactivas de umbral en Zabbix y VCenter sobre la infraestructura física de computo. Los seis nodos HPE SimpliVity distribuidos en tres clusters operan cercanos al limite de memoria RAM y computo util, sin capacidades de calculo dinamico continuo de la reserva de admision (HA admission control). Ante la caida imprevista de un nodo o CPD en Sant Vicenc dels Horts, la plataforma no puede sostener la totalidad de las cargas productivas sin recurrir a la intervencion y apagado manual de maquinas virtuales de entornos no productivos.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Imposibilidad de absorción automática de cargas ante contingencias de infraestructura física, obligando a realizar paradas controladas de sistemas secundarios e incrementando la probabilidad de caida en cascada de servicios durante picos estacionales de demanda industrial. narrative_header_economic_cost narrative_cost_just_outage_minor.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,83h a 1.050 €/h): 875 €\n - Costes directos de reemplazo y respuesta técnica: +15.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 15.875 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 8,3 años (0,12/año)\n - Exposición anualizada standalone (1 cada 8,3 años (0,12/año) × 15.875 €): 1.905 €/año\n - Ajuste por independencia estadística: 0 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 1.905 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS05] Gestión y Gobernanza de Servicios Nucleares de Kubernetes",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "risk_card_severity_low (0,3%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "4B5563",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n822 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n260 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n3,16 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nEl ciclo de aprovisionamiento, parametrización y actualización de los componentes auxiliares del clúster (controladores de ingreso, cert-manager y clases de almacenamiento CSI de NetApp) se ejecuta mediante scripts manuales desacoplados sin sincronización declarativa continua ni control de estado reconciliado.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Esta discrepancia operativa genera deriva de configuración (drift) entre entornos de desarrollo, preproducción y producción, lo que puede provocar interrupciones no planificadas en la publicación de aplicaciones empresariales y degradación del almacenamiento de microservicios. narrative_header_economic_cost narrative_cost_just_engineering_velocity.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Toil Operativo y Fricción (SLE):**\n - Esfuerzo acumulado de ingeniería (0,0h a 65 €/h): 0 €\n - Costes directos de soporte y herramientas: +260 €\n - Pérdida secundaria ponderada (SLA / retrasos / retrabajo): +0 €\n - Ajuste estocástico de dispersión: +0 €\n = **Sobrecoste Medio por Incidente (Mean SLE):** 260 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 3,16 eventos/año\n - Exposición anualizada standalone (3,16 eventos/año × 260 €): 822 €/año\n - Ajuste por independencia estadística: 0 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 822 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -6442,7 +4877,7 @@
               "border_left_size": null
             },
             {
-              "text": "Gestión del Ciclo de Vida de Cómputo, Parcheo y Firmware de Hipervisores",
+              "text": "Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6501,7 +4936,7 @@
               "border_left_size": null
             },
             {
-              "text": "Saturación de Capacidad y Sobreasignación Crítica de CPU/RAM en Clústeres",
+              "text": "Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6560,7 +4995,7 @@
               "border_left_size": null
             },
             {
-              "text": "Estandarización del Parque de Cómputo y Ciclo de Vida de Servidores",
+              "text": "Estandarización del Parque de Cómputo (Clústeres, Servidores y Baselines de Hardware)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6619,7 +5054,7 @@
               "border_left_size": null
             },
             {
-              "text": "Alta Disponibilidad de Nodos (Host HA) y Mantenibilidad Concurrente",
+              "text": "Disponibilidad de la Plataforma de Cómputo (Alta Disponibilidad de Nodos y Mantenibilidad Concurrente)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6678,7 +5113,7 @@
               "border_left_size": null
             },
             {
-              "text": "Gestión y Gobernanza de Servicios Nucleares de Kubernetes",
+              "text": "Servicios Nucleares de Kubernetes (Ingress, Registry, Certificados y Clases de Almacenamiento)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6737,7 +5172,7 @@
               "border_left_size": null
             },
             {
-              "text": "Ciclo de Vida de Clústeres K8s y Obsolescencia de APIs",
+              "text": "Gestión del Ciclo de Vida de Clústeres (Actualizaciones de Versión y Obsolescencia de APIs)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6855,7 +5290,7 @@
               "border_left_size": null
             },
             {
-              "text": "Barreras de Gobernanza Cloud y Políticas como Código (Policy-as-Code)",
+              "text": "Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6917,7 +5352,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **303.316 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
+      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **322.902 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",

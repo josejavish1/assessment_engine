@@ -151,6 +151,10 @@
       "is_appendix": false
     },
     {
+      "type": "spacer",
+      "points": 6
+    },
+    {
       "type": "table",
       "headers": null,
       "rows": [
@@ -159,7 +163,7 @@
             {
               "text": "PUNTUACIÓN ACTUAL",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -176,7 +180,7 @@
             {
               "text": "BANDA DE MADUREZ",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -191,9 +195,26 @@
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN ANUAL ESTIMADA",
+              "text": "EXPOSICIÓN STATU QUO",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "POSTURA REGULATORIA",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -217,7 +238,7 @@
             {
               "text": "2,14 / 5,00",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -230,7 +251,7 @@
             {
               "text": "Nivel 2 (Gestionado)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FFF3CD",
               "text_color_rgb": null,
@@ -241,11 +262,24 @@
               "border_left_size": null
             },
             {
-              "text": "254.233 €/año",
+              "text": "~85.000 € - 150.000 € / año",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 9.5,
               "align": "CENTER",
               "bg_color": "FCE4D6",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Brecha Alta (Directiva NIS2)",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
@@ -262,9 +296,229 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.33,
-        0.33,
-        0.34
+        0.2,
+        0.28,
+        0.28,
+        0.24
+      ],
+      "column_widths_dxa": null,
+      "keep_together": true,
+      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
+    },
+    {
+      "type": "spacer",
+      "points": 12
+    },
+    {
+      "type": "paragraph",
+      "text": "La infraestructura actual de resiliencia y continuidad de Molins opera bajo un modelo predominantemente reactivo y geográficamente concentrado en Sant Vicenç dels Horts, donde el 85% de las cargas críticas reside en seis nodos HPE SimpliVity con saturación estructural de memoria RAM y CPU. La falta de margen en el control de admision para alta disponibilidad impide la conmutación automática ante caidas de sala sin forzar el apagado manual de maquinas virtuales secundarias.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "Esta condicion, sumada a la ausencia de un centro de respaldo georredundante, enlaces de fibra directa de 10 Gbps sin anillo, procedimientos no verificados en la nube como el mini-ERP Prenet en OCI y una desconexión operativa con la filial Secil en Portugal operada por NOS, compromete la disponibilidad de las operaciones de planta y pesaje en básculas. El diagnóstico evidencia la necesidad de desacoplar los centros de respaldo y automatizar la conmutación de contingencia.",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 14,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "**Madurez por Capacidad (AS-IS)**",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "table",
+      "headers": null,
+      "rows": [
+        {
+          "cells": [
+            {
+              "text": "Estrategia de Continuidad y Gobierno BC/DR",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Copia de Seguridad y Recuperación Operativa",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Recuperación ante Desastres (DR) y Conmutación",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Ciberresiliencia e Inmutabilidad contra Ransomware",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "Alta Disponibilidad y Resiliencia Arquitectónica",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "0072BC",
+              "text_color_rgb": [
+                255,
+                255,
+                255
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": true,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**2,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**3,50**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "DCFCE7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**2,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**2,20**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**1,00**",
+              "bold": true,
+              "font_size": 9.5,
+              "align": "CENTER",
+              "bg_color": "FEE2E2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        }
+      ],
+      "style_profile": "Table Grid",
+      "autofit": true,
+      "col_widths": [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -276,51 +530,18 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura actual de resiliencia y continuidad de Molins opera bajo un modelo predominantemente reactivo y geograficamente concentrado en Sant Vicenc dels Horts, donde el 85% de las cargas criticas reside en seis nodos HPE SimpliVity con saturacion estructural de memoria RAM y CPU. La falta de margen en el control de admision para alta disponibilidad impide la conmutacion automatica ante caidas de sala sin forzar el apagado manual de maquinas virtuales secundarias. Esta condicion, sumada a la ausencia de un centro de respaldo georredundante, enlaces de fibra directa de 10 Gbps sin anillo, procedimientos no verificados en la nube como el mini-ERP Prenet en OCI y una desconexion operativa con la filial Secil en Portugal operada por NOS, compromete la disponibilidad de las operaciones de planta y pesaje en basculas. El plan de transformacion propone evolucionar hacia un modelo Sovereign Hybrid Edge que restablezca la soberania de datos, automatice la conmutacion y el aislamiento ante ransomware, y alinee a la empresa con las directivas europeas de ciberresiliencia NIS2 e ISO 22301.",
+      "text": "**Principales áreas estratégicas de exposición operativa:**",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 8,
+      "space_after": 6,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
     },
     {
       "type": "paragraph",
-      "text": "El análisis técnico destaca las siguientes áreas prioritarias para reforzar la resiliencia del servicio:",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 4,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Concentracion geografica critica de los dos centros de datos a 500 metros en Sant Vicenc dels Horts sobre un unico enlace de 10 Gbps sin topologia en anillo ni georredundancia genuina.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Saturacion de capacidad de computo en nodos SimpliVity con politicas de admision deficientes que exigen el apagado manual deliberado de servidores para conmutar servicios esenciales.",
-      "bold": false,
-      "italic": false,
-      "style": "List Bullet",
-      "space_after": 3,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Dependencia extrema del conocimiento no documentado concentrado en un DBA externo remoto y un arquitecto de contenedores, con runbooks desactualizados en una wiki obsoleta.",
+      "text": "**Definición de RTO/RPO y Análisis de Impacto en el Negocio (BIA):** Inexistencia de un Business Impact Analysis (BIA) corporativo formalizado y ausencia de catalogacion de procesos de negocio con métricas vinculantes de RTO y RPO.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -331,10 +552,10 @@
     },
     {
       "type": "paragraph",
-      "text": "Bajo el estándar internacional Open FAIR™ (Factor Analysis of Information Risk), la indisponibilidad no planificada del servicio conlleva un coste operativo directo de **13.061 €/h** (detallado en la Sección 4.1). En condiciones ordinarias, las brechas técnicas evaluadas específicamente en el ámbito de **Resiliencia y Continuidad Operativa** representan una **exposición de riesgo latente estimada en 254.233 € anualizados**, cifra que refleja la pérdida media esperada por la fricción operativa e incidencias a lo largo de un año dentro de este dominio.\n\nAdicionalmente, ante un **escenario de estrés financiero severo (Percentil 90 / P90)**, la acumulación estocástica de múltiples contingencias técnicas a lo largo de un ejercicio anual podría elevar las pérdidas agregadas del dominio hasta **435.575 €**. En términos de liquidez operativa inmediata, el impacto económico derivado de la materialización del peor incidente individual aislado (Pérdida Máxima por Evento / Max SLE) se estima en **25.730 €**, con un tiempo de recuperación técnica de hasta **18,0 horas**.",
+      "text": "**Orquestación Automatizada de DR, Runbooks y Pruebas Periódicas de Conmutación:** Ausencia de herramientas automatizadas de orquestación de contingencia y severa dependencia de conocimientos tácitos concentrados de forma unipersonal.",
       "bold": false,
       "italic": false,
-      "style": "Normal",
+      "style": "List Bullet",
       "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
@@ -342,11 +563,26 @@
     },
     {
       "type": "paragraph",
-      "text": "En conclusión, el diagnóstico del estado actual demuestra que la plataforma cuenta con una base operativa consolidada sobre la cual evolucionar. Mientras que la capacidad más desarrollada alcanza 3,50 sobre 5,0 (Backup & Restore Operational Readiness), la madurez global del dominio (2,14 sobre 5,0) presenta su mayor margen de avance en High Availability & Architectural Resilience (1,00 sobre 5,0). Mantener la inercia del statu quo prolongaría la dependencia de intervenciones manuales reactivas y elevaría los tiempos de recuperación ante incidencias, por lo que abordar estas oportunidades de automatización permitirá afianzar la continuidad que requiere el negocio.",
+      "text": "**Seguridad de Bóveda Aislada (Cyber Vault) y Acceso Fuera de Banda:** Las interfaces de gestión del almacenamiento secundario y de copias de seguridad residen en el direccionamiento de red operativo estándar y operan bajo identidades corporativas comunes sin bastion out-of-band dedicado ni aprobacion de doble control (quorums multipartitos) para operaciones destructivas.",
+      "bold": false,
+      "italic": false,
+      "style": "List Bullet",
+      "space_after": 8,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "spacer",
+      "points": 10
+    },
+    {
+      "type": "paragraph",
+      "text": "**Ventana de Decisión y Mandato:** Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de Directiva NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 10,
+      "space_after": 12,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -378,7 +614,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Resiliencia y Continuidad Operativa de Molins. La evaluación analiza las capacidades instaladas, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
+      "text": "Auditar la madurez técnica, la resiliencia operativa y la alineación arquitectónica de la infraestructura de Resiliencia y Continuidad Operativa en Molins. La evaluación analiza la base instalada en sedes corporativas y entornos de producción, identificando brechas estructurales, puntos únicos de fallo y riesgos operacionales que condicionan la continuidad del servicio y la eficiencia del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -426,7 +662,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de BC/DR Governance & Continuity Strategy",
+      "text": "Estrategia de Continuidad y Gobierno BC/DR",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -437,7 +673,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Backup & Restore Operational Readiness",
+      "text": "Copia de Seguridad y Recuperación Operativa",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -448,7 +684,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Disaster Recovery Architecture & Failover",
+      "text": "Recuperación ante Desastres (DR) y Conmutación",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -459,7 +695,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de Cyber Recovery & Ransomware Immutability",
+      "text": "Ciberresiliencia e Inmutabilidad contra Ransomware",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -470,7 +706,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Arquitectura, configuración y gestión operativa de High Availability & Architectural Resilience",
+      "text": "Alta Disponibilidad y Resiliencia Arquitectónica",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -544,190 +780,6 @@
           "is_header": true,
           "height_dxa": null,
           "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "CMMI for Infrastructure",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Madurez de procesos operativos, control de cambios y disciplina de mantenimiento en salas y plataformas técnicas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Escala analítica del nivel 1 al 5.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "ISA/IEC 62443-3-3",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Ciberseguridad y segmentación de redes industriales, automatización de planta y telemetría de procesos.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Seguridad de Planta OT",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Open FAIR™",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cuantificación financiera y simulación actuarial de paradas operativas e interrupción de procesos críticos de negocio.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cálculo probabilístico del ALE y ROI.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "NIS2 (Directiva UE 2022/2555)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Resiliencia física, continuidad de operaciones y reporte de incidentes en entidades críticas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Cumplimiento legal",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
         }
       ],
       "style_profile": "Table Grid",
@@ -788,7 +840,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 2 - Administrado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
+      "text": "**Nivel 2 - Gestionado (1,50 - 2,49):** Procesos establecidos localmente a nivel de proyecto o equipo, pero de carácter reactivo.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -818,7 +870,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 4 - Gestionado Cuantitativamente (3,50 - 4,49):** Procesos medidos, controlados estadísticamente y gobernados cuantitativamente mediante métricas.",
+      "text": "**Nivel 4 - Avanzado y Medido (3,50 - 4,49):** Operación orientada a datos, con telemetría en tiempo real, SLAs objetivos y control proactivo de la plataforma.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -833,7 +885,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Nivel 5 - En Optimización (4,50 - 5,00):** Mejora continua, autorremediación automatizada e innovación sistemática orientada a resiliencia.",
+      "text": "**Nivel 5 - Optimizado y Resiliente (4,50 - 5,00):** Autorremediación automatizada, resiliencia estructural ante fallos y mejora continua sistemática.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -878,7 +930,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Estrategia de Continuidad y Gobierno BC/DR (Peso: 20%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como Service RTO/RPO Definition & Business Impact Analysis (BIA); Continuity Scope & Critical Third-Party Dependency Mapping; Continuity Operating Model (RACI, Ownership & Crisis Escalation) y Continuity Testing Program & Continuous Drills Verification.",
+      "text": "**Estrategia de Continuidad y Gobierno BC/DR (Peso: 20%)**: Evalúa la resiliencia operativa y los baselines técnicos, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -893,7 +945,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Copia de Seguridad y Recuperación Operativa (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como Backup Coverage Across Mission-Critical Production Systems; Backup Job Success Rate, SLA Adherence & Failure Remediation; Scheduled Restore Drill Cadence & Data Verification Evidence y Achievable Production Recovery Point Objective (RPO) Compliance.",
+      "text": "**Copia de Seguridad y Recuperación Operativa (Peso: 20%)**: Audita el estado funcional y los controles, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -908,7 +960,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Recuperación ante Desastres (DR) y Conmutación (Peso: 20%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como Disaster Recovery Scope, Tiering & Automated Workload Priority; Empirical DR Drill RTO/RPO Achievement (Measured Evidence); Automated DR Orchestration, Runbooks & Repeatable Failover y Secondary DR Site Readiness (Capacity, Licensing & Drift Control).",
+      "text": "**Recuperación ante Desastres (DR) y Conmutación (Peso: 20%)**: Verifica la infraestructura y políticas, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -923,7 +975,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Ciberresiliencia e Inmutabilidad contra Ransomware (Peso: 20%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como Immutable Backup Coverage (WORM, Object Lock & Air-Gap Isolation); Decoupled Cyber Vault Security & Out-of-Band Administrative Access; Clean-Room Rebuild Capability & Isolated Integrity Validation y Ransomware Simulation Drills & Rapid Reconstruction Exercises.",
+      "text": "**Ciberresiliencia e Inmutabilidad contra Ransomware (Peso: 20%)**: Pondera las medidas de protección y respuesta, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -938,7 +990,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Alta Disponibilidad y Resiliencia Arquitectónica (Peso: 20%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como Single Points of Failure Elimination Across Critical Services; Controlled Active-Active Failover Verification (Production HA) y Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction.",
+      "text": "**Alta Disponibilidad y Resiliencia Arquitectónica (Peso: 20%)**: Supervisa la monitorización, gobernanza y continuidad, analizando críticamente factores clave como las capacidades operativas del pilar.",
       "bold": false,
       "italic": false,
       "style": "List Bullet",
@@ -1075,7 +1127,7 @@
     },
     {
       "type": "paragraph",
-      "text": "cmmi_scale_title: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Gestionado Cuantitativamente (3,50-4,49) | Nivel 5 - En Optimización (4,50-5,00)",
+      "text": "Escala de Madurez CMMI: Nivel 1 - Inicial (1,00-1,49) | Nivel 2 - Gestionado (1,50-2,49) | Nivel 3 - Definido (2,50-3,49) | Nivel 4 - Avanzado y Medido (3,50-4,49) | Nivel 5 - Optimizado y Resiliente (4,50-5,00)",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -1090,7 +1142,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Con una madurez de 2,14 sobre 5.0 (Nivel 2 (Gestionado)), la resiliencia operativa presenta un desfase crítico frente a las tolerancias de interrupción de Molins. La fiabilidad de las copias de seguridad (Copia de Seguridad y Recuperación Operativa, 3,50/5.0) contrasta con la fragilidad de la alta disponibilidad (Alta Disponibilidad y Resiliencia Arquitectónica, 1,00/5.0), donde una separación geográfica insuficiente entre sedes redundantes expone las operaciones a caídas sistémicas ante contingencias regionales.",
+      "text": "Con una calificación técnica de 2,14 sobre 5,0 (Nivel 2 (Gestionado)), el dominio de Resiliencia y Continuidad Operativa en Molins opera bajo un nivel de exposición operativa severa. Si bien se constatan avances procedimentales en Copia de Seguridad y Recuperación Operativa (3,50/5,0), la resiliencia global se ve críticamente comprometida por la inmadurez en Alta Disponibilidad y Resiliencia Arquitectónica (1,00/5,0), exigiendo priorizar su modernización estructural.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1194,7 +1246,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1240,7 +1292,7 @@
               "border_left_size": null
             },
             {
-              "text": "Gestionado Cuantitativamente",
+              "text": "Avanzado y Medido",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1286,7 +1338,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1332,7 +1384,7 @@
               "border_left_size": null
             },
             {
-              "text": "Administrado",
+              "text": "Gestionado",
               "bold": true,
               "font_size": 9.0,
               "align": "CENTER",
@@ -1429,20 +1481,16 @@
       "type": "paragraph",
       "text": "Más allá del análisis por vector de continuidad, la auditoría constata los puntos ciegos críticos en la postura de resiliencia y recuperación operativa del negocio:",
       "bold": false,
-      "italic": true,
+      "italic": false,
       "style": "Normal",
-      "space_after": 6,
+      "space_after": 8,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
     },
     {
-      "type": "spacer",
-      "points": 6
-    },
-    {
       "type": "paragraph",
-      "text": "1. **Gestion reactiva y ausencia de telemetria causal:** Los fallos de respaldo, desbordamientos de ventanas de copia y desviaciones de RPO se gestionan de forma aislada sin integracion de alertas en la observabilidad central (Loki, Grafana, Zabbix).",
+      "text": "1. **Gestión reactiva y ausencia de telemetria causal:** Los fallos de respaldo, desbordamientos de ventanas de copia y desviaciones de RPO se gestionan de forma aislada sin integración de alertas en la observabilidad central (Loki, Grafana, Zabbix).",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1457,7 +1505,7 @@
     },
     {
       "type": "paragraph",
-      "text": "2. **Concentracion extrema de conocimiento y esfuerzo manual:** La restauracion de bases de datos, conmutaciones de red y levantamiento de contenedores dependen de dos perfiles tecnicos especificos y procedimientos no codificados.",
+      "text": "2. **Concentracion extrema de conocimiento y esfuerzo manual:** La restauración de bases de datos, conmutaciones de red y levantamiento de contenedores dependen de dos perfiles tecnicos específicos y procedimientos no codificados.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1472,7 +1520,7 @@
     },
     {
       "type": "paragraph",
-      "text": "3. **Falsa sensacion de seguridad basada en supuestos teoricos:** Mecanismos de continuidad como la restauracion de Prenet en OCI (estimada en 3 horas) o el failover de SAP por tuneles VPN IPsec carecen de medicion y ensayos bajo carga real.",
+      "text": "3. **Falsa sensacion de seguridad basada en supuestos teoricos:** Mecanismos de continuidad como la restauración de Prenet en OCI (estimada en 3 horas) o el failover de SAP por tuneles VPN IPsec carecen de medicion y ensayos bajo carga real.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1528,7 +1576,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 2,00 (Administrado)",
+      "text": "**Madurez Operativa:** 2,00 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1539,7 +1587,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La arquitectura actual de gobernanza de continuidad y estrategia de recuperacion ante desastres en Molins opera bajo un modelo predominantemente reactivo y descentralizado, condicionado por un entorno donde entre el 80% y el 90% de la carga de trabajo reside en instalaciones locales. La continuidad operativa on-premise descansa en dos centros de procesamiento de datos ubicados en Sant Vicenc dels Horts, separados por una distancia fisica de aproximadamente 500 metros y enlazados por una conexion directa de fibra optica punto a punto de 10 Gbps que carece de canalizacion redundante y topologia en anillo. Las operaciones de la recien adquirida filial Secil en Portugal estan externalizadas bajo el operador NOS, funcionando como una isla operativa desconectada de los procedimientos y telemetria del centro corporativo.",
+      "text": "La arquitectura actual de gobernanza de continuidad y estrategia de recuperación ante desastres en Molins opera bajo un modelo predominantemente reactivo y descentralizado, condicionado por un entorno donde entre el 80% y el 90% de la carga de trabajo reside en instalaciones locales. La continuidad operativa on-premise descansa en dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts, separados por una distancia física de aproximadamente 500 metros y enlazados por una conexión directa de fibra optica punto a punto de 10 Gbps que carece de canalizacion redundante y topologia en anillo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1550,18 +1598,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El gobierno operativo de continuidad carece de un analisis formal de impacto en el negocio (BIA), no dispone de acuerdos formalizados de RTO y RPO con las unidades productivas (especialmente en procesos criticos como el pesaje en basculas de planta y despacho de camiones), y exhibe una vulnerabilidad estructural por dependencia unipersonal concentrada en un DBA externo en Croacia y un especialista en Kubernetes, mientras que los activos documentales se encuentran fragmentados entre una wiki MoinMoin heredada y repositorios parciales, impidiendo el cumplimiento auditable de la directiva europea NIS2.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Los estudios de DRI International y la norma ISO 22301 demuestran que las organizaciones con métricas RTO y RPO pactadas formalmente con el negocio se recuperan de incidentes graves 3,2 veces más rápido que aquellas basadas en supuestos teóricos de TI.",
+      "text": "Las operaciones de la recien adquirida filial Secil en Portugal estan externalizadas bajo el operador NOS, funcionando como una isla operativa desconectada de los procedimientos y telemetria del centro corporativo. El gobierno operativo de continuidad carece de un analisis formal de impacto en el negocio (BIA), no dispone de acuerdos formalizados de RTO y RPO con las unidades productivas (especialmente en procesos críticos como el pesaje en básculas de planta y despacho de camiones), y exhibe una vulnerabilidad estructural por dependencia unipersonal concentrada en un DBA externo en Croacia y un especialista en Kubernetes, mientras que los activos documentales se encuentran fragmentados entre una wiki MoinMoin heredada y repositorios parciales, impidiendo el cumplimiento auditable de la directiva europea NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1586,7 +1623,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 3,50 (Gestionado Cuantitativamente)",
+      "text": "**Madurez Operativa:** 3,50 (Avanzado y Medido)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1598,17 +1635,6 @@
     {
       "type": "paragraph",
       "text": "La arquitectura actual de respaldo y recuperación de Molins se organiza en una topología híbrida de tres niveles. El tercer nivel externaliza copias frías hacia almacenamiento de objetos en nube pública para cumplimiento de retención histórica a largo plazo.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Los informes de tendencias de protección de datos constatan que el 78% de los fallos de recuperación ante desastres se deben a inconsistencias no detectadas en los catálogos de copia; la verificación automatizada de restauraciones es el factor crítico de éxito para la continuidad.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1630,7 +1656,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 2,00 (Administrado)",
+      "text": "**Madurez Operativa:** 2,00 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1641,7 +1667,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La topologia de recuperacion ante desastres y contingencia operativa de Molins opera bajo una arquitectura fuertemente concentrada a nivel geografico y limitada por restricciones de capacidad fisica. La infraestructura central on-premise se encuentra distribuida entre dos centros de datos situados en el termino municipal de Sant Vicenc dels Horts, separados por aproximadamente 500 metros en linea recta e interconectados mediante una linea directa de fibra optica monomodo a 10 Gbps, careciendo de topologia de anillo fisico redundante y de canalizaciones independientes subterraneas.",
+      "text": "La topologia de recuperación ante desastres y contingencia operativa de Molins opera bajo una arquitectura fuertemente concentrada a nivel geografico y limitada por restricciones de capacidad física. La infraestructura central on-premise se encuentra distribuida entre dos centros de datos situados en el termino municipal de Sant Vicenç dels Horts, separados por aproximadamente 500 metros en línea recta e interconectados mediante una línea directa de fibra optica monomodo a 10 Gbps, careciendo de topologia de anillo físico redundante y de canalizaciones independientes subterraneas.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1652,18 +1678,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Esta infraestructura presenta un agotamiento estructural de CPU y memoria RAM que imposibilita la reserva dinamica de admision para alta disponibilidad (HA Admission Control); ante una eventual caida completa o contingencia en una de las salas tecnicas, la plataforma secundaria no dispone de capacidad util para absorber las cargas criticas sin que el personal tecnico ejecute el apagado manual y deliberado de maquinas virtuales de entornos no productivos. La reciente integracion de la filial Secil en Portugal introduce activos que operan externalizados bajo la gestion del proveedor NOS, desconectados de las politicas y herramientas de monitorizacion del centro de datos corporativo.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Los marcos de resiliencia de Forrester establecen que centros de datos situados a menos de 1 km comparten vectores comunes de riesgo (red eléctrica de planta, contingencias ambientales), incumpliendo los criterios internacionales de redundancia geográfica real.",
+      "text": "Esta infraestructura presenta un agotamiento estructural de CPU y memoria RAM que imposibilita la reserva dinámica de admision para alta disponibilidad (HA Admission Control); ante una eventual caida completa o contingencia en una de las salas tecnicas, la plataforma secundaria no dispone de capacidad util para absorber las cargas críticas sin que el personal tecnico ejecute el apagado manual y deliberado de maquinas virtuales de entornos no productivos. La reciente integración de la filial Secil en Portugal introduce activos que operan externalizados bajo la gestión del proveedor NOS, desconectados de las políticas y herramientas de monitorización del centro de datos corporativo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1688,7 +1703,7 @@
     },
     {
       "type": "paragraph",
-      "text": "**Madurez Operativa:** 2,20 (Administrado)",
+      "text": "**Madurez Operativa:** 2,20 (Gestionado)",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1699,7 +1714,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Las interfaces de gestion del almacenamiento de respaldo se encuentran integradas en los mismos segmentos de red operativa y accesibles bajo el esquema de identidades y privilegios estandar, sin requerir una arquitectura de boveda cibernetica (Cyber Vault) aislada fisicamente ni mecanismos de aprobacion por consenso multipartito (Multi-Party Quorum) para la purga de datos.",
+      "text": "Las interfaces de gestión del almacenamiento de respaldo se encuentran integradas en los mismos segmentos de red operativa y accesibles bajo el esquema de identidades y privilegios estándar, sin requerir una arquitectura de bóveda cibernetica (Cyber Vault) aislada fisicamente ni mecanismos de aprobacion por consenso multipartito (Multi-Party Quorum) para la purga de datos. Asimismo, no existe un entorno de red estanco o sala limpia (Clean Room) automatizado que permita levantar maquinas virtuales o bases de datos restauradas para ejecutar analisis forense y verificacion de malware durmiente previo a su reinyeccion en los entornos productivos.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1710,18 +1725,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Asimismo, no existe un entorno de red estanco o sala limpia (Clean Room) automatizado que permita levantar maquinas virtuales o bases de datos restauradas para ejecutar analisis forense y verificacion de malware durmiente previo a su reinyeccion en los entornos productivos. Por ultimo, los procedimientos de recuperacion ante ataques ciberneticos no han sido sometidos a simulacros tecnicos integrales (Game Days), dependiendo de secuencias de recuperacion no estandarizadas y del conocimiento tacito de un equipo de ingenieria altamente acotado, lo cual eleva la exposicion frente a incidentes destructivos y limita el alineamiento con las exigencias de resiliencia operativa de la directiva NIS2.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "paragraph",
-      "text": "Las investigaciones de ciberresiliencia de Gartner demuestran que la replicación síncrona sin una bóveda aislada (air-gap) propaga un cifrado de ransomware entre centros de datos en menos de 1 segundo, inutilizando los mecanismos tradicionales de réplica de almacenamiento.",
+      "text": "Por último, los procedimientos de recuperación ante ataques ciberneticos no han sido sometidos a simulacros tecnicos integrales (Game Days), dependiendo de secuencias de recuperación no estandarizadas y del conocimiento tácito de un equipo de ingenieria altamente acotado, lo cual eleva la exposicion frente a incidentes destructivos y limita el alineamiento con las exigencias de resiliencia operativa de la directiva NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1754,7 +1758,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La arquitectura actual de alta disponibilidad y resiliencia fisica de Molins se concentra en dos centros de procesamiento de datos ubicados en Sant Vicenc dels Horts, separados por aproximadamente 500 metros y conectados mediante un enlace de fibra optica directo de 10 Gbps que carece de topologia en anillo. En este entorno se ejecutan mas de 300 maquinas virtuales que albergan cargas criticas de produccion, incluyendo bases de datos relacionales Oracle 10g y 11g, plataformas Forms and Reports y servicios de pesaje industrial en basculas de planta.",
+      "text": "La arquitectura actual de alta disponibilidad y resiliencia física de Molins se concentra en dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts, separados por aproximadamente 500 metros y conectados mediante un enlace de fibra optica directo de 10 Gbps que carece de topologia en anillo. En este entorno se ejecutan mas de 300 maquinas virtuales que albergan cargas críticas de producción, incluyendo bases de datos relacionales Oracle 10g y 11g, plataformas Forms and Reports y servicios de pesaje industrial en básculas de planta.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1765,7 +1769,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La gestión de esta capacidad se encuentra en un régimen inicial (1,00 sobre 5,0 - Inicial). La operativa se ve severamente condicionada por las brechas de instrumentación y control operativo identificadas, lo que exige establecer controles fundacionales y estandarización técnica en el Tomo 2.",
+      "text": "La infraestructura exhibe un nivel crítico de tension en el uso de memoria RAM y CPU, operando sin margenes dinámicos de admision para alta disponibilidad (HA Admission Control). Ante una eventual caida imprevista de un host o de una de las salas tecnicas, la plataforma no puede sostener la totalidad de las maquinas virtuales productivas sin que el equipo de operaciones intervenga manualmente apagando instancias de desarrollo y pruebas. Las actividades de remediacion ante incidentes no cuentan con automatismos de autorreparacion y dependen exclusivamente del conocimiento no documentado de un DBA remoto en Croacia y de un arquitecto de contenedores dentro de un equipo interno con menos de 5 ingenieros.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1797,8 +1801,12 @@
       "font_size": 9.5
     },
     {
+      "type": "spacer",
+      "points": 10
+    },
+    {
       "type": "heading",
-      "text": "4.1. Coste Estimado por Indisponibilidad y Parada de Servicio",
+      "text": "4.1. Evaluación del Coste del Statu Quo e Inacción",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -1809,41 +1817,11 @@
     },
     {
       "type": "paragraph",
-      "text": "La exposición actuarial para Resiliencia y Continuidad Operativa se modela mediante el receptor Open FAIR™ de Indisponibilidad y Parada Operativa, capturando el impacto financiero de la interrupción del servicio.",
+      "text": "Mantener la infraestructura de Resiliencia y Continuidad Operativa en su estado actual (AS-IS) sin abordar la modernización conlleva una exposición económica y operativa latente. La inacción impone una sangría silenciosa por tareas manuales y soporte reactivo continuo, elevando la probabilidad de que una incidencia escale a crisis de negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 4
-    },
-    {
-      "type": "paragraph",
-      "text": "*ALE = LEF × (Duración_Parada × Tasa_Erosión_Horaria + Esfuerzo_Recuperación + Penalizaciones_SLA)*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "CENTER",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 8
-    },
-    {
-      "type": "paragraph",
-      "text": "Ajuste del Coste según el Alcance del Fallo: El coste horario de referencia (13.061 €/h) corresponde a una paralización total de toda la actividad de la empresa. Como la gran mayoría de incidencias no detienen el 100% del negocio, el modelo ajusta el coste por hora según el alcance real de cada fallo: un 70% (9.143 €/h) para caídas en sistemas troncales críticos, un 40% (5.225 €/h) para incidencias intermedias con degradación parcial, y un 20% (2.612 €/h) para fallos aislados en componentes secundarios. De esta forma, cada ficha de riesgo refleja de forma realista el impacto económico correspondiente a su área técnica.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
+      "space_after": 10,
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
@@ -1855,9 +1833,9 @@
         {
           "cells": [
             {
-              "text": "Vector Actuarial (Open FAIR™)",
+              "text": "Vector de Exposición del Estado Actual (AS-IS)",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1867,31 +1845,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3120,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Parámetro",
+              "text": "Supuestos y Base de Estimación Técnica",
               "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Fundamento Técnico y Operativo de la Estimación",
-              "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "LEFT",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1901,14 +1862,14 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 3900,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "Exposición Anualizada Estimada (ALE)",
+              "text": "Exposición Anualizada Estimada",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 8.5,
               "align": "CENTER",
               "bg_color": "0072BC",
               "text_color_rgb": [
@@ -1918,24 +1879,7 @@
               ],
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Peso",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -1947,33 +1891,7 @@
         {
           "cells": [
             {
-              "text": "Pérdida Transaccional Directa y Penalizaciones SLA",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "PARADA",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Impacto financiero por la inactividad del servicio en activos críticos.",
+              "text": "**1. Carga Operativa de Mantenimiento Manual (Toil)**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -1986,10 +1904,10 @@
               "border_left_size": null
             },
             {
-              "text": "45.783 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Ajustes operativos manuales, tareas de mantenimiento preventivo y soporte reactivo recurrente en Resiliencia y Continuidad Operativa.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -1999,9 +1917,9 @@
               "border_left_size": null
             },
             {
-              "text": "18,0%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~35.000 € - 45.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2019,9 +1937,9 @@
         {
           "cells": [
             {
-              "text": "Gabinete de Crisis y Esfuerzo de Recuperación",
-              "bold": true,
-              "font_size": 8.5,
+              "text": "**2. Exposición ante Contingencias de Disponibilidad**",
+              "bold": false,
+              "font_size": 8.0,
               "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
@@ -2032,10 +1950,10 @@
               "border_left_size": null
             },
             {
-              "text": "EQUIPOS",
+              "text": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en Resiliencia y Continuidad Operativa.",
               "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "F2F2F2",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2045,7 +1963,27 @@
               "border_left_size": null
             },
             {
-              "text": "Toil de ingeniería no planificado requerido para restaurar el estado y resolver causas raíz.",
+              "text": "~20.000 € - 35.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**3. Sobrecoste Contractual Previsible**",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -2058,10 +1996,10 @@
               "border_left_size": null
             },
             {
-              "text": "205.386 €",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
+              "text": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en Resiliencia y Continuidad Operativa.",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
               "grid_span": 1,
@@ -2071,9 +2009,9 @@
               "border_left_size": null
             },
             {
-              "text": "80,8%",
-              "bold": false,
-              "font_size": 8.5,
+              "text": "~30.000 € - 55.000 € / año",
+              "bold": true,
+              "font_size": 8.0,
               "align": "CENTER",
               "bg_color": "FFFFFF",
               "text_color_rgb": null,
@@ -2091,139 +2029,28 @@
         {
           "cells": [
             {
-              "text": "Fricción Comercial y Erosión Reputacional",
+              "text": "**EXPOSICIÓN GLOBAL ESTIMADA DEL STATU QUO**",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
-              "bg_color": "F2F2F2",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
-              "grid_span": 1,
+              "grid_span": 2,
               "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 7020,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "GUARDIAS",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Erosión secundaria derivada de la inestabilidad sistémica prolongada.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "3.064 €",
+              "text": "**~85.000 € - 150.000 € / año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
-              "bg_color": "FFFFFF",
+              "bg_color": "EAECEE",
               "text_color_rgb": null,
               "grid_span": 1,
               "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "1,2%",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Expectativa de Pérdida Anualizada Total (ALE)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "TOTAL",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Base paramétrica estimada aplicada a la duración proyectada (MTTR estimado) de cada escenario de riesgo del catálogo.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "254.233 €",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "100,0%",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "E2F0D9",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
+              "width_dxa": 2340,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -2236,11 +2063,9 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": [
-        0.24,
-        0.12,
-        0.4,
-        0.14,
-        0.1
+        0.33,
+        0.42,
+        0.25
       ],
       "column_widths_dxa": null,
       "keep_together": true,
@@ -2248,44 +2073,11 @@
     },
     {
       "type": "spacer",
-      "points": 6
-    },
-    {
-      "type": "paragraph",
-      "text": "*cost_distribution_note*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "**Nota sobre las Estimaciones Económicas:** Las cifras económicas y los tiempos de recuperación presentados en este capítulo son estimaciones objetivas basadas en modelos de riesgo para ayudar a priorizar inversiones técnicas. No representan pérdidas contables ya producidas, sino el impacto potencial que podría generarse si ocurren fallos operativos graves.",
-      "bold": false,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "paragraph",
-      "text": "*Exposición Operativa de Alta Intensidad (β=0.35): La disponibilidad continua es crítica para evitar la interrupción inmediata de las operaciones de negocio y la pérdida directa de ingresos comerciales.*",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 10,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
+      "points": 12
     },
     {
       "type": "heading",
-      "text": "4.2. Matriz de Priorización de Riesgos y Mapa de Calor",
+      "text": "4.2. Matriz de Concentración y Severidad de Riesgos",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -3506,12 +3298,13 @@
       "points": 12
     },
     {
-      "type": "page_break"
+      "type": "spacer",
+      "points": 8
     },
     {
       "type": "heading",
-      "text": "4.3 Concentración y Priorización de Riesgos del Dominio",
-      "level": 2,
+      "text": "Distribución y Concentración de la Cartera de Riesgos",
+      "level": 3,
       "primary_color_rgb": [
         0,
         114,
@@ -3521,7 +3314,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El inventario de riesgos técnicos identificados en el dominio de Resiliencia y Continuidad Operativa arroja una exposición económica anualizada total estimada en 254.233 €/año. A efectos de dimensionar la concentración del riesgo en el estado actual (AS-IS), la exposición se agrupa en tres niveles de criticidad financiera sin considerar planes de implantación futuros:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -3642,7 +3435,7 @@
               "border_left_size": null
             },
             {
-              "text": "66.738 €/año (26%)",
+              "text": "67.144 €/año (26%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3655,7 +3448,7 @@
               "border_left_size": null
             },
             {
-              "text": "Service RTO/RPO Definition & Business Impact Analysis (BIA).",
+              "text": "Definición de RTO/RPO y Análisis de Impacto en el Negocio (BIA).",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3701,7 +3494,7 @@
               "border_left_size": null
             },
             {
-              "text": "187.243 €/año (74%)",
+              "text": "187.233 €/año (74%)",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3714,7 +3507,7 @@
               "border_left_size": null
             },
             {
-              "text": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access, Clean-Room Rebuild Capability & Isolated Integrity Validation, Alta Disponibilidad y Resiliencia Arquitectónica...",
+              "text": "Seguridad de Bóveda Aislada (Cyber Vault) y Acceso Fuera de Banda, Clean-Room Rebuild Capability & Isolated Integrity Validation, Alta Disponibilidad y Resiliencia Arquitectónica...",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3773,7 +3566,7 @@
               "border_left_size": null
             },
             {
-              "text": "Scheduled Restore Drills & Automated Data Verification.",
+              "text": "Cadencia de Simulacros de Restauración y Verificación de Datos.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -3819,7 +3612,7 @@
               "border_left_size": null
             },
             {
-              "text": "**284.658 €/año**",
+              "text": "**284.485 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3865,7 +3658,7 @@
               "border_left_size": null
             },
             {
-              "text": "—",
+              "text": "-",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3878,7 +3671,7 @@
               "border_left_size": null
             },
             {
-              "text": "*-30.425 €/año (-10.7%)*",
+              "text": "*-29.856 €/año (-10.5%)*",
               "bold": false,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3937,7 +3730,7 @@
               "border_left_size": null
             },
             {
-              "text": "**254.233 €/año**",
+              "text": "**254.629 €/año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -3982,7 +3775,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (30.425 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
+      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (29.856 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
       "bold": false,
       "italic": true,
       "style": "Normal",
@@ -4023,7 +3816,7 @@
     },
     {
       "type": "paragraph",
-      "text": "En una situación de esta magnitud, la recuperación no consiste simplemente en reiniciar los equipos, sino en reconstruir la operativa paso a paso y comprobar que ningún dato crítico se haya corrompido. Bajo las condiciones técnicas actuales, restablecer el servicio por completo y verificar la integridad de la información requeriría un tiempo estimado de hasta 18,0 horas.",
+      "text": "En una situación de esta magnitud, la recuperación no consiste simplemente en reiniciar los equipos, sino en reconstruir la operativa paso a paso y comprobar que ningún dato crítico se haya corrompido. Bajo las condiciones técnicas actuales, restablecer el servicio por completo y verificar la integridad de la información requeriría un tiempo estimado de hasta 17,9 horas.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4034,7 +3827,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El impacto económico total de este escenario ascendería a 435.575 €. Esta cifra se divide de forma clara en dos conceptos: 235.103 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 200.472 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
+      "text": "El impacto económico total de este escenario ascendería a 428.098 €. Esta cifra se divide de forma clara en dos conceptos: 233.797 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 194.301 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4044,8 +3837,11 @@
       "font_size": 9.5
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "heading",
-      "text": "4.4. Fichas de Riesgos Técnicos Cuantificados",
+      "text": "4.3. Catálogo de Fichas de Riesgo Técnico-Operativas",
       "level": 2,
       "primary_color_rgb": [
         0,
@@ -4056,7 +3852,7 @@
     },
     {
       "type": "paragraph",
-      "text": "A continuación se presenta el desglose técnico-actuarial exhaustivo para cada uno de los 7 escenarios de riesgo modelados en el alcance de evaluación. Cada ficha integra la trazabilidad causal (Bow-Tie) y la ecuación de cuantificación financiera estimada:",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4066,118 +3862,148 @@
       "font_size": 9.5
     },
     {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 1 - Prioridad de Modernización Crítica (Impacto Existencial en Producción)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 66.738 € / año (26% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
       "type": "table",
       "headers": null,
       "rows": [
         {
           "cells": [
             {
-              "text": "[RVS01] Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "text": "**[RSK-T5-01] Definición de RTO/RPO y Análisis de Impacto en el Negocio (BIA)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN CRÍTICA (26,3%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Resiliencia y Continuidad Operativa",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nInexistencia de un Business Impact Analysis (BIA) corporativo formalizado y ausencia de catalogacion de procesos de negocio con métricas vinculantes de RTO y RPO. Las decisiones de protección y respaldo se toman con criterios tecnicos aislados en lugar de basarse en el impacto financiero, operativo y reputacional de la interrupcion de procesos críticos, tales como el pesaje en básculas de planta, la expedicion logistica de cemento y hormigon o la facturacion transaccional.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nLa ausencia de RTO y RPO formales impide priorizar la restauración tecnica ante caidas del sistema, exponiendo a las plantas a paradas no programadas prolongadas en el pesaje y despacho de cemento, lo que provoca colas de camiones en vias publicas, penalizaciones contractuales y multas por incumplimiento de la directiva NIS2.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~25.000 € - 35.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "DC2626",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n66.738 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n25.730 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~20.000 € - 35.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,90 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4189,57 +4015,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nInexistencia de un Business Impact Analysis (BIA) corporativo formalizado y ausencia de catalogacion de procesos de negocio con metricas vinculantes de RTO y RPO. Las decisiones de proteccion y respaldo se toman con criterios tecnicos aislados en lugar de basarse en el impacto financiero, operativo y reputacional de la interrupcion de procesos criticos, tales como el pesaje en basculas de planta, la expedicion logistica de cemento y hormigon o la facturacion transaccional.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact La ausencia de RTO y RPO formales impide priorizar la restauracion tecnica ante caidas del sistema, exponiendo a las plantas a paradas no programadas prolongadas en el pesaje y despacho de cemento, lo que provoca colas de camiones en vias publicas, penalizaciones contractuales y multas por incumplimiento de la directiva NIS2. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.350 €/h): 5.400 €\n - Costes directos de reemplazo y respuesta técnica: +20.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 25.730 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,90 eventos/año\n - Exposición anualizada standalone (2,90 eventos/año × 25.730 €): 74.617 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -7.879 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 66.738 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4250,226 +4036,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 2 - Optimización Operativa y Resiliencia (Redundancia N+1 y Telemetría)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 187.243 € / año (74% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS05] Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (24,1%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n61.217 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n25.730 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,65 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nLas interfaces de gestion del almacenamiento secundario y de copias de seguridad residen en el direccionamiento de red operativo estandar y operan bajo identidades corporativas comunes sin bastion out-of-band dedicado ni aprobacion de doble control (quorums multipartitos) para operaciones destructivas.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Un atacante con movimiento lateral en la red de administracion puede comprometer las consolas de gestion de respaldo sin encontrar barreras de aislamiento fisico o criptografico, permitiendo la desactivacion silenciosa de respaldos antes de ejecutar cargas maliciosas. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.350 €/h): 5.400 €\n - Costes directos de reemplazo y respuesta técnica: +20.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 25.730 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,65 eventos/año\n - Exposición anualizada standalone (2,65 eventos/año × 25.730 €): 68.184 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -6.967 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 61.217 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4484,86 +4051,142 @@
         {
           "cells": [
             {
-              "text": "[RVS06] Clean-Room Rebuild Capability & Isolated Integrity Validation",
+              "text": "**[RSK-T5-02] Orquestación Automatizada de DR, Runbooks y Pruebas Periódicas de Conmutación**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN MODERADA (21,4%)",
+              "text": "**CRÍTICA (Tier 1)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FFF1F2",
+              "text_color_rgb": [
+                190,
+                18,
+                60
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Resiliencia y Continuidad Operativa",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** 1 event / 12-18 months",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nAusencia de herramientas automatizadas de orquestación de contingencia y severa dependencia de conocimientos tácitos concentrados de forma unipersonal. La conmutación por desastre de plataformas críticas heredadas como Oracle 10g/11g, capas de aplicaciones Forms & Reports y entornos de contenedores depende de la intervencion manual de dos unicos perfiles tecnicos (un DBA externo en Croacia y un arquitecto de Kubernetes). La documentacion operativa existente se encuentra desactualizada y repartida entre una wiki MoinMoin heredada y ficheros estaticos sin runbooks ejecutables ni validacion mecanizada de dependencias cruzadas.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nParalizacion del proceso de recuperación operativa ante la ausencia física o indisponibilidad temporal del personal clave durante una emergencia, elevando exponencialmente el tiempo medio de reparacion (MTTR) y manteniendo paralizados los accesos lógicos a las plantas industriales.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~25.000 € - 35.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n54.297 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n24.590 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~20.000 € - 35.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,67 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4575,57 +4198,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nInexistencia de un entorno automatizado de sala limpia (Clean Room) que permita levantar maquinas virtuales y bases de datos en un sandbox de red totalmente estanco para ejecutar analisis forense, escaneo de malware durmiente e inspeccion de integridad previa a la reintroduccion al entorno de produccion.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Restaurar copias de seguridad directamente en el entorno productivo durante una contingencia cibernetica acarrea el riesgo inminente de reinfeccion por malware durmiente no detectado, invalidando los esfuerzos de recuperacion y prolongando los tiempos de inactividad de las plantas. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.050 €/h): 4.200 €\n - Costes directos de reemplazo y respuesta técnica: +20.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +390 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 24.590 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,67 eventos/año\n - Exposición anualizada standalone (2,67 eventos/año × 24.590 €): 65.655 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -11.358 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 54.297 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4636,20 +4219,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4664,86 +4234,142 @@
         {
           "cells": [
             {
-              "text": "[RVS07] Alta Disponibilidad y Resiliencia Arquitectónica",
+              "text": "**[RSK-T5-03] Seguridad de Bóveda Aislada (Cyber Vault) y Acceso Fuera de Banda**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN MODERADA (15,8%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Resiliencia y Continuidad Operativa",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nLas interfaces de gestión del almacenamiento secundario y de copias de seguridad residen en el direccionamiento de red operativo estándar y operan bajo identidades corporativas comunes sin bastion out-of-band dedicado ni aprobacion de doble control (quorums multipartitos) para operaciones destructivas.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nUn atacante con movimiento lateral en la red de administración puede comprometer las consolas de gestión de respaldo sin encontrar barreras de aislamiento físico o criptografico, permitiendo la desactivacion silenciosa de respaldos antes de ejecutar cargas maliciosas.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 25.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n40.226 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n25.730 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~15.000 € - 30.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1,69 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4755,57 +4381,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nCarencia de controles operativos formalizados y falta de supervisión continua en Autonomous Incident Self-Healing & Mean-Time-to-Restore (MTTR) Reduction.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Exposición operativa y riesgo de interrupción del servicio ante incidencias no contenidas en Alta Disponibilidad y Resiliencia Arquitectónica Reduction. narrative_header_economic_cost narrative_cost_just_outage_major.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (4,0h a 1.350 €/h): 5.400 €\n - Costes directos de reemplazo y respuesta técnica: +20.000 €\n - Pérdida secundaria ponderada (SLA / contingencia): +330 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 25.730 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1,69 eventos/año\n - Exposición anualizada standalone (1,69 eventos/año × 25.730 €): 43.484 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -3.258 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 40.226 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4816,20 +4402,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -4844,86 +4417,142 @@
         {
           "cells": [
             {
-              "text": "[RVS04] Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "text": "**[RSK-T5-04] Modelo Operativo de Continuidad (RACI y Escalado de Crisis)**",
               "bold": true,
               "font_size": 9.5,
               "align": "LEFT",
-              "bg_color": "1B263B",
+              "bg_color": "0072BC",
               "text_color_rgb": [
                 255,
                 255,
                 255
               ],
-              "grid_span": 9,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 7020,
+              "width_dxa": 6700,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "EXPOSICIÓN MODERADA (6,3%)",
+              "text": "**ALTA (Tier 2)**",
+              "bold": true,
+              "font_size": 9.0,
+              "align": "CENTER",
+              "bg_color": "FEF3C7",
+              "text_color_rgb": [
+                180,
+                83,
+                9
+              ],
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Perímetro Afectado:** Infraestructura de Producción y Operaciones · Resiliencia y Continuidad Operativa",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "LEFT",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 6700,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "**Frecuencia Estimada:** Continuous Latent Exposure",
+              "bold": false,
+              "font_size": 8.0,
+              "align": "CENTER",
+              "bg_color": "F8FAFC",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": 2660,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nEstructura organizativa y modelo operativo de crisis deficientes, caracterizados por una concentracion extrema del conocimiento tecnico en silos unipersonales. La toma de decisiones y los procedimientos de recuperación tecnica dependen de un DBA externo situado en Croacia y de un arquitecto de Kubernetes, dentro de un departamento interno con capacidad efectiva inferior a 5 FTEs tecnicos, operando con documentacion dispersa en una wiki MoinMoin obsoleta.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "FFFFFF",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nImposibilidad de gestionar recuperaciones coordinadas fuera del horario laboral o durante indisponibilidad del personal clave, dilatando el tiempo medio de recuperación (MTTR) y elevando la exposicion a perdidas operacionales durante incidentes críticos.",
+              "bold": false,
+              "font_size": 8.5,
+              "align": "LEFT",
+              "bg_color": "F2F2F2",
+              "text_color_rgb": null,
+              "grid_span": 2,
+              "v_merge": null,
+              "width_dxa": 9360,
+              "border_left_color": null,
+              "border_left_size": null
+            }
+          ],
+          "is_header": false,
+          "height_dxa": null,
+          "cant_split": true
+        },
+        {
+          "cells": [
+            {
+              "text": "**Impacto Estimado por Evento:** ~15.000 € - 25.000 €",
               "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
+              "align": "LEFT",
+              "bg_color": "F1F5F9",
+              "text_color_rgb": null,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n15.951 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             },
             {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.666 €",
-              "bold": false,
+              "text": "**Exposición Media Anualizada:** ~15.000 € - 30.000 € / año",
+              "bold": true,
               "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
+              "align": "RIGHT",
+              "bg_color": "F1F5F9",
               "text_color_rgb": null,
-              "grid_span": 4,
+              "grid_span": 1,
               "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,88 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
+              "width_dxa": 4680,
               "border_left_color": null,
               "border_left_size": null
             }
@@ -4935,57 +4564,17 @@
         {
           "cells": [
             {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nAusencia de herramientas automatizadas de orquestacion de contingencia y severa dependencia de conocimientos tacitos concentrados de forma unipersonal. La conmutacion por desastre de plataformas criticas heredadas como Oracle 10g/11g, capas de aplicaciones Forms & Reports y entornos de contenedores depende de la intervencion manual de dos unicos perfiles tecnicos (un DBA externo en Croacia y un arquitecto de Kubernetes). La documentacion operativa existente se encuentra desactualizada y repartida entre una wiki MoinMoin heredada y ficheros estaticos sin runbooks ejecutables ni validacion mecanizada de dependencias cruzadas.",
+              "text": "**Hito Externo de Referencia:** Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
-              "bg_color": "FFFFFF",
+              "bg_color": "F8FAFC",
               "text_color_rgb": null,
-              "grid_span": 12,
+              "grid_span": 2,
               "v_merge": null,
               "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Paralizacion del proceso de recuperacion operativa ante la ausencia fisica o indisponibilidad temporal del personal clave durante una emergencia, elevando exponencialmente el tiempo medio de reparacion (MTTR) y manteniendo paralizados los accesos logicos a las plantas industriales. narrative_header_economic_cost narrative_cost_just_engineering_velocity.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Toil Operativo y Fricción (SLE):**\n - Esfuerzo acumulado de ingeniería (2,6h a 65 €/h): 166 €\n - Costes directos de soporte y herramientas: +5.500 €\n - Pérdida secundaria ponderada (SLA / retrasos / retrabajo): +0 €\n - Ajuste estocástico de dispersión: +0 €\n = **Sobrecoste Medio por Incidente (Mean SLE):** 5.666 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,88 eventos/año\n - Exposición anualizada standalone (2,88 eventos/año × 5.666 €): 16.318 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -367 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 15.951 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
+              "border_left_color": null,
+              "border_left_size": null
             }
           ],
           "is_header": false,
@@ -4996,406 +4585,7 @@
       "style_profile": "Table Grid",
       "autofit": true,
       "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS02] Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "EXPOSICIÓN MODERADA (6,1%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "B45309",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n15.552 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n5.666 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n2,85 eventos/año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nEstructura organizativa y modelo operativo de crisis deficientes, caracterizados por una concentracion extrema del conocimiento tecnico en silos unipersonales. La toma de decisiones y los procedimientos de recuperacion tecnica dependen de un DBA externo situado en Croacia y de un arquitecto de Kubernetes, dentro de un departamento interno con capacidad efectiva inferior a 5 FTEs tecnicos, operando con documentacion dispersa en una wiki MoinMoin obsoleta.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Imposibilidad de gestionar recuperaciones coordinadas fuera del horario laboral o durante indisponibilidad del personal clave, dilatando el tiempo medio de recuperacion (MTTR) y elevando la exposicion a perdidas operacionales durante incidentes criticos. narrative_header_economic_cost narrative_cost_just_engineering_velocity.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Toil Operativo y Fricción (SLE):**\n - Esfuerzo acumulado de ingeniería (2,6h a 65 €/h): 166 €\n - Costes directos de soporte y herramientas: +5.500 €\n - Pérdida secundaria ponderada (SLA / retrasos / retrabajo): +0 €\n - Ajuste estocástico de dispersión: +0 €\n = **Sobrecoste Medio por Incidente (Mean SLE):** 5.666 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 2,85 eventos/año\n - Exposición anualizada standalone (2,85 eventos/año × 5.666 €): 16.148 €/año\n - Ajuste por solapamiento probabilístico (Descuento de Euler): -596 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 15.552 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "heading",
-      "text": "Cartera Tier 3 - Backlog de Mantenimiento y Gobernanza (Procedimientos y Ciclo de Vida)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Subtotal Cartera: 252 € / año (0% de la Exposición Total)",
-      "bold": true,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "[RVS03] Scheduled Restore Drills & Automated Data Verification",
-              "bold": true,
-              "font_size": 9.5,
-              "align": "LEFT",
-              "bg_color": "1B263B",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 9,
-              "v_merge": null,
-              "width_dxa": 7020,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "risk_card_severity_low (0,1%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "4B5563",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 3,
-              "v_merge": null,
-              "width_dxa": 2340,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**PÉRDIDA ANUALIZADA (ALE)**\n252 € / año",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": [
-                0,
-                114,
-                188
-              ],
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**PÉRDIDA POR EVENTO (SLE)**\n260 €",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**Frecuencia Estimada**\n1 cada 1,0 años (0,97/año)",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 4,
-              "v_merge": null,
-              "width_dxa": 3120,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Brecha de Vulnerabilidad Observada:**\nInexistencia de un calendario formalizado y recurrente para la ejecución automatizada de pruebas de restauración y verificación periódica de coherencia lógica en los respaldos. La plataforma ejecuta copias programadas pero carece de un pipeline automatizado que levante imágenes de máquinas virtuales y bases de datos en entornos aislados (sandbox) para verificar sumas de comprobación criptográficas, integridad de tablas maestras y consistencia transaccional. Las restauraciones se limitan a peticiones manuales puntuales de archivos individuales. Como consecuencia directa, los procedimientos de restauración de sistemas neurálgicos como el mini-ERP Prenet en OCI se basan en un RTO teórico de 3 horas sin certificación empírica en condiciones reales.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "E63946",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Impacto en la Operación y Continuidad:**\nnarrative_header_operational_impact Desconocimiento del tiempo real de inactividad durante una emergencia operativa. La presencia de respaldos sintéticos o imágenes con corrupción silenciosa que no hayan sido verificadas previamente puede prolongar las ventanas de indisponibilidad más allá del umbral tolerable, paralizando la gestión logística y comercial entre plantas y sedes globales tras la integración de Secil. narrative_header_economic_cost narrative_cost_just_compliance_and_governance.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "2A9D8F",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Desglose del Cálculo Actuarial y Justificación Empírica (Open FAIR):**\n• **Desglose de Pérdida por Evento (Single Loss Expectancy - SLE):**\n - Indisponibilidad primaria (0,0h a 1.050 €/h): 0 €\n - Costes directos de reemplazo y respuesta técnica: +260 €\n - Pérdida secundaria ponderada (SLA / contingencia): +0 €\n - Ajuste estocástico de dispersión y colas de probabilidad: +0 €\n = **Pérdida Media por Evento (Mean SLE):** 260 €.\n• **Derivación Anualizada y Reconciliación con la Cartera (Open FAIR / Euler):**\n - Frecuencia anual estimada de pérdida (LEF): 1 cada 1,0 años (0,97/año)\n - Exposición anualizada standalone (1 cada 1,0 años (0,97/año) × 260 €): 252 €/año\n - Ajuste por independencia estadística: 0 €/año\n = **Exposición Anualizada Neta Asignada (ALE):** 252 €/año.",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8F9FA",
-              "text_color_rgb": null,
-              "grid_span": 12,
-              "v_merge": null,
-              "width_dxa": 9360,
-              "border_left_color": "1D3557",
-              "border_left_size": 24
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": [
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780,
-        780
-      ],
+      "column_widths_dxa": null,
       "keep_together": true,
       "auto_fit_strategy": "CONTENT_PROPORTIONAL"
     },
@@ -5542,7 +4732,7 @@
               "border_left_size": null
             },
             {
-              "text": "Service RTO/RPO Definition & Business Impact Analysis (BIA)",
+              "text": "Definición de RTO/RPO y Análisis de Impacto en el Negocio (BIA)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -5601,7 +4791,7 @@
               "border_left_size": null
             },
             {
-              "text": "Continuity Operating Model (RACI, Ownership & Crisis Escalation)",
+              "text": "Modelo Operativo de Continuidad (RACI y Escalado de Crisis)",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -5660,7 +4850,7 @@
               "border_left_size": null
             },
             {
-              "text": "Scheduled Restore Drills & Automated Data Verification",
+              "text": "Cadencia de Simulacros de Restauración y Verificación de Datos",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -5719,7 +4909,7 @@
               "border_left_size": null
             },
             {
-              "text": "Automated DR Orchestration, Runbooks & Repeatable Failover",
+              "text": "Orquestación Automatizada de DR, Runbooks y Pruebas Periódicas de Conmutación",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -5778,7 +4968,7 @@
               "border_left_size": null
             },
             {
-              "text": "Decoupled Cyber Vault Security & Out-of-Band Administrative Access",
+              "text": "Seguridad de Bóveda Aislada (Cyber Vault) y Acceso Fuera de Banda",
               "bold": false,
               "font_size": 8.0,
               "align": "LEFT",
@@ -6017,7 +5207,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **254.233 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
+      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **254.629 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
