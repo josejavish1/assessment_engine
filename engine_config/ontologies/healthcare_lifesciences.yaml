@@ -1,0 +1,37 @@
+vertical_id: HEALTHCARE_LIFESCIENCES
+name: Healthcare & Life Sciences
+primary_regulations:
+- HIPAA
+- GxP
+- FDA 21 CFR Part 11
+- HDS
+- ISO 27799
+- GDPR
+critical_asset_types:
+- Electronic Health Record (EHR)
+- Picture Archiving & Communication (PACS)
+- Radiology Information System (RIS)
+- Laboratory Information Management (LIMS)
+- Medical Device Telemetry
+typical_outage_consequences:
+- Patient diagnosis delay
+- Clinical surgery rescheduling
+- Medical records unavailability
+- Statutory privacy breach
+operational_loss_multipliers:
+  hourly_downtime_multiplier: 2.8
+  statutory_fine_factor: 3.0
+lexicon_keywords:
+- ehr
+- pacs
+- dicom
+- hl7
+- fhir
+- patient
+- clinical
+- hospital
+- pharma
+- laboratory
+- lims
+- medical
+- hipaa

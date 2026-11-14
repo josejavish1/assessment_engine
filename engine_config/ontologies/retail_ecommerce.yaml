@@ -1,0 +1,33 @@
+vertical_id: RETAIL_ECOMMERCE
+name: Retail, FMCG & E-Commerce
+primary_regulations:
+- PCI-DSS
+- GDPR
+- CCPA
+- Consumer Privacy Standards
+critical_asset_types:
+- Point of Sale (POS) Fleet
+- E-Commerce Checkout Gateway
+- Warehouse Management System (WMS)
+- Inventory Order Routing Engine
+typical_outage_consequences:
+- Abandoned cart revenue loss
+- In-store checkout paralysis
+- Warehouse fulfillment backlog
+- Peak-traffic scale collapse
+operational_loss_multipliers:
+  hourly_downtime_multiplier: 2.0
+  reputational_churn_factor: 1.8
+lexicon_keywords:
+- pos
+- checkout
+- cart
+- catalog
+- order
+- warehouse
+- wms
+- inventory
+- ecommerce
+- retail
+- store
+- fulfillment

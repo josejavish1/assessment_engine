@@ -1,0 +1,34 @@
+vertical_id: TELECOMMUNICATIONS
+name: Telecommunications & 5G Edge Infrastructure
+primary_regulations:
+- EECC
+- NIS2
+- 3GPP Standards
+- FCC Communications Act
+critical_asset_types:
+- 5G Core Network
+- Radio Access Network (RAN) Controller
+- OSS/BSS Billing Engines
+- Edge Computing Multi-Access Nodes
+- Carrier Backbone Routers
+typical_outage_consequences:
+- Cellular communication blackout
+- Emergency call routing failure
+- Wholesale interconnect SLA penalties
+- Mass subscriber churn
+operational_loss_multipliers:
+  hourly_downtime_multiplier: 2.5
+  carrier_sla_penalty_factor: 2.2
+lexicon_keywords:
+- 5g
+- ran
+- oss
+- bss
+- carrier
+- packet-core
+- fiber
+- backbone
+- telecom
+- subscriber
+- peering
+- interconnect

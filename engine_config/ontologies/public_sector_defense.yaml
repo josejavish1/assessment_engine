@@ -1,0 +1,33 @@
+vertical_id: PUBLIC_SECTOR_DEFENSE
+name: Public Sector, Defense & Sovereign Government
+primary_regulations:
+- ENS High
+- FedRAMP High
+- NIS2
+- NATO Cyber Defense Directives
+critical_asset_types:
+- Classified Sovereign Cloud
+- Air-Gapped Enclaves
+- Citizen Identity Gateway
+- Tax & Social Security Transactional Core
+- Defense Command Infrastructure
+typical_outage_consequences:
+- Citizen service suspension
+- National security intelligence delay
+- Public administrative deadlock
+- Sovereign data sovereignty loss
+operational_loss_multipliers:
+  hourly_downtime_multiplier: 2.2
+  sovereign_security_factor: 3.0
+lexicon_keywords:
+- government
+- citizen
+- public
+- sovereign
+- air-gap
+- classified
+- defense
+- ens
+- fedramp
+- ministry
+- tax
