@@ -67,7 +67,7 @@ def clean_commercial_text(text) -> Any:
     The operations are executed in the following order:
     1.  Removes 't-codes' via the `clean_t_codes` helper function.
     2.  Strips unresolved reference tags matching the pattern `[[REF:...]]`.
-    3.  Removes em-dash (—) and box-drawing horizontal (─) characters.
+    3.  Removes em-dash (-) and box-drawing horizontal (─) characters.
     4.  Normalizes semicolons to commas.
     5.  Removes leading and trailing whitespace.
 
@@ -85,7 +85,7 @@ def clean_commercial_text(text) -> Any:
     cleaned = clean_t_codes(text)
     # Post-processes the document to remove unresolved reference tags. This is a safeguard against rendering artifacts that can result from upstream data inconsistencies or an incomplete template context.
     cleaned = re.sub(r"\[\[REF:[^\]]*\]\]", "", cleaned)
-    return cleaned.replace("─", "").replace("—", "").replace(";", ",").strip()
+    return cleaned.replace("─", "").replace("-", "").replace(";", ",").strip()
 
 
 def load_json(path) -> Any:

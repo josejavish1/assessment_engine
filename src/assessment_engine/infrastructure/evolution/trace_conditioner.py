@@ -1,5 +1,5 @@
 """
-Trace Conditioner — W3C telemetry-conditioned synthesis.
+Trace Conditioner - W3C telemetry-conditioned synthesis.
 Convert W3C trace execution trees (spans, latencies, bottlenecks)
 into deterministic prescriptive diagnostics for the Cognitive Synthesizer.
 """

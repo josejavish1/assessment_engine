@@ -1,5 +1,5 @@
 """
-Mutation Testing Probe Primitive — GEMA 54 (ISO/IEC/IEEE 29119 Standard).
+Mutation Testing Probe Primitive - GEMA 54 (ISO/IEC/IEEE 29119 Standard).
 Injects deliberate AST mutations into business logic to expose vanity tests.
 Verifies that generated test suites actually assert invariants and fail when logic is corrupted.
 SOTA 2026: Multi-Operator Mutation Engine:

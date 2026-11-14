@@ -421,7 +421,7 @@ class ActuarialInputResolver:
             default_conf=tef_conf,
         )
 
-        # 4. Recovery Time Objective (RTO) PERT — Circuit Breakers (SR 11-7)
+        # 4. Recovery Time Objective (RTO) PERT - Circuit Breakers (SR 11-7)
 
 
         env_raw = str(hc.get("environment") or "").strip().upper()

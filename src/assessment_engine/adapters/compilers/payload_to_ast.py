@@ -514,7 +514,7 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
             return full_str
         correct_label = _resolve_cmmi_maturity_label(score_val, locale=locale)
         replaced = re.sub(
-            r"\((?:Nivel|Level)\s*\d\s*[-–—]\s*[^)]+\)",
+            r"\((?:Nivel|Level)\s*\d\s*[---]\s*[^)]+\)",
             f"({correct_label})",
             full_str,
             flags=re.IGNORECASE,
@@ -537,7 +537,7 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
         return replaced
 
     text = re.sub(
-        r"\b(\d[.,]\d{1,2})\s*(?:sobre|out\s+of|/)\s*5[.,]0{1,2}\s*\((?:Nivel|Level)\s*\d\s*[-–—]\s*[^)]+\)[^.;]*",
+        r"\b(\d[.,]\d{1,2})\s*(?:sobre|out\s+of|/)\s*5[.,]0{1,2}\s*\((?:Nivel|Level)\s*\d\s*[---]\s*[^)]+\)[^.;]*",
         _fix_score_level_clause,
         text,
         flags=re.IGNORECASE,
@@ -583,7 +583,7 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
         return f"{prefix}{score_raw}{suffix}{correct_label}"
 
     pattern = re.compile(
-        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5(?:[.,]0+)?\s*)?\(\s*)(Nivel\s+[1-5]\s*[-–—:]\s*[^)]+|Level\s+[1-5]\s*[-–—:]\s*[^)]+)",
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5(?:[.,]0+)?\s*)?\(\s*)(Nivel\s+[1-5]\s*[---:]\s*[^)]+|Level\s+[1-5]\s*[---:]\s*[^)]+)",
         re.IGNORECASE,
     )
     text = pattern.sub(_replace_score_level, text)
@@ -599,16 +599,16 @@ def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:
         return f"{score_raw}{mid}{correct_label}"
 
     nearby_pattern = re.compile(
-        r"\b(\d[.,]\d{2})(\s*(?:puntos|/\s*5[.,]0\b|sobre\s+5[.,]0)?\s*(?:,\s*|\s+situ[áa]ndose\s+en\s+|\s+correspondiente\s+a\s+|\s+clasificado\s+como\s+|\s*[-–—]\s*))"
-        r"(?:Nivel\s+[1-5]\s*(?:[-–—:]\s*[A-Za-zÁÉÍÓÚáéíóúñÑ]+|\([A-Za-zÁÉÍÓÚáéíóúñÑ]+\))|Level\s+[1-5]\s*(?:[-–—:]\s*[A-Za-z]+|\([A-Za-z]+\)))",
+        r"\b(\d[.,]\d{2})(\s*(?:puntos|/\s*5[.,]0\b|sobre\s+5[.,]0)?\s*(?:,\s*|\s+situ[áa]ndose\s+en\s+|\s+correspondiente\s+a\s+|\s+clasificado\s+como\s+|\s*[---]\s*))"
+        r"(?:Nivel\s+[1-5]\s*(?:[---:]\s*[A-Za-zÁÉÍÓÚáéíóúñÑ]+|\([A-Za-zÁÉÍÓÚáéíóúñÑ]+\))|Level\s+[1-5]\s*(?:[---:]\s*[A-Za-z]+|\([A-Za-z]+\)))",
         re.IGNORECASE,
     )
     text = nearby_pattern.sub(_replace_nearby_score_level, text)
 
     if is_es:
-        text = re.sub(r"\bNivel\s+1\s*[-–—]\s*Initial\b", "Nivel 1 - Inicial", text, flags=re.IGNORECASE)
-        text = re.sub(r"\bNivel\s+2\s*[-–—]\s*(?:Managed|Repeatable)\b", "Nivel 2 - Gestionado", text, flags=re.IGNORECASE)
-        text = re.sub(r"\bNivel\s+3\s*[-–—]\s*Defined\b", "Nivel 3 - Definido", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNivel\s+1\s*[---]\s*Initial\b", "Nivel 1 - Inicial", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNivel\s+2\s*[---]\s*(?:Managed|Repeatable)\b", "Nivel 2 - Gestionado", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNivel\s+3\s*[---]\s*Defined\b", "Nivel 3 - Definido", text, flags=re.IGNORECASE)
     return text
 
 
@@ -4296,9 +4296,9 @@ class PayloadToASTBridge:
         is_tier1 = tier == "TIER_1_CRITICAL"
 
         severity_label = (
-            t("severity_tier1_label", locale=meta_lang, default="CRÍTICA (Tier 1)")
+            t("severity_tier1_label", locale=meta_lang, default="CRITICAL (Tier 1)")
             if is_tier1
-            else t("severity_tier2_label", locale=meta_lang, default="ALTA (Tier 2)")
+            else t("severity_tier2_label", locale=meta_lang, default="HIGH (Tier 2)")
         )
         badge_bg = "FFF1F2" if is_tier1 else "FEF3C7"
         badge_color = [190, 18, 60] if is_tier1 else [180, 83, 9]
@@ -4307,10 +4307,10 @@ class PayloadToASTBridge:
         frequency = str(card.get("estimated_frequency_label") or "1 event / 12-18 months").strip()
         evidence = str(card.get("technical_evidence") or "").strip()
         impact = str(card.get("operational_impact_chain") or "").strip()
-        ev_min = float(card.get("event_loss_min") or 0.0)
-        ev_max = float(card.get("event_loss_max") or 0.0)
-        ann_min = float(card.get("annual_exposure_min") or 0.0)
-        ann_max = float(card.get("annual_exposure_max") or 0.0)
+        ev_min = _safe_float(card.get("event_loss_min"), default=0.0)
+        ev_max = _safe_float(card.get("event_loss_max"), default=0.0)
+        ann_min = _safe_float(card.get("annual_exposure_min"), default=0.0)
+        ann_max = _safe_float(card.get("annual_exposure_max"), default=0.0)
         milestone = card.get("external_forcing_milestone")
 
         yr_str = t("year_lbl", locale=meta_lang, default="year")
@@ -5925,7 +5925,7 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         return f"{prefix}{score_raw}{mid}({lvl_word} {lvl_num} - {lvl_label})"
 
     reconciled = re.sub(
-        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,35}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]00?\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[-–—:]\s*[^)]+)?\)",
+        r"((?:puntuaci[óo]n|madurez|score|rating)[^0-9]{1,35}?)(\d[.,]\d{1,2})(\s*(?:sobre|out\s+of|/)\s*5[.,]00?\s*)\(\s*(?:Nivel|Level)\s*\d\s*(?:[---:]\s*[^)]+)?\)",
         _fix_score_and_parenthetical_level,
         text,
         flags=re.IGNORECASE,
@@ -5943,7 +5943,7 @@ def _reconcile_cmmi_level_bracket_claims(text: str, locale: str | None = None) -
         return f"{prefix}{score_raw}{mid}{lvl_word} {lvl_num} - {lvl_label}"
 
     reconciled = re.sub(
-        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5[.,]00?\s*)?\(\s*)(?:Nivel|Level)\s*\d\s*[-–—:]\s*[^)]+(?=\))",
+        r"(\b)(\d[.,]\d{1,2})(\s*(?:/\s*5[.,]00?\s*)?\(\s*)(?:Nivel|Level)\s*\d\s*[---:]\s*[^)]+(?=\))",
         _fix_inline_score_with_level_claim,
         reconciled,
         flags=re.IGNORECASE,

@@ -235,7 +235,7 @@ You must evaluate the code against four non-negotiable mandates:
 2. ZERO HARDCODING (100% DYNAMIC & CONFIG-DRIVEN):
    - Reject any magic numbers, hardcoded business thresholds, fixed company names, static currency codes, hardcoded prompts where configuration belongs, or fixed file paths.
 3. UNIVERSAL GLOBAL ENTERPRISE APPLICABILITY:
-   - The software MUST seamlessly serve any company in the world—from mid-market to Global Fortune 500 Tier-1—across ANY industry vertical, jurisdiction, and output language/locale.
+   - The software MUST seamlessly serve any company in the world-from mid-market to Global Fortune 500 Tier-1-across ANY industry vertical, jurisdiction, and output language/locale.
    - Reject any logic that assumes a single country's tax/legal framework, a single industry's terminology, or single-tenant execution.
 4. 100% STRICT ENGLISH CODEBASE MANDATE:
    - Every single variable name, function identifier, class name, docstring, inline comment, log message, exception string, and schema key MUST be in 100% formal Technical English.
@@ -413,7 +413,7 @@ DECISION PROTOCOL:
         findings: Sequence[AuditFinding],
     ) -> str:
         lines = [
-            f"CRITICAL AUDIT REJECTION — BLOCK: {block_id} (Attempt {attempt})",
+            f"CRITICAL AUDIT REJECTION - BLOCK: {block_id} (Attempt {attempt})",
             f"AUDITOR SUMMARY: {summary}",
             "",
             "Your implementation was REJECTED by the gemini-4-argon Quality Gate.",

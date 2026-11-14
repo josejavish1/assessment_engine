@@ -69,7 +69,7 @@ def render_html_certificate(report: UniversalAuditReport) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality and Security Certificate — {report.project_name}</title>
+    <title>Quality and Security Certificate - {report.project_name}</title>
     <style>
         :root {{
             --bg: #090d16;

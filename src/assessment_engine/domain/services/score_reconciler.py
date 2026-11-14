@@ -24,7 +24,7 @@ _ABSENCE_PATTERNS: tuple[re.Pattern[str], ...] = (
         re.IGNORECASE,
     ),
     re.compile(
-        r"\bzero\b(?!\s*[-–]?\s*(?:trust|downtime|loss|rpo|rto|day|touch))",
+        r"\bzero\b(?!\s*[--]?\s*(?:trust|downtime|loss|rpo|rto|day|touch))",
         re.IGNORECASE,
     ),
 )

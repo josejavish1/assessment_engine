@@ -63,7 +63,7 @@ def normalize_text(value: str) -> str:
 
 def normalize_dash(value: str) -> str:
     """{'docstring': 'Normalize various dash-like characters in a string to a standard hyphen-minus.'}."""
-    return str(value or "").replace("–", "-").replace("—", "-").replace("−", "-")
+    return str(value or "").replace("-", "-").replace("-", "-").replace("−", "-")
 
 
 def comparable_text(value: str) -> str:
@@ -228,7 +228,7 @@ def extract_weights(
     1.  **Explicit Enumeration**: Searches all paragraphs for patterns like
         "Pilar <number> ... (<percentage>%)".
     2.  **Named Weight**: Searches all paragraphs for patterns like
-        "<Pillar Name> - <percentage>%" or "<Pillar Name> — <percentage>%"
+        "<Pillar Name> - <percentage>%" or "<Pillar Name> - <percentage>%"
     3.  **Section Search**: For any remaining pillars, it searches for the pillar's
         name and a percentage value within the "Factores de Importancia" section
         of the document.
@@ -296,7 +296,7 @@ def extract_weights(
     # Certain source matrices embed the final, normalized weight for a component directly within its descriptive text.
     # Prioritize parsing fully articulated weight definitions (e.g., 'Compute Foundation & Virtualization - 22%') when available, as they provide an unambiguous, direct source for weighting factors.
     # Pre-calculated weight values extracted directly from the source document are considered authoritative, as they represent the final, rounded distribution guaranteed to sum to 100%.
-    named_weight_pattern = re.compile(r"(.+?)\s[-–—]\s(\d+)%$", flags=re.IGNORECASE)
+    named_weight_pattern = re.compile(r"(.+?)\s[---]\s(\d+)%$", flags=re.IGNORECASE)
     for text in paragraphs:
         normalized = normalize_dash(text)
         match = named_weight_pattern.search(normalized)
@@ -876,8 +876,8 @@ def bootstrap_tower(
 ) -> tuple[dict, dict, list[str]]:
     """Parses a structured Word document to generate a JSON tower definition and manifest.
 
-    This function orchestrates the extraction of tower components—such as its name,
-    purpose, scope, pillars, KPIs, and scoring questions—from a specially
+    This function orchestrates the extraction of tower components-such as its name,
+    purpose, scope, pillars, KPIs, and scoring questions-from a specially
     formatted `.docx` file. It uses a predefined base tower definition as a
     template, populating it with the parsed data. The process includes several
     validation steps to ensure data integrity, such as verifying that all

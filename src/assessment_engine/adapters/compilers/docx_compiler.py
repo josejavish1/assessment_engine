@@ -199,8 +199,8 @@ def safe_autofit_table_to_contents(table: Any) -> None:
 
 
 _DASH_TRANSLATION_TABLE = str.maketrans({
-    "\u2014": "-",  # Em-dash (—) -> ASCII Hyphen (-)
-    "\u2013": "-",  # En-dash (–) -> ASCII Hyphen (-)
+    "\u2014": "-",  # Em-dash (-) -> ASCII Hyphen (-)
+    "\u2013": "-",  # En-dash (-) -> ASCII Hyphen (-)
     "\u2012": "-",  # Figure dash (‒) -> ASCII Hyphen (-)
     "\u2015": "-",  # Horizontal bar (―) -> ASCII Hyphen (-)
 })
@@ -1027,7 +1027,7 @@ class DocxCompiler(DocumentCompiler):
         )
 
     _HEADING_NUMBER_PREFIX_RE = re.compile(
-        r"^\s*(?:[^\W\d_]+\s+)?\d+(?:\.\d+)*\.?\s*[-–—:]?\s*"
+        r"^\s*(?:[^\W\d_]+\s+)?\d+(?:\.\d+)*\.?\s*[\-:]?\s*"
     )
 
     @classmethod

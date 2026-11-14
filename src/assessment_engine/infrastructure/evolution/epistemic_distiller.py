@@ -109,7 +109,7 @@ def _extract_benchmark_leaders(benchmarks: tuple[Any, ...]) -> list[str]:
     leaders = []
     for b in benchmarks:
         if b and str(b).strip():
-            name = str(b).split("(")[0].split("—")[0].strip()
+            name = str(b).split("(")[0].split("-")[0].strip()
             if name:
                 leaders.append(name)
     return leaders

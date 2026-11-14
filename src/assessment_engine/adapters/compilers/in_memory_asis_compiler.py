@@ -168,8 +168,8 @@ _CANONICAL_SEVERITY_ENUM_TOKENS: Final[frozenset[str]] = frozenset({
 })
 
 _PUNCTUATION_STRIP_CHARS: Final[str] = " .,;:!?-_()[]{}\"'/\\"
-_SUBTOKEN_DELIMITER_RE: Final[re.Pattern[str]] = re.compile(r"([-–—/+])")
-_SEVERITY_WORD_SPLIT_RE: Final[re.Pattern[str]] = re.compile(r"[\s\-–—/|,:;()\[\]{}]+")
+_SUBTOKEN_DELIMITER_RE: Final[re.Pattern[str]] = re.compile(r"([\-/+])")
+_SEVERITY_WORD_SPLIT_RE: Final[re.Pattern[str]] = re.compile(r"[\s\-/|,:;()\[\]{}]+")
 _ROMAN_NUMERAL_RE: Final[re.Pattern[str]] = re.compile(r"^(?:I|II|III|IV|V|VI|VII|VIII|IX|X)$")
 
 

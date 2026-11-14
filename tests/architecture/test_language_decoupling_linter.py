@@ -15,9 +15,9 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-COMPILERS_DIR = REPO_ROOT / "src" / "assessment_engine" / "adapters" / "compilers"
+SRC_DIR = REPO_ROOT / "src" / "assessment_engine"
 
-# Sample characteristic Spanish tokens that indicate localized text leaking into generic compiler code
+# Characteristic Spanish tokens that indicate localized text leaking into generic engine code
 BANNED_SPANISH_PROSE_PATTERNS = [
     r"\bhasta\s*~",
     r"\blibro\s+[ab]:",
@@ -30,14 +30,16 @@ BANNED_SPANISH_PROSE_PATTERNS = [
     r"\bparada\s+no\s+planificada\b",
     r"\bbrecha\s+de\s+madurez\s+metodol[oó]gica\b",
     r"\bcontrol\s+de\s+gobernanza\s*\(cuestionario\)\b",
+    r"\bdeficiencia\s+estructural\s+observada\b",
+    r"\bexposici[oó]n\s+latente\s+continua\b",
 ]
 
 
 def test_no_banned_spanish_prose_in_compilers() -> None:
-    """Verifies that no Spanish prose or UI fragments leak into compiler source code."""
+    """Verifies that no Spanish prose or UI fragments leak into generic source code."""
     violations: list[str] = []
 
-    for py_file in COMPILERS_DIR.rglob("*.py"):
+    for py_file in SRC_DIR.rglob("*.py"):
         if "__pycache__" in py_file.parts:
             continue
         try:
@@ -54,14 +56,14 @@ def test_no_banned_spanish_prose_in_compilers() -> None:
                 if pat.search(sline):
                     violations.append(f"{py_file.relative_to(REPO_ROOT)}:L{idx} -> {sline}")
 
-    assert not violations, "Spanish prose fragments detected in compiler code:\n" + "\n".join(violations)
+    assert not violations, "Spanish prose fragments detected in generic engine code:\n" + "\n".join(violations)
 
 
 def test_strict_hyphen_invariant_in_compiler_sources() -> None:
-    """Verifies that no em-dashes (U+2014) or en-dashes (U+2013) exist in compiler string literals."""
+    """Verifies that no em-dashes (U+2014) or en-dashes (U+2013) exist in generic source code."""
     violations: list[str] = []
 
-    for py_file in COMPILERS_DIR.rglob("*.py"):
+    for py_file in SRC_DIR.rglob("*.py"):
         if "__pycache__" in py_file.parts:
             continue
         try:

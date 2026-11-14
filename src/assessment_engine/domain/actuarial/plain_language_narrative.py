@@ -135,14 +135,33 @@ class PlainLanguageRiskNarrative:
                 # Closed-world analytical formulation: dynamically ground on the evaluated capability, sector, and finding
                 clean_desc = str(failure_desc or "").strip().rstrip(".")
                 if ind_key == "healthcare":
-                    op_text = f"Clinical operational risk in {kpi_name} impacting electronic health records (EHR/PACS) and patient care: {clean_desc}." if not is_spanish else f"Riesgo operacional clínico en {kpi_name} impactando en historia clínica electrónica (EHR/PACS) y atención de pacientes: {clean_desc}."
+                    op_text = translator(
+                        "narrative_op_risk_healthcare",
+                        locale=doc_lang,
+                        kpi_name=kpi_name,
+                        clean_desc=clean_desc,
+                    )
                 elif ind_key == "banking":
-                    op_text = f"Financial operational risk in {kpi_name} impacting core banking ledgers, point-of-sale card authorization, and payment clearing: {clean_desc}." if not is_spanish else f"Riesgo operacional financiero en {kpi_name} impactando en registros contables bancarios, autorización en terminales de punto de venta y liquidación de pagos: {clean_desc}."
+                    op_text = translator(
+                        "narrative_op_risk_banking",
+                        locale=doc_lang,
+                        kpi_name=kpi_name,
+                        clean_desc=clean_desc,
+                    )
                 else:
                     if clean_desc and not clean_desc.lower().startswith("finding"):
-                        op_text = f"Operational availability risk across {kpi_name} inducing facility downtime, dispatch delays, and transport friction: {clean_desc}." if not is_spanish else f"Riesgo de disponibilidad operativa en {kpi_name} induciendo paradas de instalación, retrasos de expedición y fricción de transporte: {clean_desc}."
+                        op_text = translator(
+                            "narrative_op_risk_general_desc",
+                            locale=doc_lang,
+                            kpi_name=kpi_name,
+                            clean_desc=clean_desc,
+                        )
                     else:
-                        op_text = f"Operational service disruption and SLA degradation impacting {kpi_name}." if not is_spanish else f"Disrupción del servicio operativo y degradación de SLA impactando en {kpi_name}."
+                        op_text = translator(
+                            "narrative_op_risk_general_sla",
+                            locale=doc_lang,
+                            kpi_name=kpi_name,
+                        )
 
         # Economic Justification
         if norm_physics in ("FINOPS_RESOURCE_WASTE", "ASSET_OBSOLESCENCE_AND_INTEGRITY") or (sle <= 0 and rto_hours <= 0):

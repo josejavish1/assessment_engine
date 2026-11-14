@@ -100,12 +100,12 @@ You MUST structure the narrative into exactly 2 to 3 distinct, well-proportioned
                 "Do NOT invent unverified sensor telemetry, unverified maintenance routines, or unverified regulatory expirations. "
                 "State what is confirmed, acknowledge documentary gaps soberly, and outline the resulting operational exposure."
             )
-            length_instruction = "Ensure strict adherence to the 180–260 word boundary"
+            length_instruction = "Ensure strict adherence to the 180-260 word boundary"
         else:
             density_rule = (
                 f"- DENSITY GUIDANCE ({evidence_count} direct findings): Provide an in-depth forensic breakdown (250 to 400 words)."
             )
-            length_instruction = "Ensure strict adherence to the 250–450 word boundary"
+            length_instruction = "Ensure strict adherence to the 250-450 word boundary"
 
         target_lang = firmographics.get("doc_lang") or tower_context.get("doc_lang") or "en"
         locale_map = {
