@@ -1230,7 +1230,8 @@ class ExecutiveNarrativeSynthesizer:
                 # Pilar 3 (Plan V5): Use typed DomainFinancialPresenter to eliminate Mad-Libs template defects
                 try:
                     from assessment_engine.domain.actuarial.financial_presenter import (
-                        DomainFinancialPresenter, FinancialTelemetryReport
+                        DomainFinancialPresenter,
+                        FinancialTelemetryReport,
                     )
                     hr_fmt = str(context.get("hourly_burn_rate_fmt") or "13.061 €/h")
                     ale_fmt = str(context.get("annual_loss_expectancy_fmt") or "0 €")
@@ -1358,8 +1359,8 @@ def resolve_domain_introduction(
         tower_id, default=raw_tname or tower_id, locale=meta_lang
     )
 
-    from assessment_engine.infrastructure.localization import t
     from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
+    from assessment_engine.infrastructure.localization import t
 
     comps: List[str] = []
     if root_comps:
@@ -1684,7 +1685,9 @@ class PayloadToASTBridge:
         gs_val = float(exact_score)
         global_score = f"{gs_val:.2f}"
 
-        from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+        from assessment_engine.domain.governance.scale_engine import (
+            GovernanceScaleEngine,
+        )
         scale_engine = GovernanceScaleEngine.get_instance()
         resolved_global = scale_engine.resolve_maturity(gs_val, locale=str(meta_lang), translator=t)
         level_prefix = t("level_prefix", locale=meta_lang)
@@ -1862,7 +1865,7 @@ class PayloadToASTBridge:
         tower_id = str(ctx.get("tower_id") or blueprint_data.get("tower_id") or "T1").upper()
 
         #
-        # 3. CHAPTER 1: EXECUTIVE SUMMARY (RFC 030 4-TIER EXECUTIVE VISUAL ARCHITECTURE)
+        # 3. CHAPTER 1: EXECUTIVE SUMMARY (ONE-PAGE EXECUTIVE SNAPSHOT)
         #
         nodes.append(
             HeadingNode(
@@ -1870,12 +1873,6 @@ class PayloadToASTBridge:
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
-        )
-
-        exec_sum = (
-            blueprint_data.get("executive_snapshot")
-            or (annex_data.get("executive_summary") if annex_data else {})
-            or {}
         )
 
         currency = str(
@@ -1891,24 +1888,39 @@ class PayloadToASTBridge:
             or _safe_float(blueprint_data.get("total_ale"))
             or 0.0
         )
-        total_p90 = (
-            _safe_float(blueprint_data.get("total_fair_p90"))
-            or _safe_float(blueprint_data.get("fair_risk_profile", {}).get("p90_ale"))
-            or _safe_float(blueprint_data.get("tail_risk_p90"))
-            or 0.0
-        )
-        ale_formatted = format_number(total_fair_ale, locale=meta_lang, decimals=0)
-        p90_formatted = format_number(total_p90, locale=meta_lang, decimals=0)
-        per_year_suffix = t("per_year_suffix", locale=meta_lang)
 
-        # COMPONENT A: EXECUTIVE KPI SNAPSHOT SCORECARD TABLE (3 COLUMNS)
-        max_score_str = format_number(5.0, locale=meta_lang, decimals=1)
-        score_display = (
-            display_score_str
-            if " / " in display_score_str
-            else f"{display_score_str} / {max_score_str}"
+        doc_meta = blueprint_data.get("document_meta") or {}
+        tower_id_canonical = str(ctx.get("tower_id") or doc_meta.get("tower_code") or doc_meta.get("tower_id") or "T1").strip().upper()
+        raw_tname = str(ctx.get("tower_name") or doc_meta.get("tower_name", "Infrastructure Domain"))
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        tower_name = resolver.resolve_tower_name(tower_id_canonical, default=raw_tname, locale=meta_lang)
+
+        # COMPONENT 1: THE DIRECT VERDICT PARAGRAPH
+        exec_sum = (
+            blueprint_data.get("executive_snapshot")
+            or (annex_data.get("executive_summary") if annex_data else {})
+            or {}
         )
+        bespoke_bottom_line = str(exec_sum.get("bottom_line") or "").strip()
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
+        verdict_text = (
+            bespoke_bottom_line
+            if len(bespoke_bottom_line) > 40
+            else t("default_executive_verdict", locale=meta_lang, tower_name=tower_name, client_name=client_name)
+        )
+        verdict_text = restore_locale_diacritics(verdict_text, meta_lang)
+        nodes.append(ParagraphNode(text=verdict_text, font_size=10.0, space_after=12))
+
+        # COMPONENT 2: THE SCORECARD TABLE (Global Maturity & Annual Exposure)
         band_bg = "FFF3CD" if gs_val < 3.4 else "E2F0D9"
+        max_score_str = format_number(5.0, locale=meta_lang, decimals=1)
+        score_display = display_score_str if " / " in display_score_str else f"{display_score_str} / {max_score_str}"
+        per_year_suffix = t("per_year_suffix", locale=meta_lang)
+        ale_str = f"{format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}"
+
         scorecard_rows = [
             TableRowNode(
                 cells=[
@@ -1919,384 +1931,53 @@ class PayloadToASTBridge:
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex),
-                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg),
-                    CellNode(
-                        text=f"{format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)}{per_year_suffix}",
-                        bold=True,
-                        align="CENTER",
-                        bg_color="FCE4D6",
-                    ),
+                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex, font_size=11.0),
+                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg, font_size=11.0),
+                    CellNode(text=ale_str, bold=True, align="CENTER", bg_color="FCE4D6", font_size=11.0),
                 ]
             ),
         ]
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
         nodes.append(SpacerNode(points=14))
 
-        # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
-        headline = exec_sum.get("headline", "")
-        if headline:
-            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=8))
+        # COMPONENT 3: THE 3 KEY REALITIES (BULLETS)
+        lead_in = t("exec_summary_key_findings_lead", locale=meta_lang)
+        nodes.append(ParagraphNode(text=f"**{lead_in}**", font_size=10.0, space_after=6, keep_with_next=True))
 
-        # Safe extraction of nested telemetry dictionaries
-        # Safe extraction of nested telemetry dictionaries
-        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
-        doc_meta = blueprint_data.get("document_meta") or {}
-
-        # Resolve authoritative corporate hourly downtime cost rate dynamically via ActuarialDowntimeCalibrator
-        req_keys = [
-            "global_annual_revenue",
-            "perimeter_revenue_weight_pct",
-            "effective_exposed_revenue",
-            "sector_benchmark_source",
-            "hourly_revenue_exposure_factor",
-            "authoritative_hourly_downtime_cost"
-        ]
-        if not all(k in fin_telemetry for k in req_keys):
-            from assessment_engine.domain.actuarial.downtime_calibrator import (
-                ActuarialDowntimeCalibrator,
-            )
-            calibrator = ActuarialDowntimeCalibrator()
-            try:
-                metrics = calibrator.calibrate(blueprint_data)
-                fin_telemetry.update({
-                    "global_annual_revenue": float(metrics.global_annual_revenue),
-                    "perimeter_revenue_weight_pct": float(metrics.perimeter_revenue_weight_pct),
-                    "effective_exposed_revenue": float(metrics.effective_exposed_revenue),
-                    "sector_benchmark_source": metrics.sector_benchmark_source,
-                    "hourly_revenue_exposure_factor": float(metrics.hourly_revenue_exposure_factor),
-                    "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
-                })
-            except Exception:
-                _ = True  # Handled fallback
-
-        hourly_rate = float(fin_telemetry.get("authoritative_hourly_downtime_cost") or 0.0)
-        if hourly_rate <= 0.0:
-            raw_candidates = [
-                blueprint_data.get("hourly_downtime_rate"),
-                blueprint_data.get("hourly_burn_rate"),
-            ]
-            for candidate in raw_candidates:
-                if candidate is not None:
-                    parsed = _safe_float(candidate, default=-1.0)
-                    if parsed > 0.0:
-                        hourly_rate = parsed
-                        break
-
-        if hourly_rate <= 0.0:
-            raw_div = blueprint_data.get("annual_downtime_divisor")
-            baseline_hours = _safe_float(raw_div, default=0.0)
-            if baseline_hours > 0.0 and total_fair_ale > 0.0:
-                hourly_rate = total_fair_ale / baseline_hours
-
-        hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=2)
-
-        # Calculate equivalent operational friction and recovery hours dynamically
-        ale_hours_val = (total_fair_ale / hourly_rate) if hourly_rate > 0.0 else 0.0
-        p90_hours_val = (total_p90 / hourly_rate) if hourly_rate > 0.0 else 0.0
-        ale_hours_str = format_number(ale_hours_val, locale=meta_lang, decimals=1)
-        p90_hours_str = format_number(p90_hours_val, locale=meta_lang, decimals=1)
-
-        tower_id_canonical = str(ctx.get("tower_id") or doc_meta.get("tower_code") or doc_meta.get("tower_id") or "T1").strip().upper()
-        raw_tname = str(ctx.get("tower_name") or doc_meta.get("tower_name", "Infrastructure Domain"))
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-        resolver = get_taxonomy_resolver()
-        tower_name = resolver.resolve_tower_name(tower_id_canonical, default=raw_tname, locale=meta_lang)
-
-        # Count quantified risk scenarios dynamically from payload structures
-        risks_list: list[Any] = (
+        risks_list = (
             blueprint_data.get("risk_register")
             or blueprint_data.get("risks")
             or (blueprint_data.get("fair_risk_profile") or {}).get("scenarios")
             or []
         )
         if not risks_list:
-            risks_list = [
-                hc
-                for p in blueprint_data.get("pillars_analysis", [])
-                for hc in (p.get("health_check_asis") or [])
-            ]
+            risks_list = [hc for p in blueprint_data.get("pillars_analysis", []) for hc in (p.get("health_check_asis") or [])]
         
-        total_findings = max(len(risks_list), 1)
-        fallback_vuln = t("default_critical_vulnerability", locale=meta_lang)
-        top_risk_title = (
-            str(risks_list[0].get("risk_name") or risks_list[0].get("finding") or fallback_vuln)
-            if risks_list
-            else fallback_vuln
-        )
-
-        global_annual_revenue = fin_telemetry.get("global_annual_revenue")
-        if global_annual_revenue is None:
-            rev_raw = (
-                blueprint_data.get("annual_revenue")
-                or blueprint_data.get("document_meta", {}).get("annual_revenue")
-            )
-            global_annual_revenue = _safe_float(rev_raw, default=0.0) if rev_raw is not None else 0.0
-            fin_telemetry["global_annual_revenue"] = global_annual_revenue
-
-        perimeter_weight = fin_telemetry.get("perimeter_revenue_weight_pct")
-        if perimeter_weight is None:
-            perimeter_weight = 100.0
-            fin_telemetry["perimeter_revenue_weight_pct"] = perimeter_weight
-
-        effective_exposed = fin_telemetry.get("effective_exposed_revenue")
-        if effective_exposed is None:
-            effective_exposed = global_annual_revenue
-            fin_telemetry["effective_exposed_revenue"] = effective_exposed
-
-        sector_benchmark_source = fin_telemetry.get("sector_benchmark_source")
-        if sector_benchmark_source is None:
-            sector_benchmark_source = "Gartner / ITIC Global Downtime Benchmark"
-            fin_telemetry["sector_benchmark_source"] = sector_benchmark_source
-            
-        sector_impact_factor = fin_telemetry.get("hourly_revenue_exposure_factor")
-        if sector_impact_factor is None:
-            sector_impact_factor = 0.40
-            fin_telemetry["hourly_revenue_exposure_factor"] = sector_impact_factor
-            
-        total_capex = fin_telemetry.get("remediation_capex_estimate")
-        if total_capex is None:
-            total_capex = sum(float(r.get("mitigation_capex", 0)) for r in risks_list)
-
-        global_annual_revenue_formatted = format_number(global_annual_revenue, locale=meta_lang, decimals=0)
-        effective_exposed_formatted = format_number(effective_exposed, locale=meta_lang, decimals=0)
-        sector_impact_factor_pct = format_number(sector_impact_factor * 100, locale=meta_lang, decimals=4)
-        perimeter_weight_str = format_number(perimeter_weight, locale=meta_lang, decimals=2)
-        total_capex_formatted = format_number(total_capex, locale=meta_lang, decimals=0)
-        
-        # Calculate ROSI percentage
-        total_ale = fin_telemetry.get("total_annualized_risk_exposure")
-        if total_ale is None:
-            total_ale = sum(float(r.get("ale", 0)) for r in risks_list)
-        
-        rosi_percentage = "100"
-        if total_capex > 0:
-            rosi = ((total_ale - total_capex) / total_capex) * 100
-            rosi_percentage = format_number(rosi, locale=meta_lang, decimals=1)
-
-        # Deduplicate downtime hours via Joint Probability (Inclusion-Exclusion Principle)
-        from decimal import Decimal
-
-        from assessment_engine.domain.actuarial.risk_aggregator import (
-            BlastRadiusDeduplicator,
-        )
-        raw_hours = [
-            Decimal(str(r.get("ale_hours")))
-            for r in risks_list
-            if r.get("ale_hours") is not None
-        ]
-        if raw_hours:
-            eff_hours_dec = BlastRadiusDeduplicator.compute_effective_downtime(raw_hours)
-            eff_hours_str = format_number(float(eff_hours_dec), locale=meta_lang, decimals=1)
-        elif ale_hours_val > 0.0:
-            eff_hours_str = ale_hours_str
-        else:
-            eff_hours_str = format_number(0.0, locale=meta_lang, decimals=1)
-            
-        findings_briefs: List[str] = []
-        exec_struct_risks = blueprint_data.get("executive_snapshot", {}).get("structural_risks", [])
-        for sr in exec_struct_risks:
-            if isinstance(sr, str) and len(sr.strip()) > 15:
-                findings_briefs.append(sr.strip())
-
-        if len(findings_briefs) < 3:
-            for p in blueprint_data.get("pillars_analysis", []):
-                for hc in (p.get("health_check_asis") or []):
-                    brief = str(hc.get("finding") or hc.get("risk_observed") or hc.get("business_risk") or "").strip()
-                    if brief and len(brief) > 15 and brief not in findings_briefs:
-                        findings_briefs.append(brief)
-                        if len(findings_briefs) >= 3:
-                            break
-                if len(findings_briefs) >= 3:
-                    break
-
+        findings_briefs = []
+        for r in risks_list:
+            brief = str(r.get("finding") or r.get("risk_observed") or r.get("business_risk") or "").strip()
+            if brief and len(brief) > 15 and brief not in findings_briefs:
+                findings_briefs.append(brief)
+            if len(findings_briefs) >= 3:
+                break
         if not findings_briefs:
-            findings_briefs.append(fallback_vuln)
+            findings_briefs.append(t("default_critical_vulnerability", locale=meta_lang))
 
-        primary_workloads = str(
-            blueprint_data.get("primary_workloads_summary")
-            or blueprint_data.get("primary_workloads")
-            or blueprint_data.get("perimeter_context", {}).get("primary_workloads")
-            or blueprint_data.get("executive_snapshot", {}).get("bottom_line_focus")
-            or t("default_primary_workloads", locale=meta_lang)
-        )
-
-        target_score_val = float(blueprint_data.get("target_maturity_score") or blueprint_data.get("target_score") or min(5.0, gs_val + 1.5))
-        target_score_str = format_number(target_score_val, locale=meta_lang, decimals=1)
-
-        strat_roadmap = blueprint_data.get("strategic_roadmap")
-        lead_init = ""
-        if isinstance(strat_roadmap, dict):
-            lead_init = str(strat_roadmap.get("lead_initiative", ""))
-        elif isinstance(strat_roadmap, list) and strat_roadmap:
-            first_item = strat_roadmap[0]
-            if isinstance(first_item, dict):
-                lead_init = str(first_item.get("initiative") or first_item.get("name") or "")
-
-        first_pillar_name = ""
-        pillars_list = blueprint_data.get("pillars_analysis")
-        if isinstance(pillars_list, list) and pillars_list:
-            first_p = pillars_list[0]
-            if isinstance(first_p, dict):
-                from assessment_engine.domain.taxonomy_resolver import (
-                    extract_pillar_identifiers,
-                    get_taxonomy_resolver,
-                )
-                first_pid, first_pname = extract_pillar_identifiers(first_p)
-                first_pillar_name = first_pname or first_pid
-
-        primary_pillar = lead_init or first_pillar_name or t("default_remediation_pillar", locale=meta_lang)
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-        resolver = get_taxonomy_resolver()
-        primary_pillar_resolved = resolver.resolve_pillar_by_any_reference(primary_pillar, default=primary_pillar, locale=meta_lang)
-        remediation_horizon = t("default_remediation_horizon", locale=meta_lang)
-
-        from assessment_engine.domain.actuarial.downtime_calibrator import (
-            OperationalTailRiskEngine,
-        )
-        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
-        # Domain-scoped local P90 VaR for Tower Annex (aligning exactly with Section 4.3 P108)
-        raw_p90 = float(blueprint_data.get("total_fair_p90") or 0.0)
-        if raw_p90 > 0.0 and (raw_p90 / max(total_fair_ale, 1.0)) <= 3.0:
-            total_p90 = raw_p90
-        else:
-            total_p90 = round(total_fair_ale * 1.65)
-        portfolio_contingency_p90 = float(
-            fin_telemetry.get("tail_risk_p90_contingency")
-            or fin_telemetry.get("p90_financial_exposure")
-            or total_p90
-        )
-        ceiling_hours = float(
-            fin_telemetry.get("operational_recovery_ceiling_hours")
-            or blueprint_data.get("operational_recovery_ceiling_hours")
-            or 24.0
-        )
-        tail_decomp = OperationalTailRiskEngine.decompose_tail_risk(
-            expected_annual_loss=total_fair_ale,
-            var_90_total=total_p90,
-            composite_hourly_rate=hourly_rate,
-            operational_recovery_ceiling_hours=ceiling_hours,
-        )
-        capped_p90_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
-
-        hourly_rate_narrative = f"{format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)}{t('per_hour_suffix', locale=meta_lang)}"
-
-        # Use authoritative pre-clamped score and band from context
-        gs_val = ctx["gs_val"]
-        global_band = ctx["global_band"]
-        display_score_str = ctx["display_score_str"]
-
-        strongest_name, strongest_score_str, weakest_name, weakest_score_str = extract_dimension_boundary_profile(
-            pillars_analysis=blueprint_data.get("pillars_analysis", []),
-            current_maturity_score=gs_val,
-            locale=meta_lang,
-        )
-
-        payload_paragraphs = blueprint_data.get("executive_summary_paragraphs")
-        has_explicit_paragraphs = (
-            isinstance(payload_paragraphs, list)
-            and len(payload_paragraphs) >= 4
-            and all(isinstance(p, str) and len(p.strip()) > 20 for p in payload_paragraphs)
-        )
-        if has_explicit_paragraphs:
-            p_texts = [str(p).strip() for p in payload_paragraphs[:4]]
-        else:
-            clean_score_str = format_number(gs_val, locale=meta_lang, decimals=2)
-            from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
-                derive_in_memory_fair_risks,
-            )
-            rate_mult = float(ctx.get("rate_mult", 1.0))
-            calib_risks, _ = derive_in_memory_fair_risks(
-                blueprint_data, doc_lang=meta_lang, currency=currency, rate_mult=rate_mult
-            )
-            max_sle_val = max(
-                (float(r.get("sle") or 0.0) for r in calib_risks if float(r.get("sle") or 0.0) > 0),
-                default=38590.0,
-            )
-            worst_crisis_cost_fmt = format_currency(max_sle_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-
-            synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
-            p_texts = synthesizer.synthesize_chapter_one_paragraphs(
-                client_name=client_name,
-                tower_name=tower_name,
-                maturity_score=clean_score_str,
-                maturity_tier_label=global_band,
-                primary_workloads_summary=primary_workloads,
-                findings_briefs=findings_briefs,
-                hourly_burn_rate_fmt=hourly_rate_narrative,
-                net_downtime_hours_fmt=eff_hours_str,
-                annual_loss_expectancy_fmt=format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0),
-                p90_downtime_hours_fmt=p90_hours_str,
-                capped_p90_hours_fmt=capped_p90_hours_str,
-                p90_var_exposure_fmt=format_currency(total_p90, currency_symbol=currency, locale=meta_lang, decimals=0),
-                worst_crisis_cost_fmt=worst_crisis_cost_fmt,
-                remediation_horizon_label=remediation_horizon,
-                primary_remediation_pillar=primary_pillar_resolved,
-                target_maturity_score=target_score_str,
-                tower_id=tower_id,
-                strongest_dim_name=strongest_name,
-                strongest_dim_score=strongest_score_str,
-                weakest_dim_name=weakest_name,
-                weakest_dim_score=weakest_score_str,
-                archetype=str(
-                    blueprint_data.get("archetype")
-                    or blueprint_data.get("domain_archetype")
-                    or (
-                        lambda: (
-                            __import__("assessment_engine.domain.taxonomy.archetype_registry", fromlist=["get_actuarial_archetype_registry"])
-                            .get_actuarial_archetype_registry()
-                            .get_mapping_for_tower(tower_id)
-                            .primary_archetype.value
-                        )
-                    )()
-                ),
-                operational_mission=str(blueprint_data.get("operational_mission") or blueprint_data.get("domain_semantics", {}).get("operational_mission") or ""),
-                dilemma_anchor=str(blueprint_data.get("dilemma_anchor") or blueprint_data.get("domain_semantics", {}).get("dilemma_anchor") or ""),
-                posture_modernization_focus=str(blueprint_data.get("posture_modernization_focus") or blueprint_data.get("domain_semantics", {}).get("posture_modernization_focus") or ""),
-            )
-
-        # 1. Paragraph 1: Authentic Domain Diagnostic (Priority to bespoke executive_snapshot.bottom_line)
-        from assessment_engine.infrastructure.localization import (
-            restore_locale_diacritics,
-        )
-        bespoke_bottom_line = str(
-            blueprint_data.get("executive_snapshot", {}).get("bottom_line") or ""
-        ).strip()
-        p1_text = (
-            bespoke_bottom_line
-            if (not has_explicit_paragraphs and len(bespoke_bottom_line) > 40)
-            else p_texts[0]
-        )
-        p1_text = restore_locale_diacritics(p1_text, meta_lang)
-        nodes.append(ParagraphNode(text=p1_text, font_size=9.5, space_after=8))
-
-        # 2. Paragraph 2: Lead-in + Structured List Bullets
-        nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=4, keep_with_next=True))
-        active_findings = findings_briefs[:3] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
-        from assessment_engine.infrastructure.localization import (
-            restore_locale_diacritics,
-        )
-        for f_idx, fb in enumerate(active_findings):
-            is_last = (f_idx == len(active_findings) - 1)
+        for f_idx, fb in enumerate(findings_briefs[:3]):
             b_text = fb.strip().rstrip(".")
-            if ":" in b_text:
-                parts = b_text.split(":", 1)
-                formatted_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}."
-            else:
-                formatted_bullet = f"{b_text}."
+            formatted_bullet = f"**{b_text.split(':', 1)[0].strip()}:** {b_text.split(':', 1)[1].strip()}." if ":" in b_text else f"{b_text}."
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=8 if is_last else 3))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=6))
 
-        # 3. Paragraph 3: Actuarial Latent Exposure
-        nodes.append(ParagraphNode(text=p_texts[2], font_size=9.5, space_after=8))
-
-        # 4. Paragraph 4: Pure AS-IS Diagnostic Verdict
-        nodes.append(ParagraphNode(text=p_texts[3], font_size=9.5, space_after=10))
+        # COMPONENT 4: STRATEGIC CONCLUSION (NO HEAVY ACTUARIAL JARGON)
+        nodes.append(SpacerNode(points=6))
+        conclusion_tmpl = exec_sum.get("p4_modernization_mandate") or t("exec_summary_strategic_conclusion", locale=meta_lang, tower_name=tower_name)
+        conclusion_text = restore_locale_diacritics(conclusion_tmpl, meta_lang)
+        nodes.append(ParagraphNode(text=conclusion_text, font_size=10.0, space_after=12))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
 
-        #
         # CHAPTER 2: ASSESSMENT OBJECTIVE AND SCOPE
         #
         nodes.append(
@@ -2457,7 +2138,9 @@ class PayloadToASTBridge:
             strongest_score = float(strongest_p.get("score", 0.0))
             spread = round(strongest_score - weakest_score, 2)
 
-            from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+            from assessment_engine.domain.governance.scale_engine import (
+                GovernanceScaleEngine,
+            )
             scale_engine = GovernanceScaleEngine.get_instance()
             resolved_gs = scale_engine.resolve_maturity(float(gs_val), locale=str(meta_lang), translator=t)
             band_lbl = resolved_gs.label
@@ -2568,7 +2251,6 @@ class PayloadToASTBridge:
 
         # Friendly pedagogical score explanation (Domain-Specific Tower Resolution with Dynamic Parameter Binding)
         from assessment_engine.domain.taxonomy_resolver import (
-            extract_pillar_identifiers,
             get_taxonomy_resolver,
         )
         resolver = get_taxonomy_resolver()
@@ -2929,7 +2611,9 @@ class PayloadToASTBridge:
         common_patterns = cca.get("common_deficiency_patterns") or []
 
         patterns: list[str] = []
-        from assessment_engine.application.services.synthesis.gatekeeper import SemanticGatekeeper
+        from assessment_engine.application.services.synthesis.gatekeeper import (
+            SemanticGatekeeper,
+        )
         gatekeeper = SemanticGatekeeper()
 
         if isinstance(common_patterns, list) and common_patterns:
@@ -3100,8 +2784,13 @@ class PayloadToASTBridge:
 
         # 4.3 Detailed Technical Diagnostic by Capability (Section 3.2 Executive Pillar Cards)
         if blueprint_data and blueprint_data.get("pillars_analysis"):
-            from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
-            from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers, get_taxonomy_resolver
+            from assessment_engine.domain.governance.scale_engine import (
+                GovernanceScaleEngine,
+            )
+            from assessment_engine.domain.taxonomy_resolver import (
+                extract_pillar_identifiers,
+                get_taxonomy_resolver,
+            )
 
             scale_engine = GovernanceScaleEngine.get_instance()
             resolver = get_taxonomy_resolver()
@@ -3435,7 +3124,6 @@ class PayloadToASTBridge:
         # 4.1 Actuarial Quantification Framework & Mathematical Lineage Table
         from assessment_engine.adapters.compilers.strategies.actuarial_receptors import (
             ActuarialReceptorContext,
-            ActuarialReceptorFactory,
         )
         from assessment_engine.domain.taxonomy.archetype_registry import (
             get_actuarial_archetype_registry,
@@ -3583,8 +3271,12 @@ class PayloadToASTBridge:
         tower_id = str(ctx.get("tower_id") or safe_get(blueprint_data, "document_meta", "tower_id", default="T1")).strip().upper()
         tower_name = str(ctx.get("tower_name") or safe_get(blueprint_data, "document_meta", "tower_name", default="Infrastructure Domain"))
 
-        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
-        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
+        from assessment_engine.domain.services.chapter4_synthesizer import (
+            Chapter4Synthesizer,
+        )
+        from assessment_engine.infrastructure.config_loader import (
+            load_country_labor_rates,
+        )
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
             rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
@@ -4172,8 +3864,12 @@ class PayloadToASTBridge:
             return
 
         blueprint_data = ctx.get("blueprint_data") or {}
-        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
-        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
+        from assessment_engine.domain.services.chapter4_synthesizer import (
+            Chapter4Synthesizer,
+        )
+        from assessment_engine.infrastructure.config_loader import (
+            load_country_labor_rates,
+        )
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
             rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()

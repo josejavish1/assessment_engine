@@ -3225,7 +3225,10 @@
     "ch4_anchor_outage_desc": "Riesgo de contingencia e interrupción operativa ante degradación de componentes o fallos de hardware en {domain}.",
     "ch4_anchor_contractual_desc": "Sobrecoste previsible derivado de hitos de fin de ciclo de vida (EOL), soporte extendido o transición forzada de licenciamiento en {domain}.",
     "ch4_affected_perimeter_prefix": "Infraestructura de Producción y Operaciones",
-    "ch4_default_external_milestone": "Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa."
+    "ch4_default_external_milestone": "Requerimientos regulatorios de gobernanza y directivas de resiliencia operativa.",
+    "default_executive_verdict": "La infraestructura de {tower_name} en {client_name} presenta una base operativa funcional pero con limitaciones de automatización y gobernanza.",
+    "exec_summary_key_findings_lead": "Principales áreas estratégicas de exposición operativa:",
+    "exec_summary_strategic_conclusion": "La modernización estructural de {tower_name} es un imperativo de negocio para contener la fricción operativa actual y garantizar la resiliencia requerida por las normativas de continuidad industrial."
   },
   "en": {
     "scale_out_of_five": "out of 5.00",
@@ -6429,7 +6432,10 @@
     "ch4_anchor_outage_desc": "Operational contingency and disruption risk upon component failure or hardware degradation in {domain}.",
     "ch4_anchor_contractual_desc": "Projected overspend arising from end-of-life (EOL) milestones, extended vendor support, or mandatory licensing model transitions in {domain}.",
     "ch4_affected_perimeter_prefix": "Production and Operations Infrastructure",
-    "ch4_default_external_milestone": "Statutory governance and operational resilience compliance requirements."
+    "ch4_default_external_milestone": "Statutory governance and operational resilience compliance requirements.",
+    "default_executive_verdict": "The {tower_name} infrastructure at {client_name} presents a functional operational baseline but with automation and governance limitations.",
+    "exec_summary_key_findings_lead": "Key strategic areas of operational exposure:",
+    "exec_summary_strategic_conclusion": "The structural modernization of {tower_name} is a business imperative to contain operational friction and guarantee the resilience required by industrial continuity directives."
   },
   "pt": {
     "scale_out_of_five": "sobre 5,00",
@@ -9630,7 +9636,10 @@
     "ch4_anchor_outage_desc": "Risco de contingência e interrupção operacional diante de degradação de componentes ou falhas de hardware em {domain}.",
     "ch4_anchor_contractual_desc": "Sobrecusto projetado decorrente de marcos de fim de ciclo de vida (EOL), suporte estendido ou transição forçada de licenciamento em {domain}.",
     "ch4_affected_perimeter_prefix": "Infraestrutura de Produção e Operações",
-    "ch4_default_external_milestone": "Requisitos regulatórios de governança e diretrizes de resiliência operacional."
+    "ch4_default_external_milestone": "Requisitos regulatórios de governança e diretrizes de resiliência operacional.",
+    "default_executive_verdict": "A infraestrutura de {tower_name} em {client_name} apresenta uma base operacional funcional, mas com limitações de automação e governança.",
+    "exec_summary_key_findings_lead": "Principais áreas estratégicas de exposição operacional:",
+    "exec_summary_strategic_conclusion": "A modernização estrutural de {tower_name} é um imperativo de negócios para conter o atrito operacional e garantir a resiliência exigida pelas diretrizes de continuidade industrial."
   },
   "fr": {
     "scale_out_of_five": "sur 5,00",
@@ -12829,7 +12838,10 @@
     "ch4_anchor_outage_desc": "Risque de contingence et d'interruption opérationnelle en cas de dégradation de composants ou de panne matérielle dans {domain}.",
     "ch4_anchor_contractual_desc": "Surcoût projeté découlant des jalons de fin de vie (EOL), du support étendu ou de transitions obligatoires de licences dans {domain}.",
     "ch4_affected_perimeter_prefix": "Infrastructure de Production et Opérations",
-    "ch4_default_external_milestone": "Exigences réglementaires de gouvernance et directives de résilience opérationnelle."
+    "ch4_default_external_milestone": "Exigences réglementaires de gouvernance et directives de résilience opérationnelle.",
+    "default_executive_verdict": "L'infrastructure de {tower_name} chez {client_name} présente une base opérationnelle fonctionnelle mais avec des limites d'automatisation et de gouvernance.",
+    "exec_summary_key_findings_lead": "Principaux domaines stratégiques d'exposition opérationnelle:",
+    "exec_summary_strategic_conclusion": "La modernisation structurelle de {tower_name} est un impératif commercial pour contenir la friction opérationnelle et garantir la résilience requise par les directives de continuité industrielle."
   },
   "ja": {
     "scale_out_of_five": "/ 5.00",
@@ -16019,7 +16031,10 @@
     "ch4_anchor_outage_desc": "{domain}におけるコンポーネント障害またはハードウェア劣化に伴う運用停止リスク。",
     "ch4_anchor_contractual_desc": "{domain}におけるサポート終了（EOL）マイルストーン、延長サポート、または強制的なライセンス移行に伴う予測超過コスト。",
     "ch4_affected_perimeter_prefix": "本番および運用インフラストラクチャ",
-    "ch4_default_external_milestone": "法令に基づくガバナンス要件および運用レジリエンス適合要件。"
+    "ch4_default_external_milestone": "法令に基づくガバナンス要件および運用レジリエンス適合要件。",
+    "default_executive_verdict": "{client_name}の{tower_name}インフラは機能的な運用ベースラインを示していますが、自動化とガバナンスに制限があります。",
+    "exec_summary_key_findings_lead": "運用上のリスクが存在する主要な戦略的領域：",
+    "exec_summary_strategic_conclusion": "{tower_name}の構造的近代化は、運用上の摩擦を抑制し、産業継続性指令で求められるレジリエンスを保証するためのビジネス上の必須事項です。"
   },
   "de": {
     "scale_out_of_five": "von 5,00",
@@ -19212,7 +19227,10 @@
     "ch4_anchor_outage_desc": "Betriebliches Kontingenz- und Unterbrechungsrisiko bei Komponentenausfall oder Hardware-Degradation in {domain}.",
     "ch4_anchor_contractual_desc": "Prognostizierte Mehrkosten aufgrund von End-of-Life (EOL)-Meilensteinen, erweitertem Support oder erzwungenen Lizenzmodell-Übergängen in {domain}.",
     "ch4_affected_perimeter_prefix": "Produktions- und Betriebsinfrastruktur",
-    "ch4_default_external_milestone": "Gesetzliche Governance-Vorgaben und betriebliche Resilienz-Richtlinien."
+    "ch4_default_external_milestone": "Gesetzliche Governance-Vorgaben und betriebliche Resilienz-Richtlinien.",
+    "default_executive_verdict": "Die Infrastruktur von {tower_name} bei {client_name} weist eine funktionale Betriebsbasis auf, jedoch mit Einschränkungen bei Automatisierung und Governance.",
+    "exec_summary_key_findings_lead": "Zentrale strategische Bereiche der operativen Exposition:",
+    "exec_summary_strategic_conclusion": "Die strukturelle Modernisierung von {tower_name} ist ein geschäftlicher Imperativ, um operative Reibung einzudämmen und die durch Richtlinien zur industriellen Kontinuität geforderte Resilienz zu gewährleisten."
   },
   "executive_summary_narrative": {
     "es": {
