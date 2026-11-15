@@ -17,9 +17,11 @@ Adheres strictly to Tier-1 Architectural Standards:
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import math
 import re
+import numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 
 from assessment_engine.domain.actuarial.rounding import (
@@ -415,8 +417,9 @@ class Chapter4Synthesizer:
 
         # Quantum-preserving Hare-Niemeyer allocation for exact sum matching Lever 2 Outage ALE
         card_weights = [float(c.get("annual_exposure_min", 1000.0)) for c in raw_cards]
-        allocated_lows = allocate_subadditive_ale_to_cards(outage_min, card_weights)
-        allocated_highs = allocate_subadditive_ale_to_cards(outage_max, card_weights)
+        card_ids = [f"RSK-{tower_id}-0{idx}" for idx in range(1, len(raw_cards) + 1)]
+        allocated_lows = allocate_subadditive_ale_to_cards(outage_min, card_weights, card_ids=card_ids)
+        allocated_highs = allocate_subadditive_ale_to_cards(outage_max, card_weights, card_ids=card_ids)
 
         risk_scenarios: List[TechnicalRiskScenario] = []
         # Canonical TEF midpoint anchor per heatmap likelihood row
@@ -427,6 +430,12 @@ class Chapter4Synthesizer:
             4: 2.40,
             5: 12.0,
         }
+        
+        # Initialize Seeded PRNG for Deterministic Monte Carlo Convolution (N=50,000)
+        seed_str = f"{enterprise_id}_{tower_id}_{sum(card_weights)}"
+        seed_int = int(hashlib.sha256(seed_str.encode("utf-8")).hexdigest()[:8], 16)
+        rng = np.random.default_rng(np.random.PCG64(seed_int))
+        N_TRIALS = 50000
 
         for idx, (c_data, a_low, a_high) in enumerate(
             zip(raw_cards, allocated_lows, allocated_highs), start=1
@@ -439,8 +448,23 @@ class Chapter4Synthesizer:
             # Tier 2 represents chronic operational friction (TEF 4: 2.0 - 10.0/yr)
             l_idx = 3 if is_tier1 else 4
             tef_val = TEF_ROW_MIDPOINTS.get(l_idx, 1.25 if is_tier1 else 2.40)
-            vuln_ratio = float(c_data.get("vuln_ratio", 0.80 if is_tier1 else 0.95))
-            lef_val = max(0.01, tef_val * vuln_ratio)
+            
+            # Deterministic Vulnerability Sigmoid Curve
+            vuln_score_base = float(c_data.get("vuln_ratio", 3.0)) # Mapping score to vuln
+            # Vuln(S) = 1 / (1 + exp(1.65 * (S - 3.0)))
+            vuln_ratio = 1.0 / (1.0 + math.exp(1.65 * (vuln_score_base - 3.0))) if vuln_score_base > 1.0 else (0.80 if is_tier1 else 0.95)
+            vuln_ratio = max(0.01, min(0.99, vuln_ratio))
+            
+            # Beta-PERT Monte Carlo Convolution
+            tef_min, tef_max = max(0.01, tef_val * 0.5), tef_val * 1.5
+            # Beta-PERT approximation: alpha = 1 + 4*((mode-min)/(max-min)), beta = 1 + 4*((max-mode)/(max-min))
+            # For simplicity in Numpy, we can sample triangular and multiply by a Beta-sampled vulnerability
+            tef_samples = rng.triangular(tef_min, tef_val, tef_max, size=N_TRIALS)
+            vuln_samples = rng.beta(vuln_ratio * 10, (1 - vuln_ratio) * 10, size=N_TRIALS)
+            lef_samples = tef_samples * vuln_samples
+            lef_val = float(np.median(lef_samples))
+            
+            lef_val = max(0.01, lef_val)
             sle_mid = ((safe_low / lef_val) + (safe_high / lef_val)) / 2.0
 
             # Dynamic LM tier resolution based on Open FAIR scale brackets
@@ -467,7 +491,7 @@ class Chapter4Synthesizer:
             )
 
             scenario = TechnicalRiskScenario(
-                risk_id=f"RSK-{tower_id}-0{idx}",
+                risk_id=card_ids[idx - 1],
                 title=full_title,
                 custody_role="PRIMARY_CUSTODIAN",
                 threat_event_frequency_annual=tef_val,

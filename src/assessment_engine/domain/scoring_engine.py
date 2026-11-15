@@ -24,22 +24,31 @@ class ScoringEngine:
 
     @staticmethod
     def compute_tower_score(pillar_scores: List[Decimal], pillar_weights: List[Decimal]) -> Decimal:
-        """Computes the dot-product global tower score using exact official weights."""
+        """Computes the dot-product global tower score using exact official weights, dynamically re-normalizing weights for missing/zero pillars."""
         if len(pillar_scores) != len(pillar_weights):
             raise ValueError("Pillar scores and weights count must match exactly.")
         
-        # Verify weights sum to 100% (or 1.0)
-        total_weight = sum(pillar_weights)
-        if not (Decimal("0.99") <= total_weight <= Decimal("1.01") or Decimal("99") <= total_weight <= Decimal("101")):
-             raise ValueError(f"Pillar weights must sum to 1.0 or 100. Got {total_weight}")
+        # Filter out 0.00 scores (NOT_APPLICABLE / missing data) for re-normalization
+        active_scores = []
+        active_weights = []
+        for s, w in zip(pillar_scores, pillar_weights):
+            if s > Decimal("0.00"):
+                active_scores.append(s)
+                active_weights.append(w)
+                
+        if not active_scores:
+            return Decimal("0.00")
 
-        # Normalize weights to fractions of 1.0 if they are percentages
-        if total_weight > 1.05:
-            normalized_weights = [w / Decimal("100.0") for w in pillar_weights]
-        else:
-            normalized_weights = pillar_weights
+        # Verify initial weights sum to 100% (or 1.0)
+        total_initial_weight = sum(pillar_weights)
+        if not (Decimal("0.99") <= total_initial_weight <= Decimal("1.01") or Decimal("99") <= total_initial_weight <= Decimal("101")):
+             raise ValueError(f"Pillar weights must sum to 1.0 or 100. Got {total_initial_weight}")
 
-        dot_product = sum(s * w for s, w in zip(pillar_scores, normalized_weights))
+        # Re-normalize active weights
+        total_active_weight = sum(active_weights)
+        normalized_weights = [w / total_active_weight for w in active_weights]
+
+        dot_product = sum(s * w for s, w in zip(active_scores, normalized_weights))
         return dot_product.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     @staticmethod

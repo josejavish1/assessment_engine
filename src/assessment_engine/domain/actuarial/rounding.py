@@ -66,6 +66,8 @@ def round_to_actuarial_significance(raw_amount: Union[int, str, Decimal, float, 
     return max(int(quantum), result)
 
 
+import hashlib
+
 def _resolve_allocation_quantum(target_total_ale: int, card_count: int) -> int:
     """Determines the largest clean actuarial quantum that divides target_total_ale."""
     if card_count <= 0 or target_total_ale <= 0:
@@ -84,16 +86,12 @@ def allocate_subadditive_ale_to_cards(
     target_total_ale: int,
     standalone_ales: Sequence[Union[int, float, Decimal]],
     preserve_quanta: bool = True,
+    card_ids: Optional[Sequence[str]] = None
 ) -> List[int]:
     """Apportions a portfolio-adjusted sub-additive Outage ALE across individual risk cards.
 
-    Uses the closed-form Hare-Niemeyer (Largest Remainder) discrete integer algorithm.
-    When preserve_quanta=True and target_total_ale is divisible by a clean actuarial step,
-    allocates in discrete quantum blocks so card figures remain free of 1-unit false precision.
-    Guarantees:
-    1. sum(allocated_ales) == target_total_ale EXACTLY.
-    2. Proportional preservation of each card's relative actuarial weight.
-    3. Monotonic non-negative integer results.
+    Uses the closed-form Hare-Niemeyer (Largest Remainder) discrete integer algorithm
+    with Lexicographic Tie-Breaking (using card_ids hash) and Non-Zero Floor Guard.
     """
     if not standalone_ales:
         return []
@@ -117,20 +115,42 @@ def allocate_subadditive_ale_to_cards(
     )
     target_units = target_total_ale // unit_quantum
     target_dec = Decimal(str(target_units))
+    
+    # 1. Non-Zero Floor Guard Pre-allocation
+    floor_units = []
+    available_units = target_units
+    for a in clean_ales:
+        if a > Decimal("0") and available_units > 0:
+            floor_units.append(1)
+            available_units -= 1
+        else:
+            floor_units.append(0)
+    
+    # Re-evaluate quotas based on remaining units
+    gross_sum_rem = sum(a for i, a in enumerate(clean_ales) if floor_units[i] >= 0) # all active
+    if available_units > 0 and gross_sum_rem > 0:
+        exact_quotas = [(a * Decimal(str(available_units))) / gross_sum_rem for a in clean_ales]
+    else:
+        exact_quotas = [Decimal("0") for _ in clean_ales]
 
-    # Exact quota calculation in quantum units
-    exact_quotas = [(a * target_dec) / gross_sum for a in clean_ales]
     integer_parts = [int(q) for q in exact_quotas]
+    
+    def get_lexicographic_hash(idx: int) -> str:
+        if card_ids and idx < len(card_ids):
+            return hashlib.sha256(str(card_ids[idx]).encode()).hexdigest()
+        return f"{idx:04d}"
+
     remainders = [
-        (q - Decimal(integer_parts[idx]), idx) for idx, q in enumerate(exact_quotas)
+        (q - Decimal(integer_parts[idx]), get_lexicographic_hash(idx), idx) for idx, q in enumerate(exact_quotas)
     ]
 
-    discrepancy = target_units - sum(integer_parts)
-    remainders.sort(key=lambda x: (x[0], -x[1]), reverse=True)
+    discrepancy = available_units - sum(integer_parts)
+    # Sort by remainder (descending) then by lexicographic hash (descending) to break ties deterministically
+    remainders.sort(key=lambda x: (x[0], x[1]), reverse=True)
 
-    result_units = list(integer_parts)
+    result_units = [f + i for f, i in zip(floor_units, integer_parts)]
     for i in range(discrepancy):
-        idx_to_bump = remainders[i][1]
+        idx_to_bump = remainders[i][2]
         result_units[idx_to_bump] += 1
 
     result = [u * unit_quantum for u in result_units]
