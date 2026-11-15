@@ -2462,7 +2462,52 @@ class PayloadToASTBridge:
             )
 
         nodes.append(TableNode(rows=health_rows, autofit=True, col_widths=[0.48, 0.20, 0.32]))
-        nodes.append(SpacerNode(points=16))
+        nodes.append(SpacerNode(points=8))
+
+        # Check for Perceptual Calibration Traceability (Phase 4 / RFC-083)
+        calibration_notes: list[str] = []
+        for p in blueprint_data.get("pillars_analysis", []):
+            declared = p.get("declared_score")
+            calibrated = p.get("calibrated_score") or p.get("score")
+            gap = p.get("perception_gap")
+            reason = p.get("calibration_reason") or p.get("calibration_rationale") or ""
+            if declared is not None and calibrated is not None and gap and float(gap) > 0.05:
+                raw_pid, raw_pname = extract_pillar_identifiers(p)
+                p_label = resolver.resolve_pillar_by_any_reference(
+                    raw_pid or raw_pname,
+                    default=(raw_pname or raw_pid or "Pillar"),
+                    locale=meta_lang,
+                    tower_id=tower_id,
+                )
+                if meta_lang.startswith("es"):
+                    note = (
+                        f"**Nota Metodológica de Calibración Pericial ({p_label}):** El cuestionario preliminar "
+                        f"reflejó una autoevaluación de **{float(declared):.2f}/5.00**. La verificación técnica "
+                        f"determinó una puntuación operativa real de **{float(calibrated):.2f}/5.00** "
+                        f"(brecha de percepción de -{float(gap):.2f} puntos). *Motivo pericial:* {reason}"
+                    )
+                else:
+                    note = (
+                        f"**Empirical Calibration Traceability ({p_label}):** Preliminary client survey indicated a "
+                        f"self-assessed score of **{float(declared):.2f}/5.00**. Technical verification observed an "
+                        f"actual operational score of **{float(calibrated):.2f}/5.00** "
+                        f"(perception gap of -{float(gap):.2f} points). *Actuarial justification:* {reason}"
+                    )
+                calibration_notes.append(note)
+
+        for c_note in calibration_notes:
+            nodes.append(
+                ParagraphNode(
+                    text=c_note,
+                    font_size=8.5,
+                    space_before=4,
+                    space_after=8,
+                )
+            )
+        if calibration_notes:
+            nodes.append(SpacerNode(points=8))
+        else:
+            nodes.append(SpacerNode(points=8))
 
     def _build_systemic_risk_section(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         meta_lang = ctx["meta_lang"]
@@ -3514,9 +3559,11 @@ class PayloadToASTBridge:
             monistic_payload = Chapter4Synthesizer.synthesize_payload(
                 blueprint_data, context=ctx, rates_catalog=rates_cat
             )
-        synth_dict = Chapter4Synthesizer.synthesize_chapter4(
-            blueprint_data, context=ctx, rates_catalog=rates_cat
-        )
+        synth_dict = blueprint_data.get("chapter4_synthesis")
+        if not synth_dict:
+            synth_dict = Chapter4Synthesizer.synthesize_chapter4(
+                blueprint_data, context=ctx, rates_catalog=rates_cat
+            )
 
         # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
@@ -3631,6 +3678,9 @@ class PayloadToASTBridge:
         ev_max = _safe_float(card.get("event_loss_max"), default=0.0)
         ann_min = _safe_float(card.get("annual_exposure_min"), default=0.0)
         ann_max = _safe_float(card.get("annual_exposure_max"), default=0.0)
+        tef_annual = _safe_float(card.get("threat_event_frequency_annual"), default=2.0)
+        vuln_ratio = _safe_float(card.get("vulnerability_ratio"), default=0.20)
+        lef_annual = _safe_float(card.get("loss_event_frequency_annual"), default=round(tef_annual * vuln_ratio, 2))
         raw_milestone = card.get("external_forcing_milestone")
         if not raw_milestone or str(raw_milestone).strip() == "Statutory governance and operational resilience compliance requirements.":
             milestone = t("ch4_default_external_milestone", locale=meta_lang)
@@ -3640,6 +3690,18 @@ class PayloadToASTBridge:
         yr_str = t("year_lbl", locale=meta_lang)
         formatted_ev = f"~{format_currency(ev_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ev_max, currency_symbol=currency, locale=meta_lang, decimals=0)}"
         formatted_ann = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
+
+        is_es = str(meta_lang).startswith("es")
+        fair_chain_str = (
+            f"TEF ({tef_annual:g}/año) × Vuln ({vuln_ratio * 100:.0f}%) = LEF ({lef_annual:g} pérdidas/año)"
+            if is_es
+            else f"TEF ({tef_annual:g}/yr) × Vuln ({vuln_ratio * 100:.0f}%) = LEF ({lef_annual:g} loss events/yr)"
+        )
+        formula_str = (
+            "ALE = LEF × SLE (Exposición = Frecuencia × Impacto)"
+            if is_es
+            else "ALE = LEF × SLE (Exposure = Frequency × Impact)"
+        )
 
         rows = [
             # Row 0: Title & Severity Badge
@@ -3706,20 +3768,24 @@ class PayloadToASTBridge:
                     ),
                 ]
             ),
-            # Row 4: Financial Box (Impact per event & Annualized Exposure)
+            # Row 4: Financial Box (Impact per event & Annualized Exposure with explicit Open FAIR derivation)
             TableRowNode(
                 cells=[
                     CellNode(
-                        text=f"**{t('ch4_card_block_event_loss', locale=meta_lang)}:** {formatted_ev}",
-                        font_size=8.5,
-                        bold=True,
+                        text=(
+                            f"**{t('ch4_card_block_event_loss', locale=meta_lang)}:** {formatted_ev}\n"
+                            f"*{t('ch4_fair_chain_label', locale=meta_lang, default='Cadena Actuarial O-FAIR') if is_es else 'O-FAIR Actuarial Chain'}:* {fair_chain_str}"
+                        ),
+                        font_size=8.0,
                         bg_color="F1F5F9",
                         width_dxa=4680,
                     ),
                     CellNode(
-                        text=f"**{t('ch4_card_block_annual_exposure', locale=meta_lang)}:** {formatted_ann}",
-                        font_size=8.5,
-                        bold=True,
+                        text=(
+                            f"**{t('ch4_card_block_annual_exposure', locale=meta_lang)}:** {formatted_ann}\n"
+                            f"*{t('ch4_fair_formula_label', locale=meta_lang, default='Cálculo de Exposición') if is_es else 'Exposure Derivation'}:* {formula_str}"
+                        ),
+                        font_size=8.0,
                         bg_color="F1F5F9",
                         align="RIGHT",
                         width_dxa=4680,

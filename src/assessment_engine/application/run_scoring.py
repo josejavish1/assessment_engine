@@ -362,9 +362,11 @@ def build_scoring(
         declared_score = round(pillar_score, SCORE_PRECISION_DECIMALS)
         is_overridden = False
         calibrated_score = None
+        override_reason = ""
         for ov in overrides:
             if ov.get("tower_id") == tower_dto.tower_id and ov.get("pillar_id") == pillar.pillar_id:
                 calibrated_score = float(ov["calibrated_score"])
+                override_reason = str(ov.get("calibration_rationale") or ov.get("reason") or ov.get("justification") or "")
                 pillar_score = calibrated_score
                 is_overridden = True
                 break
@@ -380,6 +382,7 @@ def build_scoring(
         if is_overridden and calibrated_score is not None:
             p_dict["calibrated_score"] = calibrated_score
             p_dict["perception_gap"] = round(declared_score - calibrated_score, SCORE_PRECISION_DECIMALS)
+            p_dict["calibration_reason"] = override_reason
 
         pillar_scores.append(p_dict)
         weights_pct[pillar.pillar_id] = weight_val

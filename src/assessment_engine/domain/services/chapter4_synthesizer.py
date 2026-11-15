@@ -557,31 +557,41 @@ class Chapter4Synthesizer:
             5: "> 10 events/year (monthly frequency / continuous recurrence)",
         }
 
-        cards = [
-            {
-                "risk_id": card.risk_id,
-                "tier": "TIER_1_CRITICAL" if idx < 2 else "TIER_2_STRUCTURAL",
-                "title": card.title,
-                "affected_perimeter": payload.tower_name,
-                "estimated_frequency_label": (
-                    tef_labels_es.get(card.heatmap_coordinate.likelihood_index, "0,5 - 2,0 eventos/año")
-                    if is_es
-                    else tef_labels_en.get(card.heatmap_coordinate.likelihood_index, "0.5 - 2.0 events/year")
-                ),
-                "technical_evidence": card.physical_evidence,
-                "operational_impact_chain": card.business_impact_narrative,
-                "event_loss_min": float(
-                    payload.probabilistic_outage_ale.worst_case_single_outage_event.lower_bound
-                ),
-                "event_loss_max": float(
-                    payload.probabilistic_outage_ale.worst_case_single_outage_event.upper_bound
-                ),
-                "annual_exposure_min": float(card.calibrated_annual_ale.lower_bound),
-                "annual_exposure_max": float(card.calibrated_annual_ale.upper_bound),
-                "external_forcing_milestone": None,
-            }
-            for idx, card in enumerate(payload.technical_risk_cards)
-        ]
+        cards = []
+        for idx, card in enumerate(payload.technical_risk_cards):
+            tef_val = float(card.threat_event_frequency_annual)
+            vuln_ratio = float(card.vulnerability_ratio)
+            lef_val = float(round(max(0.01, tef_val * vuln_ratio), 2))
+            ale_low = float(card.calibrated_annual_ale.lower_bound)
+            ale_high = float(card.calibrated_annual_ale.upper_bound)
+            sle_low = float(round_to_actuarial_significance(ale_low / lef_val))
+            sle_high = float(round_to_actuarial_significance(ale_high / lef_val))
+            if sle_high <= sle_low:
+                sle_high = sle_low + float(round_to_actuarial_significance(sle_low * 0.35))
+
+            cards.append(
+                {
+                    "risk_id": card.risk_id,
+                    "tier": "TIER_1_CRITICAL" if idx < 2 else "TIER_2_STRUCTURAL",
+                    "title": card.title,
+                    "affected_perimeter": payload.tower_name,
+                    "estimated_frequency_label": (
+                        tef_labels_es.get(card.heatmap_coordinate.likelihood_index, "0,5 - 2,0 eventos/año")
+                        if is_es
+                        else tef_labels_en.get(card.heatmap_coordinate.likelihood_index, "0.5 - 2.0 events/year")
+                    ),
+                    "technical_evidence": card.physical_evidence,
+                    "operational_impact_chain": card.business_impact_narrative,
+                    "threat_event_frequency_annual": tef_val,
+                    "vulnerability_ratio": vuln_ratio,
+                    "loss_event_frequency_annual": lef_val,
+                    "event_loss_min": sle_low,
+                    "event_loss_max": sle_high,
+                    "annual_exposure_min": ale_low,
+                    "annual_exposure_max": ale_high,
+                    "external_forcing_milestone": None,
+                }
+            )
 
         concentration_narrative = [
             f"Eje de Continuidad Operativa Crítica (Tier 1): Concentra la principal exposición por indisponibilidad y resiliencia de la plataforma en {payload.tower_name}.",

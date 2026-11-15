@@ -92,7 +92,7 @@
     {
       "pillar_id": "T2.P1",
       "pillar_name": "Compute Foundation & Virtualization",
-      "weight_pct": 20,
+      "weight_pct": 22.38,
       "kpis": [
         {
           "kpi_id": "T2.P1.K1",
@@ -139,7 +139,7 @@
     {
       "pillar_id": "T2.P2",
       "pillar_name": "Container Platform & Kubernetes Operations",
-      "weight_pct": 20,
+      "weight_pct": 19.05,
       "kpis": [
         {
           "kpi_id": "T2.P2.K1",
@@ -186,7 +186,7 @@
     {
       "pillar_id": "T2.P3",
       "pillar_name": "Hybrid Cloud Enablement & Landing Zones",
-      "weight_pct": 20,
+      "weight_pct": 20.48,
       "kpis": [
         {
           "kpi_id": "T2.P3.K1",
@@ -233,7 +233,7 @@
     {
       "pillar_id": "T2.P4",
       "pillar_name": "Automation, Provisioning & Platform Self-Service",
-      "weight_pct": 20,
+      "weight_pct": 17.62,
       "kpis": [
         {
           "kpi_id": "T2.P4.K1",
@@ -290,7 +290,7 @@
     {
       "pillar_id": "T2.P5",
       "pillar_name": "Platform Operations, Observability & Reliability",
-      "weight_pct": 20,
+      "weight_pct": 20.47,
       "kpis": [
         {
           "kpi_id": "T2.P5.K1",

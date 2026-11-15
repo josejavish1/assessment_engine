@@ -375,11 +375,15 @@ def _apply_pillar_reconciliation(
             target_pid = str(ov.get("pillar_id") or "").strip()
             if target_pid and (target_pid == p_id or target_pid == matched_p_id):
                 cal_s = float(ov["calibrated_score"])
+                dec_s = float(ov.get("declared_score", exact_p_score))
                 payload_pillar["verified_empirical_score"] = cal_s
                 payload_pillar["calibrated_score"] = cal_s
-                payload_pillar["declared_score"] = float(ov.get("declared_score", exact_p_score))
-                if ov.get("calibration_rationale"):
-                    payload_pillar["calibration_rationale"] = ov.get("calibration_rationale")
+                payload_pillar["declared_score"] = dec_s
+                payload_pillar["perception_gap"] = round(dec_s - cal_s, 2)
+                rat = str(ov.get("calibration_rationale") or ov.get("reason") or ov.get("justification") or "")
+                if rat:
+                    payload_pillar["calibration_rationale"] = rat
+                    payload_pillar["calibration_reason"] = rat
 
         old_score_flt = _extract_optional_float(payload_pillar, "score")
 
@@ -400,6 +404,17 @@ def _apply_pillar_reconciliation(
         payload_pillar["weight_pct"] = float(
             w_pct_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         )
+
+        # Copy perception gap and calibration traceability directly from matched SSOT if present
+        if matched_ssot.get("declared_score") is not None:
+            payload_pillar["declared_score"] = float(matched_ssot["declared_score"])
+        if matched_ssot.get("calibrated_score") is not None:
+            payload_pillar["calibrated_score"] = float(matched_ssot["calibrated_score"])
+        if matched_ssot.get("perception_gap") is not None:
+            payload_pillar["perception_gap"] = float(matched_ssot["perception_gap"])
+        if matched_ssot.get("calibration_reason"):
+            payload_pillar["calibration_reason"] = str(matched_ssot["calibration_reason"])
+            payload_pillar["calibration_rationale"] = str(matched_ssot["calibration_reason"])
 
         canonical_name = matched_ssot.get("pillar_name") if matched_ssot.get("pillar_name") is not None else matched_ssot.get("name")
         if canonical_name and "pillar_name" in payload_pillar:
