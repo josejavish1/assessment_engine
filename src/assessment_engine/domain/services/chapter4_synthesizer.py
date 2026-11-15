@@ -419,6 +419,15 @@ class Chapter4Synthesizer:
         allocated_highs = allocate_subadditive_ale_to_cards(outage_max, card_weights)
 
         risk_scenarios: List[TechnicalRiskScenario] = []
+        # Canonical TEF midpoint anchor per heatmap likelihood row
+        TEF_ROW_MIDPOINTS: dict[int, float] = {
+            1: 0.05,
+            2: 0.30,
+            3: 1.25,
+            4: 2.40,
+            5: 12.0,
+        }
+
         for idx, (c_data, a_low, a_high) in enumerate(
             zip(raw_cards, allocated_lows, allocated_highs), start=1
         ):
@@ -426,7 +435,10 @@ class Chapter4Synthesizer:
             safe_low = min(a_low, a_high)
             safe_high = max(a_low, a_high)
 
-            tef_val = float(c_data.get("tef_annual", 2.4 if is_tier1 else 2.4))
+            # Tier 1 represents discrete major contingencies (TEF 3: 0.5 - 2.0/yr)
+            # Tier 2 represents chronic operational friction (TEF 4: 2.0 - 10.0/yr)
+            l_idx = 3 if is_tier1 else 4
+            tef_val = TEF_ROW_MIDPOINTS.get(l_idx, 1.25 if is_tier1 else 2.40)
             vuln_ratio = float(c_data.get("vuln_ratio", 0.80 if is_tier1 else 0.95))
             lef_val = max(0.01, tef_val * vuln_ratio)
             sle_mid = ((safe_low / lef_val) + (safe_high / lef_val)) / 2.0
@@ -443,7 +455,6 @@ class Chapter4Synthesizer:
             else:
                 calc_lm = 5
 
-            l_idx = int(c_data.get("likelihood_index", 4 if is_tier1 else 4))
             i_idx = calc_lm
 
             full_title = str(c_data.get("title") or f"Strategic Risk Scenario {idx}")
@@ -459,8 +470,8 @@ class Chapter4Synthesizer:
                 risk_id=f"RSK-{tower_id}-0{idx}",
                 title=full_title,
                 custody_role="PRIMARY_CUSTODIAN",
-                threat_event_frequency_annual=float(c_data.get("tef_annual", 1.5 if is_tier1 else 0.8)),
-                vulnerability_ratio=float(c_data.get("vuln_ratio", 0.85 if is_tier1 else 0.60)),
+                threat_event_frequency_annual=tef_val,
+                vulnerability_ratio=vuln_ratio,
                 mttr_recovery_hours=float(max(0.1, eff_rto if is_tier1 else max(0.5, eff_rto * 0.6))),
                 calibrated_annual_ale=MonetaryInterval(
                     lower_bound=safe_low, upper_bound=safe_high, currency_iso=currency_iso

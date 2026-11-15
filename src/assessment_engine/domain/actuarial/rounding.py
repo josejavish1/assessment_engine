@@ -142,3 +142,77 @@ def allocate_subadditive_ale_to_cards(
         )
 
     return result
+
+
+def harmonize_integer_weights_dual_constraint(
+    raw_weights: Sequence[Union[float, Decimal, int]],
+    pillar_scores: Sequence[Union[float, Decimal, int]],
+    target_composite_score: Union[float, Decimal, int],
+) -> List[int]:
+    """Computes an integer weight vector W in Z+^n such that:
+    1. sum(W) == 100
+    2. round(dot(W, s) / 100, 2) == round(target_composite_score, 2)
+    3. W minimizes L1 drift from normalized raw_weights.
+
+    Solves the integer rounding paradox where visible integer weights could otherwise
+    drift by +/-0.01 from the headline composite score.
+    """
+    n = len(raw_weights)
+    if n == 0:
+        return []
+    if n != len(pillar_scores):
+        return [int(w) for w in raw_weights]
+
+    tot_w = sum(float(w) for w in raw_weights) or 100.0
+    normalized_raw = [float(w) * 100.0 / tot_w for w in raw_weights]
+
+    # Baseline Largest Remainder Method (Hare-Niemeyer)
+    base_int = [int(w) for w in normalized_raw]
+    diff = 100 - sum(base_int)
+    remainders = sorted(
+        range(n),
+        key=lambda i: normalized_raw[i] - float(base_int[i]),
+        reverse=True,
+    )
+    hn_weights = list(base_int)
+    for i in range(diff):
+        hn_weights[remainders[i]] += 1
+
+    try:
+        target_dec = Decimal(str(target_composite_score)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+    except (InvalidOperation, ValueError, TypeError):
+        return hn_weights
+
+    def _eval_composite_score(w_vec: Sequence[int]) -> Decimal:
+        dot = sum(
+            Decimal(str(w)) * Decimal(str(s)) for w, s in zip(w_vec, pillar_scores)
+        )
+        return (dot / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    if _eval_composite_score(hn_weights) == target_dec:
+        return hn_weights
+
+    best_weights = hn_weights
+    best_dist = float("inf")
+
+    # Single-unit shift search between pairs of indices (i, j)
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            cand = list(hn_weights)
+            if cand[i] <= 1:
+                continue
+            cand[i] -= 1
+            cand[j] += 1
+            if sum(cand) != 100:
+                continue
+            if _eval_composite_score(cand) == target_dec:
+                dist = sum(abs(cand[k] - normalized_raw[k]) for k in range(n))
+                if dist < best_dist:
+                    best_dist = dist
+                    best_weights = cand
+
+    return best_weights

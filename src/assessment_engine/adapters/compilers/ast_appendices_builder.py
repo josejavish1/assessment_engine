@@ -155,21 +155,24 @@ def build_cmmi_methodology_and_capabilities(
         extract_pillar_identifiers,
         get_taxonomy_resolver,
     )
+    from assessment_engine.domain.actuarial.rounding import (
+        harmonize_integer_weights_dual_constraint,
+    )
     resolver = get_taxonomy_resolver()
 
-    # Pre-calculate integer weights summing to exactly 100% via Hare-Niemeyer (zero decimals)
+    # Pre-calculate integer weights satisfying dual constraint (sum=100 and dot_product=headline_score)
     raw_weights = [float(p.get("weight_pct", p.get("weight", 20))) for p in pillars_list]
-    tot_w = sum(raw_weights) or 100.0
-    int_weights = [int(w * 100.0 / tot_w) for w in raw_weights]
-    diff_w = 100 - sum(int_weights)
-    if diff_w > 0 and len(raw_weights) > 0:
-        remainders = sorted(
-            range(len(raw_weights)),
-            key=lambda i: (raw_weights[i] * 100.0 / tot_w) - int_weights[i],
-            reverse=True,
-        )
-        for i in range(min(diff_w, len(remainders))):
-            int_weights[remainders[i]] += 1
+    pillar_scores = [float(p.get("score", p.get("maturity_score", 2.0))) for p in pillars_list]
+    composite_target = float(
+        blueprint_data.get("maturity_score")
+        or blueprint_data.get("current_score")
+        or 2.50
+    )
+    int_weights = harmonize_integer_weights_dual_constraint(
+        raw_weights=raw_weights,
+        pillar_scores=pillar_scores,
+        target_composite_score=composite_target,
+    )
 
     for p_idx, p in enumerate(pillars_list):
         raw_pid, raw_pname = extract_pillar_identifiers(p)
