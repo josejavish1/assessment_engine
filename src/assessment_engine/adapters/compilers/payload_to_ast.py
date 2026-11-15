@@ -3443,6 +3443,49 @@ class PayloadToASTBridge:
             "ch4_anchor_contractual_title",
         ]
 
+        raw_monistic = blueprint_data.get("chapter4_monistic_payload") or {}
+        drag_data = raw_monistic.get("chronic_operational_drag", {}) if isinstance(raw_monistic, dict) else {}
+        toil_hours = drag_data.get("annual_engineering_toil_hours", 935)
+        toil_fte = round(toil_hours / 1600.0, 1)
+
+        outage_data = raw_monistic.get("probabilistic_outage_ale", {}) if isinstance(raw_monistic, dict) else {}
+        wc_event = outage_data.get("worst_case_single_outage_event", {})
+        wc_min_val = wc_event.get("lower_bound", 58000)
+        wc_max_val = wc_event.get("upper_bound", 100000)
+        wc_min_fmt = format_currency(wc_min_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+        wc_max_fmt = format_currency(wc_max_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+
+        is_es = str(meta_lang).startswith("es")
+        basis_by_idx = {
+            0: (
+                f"**Cálculo:** ~{toil_hours} h/año en soporte manual y tareas reactivas (~{toil_fte} FTEs) a tarifa estándar de ingeniería.\n"
+                f"*Alcance:* {t('ch4_anchor_toil_desc', locale=meta_lang, domain=tower_name)}"
+                if is_es
+                else (
+                    f"**Basis:** ~{toil_hours} h/yr in manual maintenance and reactive triage (~{toil_fte} FTEs) at standard engineering rate.\n"
+                    f"*Scope:* {t('ch4_anchor_toil_desc', locale=meta_lang, domain=tower_name)}"
+                )
+            ),
+            1: (
+                f"**Cálculo:** Paradas no planificadas (peor evento mayor: ~{wc_min_fmt} - {wc_max_fmt}) modeladas a ~1 caída severa cada 3-4 años.\n"
+                f"*Alcance:* {t('ch4_anchor_outage_desc', locale=meta_lang, domain=tower_name)}"
+                if is_es
+                else (
+                    f"**Basis:** Unplanned outages (worst-case major event: ~{wc_min_fmt} - {wc_max_fmt}) modeled at ~1 severe failure every 3-4 years.\n"
+                    f"*Scope:* {t('ch4_anchor_outage_desc', locale=meta_lang, domain=tower_name)}"
+                )
+            ),
+            2: (
+                f"**Cálculo:** Prima de soporte extendido en hardware amortizado (EoL) y penalización de transición a licenciamiento por core.\n"
+                f"*Alcance:* {t('ch4_anchor_contractual_desc', locale=meta_lang, domain=tower_name)}"
+                if is_es
+                else (
+                    f"**Basis:** Extended support premium on amortized EoL hardware and core-based licensing transition escalation.\n"
+                    f"*Scope:* {t('ch4_anchor_contractual_desc', locale=meta_lang, domain=tower_name)}"
+                )
+            ),
+        }
+
         for idx, a in enumerate(anchors):
             t_key = title_keys[idx] if idx < len(title_keys) else "ch4_anchor_toil_title"
             dim_title = t(t_key, locale=meta_lang)
@@ -3451,14 +3494,13 @@ class PayloadToASTBridge:
             ann_max = a.get("annual_exposure_max", 0.0)
             exp_str = f"~{format_currency(ann_min, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(ann_max, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}"
 
-            n_key = a.get("narrative_key")
-            narrative_text = t(n_key, locale=meta_lang, domain=tower_name) if n_key else a.get("evidence_narrative", "")
+            cell_basis_text = basis_by_idx.get(idx, a.get("evidence_narrative", ""))
 
             table_rows.append(
                 TableRowNode(
                     cells=[
                         CellNode(text=f"**{dim_title}**", font_size=8.0, bg_color=bg_col),
-                        CellNode(text=narrative_text, font_size=8.0, bg_color=bg_col),
+                        CellNode(text=cell_basis_text, font_size=8.0, bg_color=bg_col),
                         CellNode(text=exp_str, font_size=8.0, bg_color=bg_col, align="CENTER", bold=True),
                     ]
                 )
@@ -3658,20 +3700,52 @@ class PayloadToASTBridge:
         synth = blueprint_data.get("chapter4_synthesis") or {}
 
         # 4.3 Catalog of Key Technical Risk Cards
+        raw_monistic = blueprint_data.get("chapter4_monistic_payload") or {}
+        outage_data = raw_monistic.get("probabilistic_outage_ale", {}) if isinstance(raw_monistic, dict) else {}
+        outage_int = outage_data.get("annual_outage_ale_interval", {})
+        out_low = outage_int.get("lower_bound", 0)
+        out_high = outage_int.get("upper_bound", 0)
+        yr_str = t("year_lbl", locale=meta_lang)
+        currency = ctx.get("currency") or "EUR"
+        out_range_str = f"~{format_currency(out_low, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(out_high, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}" if out_high > 0 else ""
+
+        is_es = str(meta_lang).startswith("es")
+        base_title = t("ch4_sec3_title", locale=meta_lang, default="4.3. Catálogo de Fichas de Riesgo Técnico-Operativas")
+        sec_4_3_title = f"{base_title} (Desglose de la Palanca 2: {out_range_str})" if (out_range_str and is_es) else (f"{base_title} (Lever 2 Breakdown: {out_range_str})" if out_range_str else base_title)
+
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec3_title", locale=meta_lang, default="4.3. Technical Risk Scenarios Catalog"),
+                text=sec_4_3_title,
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
-        nodes.append(
-            ParagraphNode(
-                text=t("ch4_sec3_intro", locale=meta_lang, default="The operational risk register filters out auxiliary or non-material incidents, focusing strictly on empirical strategic vulnerabilities."),
-                font_size=9.5,
-                space_after=12,
+
+        intro_text = t(
+            "ch4_sec3_intro",
+            locale=meta_lang,
+            default="El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
+        )
+        nodes.append(ParagraphNode(text=intro_text, font_size=9.5, space_after=6))
+
+        reconcile_note = (
+            f"**Nota de Conciliación Metodológica:** Las 4 fichas técnicas siguientes desglosan "
+            f"exclusivamente la exposición probabilística por contingencias de parada e indisponibilidad "
+            f"(**Palanca 2: {out_range_str}**) modeladas bajo el estándar internacional Open FAIR™. "
+            f"Las pérdidas asociadas a carga de trabajo manual reactiva (Palanca 1: Toil) y sobrecostes de "
+            f"licenciamiento y fin de ciclo de vida (Palanca 3) corresponden a ineficiencias basales continuas analizadas en "
+            f"la Sección 4.1, por lo que no constituyen contingencias de parada de plataforma."
+            if is_es
+            else (
+                f"**Methodological Reconciliation Note:** The following 4 technical risk scenarios detail "
+                f"specifically the probabilistic availability and service disruption exposure "
+                f"(**Lever 2: {out_range_str}**) modeled under the Open FAIR™ international standard. "
+                f"Losses associated with manual maintenance toil (Lever 1) and contractual/lifecycle escalation "
+                f"(Lever 3) represent structural operational drag analyzed in Section 4.1, and thus do not "
+                f"constitute platform outage contingencies."
             )
         )
+        nodes.append(ParagraphNode(text=reconcile_note, font_size=8.5, space_before=2, space_after=12))
 
         for card_data in synth.get("strategic_risk_cards", []):
             nodes.append(self._build_executive_4block_risk_card(ctx, card_data))
