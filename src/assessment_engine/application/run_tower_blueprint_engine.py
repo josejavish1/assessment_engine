@@ -416,34 +416,54 @@ def _build_pillars_map(
     tower_def: dict[str, Any],
     case_data: dict[str, Any],
     refined_findings: dict[str, Any],
-) -> dict[str, Any]:
-    """Construct initial pillar map with scores and answers from tower definition and case inputs."""
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Construct initial pillar map with deterministic scores and answers from ScoringEngine."""
+    from assessment_engine.domain.scoring_engine import ScoringEngine
+
     pillars_map: dict[str, Any] = {}
+    kpi_ledger: dict[str, float] = {}
+
     for p in tower_def.get("pillars", []):
         pillars_map[p["pillar_id"]] = {
             "id": p["pillar_id"],
             "label": p["pillar_name"],
-            "score": 0,
+            "weight_pct": p.get("weight_pct", 20.0),
+            "score": 0.0,
             "answers": [],
         }
 
     for ans in case_data.get("answers", []):
-        p_id = ".".join(ans["kpi_id"].split(".")[:2])
+        kid = ans.get("kpi_id")
+        val = ans.get("value")
+        if kid and val is not None:
+            try:
+                kpi_ledger[kid] = float(val)
+            except (ValueError, TypeError):
+                pass
+        p_id = ".".join(ans["kpi_id"].split(".")[:2]) if ans.get("kpi_id") else ""
         if p_id in pillars_map:
             pillars_map[p_id]["answers"].append(ans)
 
+    # 100% Deterministic scoring via ScoringEngine
+    audit_trail = ScoringEngine.generate_audit_trail(
+        tower_id=tower_def.get("tower_id", ""),
+        kpi_ledger=kpi_ledger,
+        pillar_defs=tower_def.get("pillars", [])
+    )
+
+    pillar_audits = {p["pillar_id"]: p for p in audit_trail.get("pillars", [])}
+
     for p_id, p_data in pillars_map.items():
-        if p_data["answers"]:
-            p_data["score"] = round(
-                sum(float(a["value"]) for a in p_data["answers"])
-                / len(p_data["answers"]),
-                1,
-            )
+        if p_id in pillar_audits:
+            p_data["score"] = pillar_audits[p_id]["computed_score"]
+            p_data["maturity_band"] = pillar_audits[p_id]["maturity_band"]
+            p_data["weight_pct"] = pillar_audits[p_id]["weight_pct"]
         for p_find in refined_findings.get("pillar_findings", []):
-            if p_find["pillar_id"] == p_id:
+            if p_find.get("pillar_id") == p_id:
                 p_data["refined_findings"] = p_find
                 break
-    return pillars_map
+
+    return pillars_map, audit_trail
 
 
 def _validate_evidence_grounding(
@@ -1200,7 +1220,7 @@ async def run_tower_blueprint(
     # Phase 3: Build Pillar Map
     tower_def_path = resolve_tower_definition_file(tower_id)
     tower_def = json.loads(tower_def_path.read_text(encoding="utf-8"))
-    pillars_map = _build_pillars_map(tower_def, case_data, refined_findings)
+    pillars_map, audit_trail = _build_pillars_map(tower_def, case_data, refined_findings)
 
     logger.info("Generating Transformation Blueprint for %s (%s)...", tower_name, tower_id)
     blueprint_payload = get_default_blueprint_payload(
@@ -1208,6 +1228,23 @@ async def run_tower_blueprint(
     )
     if intel_packet:
         blueprint_payload["client_context"] = intel_packet
+
+    # Inject Deterministic Scoring Engine Audit Trail into Blueprint Payload
+    blueprint_payload["scoring_audit_trail"] = audit_trail
+    global_audit = audit_trail.get("global", {})
+    calc_score = global_audit.get("computed_tower_score", 0.0)
+    calc_band = global_audit.get("maturity_band", "")
+    calc_level = global_audit.get("maturity_level", 1)
+
+    blueprint_payload["score"] = calc_score
+    blueprint_payload["maturity_band"] = calc_band
+    if isinstance(blueprint_payload.get("executive_summary"), dict):
+        blueprint_payload["executive_summary"]["score"] = calc_score
+        blueprint_payload["executive_summary"]["global_band"] = calc_band
+        blueprint_payload["executive_summary"]["maturity_level"] = calc_level
+    if isinstance(blueprint_payload.get("executive_snapshot"), dict):
+        blueprint_payload["executive_snapshot"]["overall_maturity"] = calc_score
+        blueprint_payload["executive_snapshot"]["maturity_band"] = calc_band
 
     # Phase 4: Async Pillar Processing (MapReduce)
     await _execute_pillar_mapreduce(
