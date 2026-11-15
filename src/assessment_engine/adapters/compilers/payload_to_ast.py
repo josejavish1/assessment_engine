@@ -2497,22 +2497,24 @@ class PayloadToASTBridge:
                 )
                 if meta_lang.startswith("es"):
                     note = (
-                        f"**Nota Metodológica de Calibración Diagnóstica ({p_label}):** El cuestionario preliminar "
+                        f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** El cuestionario preliminar "
                         f"reflejó una autoevaluación de **{float(declared):.2f}/5.00** motivada por la incorporación de "
                         f"talento especializado y la hoja de ruta de adopción. La sesión de contraste técnico determinó que la "
                         f"organización se encuentra en un estadio de evaluación tecnológica y pruebas de concepto en laboratorio, "
                         f"sustentándose la operativa productiva actual sobre la arquitectura de virtualización convencional, "
-                        f"calibrándose la madurez fáctica a **{float(calibrated):.2f}/5.00** "
-                        f"(brecha de percepción de -{float(gap):.2f} puntos). *Justificación técnica:* {reason}"
+                        f"manteniéndose la calificación preventiva de **{float(calibrated):.2f}/5.00** "
+                        f"(brecha de percepción de -{float(gap):.2f} puntos) para el diagnóstico del estado actual (AS-IS), "
+                        f"señalando esta divergencia documental como punto prioritario de contraste en campo. *Justificación técnica:* {reason}"
                     )
                 else:
                     note = (
-                        f"**Empirical Calibration Traceability ({p_label}):** Preliminary client survey indicated a "
+                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** Preliminary client survey indicated a "
                         f"self-assessed score of **{float(declared):.2f}/5.00** driven by specialized talent acquisition "
                         f"and future adoption roadmap. Technical verification observed an incipient adoption trajectory "
                         f"in laboratory proof-of-concept testing, with current production operations stably anchored on conventional "
-                        f"virtualization, calibrating verified operational maturity to **{float(calibrated):.2f}/5.00** "
-                        f"(perception gap of -{float(gap):.2f} points). *Technical justification:* {reason}"
+                        f"virtualization, maintaining a precautionary baseline of **{float(calibrated):.2f}/5.00** "
+                        f"(perception gap of -{float(gap):.2f} points) for AS-IS operational resilience, "
+                        f"flagging this source divergence as a priority item for formal field validation. *Technical justification:* {reason}"
                     )
                 calibration_notes.append(note)
 

@@ -253,6 +253,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
                     "kpi_id": kpi["kpi_id"],
                     "kpi_name": kpi["kpi_name"],
                     "value": parsed_scores[question_id],
+                    "validation_state": "Exploratoria",
                     "question_text": question_lookup.get(
                         question_id, build_question_text(kpi["kpi_name"])
                     ),
