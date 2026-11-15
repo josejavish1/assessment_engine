@@ -1016,6 +1016,28 @@ def _enforce_executive_dignity_on_payload(obj: Any) -> Any:
     return obj
 
 
+def _enforce_technical_specificity_guard_on_payload(obj: Any, evidence_corpus: str) -> Any:
+    """Recursively applies TechnicalSpecificityGuard to abstract unaccredited technical entities."""
+    from assessment_engine.domain.validation.technical_specificity_guard import (
+        TechnicalSpecificityGuard,
+    )
+
+    if isinstance(obj, dict):
+        return {
+            k: _enforce_technical_specificity_guard_on_payload(v, evidence_corpus)
+            for k, v in obj.items()
+        }
+    elif isinstance(obj, list):
+        return [
+            _enforce_technical_specificity_guard_on_payload(x, evidence_corpus)
+            for x in obj
+        ]
+    elif isinstance(obj, str):
+        sanitized, _ = TechnicalSpecificityGuard.sanitize_draft_entities(obj, evidence_corpus)
+        return sanitized
+    return obj
+
+
 def _hydrate_methodological_frameworks(blueprint_payload: dict[str, Any] | BlueprintPayload, client_name: str, tower_id: str) -> None:
     """Injects a fully localized, SSOT-resolved methodological framework array into the payload."""
     import json
@@ -1440,6 +1462,9 @@ async def run_tower_blueprint(
     # Phase 8: Scrubbing & Serialization
     blueprint_payload = _scrub_client_placeholders(blueprint_payload, client_name)
     blueprint_payload = _enforce_executive_dignity_on_payload(blueprint_payload)
+    blueprint_payload = _enforce_technical_specificity_guard_on_payload(
+        blueprint_payload, context_str
+    )
     _hydrate_methodological_frameworks(blueprint_payload, client_name, tower_id)
 
     # Phase 8.1: Quantitative SSOT Reconciler Gatekeeper
