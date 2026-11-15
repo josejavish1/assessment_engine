@@ -4401,7 +4401,7 @@
         {
           "cells": [
             {
-              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nNivel elemental de gobernanza técnica basado en directivas aisladas configuradas de manera manual en consolas web. La plataforma carece de guardrails automatizados mediante Policy-as-Code en el pipeline de aprovisionamiento, posibilitando la creacion inadvertida de almacenamiento sin cifrado, asignación de IPs publicas no autorizadas o despliegue en regiones cloud geográficamente no permitidas.",
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nNivel elemental de gobernanza técnica basado en directivas aisladas configuradas de manera manual en consolas web. La plataforma carece de guardrails automatizados mediante Policy-as-Code en el pipeline de aprovisionamiento, posibilitando la creacion inadvertida de almacenamiento sin cifrado, asignación de IPs públicas no autorizadas o despliegue en regiones cloud geográficamente no permitidas.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4421,7 +4421,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIncumplimiento de las directivas europeas de resiliencia y ciberseguridad industrial NIS2, sumado al riesgo de fuga o exfiltracion de datos críticos corporativos por exposicion accidental de almacenamiento en la nube publica.",
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIncumplimiento de las directivas europeas de resiliencia y ciberseguridad industrial NIS2, sumado al riesgo de fuga o exfiltracion de datos críticos corporativos por exposición accidental de almacenamiento en la nube pública.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",

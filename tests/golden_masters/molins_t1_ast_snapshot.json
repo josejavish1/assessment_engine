@@ -1776,7 +1776,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Se evidencia una ausencia sistemática de paneles ciegos en las unidades de rack vacias y una falta de sellado en los pasacables y penetraciones del falso suelo. Esta configuración propicia una recirculacion aerotermica descontrolada, donde el flujo de aire caliente expulsado por los equipos posteriores se mezcla con el aire de suministro, creando puntos calientes localizados y disminuyendo el salto térmico util (Delta T). Asimismo, no se dispone de certificación empírica de mantenimiento concurrente: ante la eventual desconexión por fallo o mantenimiento de una unidad CRAC individual durante periodos de alta temperatura estival exterior, el sistema carece de capacidad demostrada para redistribuir la carga térmica sin sobrepasar los umbrales operativos recomendados de los microprocesadores.",
+      "text": "Se evidencia una ausencia sistemática de paneles ciegos en las unidades de rack vacias y una falta de sellado en los pasacables y penetraciones del falso suelo. Esta configuración propicia una recirculacion aerotermica descontrolada, donde el flujo de aire caliente expulsado por los equipos posteriores se mezcla con el aire de suministro, creando puntos calientes localizados y disminuyendo el salto térmico útil (Delta T). Asimismo, no se dispone de certificación empírica de mantenimiento concurrente: ante la eventual desconexión por fallo o mantenimiento de una unidad CRAC individual durante períodos de alta temperatura estival exterior, el sistema carece de capacidad demostrada para redistribuir la carga térmica sin sobrepasar los umbrales operativos recomendados de los microprocesadores.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4104,7 +4104,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nExposición a sobrecalentamiento no detectado en procesadores y fuentes de alimentación que puede inducir estrangulamiento térmico (thermal throttling), degradación del ciclo de vida util del silicio y paradas intempestivas no planificadas de servidores hiperconvergentes que soportan el ERP y los sistemas de pesaje en planta.",
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nExposición a sobrecalentamiento no detectado en procesadores y fuentes de alimentación que puede inducir estrangulamiento térmico (thermal throttling), degradación del ciclo de vida útil del silicio y paradas intempestivas no planificadas de servidores hiperconvergentes que soportan el ERP y los sistemas de pesaje en planta.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4653,7 +4653,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIneficiencia energética severa que incrementa el ratio PUE (Power Usage Effectiveness), forzando a los sistemas de enfriamiento a operar a consignas de temperatura artificialmente bajas y aumentando el estres térmico sobre los componentes electrónicos mas cargados.",
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nIneficiencia energética severa que incrementa el ratio PUE (Power Usage Effectiveness), forzando a los sistemas de enfriamiento a operar a consignas de temperatura artificialmente bajas y aumentando el estres térmico sobre los componentes electrónicos más cargados.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",

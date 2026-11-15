@@ -267,6 +267,10 @@ CANONICAL {pillar_count} PILLARS FOR {tower_code}:
    - For ENTERPRISE_OPERATIONAL environments (Manufacturing, Process Plants, Logistics, Retail): The target resilience model is Tier II/III (N+1 concurrent maintainability in core server/storage/network clusters, single protected distribution feeds in auxiliary racks). Never demand hyperscale Tier IV 2N dual-bus feeds for secondary/legacy equipment or treat single auxiliary lines as catastrophic outages. Acknowledge existing dual feeds on critical workloads as compliant Level 3 controls.
    - For MISSION_CRITICAL environments (Central Banking, Acute Healthcare ICUs, Defense): Enforce strict Tier IV 2N fault-tolerant physical redundancy across all components.
 
+13. ORTHOGRAPHIC EXCELLENCE (NATIVE UTF-8 DIACRITICS):
+   - Write all prose in {context.target_language} adhering strictly to official grammar and orthography.
+   - When generating in Spanish, preserve all mandatory RAE graphic accents and tildes (e.g., gestión, operación, análisis, técnica, catálogo, conmutación, pública, más, útil, módulo, período, diagnóstico, pérdida, política). Never emit ASCII-stripped or degraded characters.
+
 ### OUTPUT SCHEMA:
 Output ONLY a valid JSON object matching this structure (write prose in {context.target_language}):
 {{

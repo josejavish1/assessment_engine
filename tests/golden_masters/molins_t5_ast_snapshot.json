@@ -1636,7 +1636,7 @@
     },
     {
       "type": "paragraph",
-      "text": "2. **Concentracion extrema de conocimiento y esfuerzo manual:** La restauración de bases de datos, conmutaciones de red y levantamiento de contenedores dependen de dos perfiles tecnicos específicos y procedimientos no codificados.",
+      "text": "2. **Concentracion extrema de conocimiento y esfuerzo manual:** La restauración de bases de datos, conmutaciones de red y levantamiento de contenedores dependen de dos perfiles técnicos específicos y procedimientos no codificados.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1729,7 +1729,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Las operaciones de la recien adquirida filial Secil en Portugal estan externalizadas bajo el operador NOS, funcionando como una isla operativa desconectada de los procedimientos y telemetria del centro corporativo. El gobierno operativo de continuidad carece de un analisis formal de impacto en el negocio (BIA), no dispone de acuerdos formalizados de RTO y RPO con las unidades productivas (especialmente en procesos críticos como el pesaje en básculas de planta y despacho de camiones), y exhibe una vulnerabilidad estructural por dependencia unipersonal concentrada en un DBA externo en Croacia y un especialista en Kubernetes, mientras que los activos documentales se encuentran fragmentados entre una wiki MoinMoin heredada y repositorios parciales, impidiendo el cumplimiento auditable de la directiva europea NIS2.",
+      "text": "Las operaciones de la recien adquirida filial Secil en Portugal están externalizadas bajo el operador NOS, funcionando como una isla operativa desconectada de los procedimientos y telemetria del centro corporativo. El gobierno operativo de continuidad carece de un análisis formal de impacto en el negocio (BIA), no dispone de acuerdos formalizados de RTO y RPO con las unidades productivas (especialmente en procesos críticos como el pesaje en básculas de planta y despacho de camiones), y exhibe una vulnerabilidad estructural por dependencia unipersonal concentrada en un DBA externo en Croacia y un especialista en Kubernetes, mientras que los activos documentales se encuentran fragmentados entre una wiki MoinMoin heredada y repositorios parciales, impidiendo el cumplimiento auditable de la directiva europea NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1798,7 +1798,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La topologia de recuperación ante desastres y contingencia operativa de Molins opera bajo una arquitectura fuertemente concentrada a nivel geografico y limitada por restricciones de capacidad física. La infraestructura central on-premise se encuentra distribuida entre dos centros de datos situados en el termino municipal de Sant Vicenç dels Horts, separados por aproximadamente 500 metros en línea recta e interconectados mediante una línea directa de fibra optica monomodo a 10 Gbps, careciendo de topologia de anillo físico redundante y de canalizaciones independientes subterraneas.",
+      "text": "La topologia de recuperación ante desastres y contingencia operativa de Molins opera bajo una arquitectura fuertemente concentrada a nivel geografico y limitada por restricciones de capacidad física. La infraestructura central on-premise se encuentra distribuida entre dos centros de datos situados en el término municipal de Sant Vicenç dels Horts, separados por aproximadamente 500 metros en línea recta e interconectados mediante una línea directa de fibra optica monomodo a 10 Gbps, careciendo de topologia de anillo físico redundante y de canalizaciones independientes subterraneas.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1809,7 +1809,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Esta infraestructura presenta un agotamiento estructural de CPU y memoria RAM que imposibilita la reserva dinámica de admision para alta disponibilidad (HA Admission Control); ante una eventual caida completa o contingencia en una de las salas tecnicas, la plataforma secundaria no dispone de capacidad util para absorber las cargas críticas sin que el personal tecnico ejecute el apagado manual y deliberado de maquinas virtuales de entornos no productivos. La reciente integración de la filial Secil en Portugal introduce activos que operan externalizados bajo la gestión del proveedor NOS, desconectados de las políticas y herramientas de monitorización del centro de datos corporativo.",
+      "text": "Esta infraestructura presenta un agotamiento estructural de CPU y memoria RAM que imposibilita la reserva dinámica de admision para alta disponibilidad (HA Admission Control); ante una eventual caida completa o contingencia en una de las salas técnicas, la plataforma secundaria no dispone de capacidad útil para absorber las cargas críticas sin que el personal técnico ejecute el apagado manual y deliberado de maquinas virtuales de entornos no productivos. La reciente integración de la filial Secil en Portugal introduce activos que operan externalizados bajo la gestión del proveedor NOS, desconectados de las políticas y herramientas de monitorización del centro de datos corporativo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1845,7 +1845,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Las interfaces de gestión del almacenamiento de respaldo se encuentran integradas en los mismos segmentos de red operativa y accesibles bajo el esquema de identidades y privilegios estándar, sin requerir una arquitectura de bóveda cibernetica (Cyber Vault) aislada fisicamente ni mecanismos de aprobacion por consenso multipartito (Multi-Party Quorum) para la purga de datos. Asimismo, no existe un entorno de red estanco o sala limpia (Clean Room) automatizado que permita levantar maquinas virtuales o bases de datos restauradas para ejecutar analisis forense y verificacion de malware durmiente previo a su reinyeccion en los entornos productivos.",
+      "text": "Las interfaces de gestión del almacenamiento de respaldo se encuentran integradas en los mismos segmentos de red operativa y accesibles bajo el esquema de identidades y privilegios estándar, sin requerir una arquitectura de bóveda cibernetica (Cyber Vault) aislada fisicamente ni mecanismos de aprobacion por consenso multipartito (Multi-Party Quorum) para la purga de datos. Asimismo, no existe un entorno de red estanco o sala limpia (Clean Room) automatizado que permita levantar maquinas virtuales o bases de datos restauradas para ejecutar análisis forense y verificacion de malware durmiente previo a su reinyeccion en los entornos productivos.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1856,7 +1856,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Por último, los procedimientos de recuperación ante ataques ciberneticos no han sido sometidos a simulacros tecnicos integrales (Game Days), dependiendo de secuencias de recuperación no estandarizadas y del conocimiento tácito de un equipo de ingenieria altamente acotado, lo cual eleva la exposicion frente a incidentes destructivos y limita el alineamiento con las exigencias de resiliencia operativa de la directiva NIS2.",
+      "text": "Por último, los procedimientos de recuperación ante ataques ciberneticos no han sido sometidos a simulacros técnicos integrales (Game Days), dependiendo de secuencias de recuperación no estandarizadas y del conocimiento tácito de un equipo de ingenieria altamente acotado, lo cual eleva la exposición frente a incidentes destructivos y limita el alineamiento con las exigencias de resiliencia operativa de la directiva NIS2.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1889,7 +1889,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La arquitectura actual de alta disponibilidad y resiliencia física de Molins se concentra en dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts, separados por aproximadamente 500 metros y conectados mediante un enlace de fibra optica directo de 10 Gbps que carece de topologia en anillo. En este entorno se ejecutan mas de 300 maquinas virtuales que albergan cargas críticas de producción, incluyendo bases de datos relacionales Oracle 10g y 11g, plataformas Forms and Reports y servicios de pesaje industrial en básculas de planta.",
+      "text": "La arquitectura actual de alta disponibilidad y resiliencia física de Molins se concentra en dos centros de procesamiento de datos ubicados en Sant Vicenç dels Horts, separados por aproximadamente 500 metros y conectados mediante un enlace de fibra optica directo de 10 Gbps que carece de topologia en anillo. En este entorno se ejecutan más de 300 maquinas virtuales que albergan cargas críticas de producción, incluyendo bases de datos relacionales Oracle 10g y 11g, plataformas Forms and Reports y servicios de pesaje industrial en básculas de planta.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1900,7 +1900,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La infraestructura exhibe un nivel crítico de tension en el uso de memoria RAM y CPU, operando sin margenes dinámicos de admision para alta disponibilidad (HA Admission Control). Ante una eventual caida imprevista de un host o de una de las salas tecnicas, la plataforma no puede sostener la totalidad de las maquinas virtuales productivas sin que el equipo de operaciones intervenga manualmente apagando instancias de desarrollo y pruebas. Las actividades de remediacion ante incidentes no cuentan con automatismos de autorreparacion y dependen exclusivamente del conocimiento no documentado de un DBA remoto en Croacia y de un arquitecto de contenedores dentro de un equipo interno con menos de 5 ingenieros.",
+      "text": "La infraestructura exhibe un nivel crítico de tension en el uso de memoria RAM y CPU, operando sin márgenes dinámicos de admision para alta disponibilidad (HA Admission Control). Ante una eventual caida imprevista de un host o de una de las salas técnicas, la plataforma no puede sostener la totalidad de las maquinas virtuales productivas sin que el equipo de operaciones intervenga manualmente apagando instancias de desarrollo y pruebas. Las actividades de remediación ante incidentes no cuentan con automatismos de autorreparacion y dependen exclusivamente del conocimiento no documentado de un DBA remoto en Croacia y de un arquitecto de contenedores dentro de un equipo interno con menos de 5 ingenieros.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4073,7 +4073,7 @@
         {
           "cells": [
             {
-              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nInexistencia de un Business Impact Analysis (BIA) corporativo formalizado y ausencia de catalogacion de procesos de negocio con métricas vinculantes de RTO y RPO. Las decisiones de protección y respaldo se toman con criterios tecnicos aislados en lugar de basarse en el impacto financiero, operativo y reputacional de la interrupcion de procesos críticos, tales como el pesaje en básculas de planta, la expedicion logistica de cemento y hormigon o la facturacion transaccional.",
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nInexistencia de un Business Impact Analysis (BIA) corporativo formalizado y ausencia de catalogacion de procesos de negocio con métricas vinculantes de RTO y RPO. Las decisiones de protección y respaldo se toman con criterios técnicos aislados en lugar de basarse en el impacto financiero, operativo y reputacional de la interrupcion de procesos críticos, tales como el pesaje en básculas de planta, la expedicion logistica de cemento y hormigon o la facturacion transaccional.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4093,7 +4093,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nLa ausencia de RTO y RPO formales impide priorizar la restauración tecnica ante caidas del sistema, exponiendo a las plantas a paradas no programadas prolongadas en el pesaje y despacho de cemento, lo que provoca colas de camiones en vias publicas, penalizaciones contractuales y multas por incumplimiento de la directiva NIS2.",
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nLa ausencia de RTO y RPO formales impide priorizar la restauración técnica ante caidas del sistema, exponiendo a las plantas a paradas no programadas prolongadas en el pesaje y despacho de cemento, lo que provoca colas de camiones en vias públicas, penalizaciones contractuales y multas por incumplimiento de la directiva NIS2.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4256,7 +4256,7 @@
         {
           "cells": [
             {
-              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nAusencia de herramientas automatizadas de orquestación de contingencia y severa dependencia de conocimientos tácitos concentrados de forma unipersonal. La conmutación por desastre de plataformas críticas heredadas como Oracle 10g/11g, capas de aplicaciones Forms & Reports y entornos de contenedores depende de la intervencion manual de dos unicos perfiles tecnicos (un DBA externo en Croacia y un arquitecto de Kubernetes). La documentacion operativa existente se encuentra desactualizada y repartida entre una wiki MoinMoin heredada y ficheros estaticos sin runbooks ejecutables ni validacion mecanizada de dependencias cruzadas.",
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nAusencia de herramientas automatizadas de orquestación de contingencia y severa dependencia de conocimientos tácitos concentrados de forma unipersonal. La conmutación por desastre de plataformas críticas heredadas como Oracle 10g/11g, capas de aplicaciones Forms & Reports y entornos de contenedores depende de la intervencion manual de dos únicos perfiles técnicos (un DBA externo en Croacia y un arquitecto de Kubernetes). La documentacion operativa existente se encuentra desactualizada y repartida entre una wiki MoinMoin heredada y ficheros estáticos sin runbooks ejecutables ni validacion mecanizada de dependencias cruzadas.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4622,7 +4622,7 @@
         {
           "cells": [
             {
-              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nEstructura organizativa y modelo operativo de crisis deficientes, caracterizados por una concentracion extrema del conocimiento tecnico en silos unipersonales. La toma de decisiones y los procedimientos de recuperación tecnica dependen de un DBA externo situado en Croacia y de un arquitecto de Kubernetes, dentro de un departamento interno con capacidad efectiva inferior a 5 FTEs tecnicos, operando con documentacion dispersa en una wiki MoinMoin obsoleta.",
+              "text": "**Evidencia Técnica (Causa Raíz AS-IS):**\nEstructura organizativa y modelo operativo de crisis deficientes, caracterizados por una concentracion extrema del conocimiento técnico en silos unipersonales. La toma de decisiones y los procedimientos de recuperación técnica dependen de un DBA externo situado en Croacia y de un arquitecto de Kubernetes, dentro de un departamento interno con capacidad efectiva inferior a 5 FTEs técnicos, operando con documentacion dispersa en una wiki MoinMoin obsoleta.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4642,7 +4642,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nImposibilidad de gestionar recuperaciones coordinadas fuera del horario laboral o durante indisponibilidad del personal clave, dilatando el tiempo medio de recuperación (MTTR) y elevando la exposicion a perdidas operacionales durante incidentes críticos.",
+              "text": "**Impacto Operativo en el Negocio (Cadena de Afectación):**\nImposibilidad de gestionar recuperaciones coordinadas fuera del horario laboral o durante indisponibilidad del personal clave, dilatando el tiempo medio de recuperación (MTTR) y elevando la exposición a pérdidas operacionales durante incidentes críticos.",
               "bold": false,
               "font_size": 8.5,
               "align": "LEFT",
