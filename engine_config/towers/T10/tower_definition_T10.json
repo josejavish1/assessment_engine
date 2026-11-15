@@ -176,7 +176,7 @@
     {
       "pillar_id": "T10.P3",
       "pillar_name": "Capacity, Performance & Batch Workload Management",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T10.P3.K1",
@@ -223,7 +223,7 @@
     {
       "pillar_id": "T10.P4",
       "pillar_name": "Core Integration, Interoperability & Modern APIs",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T10.P4.K1",

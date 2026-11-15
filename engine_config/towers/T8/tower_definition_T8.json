@@ -89,7 +89,7 @@
     {
       "pillar_id": "T8.P1",
       "pillar_name": "Technology Strategy & Strategic Roadmap",
-      "weight_pct": 20,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T8.P1.K1",
@@ -136,7 +136,7 @@
     {
       "pillar_id": "T8.P2",
       "pillar_name": "IT Governance, Portfolio & Decision Framework",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T8.P2.K1",
@@ -183,7 +183,7 @@
     {
       "pillar_id": "T8.P3",
       "pillar_name": "Risk Governance, Compliance & Control",
-      "weight_pct": 20,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T8.P3.K1",
@@ -230,7 +230,7 @@
     {
       "pillar_id": "T8.P4",
       "pillar_name": "Cloud FinOps & Infrastructure Economics",
-      "weight_pct": 20,
+      "weight_pct": 19,
       "kpis": [
         {
           "kpi_id": "T8.P4.K1",
@@ -287,7 +287,7 @@
     {
       "pillar_id": "T8.P5",
       "pillar_name": "Value Realization, Executive Metrics & Continuous Improvement",
-      "weight_pct": 20,
+      "weight_pct": 17,
       "kpis": [
         {
           "kpi_id": "T8.P5.K1",

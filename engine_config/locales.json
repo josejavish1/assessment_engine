@@ -2909,7 +2909,7 @@
             " para "
         ],
         "sec_3_2_detailed_diagnostics_title": "3.2. Diagnóstico Técnico Detallado por Capacidad",
-        "sec_3_2_detailed_diagnostics_intro": "A continuación se presenta el desglose técnico y procedimental exhaustivo para cada una de las capacidades evaluadas en este dominio. Cada ficha contrasta la autoevaluación inicial frente a las evidencias empíricas de auditoría, justificando objetivamente la madurez fáctica asignada y estableciendo la trayectoria pragmática de modernización hacia el siguiente nivel.",
+        "sec_3_2_detailed_diagnostics_intro": "A continuación se presenta el desglose técnico y procedimental exhaustivo para cada una de las capacidades evaluadas en este dominio. Cada ficha contrasta la autoevaluación inicial frente a la información declarativa y evidencias disponibles durante el Fast Assessment, justificando la madurez operativa asignada y estableciendo la trayectoria pragmática de modernización hacia el siguiente nivel.",
         "badge_declared_label": "Autoevaluación Declarada",
         "badge_calibrated_label": "Madurez Técnica Calibrada",
         "badge_divergence_label": "Divergencia de Diagnóstico",
@@ -6139,7 +6139,7 @@
             " with "
         ],
         "sec_3_2_detailed_diagnostics_title": "3.2. Detailed Technical Diagnostic by Capability",
-        "sec_3_2_detailed_diagnostics_intro": "The following section presents the exhaustive technical and procedural assessment for each capability evaluated within this domain. Each card contrasts the initial self-assessment against empirical audit evidence, objectively justifying the calibrated maturity score and establishing the pragmatic modernization trajectory towards the next level.",
+        "sec_3_2_detailed_diagnostics_intro": "The following section presents the technical and procedural assessment for each capability evaluated within this domain. Each card contrasts initial self-assessment against declared information and evidence available during the Fast Assessment, justifying the calibrated operational maturity score and establishing the pragmatic modernization trajectory towards the next level.",
         "badge_declared_label": "Declared Self-Assessment",
         "badge_calibrated_label": "Calibrated Technical Maturity",
         "badge_divergence_label": "Diagnostic Divergence",

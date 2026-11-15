@@ -184,7 +184,7 @@
     {
       "pillar_id": "T3.P3",
       "pillar_name": "DCI (Data Center Interconnect) & Resilient Transport",
-      "weight_pct": 18,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T3.P3.K1",
@@ -221,7 +221,7 @@
     {
       "pillar_id": "T3.P4",
       "pillar_name": "Hybrid Cloud Connectivity & Edge Services",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T3.P4.K1",
@@ -258,7 +258,7 @@
     {
       "pillar_id": "T3.P5",
       "pillar_name": "Network Operations, Observability & Automation (NetOps/NetDevOps)",
-      "weight_pct": 20,
+      "weight_pct": 19,
       "kpis": [
         {
           "kpi_id": "T3.P5.K1",
