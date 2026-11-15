@@ -2481,10 +2481,10 @@ class PayloadToASTBridge:
                 )
                 if meta_lang.startswith("es"):
                     note = (
-                        f"**Nota Metodológica de Calibración Pericial ({p_label}):** El cuestionario preliminar "
-                        f"reflejó una autoevaluación de **{float(declared):.2f}/5.00**. La verificación técnica "
+                        f"**Nota Metodológica de Calibración Diagnóstica ({p_label}):** El cuestionario preliminar "
+                        f"reflejó una autoevaluación de **{float(declared):.2f}/5.00**. La sesión de contraste técnico "
                         f"determinó una puntuación operativa real de **{float(calibrated):.2f}/5.00** "
-                        f"(brecha de percepción de -{float(gap):.2f} puntos). *Motivo pericial:* {reason}"
+                        f"(brecha de percepción de -{float(gap):.2f} puntos). *Justificación técnica:* {reason}"
                     )
                 else:
                     note = (
@@ -3621,6 +3621,29 @@ class PayloadToASTBridge:
         )
         for concentration_p in synth_dict.get("matrix_concentration_narrative", []):
             nodes.append(ParagraphNode(text=concentration_p, font_size=9.5, space_after=6))
+
+        # Open FAIR Actuarial Vulnerability Derivation Note
+        if meta_lang.startswith("es"):
+            vuln_note = (
+                "**Nota Metodológica sobre Vulnerabilidad Actuarial (O-FAIR):** "
+                "En el estándar internacional Open FAIR™, la frecuencia anual de pérdidas (LEF) representa la proporción "
+                "de amenazas operativas (TEF) que consiguen eludir las salvaguardas y causar impacto económico efectivo "
+                "(LEF = TEF × Vuln). La tasa de vulnerabilidad asignada a los riesgos del estado actual (80% - 95%) "
+                "se deriva objetivamente de la madurez operativa observada (Nivel 1 - Inicial), donde la ausencia "
+                "de automatización declarativa, la gestión manual de despliegues y la contención de recursos "
+                "determinan que la práctica totalidad de las contingencias de plataforma escalen a afectación de negocio."
+            )
+        else:
+            vuln_note = (
+                "**Open FAIR™ Actuarial Vulnerability Derivation Note:** "
+                "Under the international Open FAIR™ standard, Loss Event Frequency (LEF) represents the proportion "
+                "of operational threat events (TEF) that bypass safeguards to cause realized business impact "
+                "(LEF = TEF × Vuln). The vulnerability ratios assigned to current-state risks (80% - 95%) "
+                "derive directly from assessed operational maturity (Level 1 - Initial), where the absence "
+                "of declarative automation, manual deployment triage, and resource saturation ensure that "
+                "unmitigated platform contingencies directly cascade into measurable operational loss."
+            )
+        nodes.append(ParagraphNode(text=vuln_note, font_size=8.5, space_before=4, space_after=10))
         nodes.append(SpacerNode(points=10))
 
     def _build_detailed_findings_log(
