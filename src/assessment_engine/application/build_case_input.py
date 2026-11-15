@@ -239,26 +239,35 @@ def build_case_input(args: argparse.Namespace) -> dict:
     parsed_scores = parse_responses(responses_text, args.tower)
     question_lookup = build_question_lookup(tower_definition)
 
-    answers = []
+    from assessment_engine.domain.ingestion.missing_data_circuit_breaker import (
+        MissingDataCircuitBreaker,
+    )
+    from assessment_engine.domain.ingestion.context_router import (
+        EpistemicContextRouter,
+    )
+
+    expected_kpis = []
     for pillar in tower_definition.get("pillars", []):
         for kpi in pillar.get("kpis", []):
-            question_id = f"{kpi['kpi_id']}.PR1"
-            if question_id not in parsed_scores:
-                continue
-            answers.append(
+            expected_kpis.append(
                 {
-                    "question_id": question_id,
                     "pillar_id": pillar["pillar_id"],
-                    "pillar_name": pillar["pillar_name"],
+                    "pillar_name": pillar.get("pillar_name", ""),
                     "kpi_id": kpi["kpi_id"],
-                    "kpi_name": kpi["kpi_name"],
-                    "value": parsed_scores[question_id],
-                    "validation_state": "Exploratoria",
-                    "question_text": question_lookup.get(
-                        question_id, build_question_text(kpi["kpi_name"])
-                    ),
+                    "kpi_name": kpi.get("kpi_name", ""),
                 }
             )
+
+    answers = MissingDataCircuitBreaker.inspect_and_filter_kpi_responses(
+        tower_id=args.tower,
+        expected_kpis=expected_kpis,
+        parsed_scores=parsed_scores,
+    )
+    for ans in answers:
+        qid = ans["question_id"]
+        ans["question_text"] = question_lookup.get(
+            qid, build_question_text(ans["kpi_name"])
+        )
 
     framework_docs = sorted(
         p.name
@@ -307,12 +316,16 @@ def build_case_input(args: argparse.Namespace) -> dict:
             vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
             frags = [f.get("content", "") for f in vault_data.get("fragments", [])]
             if frags:
-                context_summary = "\n\n".join(frags)[:45000]
+                context_summary = EpistemicContextRouter.filter_context_for_tower(
+                    args.tower, frags, max_chars=35000
+                )
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
 
     if not context_summary and context_text:
-        context_summary = context_text[:45000]
+        context_summary = EpistemicContextRouter.filter_context_for_tower(
+            args.tower, [context_text], max_chars=35000
+        )
 
     if not context_summary and tree_path.exists():
         try:
@@ -323,7 +336,9 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 if n.get("level") == 1
             ]
             if l1_nodes:
-                context_summary = "\n".join(l1_nodes)[:40000]
+                context_summary = EpistemicContextRouter.filter_context_for_tower(
+                    args.tower, l1_nodes, max_chars=35000
+                )
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo raptor_tree: {ex}")
     client_context = (
