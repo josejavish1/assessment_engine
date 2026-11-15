@@ -141,7 +141,7 @@
     {
       "pillar_id": "T7.P2",
       "pillar_name": "Service Desk & Incident Management",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T7.P2.K1",
@@ -188,7 +188,7 @@
     {
       "pillar_id": "T7.P3",
       "pillar_name": "Change, Release & Configuration Management (CMDB)",
-      "weight_pct": 20,
+      "weight_pct": 24,
       "kpis": [
         {
           "kpi_id": "T7.P3.K1",
@@ -235,7 +235,7 @@
     {
       "pillar_id": "T7.P4",
       "pillar_name": "Problem Management & Site Reliability Engineering (SRE)",
-      "weight_pct": 20,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T7.P4.K1",
@@ -282,7 +282,7 @@
     {
       "pillar_id": "T7.P5",
       "pillar_name": "Observability, Event Management & AIOps",
-      "weight_pct": 20,
+      "weight_pct": 13,
       "kpis": [
         {
           "kpi_id": "T7.P5.K1",

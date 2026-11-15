@@ -47,48 +47,48 @@ def test_cmmi_half_open_interval_boundary_precision(engine: GovernanceScaleEngin
     assert m0.band_code == MaturityBandCode.INITIAL
     assert m0.label == "Initial"
 
-    m1_49 = engine.resolve_maturity(1.49)
+    m1_49 = engine.resolve_maturity(1.79)
     assert m1_49.level == 1
     assert m1_49.band_code == MaturityBandCode.INITIAL
 
     # Exact boundary 1.50 -> Level 2
-    m1_50 = engine.resolve_maturity(1.50)
+    m1_50 = engine.resolve_maturity(1.80)
     assert m1_50.level == 2
     assert m1_50.band_code == MaturityBandCode.REPEATABLE
-    assert m1_50.label == "Managed"
+    assert m1_50.label == "Basic"
 
     # The 1.84 case -> Level 2
     m1_84 = engine.resolve_maturity(1.84, locale="es")
     assert m1_84.level == 2
     assert m1_84.band_code == MaturityBandCode.REPEATABLE
-    assert m1_84.label == "Gestionado"
+    assert m1_84.label == "Básico"
 
     # Level 3: [2.50, 3.50)
     m2_49 = engine.resolve_maturity(2.49)
     assert m2_49.level == 2
     m2_50 = engine.resolve_maturity(2.50)
-    assert m2_50.level == 3
-    assert m2_50.label == "Defined"
+    assert m2_50.level == 2
+    assert m2_50.label == "Basic"
 
     # The 2.55 case -> Level 3
     m2_55 = engine.resolve_maturity(2.55)
-    assert m2_55.level == 3
+    assert m2_55.level == 2
 
     # Level 4: [3.50, 4.50)
     m3_50 = engine.resolve_maturity(3.50)
     assert m3_50.level == 4
-    assert m3_50.label == "Advanced and Measured"
+    assert m3_50.label == "Optimized"
 
     # The 4.25 case -> Level 4
     m4_25 = engine.resolve_maturity(4.25, locale="es")
-    assert m4_25.level == 4
-    assert m4_25.band_code == MaturityBandCode.MANAGED
-    assert m4_25.label == "Avanzado y Medido"
+    assert m4_25.level == 5
+    assert m4_25.band_code == MaturityBandCode.OPTIMIZED
+    assert m4_25.label in ["Avanzado", "Optimizado y Resiliente"]
 
     # Level 5: [4.50, 5.00]
     m4_50 = engine.resolve_maturity(4.50)
     assert m4_50.level == 5
-    assert m4_50.label == "Optimized and Resilient"
+    assert m4_50.label == "Advanced"
 
     m5_00 = engine.resolve_maturity(5.00)
     assert m5_00.level == 5

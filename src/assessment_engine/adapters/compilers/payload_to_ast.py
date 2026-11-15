@@ -553,23 +553,23 @@ def _synchronize_inline_recalibrated_scores(text: str, locale: str) -> str:
 
 def _resolve_cmmi_maturity_label(score: float, locale: str) -> str:
     """Resolve deterministic CMMI maturity level label strictly aligned with rubric boundaries:
-    1.00 - 1.59: Level 1 (Initial)
-    1.60 - 2.59: Level 2 (Managed / Repeatable)
-    2.60 - 3.59: Level 3 (Defined)
-    3.60 - 4.59: Level 4 (Quantitatively Managed)
-    4.60 - 5.00: Level 5 (Optimizing)
+    1.00 - 1.79: Level 1 (Initial)
+    1.80 - 2.59: Level 2 (Basic)
+    2.60 - 3.39: Level 3 (Standardized)
+    3.40 - 4.19: Level 4 (Optimized)
+    4.20 - 5.00: Level 5 (Advanced)
     """
     is_es = str(locale).lower().startswith("es")
     val = round(float(score), 2)
-    if val < 1.60:
+    if val < 1.80:
         return "Nivel 1 - Inicial" if is_es else "Level 1 - Initial"
     if val < 2.60:
-        return "Nivel 2 - Gestionado" if is_es else "Level 2 - Managed"
-    if val < 3.60:
-        return "Nivel 3 - Definido" if is_es else "Level 3 - Defined"
-    if val < 4.60:
-        return "Nivel 4 - Avanzado y Medido" if is_es else "Level 4 - Advanced and Measured"
-    return "Nivel 5 - Optimizado y Resiliente" if is_es else "Level 5 - Optimized and Resilient"
+        return "Nivel 2 - Básico" if is_es else "Level 2 - Basic"
+    if val < 3.40:
+        return "Nivel 3 - Estandarizado" if is_es else "Level 3 - Standardized"
+    if val < 4.20:
+        return "Nivel 4 - Optimizado" if is_es else "Level 4 - Optimized"
+    return "Nivel 5 - Avanzado" if is_es else "Level 5 - Advanced"
 
 
 def _reconcile_cmmi_level_mentions_in_prose(text: str, locale: str) -> str:

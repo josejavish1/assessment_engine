@@ -92,7 +92,7 @@
     {
       "pillar_id": "T9.P1",
       "pillar_name": "Endpoint & Device Lifecycle Management",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T9.P1.K1",
@@ -139,7 +139,7 @@
     {
       "pillar_id": "T9.P2",
       "pillar_name": "Workplace Identity & User Access Experience",
-      "weight_pct": 20,
+      "weight_pct": 23,
       "kpis": [
         {
           "kpi_id": "T9.P2.K1",
@@ -186,7 +186,7 @@
     {
       "pillar_id": "T9.P3",
       "pillar_name": "Productivity, Collaboration & Knowledge Platforms",
-      "weight_pct": 20,
+      "weight_pct": 19,
       "kpis": [
         {
           "kpi_id": "T9.P3.K1",
@@ -233,7 +233,7 @@
     {
       "pillar_id": "T9.P4",
       "pillar_name": "Workplace Operations, Support & Self-Service",
-      "weight_pct": 20,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T9.P4.K1",
@@ -280,7 +280,7 @@
     {
       "pillar_id": "T9.P5",
       "pillar_name": "Digital Employee Experience (DEX) & Adoption",
-      "weight_pct": 20,
+      "weight_pct": 15,
       "kpis": [
         {
           "kpi_id": "T9.P5.K1",

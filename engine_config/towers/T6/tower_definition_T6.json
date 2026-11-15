@@ -95,7 +95,7 @@
     {
       "pillar_id": "T6.P1",
       "pillar_name": "Identity & Access Management (IAM)",
-      "weight_pct": 20,
+      "weight_pct": 21,
       "kpis": [
         {
           "kpi_id": "T6.P1.K1",
@@ -152,7 +152,7 @@
     {
       "pillar_id": "T6.P2",
       "pillar_name": "Privileged Access Management (PAM) & Secrets",
-      "weight_pct": 20,
+      "weight_pct": 24,
       "kpis": [
         {
           "kpi_id": "T6.P2.K1",
@@ -199,7 +199,7 @@
     {
       "pillar_id": "T6.P3",
       "pillar_name": "Hardening & Secure Configuration Baseline",
-      "weight_pct": 20,
+      "weight_pct": 19,
       "kpis": [
         {
           "kpi_id": "T6.P3.K1",
@@ -246,7 +246,7 @@
     {
       "pillar_id": "T6.P4",
       "pillar_name": "Vulnerability & Patch Management",
-      "weight_pct": 20,
+      "weight_pct": 23,
       "kpis": [
         {
           "kpi_id": "T6.P4.K1",
@@ -293,7 +293,7 @@
     {
       "pillar_id": "T6.P5",
       "pillar_name": "Network Segmentation, Logging & Audit",
-      "weight_pct": 20,
+      "weight_pct": 13,
       "kpis": [
         {
           "kpi_id": "T6.P5.K1",

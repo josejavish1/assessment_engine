@@ -90,7 +90,7 @@
     {
       "pillar_id": "T5.P1",
       "pillar_name": "BC/DR Governance & Continuity Strategy",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T5.P1.K1",
@@ -137,7 +137,7 @@
     {
       "pillar_id": "T5.P2",
       "pillar_name": "Backup & Restore Operational Readiness",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T5.P2.K1",
@@ -184,7 +184,7 @@
     {
       "pillar_id": "T5.P3",
       "pillar_name": "Disaster Recovery Architecture & Failover",
-      "weight_pct": 20,
+      "weight_pct": 22,
       "kpis": [
         {
           "kpi_id": "T5.P3.K1",
@@ -278,7 +278,7 @@
     {
       "pillar_id": "T5.P5",
       "pillar_name": "High Availability & Architectural Resilience",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T5.P5.K1",

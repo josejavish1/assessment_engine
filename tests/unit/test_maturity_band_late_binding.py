@@ -16,17 +16,17 @@ def test_resolve_maturity_band_late_binding_tokens():
     # 1. Default (no locale specified -> universal baseline English)
     res_default = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS)
     assert res_default["band_key"] == "band_quantitatively_managed"
-    assert res_default["label"] == "Advanced and Measured"
+    assert res_default["label"] == "Optimized"
 
     # 2. Spanish locale -> Spanish labels
     res_es = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS, locale="es", translator=t)
     assert res_es["band_key"] == "band_quantitatively_managed"
-    assert res_es["label"] == "Avanzado y Medido"
+    assert res_es["label"] == "Optimizado"
 
     # 3. English locale -> English labels
     res_en = resolve_maturity_band(4.0, ANNEX_MATURITY_BANDS, locale="en", translator=t)
     assert res_en["band_key"] == "band_quantitatively_managed"
-    assert res_en["label"] == "Advanced and Measured"
+    assert res_en["label"] == "Optimized"
 
     # 4. Initial level in English
     res_initial_en = resolve_maturity_band(1.2, ANNEX_MATURITY_BANDS, locale="en", translator=t)
@@ -36,15 +36,15 @@ def test_resolve_maturity_band_late_binding_tokens():
     # 5. Optimized level in English
     res_opt_en = resolve_maturity_band(4.8, ANNEX_MATURITY_BANDS, locale="en", translator=t)
     assert res_opt_en["band_key"] == "band_optimized"
-    assert res_opt_en["label"] in ["Optimizing", "Optimized", "Optimized and Resilient"]
+    assert res_opt_en["label"] in ["Advanced", "Optimizing", "Optimized and Resilient"]
 
 
 def test_derive_maturity_band_bilingual():
     """Verify that derive_maturity_band supports bilingual resolution while preserving backwards compatibility."""
-    assert derive_maturity_band(4.0) == "Advanced and Measured"
-    assert derive_maturity_band(4.0, locale="es") == "Avanzado y Medido"
-    assert derive_maturity_band(4.0, locale="en") == "Advanced and Measured"
-    assert derive_maturity_band(2.0, locale="en") == "Managed"
-    assert derive_maturity_band(2.0, locale="es") == "Gestionado"
+    assert derive_maturity_band(4.0) == "Optimized"
+    assert derive_maturity_band(4.0, locale="es") == "Optimizado"
+    assert derive_maturity_band(4.0, locale="en") == "Optimized"
+    assert derive_maturity_band(2.0, locale="en") == "Basic"
+    assert derive_maturity_band(2.0, locale="es") == "Básico"
     assert derive_maturity_band(1.0, locale="en") == "Initial"
     assert derive_maturity_band(1.0, locale="es") == "Inicial"

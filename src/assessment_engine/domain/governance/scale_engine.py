@@ -55,11 +55,11 @@ class GovernanceScaleEngine:
             "cmmi_maturity_scale": {
                 "quantization_decimals": 2,
                 "bands": [
-                    {"level": 1, "code": "INITIAL", "upper_bound_exclusive": 1.50, "label_token": "band_initial", "default_label": "Initial", "ui_token": "status-critical"},
-                    {"level": 2, "code": "REPEATABLE", "upper_bound_exclusive": 2.50, "label_token": "band_managed", "default_label": "Managed", "ui_token": "status-warning"},
-                    {"level": 3, "code": "DEFINED", "upper_bound_exclusive": 3.50, "label_token": "band_defined", "default_label": "Defined", "ui_token": "status-neutral"},
-                    {"level": 4, "code": "MANAGED", "upper_bound_exclusive": 4.50, "label_token": "band_quantitatively_managed", "default_label": "Advanced and Measured", "ui_token": "status-good"},
-                    {"level": 5, "code": "OPTIMIZED", "upper_bound_exclusive": 5.0001, "label_token": "band_optimized", "default_label": "Optimized and Resilient", "ui_token": "status-excellent"},
+                    {"level": 1, "code": "INITIAL", "upper_bound_exclusive": 1.80, "label_token": "band_initial", "default_label": "Initial", "ui_token": "status-critical"},
+                    {"level": 2, "code": "REPEATABLE", "upper_bound_exclusive": 2.60, "label_token": "band_managed", "default_label": "Basic", "ui_token": "status-warning"},
+                    {"level": 3, "code": "DEFINED", "upper_bound_exclusive": 3.40, "label_token": "band_defined", "default_label": "Standardized", "ui_token": "status-neutral"},
+                    {"level": 4, "code": "MANAGED", "upper_bound_exclusive": 4.20, "label_token": "band_quantitatively_managed", "default_label": "Optimized", "ui_token": "status-good"},
+                    {"level": 5, "code": "OPTIMIZED", "upper_bound_exclusive": 5.0001, "label_token": "band_optimized", "default_label": "Advanced", "ui_token": "status-excellent"},
                 ]
             },
             "open_fair_loss_magnitude_scale": {
@@ -120,10 +120,10 @@ class GovernanceScaleEngine:
                 elif locale.startswith("es"):
                     spanish_map = {
                         "band_initial": "Inicial",
-                        "band_managed": "Gestionado",
-                        "band_defined": "Definido",
-                        "band_quantitatively_managed": "Avanzado y Medido",
-                        "band_optimized": "Optimizado y Resiliente",
+                        "band_managed": "Básico",
+                        "band_defined": "Estandarizado",
+                        "band_quantitatively_managed": "Optimizado",
+                        "band_optimized": "Avanzado",
                     }
                     label = spanish_map.get(token, label)
 

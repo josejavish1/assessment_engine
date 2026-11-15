@@ -20,16 +20,16 @@ def test_cmmi_v2_international_band_alignment() -> None:
     from assessment_engine.infrastructure.localization import t
 
     lvl4_band = [b for b in ANNEX_MATURITY_BANDS if b["level"] == 4][0]
-    assert lvl4_band["label"] == "Advanced and Measured"
+    assert lvl4_band["label"] == "Optimized"
     assert lvl4_band["band_key"] == "band_quantitatively_managed"
 
     # In Spanish localization, it must resolve to 'Avanzado y Medido'
     resolved_es = resolve_maturity_band(4.00, ANNEX_MATURITY_BANDS, locale="es", translator=t)
-    assert resolved_es["label"] == "Avanzado y Medido"
+    assert resolved_es["label"] == "Optimizado"
 
     # Level 2 must resolve to 'Gestionado' or 'Repetible'
     resolved_l2_es = resolve_maturity_band(2.10, ANNEX_MATURITY_BANDS, locale="es", translator=t)
-    assert resolved_l2_es["label"] in ("Gestionado", "Repetible", "Gestionado (Repetible)")
+    assert resolved_l2_es["label"] in ("Básico", "Basic")
 
 
 def test_brand_profile_is_neutral_and_white_labeled() -> None:
