@@ -387,7 +387,13 @@ def clean_client_name(client_name: str, locale: Optional[str] = None) -> str:
         return t("default_client_name", locale=target_locale)
     import re
 
-    cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name).strip()
+    cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name)
+    cleaned = re.sub(
+        r"[_-](?:fresh[_-])?e2e\b|[_-]comparison\b|[_-]test\b|[_-]eval\b",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    ).strip()
     cleaned = cleaned.replace("_", " ")
     if " " not in cleaned:
         cleaned = cleaned.replace("-", " ")
