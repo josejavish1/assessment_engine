@@ -94,7 +94,7 @@ class WorkspacePersistenceManager:
         if not target.exists():
             return None
         try:
-            with open(target, "r", encoding="utf-8") as f:
+            with open(target, "r", encoding="utf-8-sig") as f:
                 raw = json.load(f)
             # Support canonical schema version validation
             return ClientDossierV3.model_validate(raw)
@@ -116,7 +116,7 @@ class WorkspacePersistenceManager:
         if not target.exists():
             return None
         try:
-            with open(target, "r", encoding="utf-8") as f:
+            with open(target, "r", encoding="utf-8-sig") as f:
                 raw = json.load(f)
             return EvidenceVaultContract.model_validate(raw)
         except Exception as ex:
@@ -137,7 +137,7 @@ class WorkspacePersistenceManager:
         if not target.exists():
             return None
         try:
-            with open(target, "r", encoding="utf-8") as f:
+            with open(target, "r", encoding="utf-8-sig") as f:
                 raw = json.load(f)
             return DigitalTwinStateContract.model_validate(raw)
         except Exception as ex:
@@ -157,7 +157,7 @@ class WorkspacePersistenceManager:
         if not target.exists():
             return None
         try:
-            with open(target, "r", encoding="utf-8") as f:
+            with open(target, "r", encoding="utf-8-sig") as f:
                 raw = json.load(f)
             return PipelineStatusContract.model_validate(raw)
         except Exception as ex:

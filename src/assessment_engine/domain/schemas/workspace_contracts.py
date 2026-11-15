@@ -9,10 +9,11 @@ Strict Pydantic V2 models defining the physical workspace files:
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class PerimeterScopeType(str, Enum):
@@ -71,6 +72,59 @@ class ClientDossierV3(BaseModel):
     regulatory_landscape: List[RegulatoryFrameworkSpec] = Field(default_factory=list)
     executive_context_synthesis: str = Field(default="", description="Consolidated strategic synthesis from context discovery")
     strategic_pain_points: List[str] = Field(default_factory=list, description="List of primary operational pain points")
+
+    @model_validator(mode="before")
+    @classmethod
+    def adapt_legacy_or_canonical_format(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        if "legal_entity_name" in data and "financials" in data and "perimeter" in data:
+            return data
+
+        raw_slug = data.get("client_slug") or data.get("client_name") or "enterprise-client"
+        sanitized_slug = re.sub(r"[^a-z0-9\-_]", "-", str(raw_slug).lower()).strip("-")
+        legal_name = str(data.get("legal_entity_name") or data.get("client_name") or "Enterprise Client")
+        profile = data.get("profile") if isinstance(data.get("profile"), dict) else {}
+        metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+        tech = data.get("technology_context") if isinstance(data.get("technology_context"), dict) else {}
+        biz = data.get("business_context") if isinstance(data.get("business_context"), dict) else {}
+
+        stack = tech.get("group_level_stack")
+        if isinstance(stack, list):
+            crit_assets = [str(x) for x in stack]
+        elif isinstance(stack, dict):
+            crit_assets = [str(k) for k in stack.keys()]
+        else:
+            crit_assets = ["Corporate Core Platforms"]
+
+        ceo_agenda = biz.get("ceo_agenda") if isinstance(biz.get("ceo_agenda"), dict) else {}
+
+        return {
+            "schema_version": str(data.get("schema_version") or "3.0.0"),
+            "client_slug": sanitized_slug,
+            "legal_entity_name": legal_name,
+            "industry_vertical_code": str(data.get("industry_vertical_code") or profile.get("industry") or "HEAVY_MANUFACTURING"),
+            "primary_hq_country_iso": str(data.get("primary_hq_country_iso") or profile.get("primary_hq_country_iso") or "ES").upper()[:2],
+            "output_locale": str(data.get("output_locale") or profile.get("language") or "es"),
+            "last_updated_utc": str(data.get("last_updated_utc") or metadata.get("created_at") or "2026-11-15T00:00:00Z"),
+            "perimeter": data.get("perimeter") or {
+                "scope_type": "GLOBAL_HOLDING",
+                "target_entity_name": legal_name,
+                "employee_headcount": int(profile.get("employee_headcount") or 5000),
+                "operating_countries_iso": profile.get("operating_countries_iso") or ["ES"],
+                "critical_assets_summary": crit_assets or ["Core Infrastructure"],
+            },
+            "financials": data.get("financials") or {
+                "base_currency_iso": str(metadata.get("currency_code") or "EUR").upper()[:3],
+                "annual_revenue_amount": float(profile.get("annual_revenue") or 1250000000.0),
+                "ebitda_margin_pct": float(profile.get("ebitda_margin_pct") or 15.0),
+                "insurable_cyber_limit": 0.0,
+            },
+            "regulatory_landscape": data.get("regulatory_landscape") or [],
+            "executive_context_synthesis": str(data.get("executive_context_synthesis") or ceo_agenda.get("summary") or ""),
+            "strategic_pain_points": data.get("strategic_pain_points") or [],
+        }
 
 
 class EvidenceSourceType(str, Enum):
