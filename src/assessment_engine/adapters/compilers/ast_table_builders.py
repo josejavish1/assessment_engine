@@ -251,19 +251,21 @@ def build_heatmap_mosaic(
         r["fair_coordinates"] = coord_str
         r["coordinates"] = coord_str
         r["matrix_position"] = coord_str
-        risk_label = str(
-            r.get("truncated_title")
-            or r.get("short_title")
-            or r.get("title")
-            or r.get("id")
-            or r.get("risk_id")
-            or ""
-        ).strip()
-        if len(risk_label) > 38:
-            truncated = risk_label[:37]
-            if " " in truncated:
-                truncated = truncated.rsplit(" ", 1)[0]
-            risk_label = f"{truncated}…"
+        r_id = str(r.get("risk_id") or r.get("id") or "").strip()
+        if r_id:
+            risk_label = f"[{r_id}]"
+        else:
+            risk_label = str(
+                r.get("truncated_title")
+                or r.get("short_title")
+                or r.get("title")
+                or ""
+            ).strip()
+            if len(risk_label) > 38:
+                truncated = risk_label[:37]
+                if " " in truncated:
+                    truncated = truncated.rsplit(" ", 1)[0]
+                risk_label = f"{truncated}…"
 
         if risk_label and risk_label not in matrix_cells[r_tef][r_lm]:
             matrix_cells[r_tef][r_lm].append(risk_label)
@@ -323,12 +325,12 @@ def build_heatmap_mosaic(
             cell_risks = matrix_cells[tef_val][lm_val]
             if not cell_risks:
                 cell_text = "-"
-            elif len(cell_risks) <= 2:
+            elif len(cell_risks) <= 4:
                 cell_text = "\n".join(f"• {item}" for item in cell_risks)
             else:
-                additional_count = len(cell_risks) - 2
+                additional_count = len(cell_risks) - 3
                 adic_label = "adic." if str(locale).startswith("es") else "more"
-                cell_text = f"• {cell_risks[0]}\n• {cell_risks[1]}\n(+{additional_count} {adic_label})"
+                cell_text = f"• {cell_risks[0]}\n• {cell_risks[1]}\n• {cell_risks[2]}\n(+{additional_count} {adic_label})"
 
             severity = tef_val * lm_val
             if severity >= HEATMAP_SEVERITY_HIGH_THRESHOLD:

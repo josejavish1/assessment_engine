@@ -561,6 +561,19 @@ class Chapter4Synthesizer:
             for idx, card in enumerate(payload.technical_risk_cards)
         ]
 
+        ctx = context or {}
+        doc_meta = blueprint_data.get("document_meta") or {}
+        target_locale = str(ctx.get("meta_lang") or doc_meta.get("language") or "en").strip().lower()
+        is_es = target_locale.startswith("es")
+
+        concentration_narrative = [
+            f"Eje de Continuidad Operativa Crítica (Tier 1): Concentra la principal exposición por indisponibilidad y resiliencia de la plataforma en {payload.tower_name}.",
+            "Eje de Deuda Técnica y Gobernanza (Tier 2): Concentra la exposición derivada del envejecimiento del ciclo de vida de los activos y los condicionantes de mantenimiento operativo.",
+        ] if is_es else [
+            f"Core Operational Continuity Axis (Tier 1): Concentrates the primary operational and resilience exposure in {payload.tower_name}.",
+            "Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from platform lifecycle aging and maintenance scheduling constraints.",
+        ]
+
         synthesis_payload = {
             "total_status_quo_exposure_min": float(
                 payload.total_annual_coi.annual_total_coi_interval.lower_bound
@@ -569,10 +582,7 @@ class Chapter4Synthesizer:
                 payload.total_annual_coi.annual_total_coi_interval.upper_bound
             ),
             "anchors": anchors,
-            "matrix_concentration_narrative": [
-                f"Core Operational Continuity Axis (Tier 1): Concentrates the primary operational and resilience exposure in {payload.tower_name}.",
-                "Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from platform lifecycle aging and maintenance scheduling constraints.",
-            ],
+            "matrix_concentration_narrative": concentration_narrative,
             "strategic_risk_cards": cards,
             "monistic_payload": payload.model_dump(),
         }

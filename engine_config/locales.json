@@ -231,7 +231,7 @@
         "chapter_2_methodology": "2. Objetivo, Alcance y Marco Metodológico",
         "chapter_2_telemetry_architecture": "2. Objetivo, Alcance y Marco Metodológico",
         "chapter_3_diagnosis_cross_cutting": "Diagnóstico Técnico y Cuadro de Mando de Madurez",
-        "chapter_4_fair_resilience": "4. Evaluación Económica de Riesgos de Infraestructura",
+        "chapter_4_fair_resilience": "4. Evaluación de Riesgos de Infraestructura",
         "chapter_4_fair_quantification": "4. Exposición Financiera al Riesgo y Resiliencia Operativa",
         "chapter_5_strategic_roadmap": "5. Conclusiones y Síntesis Diagnóstica (AS-IS)",
         "business_impacts_title": "Principales Impactos de Negocio",
@@ -657,7 +657,7 @@
             "Resumen Ejecutivo\t3",
             "Objetivo, Alcance y Marco Metodológico\t4",
             "Diagnóstico Técnico de Capacidades\t6",
-            "Evaluación Económica de Riesgos de Infraestructura\t8",
+            "Evaluación de Riesgos de Infraestructura\t8",
             "Apéndice. Glosario de Términos y Cláusula de Responsabilidad\t16"
         ],
         "standard_sector_label": "Sector Estándar",
@@ -1693,7 +1693,8 @@
         },
         "risk_card_sle_bullet_fmt": "• **Impacto por Incidencia (SLE):** {sle_val} (estimado para {mttr_hours}h de recuperación a {hourly_rate}/h de afectación operativa).",
         "risk_card_ale_bullet_fmt": "• **Exposición Anualizada (ALE):** {ale_val}/año (calculada para una frecuencia estimada de 1 fallo cada {recurrence_years} años, tasa anual {lef_val}).",
-        "ch4_methodological_intro": "Este diagnóstico técnico aplica el estándar internacional O-FAIR (Factor Analysis of Information Risk) para modelar, cuantificar y priorizar la exposición al riesgo en términos financieros. Los valores mostrados son estimaciones probabilísticas de exposición económica (no facturas contables fijas). El impacto se calcula como: (Horas de parada operativa × Coste de ineficiencia por hora) + Coste directo de reparación.",
+        "ch4_methodological_intro": "La presente sección evalúa la exposición al riesgo técnico y operativo de la infraestructura analizada, cuantificando el impacto potencial de la deuda técnica acumulada y las brechas de madurez observadas. El modelo clasifica y prioriza los escenarios de riesgo según su frecuencia esperada y su severidad operacional, estableciendo una base objetiva para la toma de decisiones y la priorización de inversiones de mitigación.",
+        "ch4_sec1_vectors_explanation": "La exposición económica del estado actual se estructura en tres vectores complementarios: la **Carga Operativa Manual (Toil)** refleja las horas de ingeniería consumidas en tareas reactivas y mantenimiento no estandarizado; la **Exposición ante Contingencias** estima las pérdidas probabilísticas anuales derivadas de indisponibilidades no planificadas; y el **Sobrecoste Contractual** cuantifica los incrementos de coste asociados al fin de ciclo de vida (EoL) de hardware y licencias.",
         "sec_4_2_1_title": "4.2.1 Criterios de Escala de Frecuencia de Amenazas (TEF)",
         "tef_scale_headers": [
             "Nivel TEF",

@@ -3446,7 +3446,50 @@ class PayloadToASTBridge:
         )
 
         nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.33, 0.42, 0.25]))
-        nodes.append(SpacerNode(points=12))
+        nodes.append(SpacerNode(points=8))
+
+        # Vector explanation paragraph
+        vectors_text = t("ch4_sec1_vectors_explanation", locale=meta_lang)
+        nodes.append(ParagraphNode(text=vectors_text, font_size=9.5, space_after=8))
+
+        # Operational Stress Scenario (Worst-Case Single Outage Event) anchored directly in 4.1
+        from assessment_engine.domain.actuarial.schemas import Chapter4SynthesisPayload
+        raw_payload = blueprint_data.get("chapter4_monistic_payload")
+        rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+        if isinstance(raw_payload, dict):
+            monistic_payload = Chapter4SynthesisPayload.model_validate(raw_payload)
+        elif isinstance(raw_payload, Chapter4SynthesisPayload):
+            monistic_payload = raw_payload
+        else:
+            monistic_payload = Chapter4Synthesizer.synthesize_payload(
+                blueprint_data, context=ctx, rates_catalog=rates_cat
+            )
+
+        worst_case = monistic_payload.probabilistic_outage_ale.worst_case_single_outage_event
+        worst_case_min_str = format_currency(worst_case.lower_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
+        worst_case_max_str = format_currency(worst_case.upper_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
+
+        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Escenario de Estrés Operativo (Pérdida Máxima por Evento Único)")
+        stress_narrative = t(
+            "ch4_stress_scenario_body",
+            locale=meta_lang,
+            tower_name=tower_name,
+            worst_case_min=worst_case_min_str,
+            worst_case_max=worst_case_max_str,
+            default=(
+                f"En caso de materialización simultánea de fallos en los componentes críticos de {tower_name}, "
+                f"el impacto económico puntual derivado de la parada de planta y la movilización de servicios de emergencia "
+                f"se sitúa en una horquilla estimada de ~{worst_case_min_str} a ~{worst_case_max_str} por incidente mayor."
+            ),
+        )
+        nodes.append(
+            ParagraphNode(
+                text=f"**{stress_title}:** {stress_narrative}",
+                font_size=9.5,
+                space_before=4,
+                space_after=12,
+            )
+        )
 
     def _build_fair_risk_analysis(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]) -> None:
         if not risks_data_list:
@@ -3485,11 +3528,13 @@ class PayloadToASTBridge:
         )
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
 
-        # Build clean heatmap input populated with human-readable titles (zero cryptic RVS machine codes)
+        # Build clean heatmap input populated with clean risk codes (e.g. RSK-T2-01)
         heatmap_card_inputs: list[dict[str, Any]] = []
         for card in monistic_payload.technical_risk_cards:
             heatmap_card_inputs.append(
                 {
+                    "id": card.risk_id,
+                    "risk_id": card.risk_id,
                     "title": card.title,
                     "truncated_title": card.heatmap_coordinate.truncated_title,
                     "tef": card.heatmap_coordinate.likelihood_index,
@@ -3500,7 +3545,7 @@ class PayloadToASTBridge:
                 }
             )
 
-        # Render 5x5 Heatmap with smart titles and overflow capping (RT-03)
+        # Render 5x5 Heatmap with clean risk IDs and overflow capping
         nodes.append(
             _build_heatmap_mosaic(
                 heatmap_card_inputs,
@@ -3521,34 +3566,7 @@ class PayloadToASTBridge:
         )
         for concentration_p in synth_dict.get("matrix_concentration_narrative", []):
             nodes.append(ParagraphNode(text=concentration_p, font_size=9.5, space_after=6))
-
-        # 4.2.2 Operational Stress Scenario (Worst-Case Single Outage Event)
-        worst_case = monistic_payload.probabilistic_outage_ale.worst_case_single_outage_event
-        worst_case_min_str = format_currency(worst_case.lower_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
-        worst_case_max_str = format_currency(worst_case.upper_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
-
-        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Operational Stress Scenario (Worst-Case Single Loss Exposure)")
-        nodes.append(
-            ParagraphNode(
-                text=f"**{stress_title}:**",
-                font_size=9.5,
-                space_before=8,
-                space_after=4,
-                keep_with_next=True,
-            )
-        )
-        stress_narrative = t(
-            "ch4_stress_scenario_body",
-            locale=meta_lang,
-            tower_name=str(ctx.get("tower_name") or ""),
-            worst_case_min=worst_case_min_str,
-            worst_case_max=worst_case_max_str,
-            default=(
-                f"In the event of concurrent critical failure across {ctx.get('tower_name', '')}, "
-                f"the single-event financial impact is estimated at ~{worst_case_min_str} to ~{worst_case_max_str} per major incident."
-            ),
-        )
-        nodes.append(ParagraphNode(text=stress_narrative, font_size=9.5, space_after=14))
+        nodes.append(SpacerNode(points=10))
 
     def _build_detailed_findings_log(
         self,
@@ -4820,136 +4838,7 @@ class PayloadToASTBridge:
     def _build_conclusions_and_appendices(
         self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]] | None = None
     ) -> None:
-        meta_lang = ctx.get("meta_lang", "es")
-        blueprint_data = ctx.get("blueprint_data", {})
-        client_name = str(ctx.get("client_name") or "CLIENT")
-        tower_name = str(ctx.get("tower_name") or "Infrastructure Domain")
-
-        # Chapter 5: Conclusions & Strategic Transition Bridge (RFC 071)
-        nodes.append(PageBreakNode())
-        nodes.append(
-            HeadingNode(
-                text=t("conclusions_chapter_title", locale=meta_lang),
-                level=1,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(SpacerNode(points=12))
-
-        # Resolve exact maturity band and display score for Chapter 5
-        score_val = float(blueprint_data.get("maturity_score") or blueprint_data.get("current_score") or 2.50)
-        display_score = f"{format_number(score_val, locale=meta_lang, decimals=2)}/{format_number(5.0, locale=meta_lang, decimals=2)}"
-        exact_band = (
-            t("band_optimizing", locale=meta_lang) if score_val >= 4.5
-            else t("band_managed", locale=meta_lang) if score_val >= 3.5
-            else t("band_defined", locale=meta_lang) if score_val >= 2.5
-            else t("band_repeatable", locale=meta_lang) if score_val >= 1.5
-            else t("band_initial", locale=meta_lang)
-        )
-
-        intro_text = t(
-            "conclusions_summary_intro",
-            locale=meta_lang,
-            tower_name=tower_name,
-            client_name=client_name,
-            exact_band=exact_band,
-            display_score=display_score,
-        )
-        nodes.append(ParagraphNode(text=intro_text, space_after=10))
-
-        # Build Strategic Transition Bridge Table linking AS-IS risks to To-Be roadmap projects
-        projects: list[dict[str, Any]] = []
-        for p in blueprint_data.get("pillars_analysis", []):
-            if isinstance(p, dict):
-                for prj in p.get("projects_todo", []):
-                    if isinstance(prj, dict):
-                        projects.append(prj)
-
-        if projects:
-            nodes.append(
-                HeadingNode(
-                    text=t("bridge_table_title", locale=meta_lang),
-                    level=2,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            nodes.append(SpacerNode(points=6))
-
-            hdr_bg = self.primary_color_hex
-            bridge_rows = [
-                TableRowNode(
-                    cells=[
-                        CellNode(text=t("bridge_col_risk_id", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5, align="CENTER"),
-                        CellNode(text=t("bridge_col_capability", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5),
-                        CellNode(text=t("bridge_col_project", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5),
-                        CellNode(text=t("bridge_col_horizon", locale=meta_lang), bold=True, bg_color=hdr_bg, text_color_rgb=[255, 255, 255], font_size=8.5, align="CENTER"),
-                    ],
-                    is_header=True,
-                )
-            ]
-
-            risks_map = {
-                r.get("id"): r
-                for r in (risks_data_list or [])
-                if isinstance(r, dict) and r.get("id")
-            }
-
-            for idx, prj in enumerate(projects[:8], start=1):
-                p_name = str(prj.get("name") or f"Project {idx}")
-                p_size = str(prj.get("sizing") or "M")
-                p_dur = str(prj.get("duration") or "H1")
-                horizon_str = f"{p_size} / {p_dur}"
-
-                risk_ref = prj.get("mitigates_risk_id")
-                matched_risk = risks_map.get(risk_ref) if risk_ref else None
-                if not matched_risk and idx - 1 < len(risks_data_list or []):
-                    matched_risk = (risks_data_list or [])[idx - 1]
-
-                t_prefix = str(ctx.get("tower_id") or "T1").strip().upper()
-                raw_rid = str(matched_risk.get("id") or "").strip() if matched_risk else ""
-                if raw_rid and not raw_rid.startswith("RVS"):
-                    r_id = raw_rid
-                else:
-                    r_id = f"RSK-{t_prefix}-{idx:02d}"
-
-                r_cap = matched_risk.get("capability", matched_risk.get("pillar", "Technical Control")) if matched_risk else "Technical Capability Modernization"
-
-                bg_row = "F8FAFC" if idx % 2 == 1 else "FFFFFF"
-                bridge_rows.append(
-                    TableRowNode(
-                        cells=[
-                            CellNode(text=f"**[{r_id}]**", align="CENTER", bg_color=bg_row, font_size=8.0),
-                            CellNode(text=str(r_cap), bg_color=bg_row, font_size=8.0),
-                            CellNode(text=f"**{p_name}**", bg_color=bg_row, font_size=8.0),
-                            CellNode(text=horizon_str, align="CENTER", bg_color=bg_row, font_size=8.0),
-                        ]
-                    )
-                )
-
-            nodes.append(TableNode(rows=bridge_rows, autofit=True, col_widths=[0.14, 0.36, 0.35, 0.15]))
-            nodes.append(SpacerNode(points=10))
-
-        # Format total fair ale for closing text using monistic Chapter 4 status quo range
-        synth = blueprint_data.get("chapter4_synthesis") or {}
-        tot_min = synth.get("total_status_quo_exposure_min", 0.0)
-        tot_max = synth.get("total_status_quo_exposure_max", 0.0)
-        yr_str = t("year_lbl", locale=meta_lang)
-        curr_sym = ctx.get("currency") or ctx.get("currency_symbol") or "EUR"
-
-        if tot_max > 0:
-            formatted_ale_closing = f"~{format_currency(tot_min, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} - {format_currency(tot_max, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} / {yr_str}"
-        else:
-            total_ale_num = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in (risks_data_list or []) if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR")
-            formatted_ale_closing = format_currency(total_ale_num, currency_symbol=curr_sym, locale=meta_lang, decimals=0)
-
-        closing_text = t(
-            "conclusions_closing_text",
-            locale=meta_lang,
-            client_name=client_name,
-            formatted_ale=formatted_ale_closing,
-        )
-        nodes.append(ParagraphNode(text=closing_text, space_after=14))
-
+        """Appends the unified technical appendix (Glossary & Disclaimer). Chapter 5 (TO-BE) is eliminated from AS-IS annex."""
         # Unified Appendix (Glossary & Legal Liability Disclaimer)
         _build_appendix_c_glossary_and_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
