@@ -2029,14 +2029,6 @@ class PayloadToASTBridge:
             formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
             nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=8))
 
-        # COMPONENT E: UNIVERSAL DECISION HORIZON & STRATEGIC MANDATE (BAIN COST OF DELAY)
-        nodes.append(SpacerNode(points=10))
-        horizon_lead = t("decision_horizon_lead", locale=meta_lang)
-        horizon_body = t("decision_horizon_body", locale=meta_lang, regulation=primary_reg)
-        horizon_full = f"**{horizon_lead}** {horizon_body}"
-        horizon_full = restore_locale_diacritics(horizon_full, meta_lang)
-        nodes.append(ParagraphNode(text=horizon_full, font_size=9.5, space_after=12))
-
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
 

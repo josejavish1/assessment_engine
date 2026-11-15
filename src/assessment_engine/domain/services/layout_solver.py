@@ -150,10 +150,10 @@ class VerticalLayoutSolver:
         for b_text in strategic_reality_bullets[:3]:
             total_height += cls.estimate_paragraph_height(b_text, font_size=9.5, space_after=8.0, locale=locale)
 
-        # 6. Spacer before mandate: 10 pt
-        total_height += 10.0
-        # Decision Horizon Mandate
-        total_height += cls.estimate_paragraph_height(decision_mandate, font_size=9.5, space_after=12.0, locale=locale)
+        # 6. Optional Decision Horizon Mandate
+        if decision_mandate:
+            total_height += 10.0
+            total_height += cls.estimate_paragraph_height(decision_mandate, font_size=9.5, space_after=12.0, locale=locale)
 
         return total_height
 

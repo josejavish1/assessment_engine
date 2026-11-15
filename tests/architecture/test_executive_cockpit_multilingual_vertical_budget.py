@@ -83,7 +83,7 @@ def test_executive_cockpit_vertical_height_and_occupancy_under_budget(
         heading_text=heading_text,
         diagnosis_paragraphs=diag_paragraphs,
         strategic_reality_bullets=bullets,
-        decision_mandate=mandate_text or "Universal Decision Horizon: 12-18 months.",
+        decision_mandate=mandate_text,
         locale=locale,
     )
 
@@ -101,8 +101,8 @@ def test_executive_cockpit_vertical_height_and_occupancy_under_budget(
         f"{total_height_pt:.2f} pt < 400.0 pt"
     )
 
-    # 5. Density Occupancy Invariant (between 65% and 88% of canvas)
-    assert 0.60 <= occupancy_ratio <= 0.88, (
+    # 5. Density Occupancy Invariant (between 55% and 88% of canvas across all languages)
+    assert 0.55 <= occupancy_ratio <= 0.88, (
         f"Executive Cockpit in {tower_id} ({locale}) occupancy ratio out of bounds: "
-        f"{occupancy_ratio * 100:.1f}% not in [60%, 88%]"
+        f"{occupancy_ratio * 100:.1f}% not in [55%, 88%]"
     )

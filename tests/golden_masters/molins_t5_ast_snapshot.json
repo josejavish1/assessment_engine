@@ -535,21 +535,6 @@
       "font_size": 9.5
     },
     {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "paragraph",
-      "text": "**Ventana de Decisión y Mandato:** Horizonte de actuación recomendado de 12 a 18 meses para ejecutar la modernización antes de las auditorías de cumplimiento de Directiva NIS2.",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 12,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
       "type": "page_break"
     },
     {
