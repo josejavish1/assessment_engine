@@ -271,6 +271,9 @@ CANONICAL {pillar_count} PILLARS FOR {tower_code}:
    - Write all prose in {context.target_language} adhering strictly to official grammar and orthography.
    - When generating in Spanish, preserve all mandatory RAE graphic accents and tildes (e.g., gestión, operación, análisis, técnica, catálogo, conmutación, pública, más, útil, módulo, período, diagnóstico, pérdida, política). Never emit ASCII-stripped or degraded characters.
 
+14. REGIONAL REGISTER (PENINSULAR SPANISH ES-ES):
+   - When generating in Spanish, write exclusively in European / Peninsular Spanish conforming to corporate consulting in Spain: use 'aplicaciones' (never 'aplicativos'), 'monitorización' (never 'monitoreo'), 'aprovisionamiento' (never 'provisionamiento'), 'infraestructura de cómputo / servidores' (never 'parque computacional').
+
 ### OUTPUT SCHEMA:
 Output ONLY a valid JSON object matching this structure (write prose in {context.target_language}):
 {{

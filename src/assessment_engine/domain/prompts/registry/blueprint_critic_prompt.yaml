@@ -41,4 +41,5 @@ review_objectives:
 - 'STRATEGIC VENDOR ALIGNMENT: Align recommendations with the client dominant cloud hyperscaler and strategic enterprise ecosystem.'
 - 'OUTPUT LANGUAGE MANDATE: You MUST ensure the corrected JSON is written EXCLUSIVELY in the target language ({target_language}).'
 - 'ORTHOGRAPHIC EXCELLENCE (NATIVE UTF-8 DIACRITICS): Ensure all Spanish text strictly adheres to RAE orthography, actively correcting any missing tildes (e.g. gestión, operación, análisis, técnica, catálogo, conmutación, pública, más, útil, módulo, período, diagnóstico).'
+- 'REGIONAL REGISTER MANDATE (PENINSULAR ES-ES): When reviewing Spanish, ensure Peninsular corporate register: use "aplicaciones" (never "aplicativos"), "monitorización" (never "monitoreo"), "aprovisionamiento" (never "provisionamiento"), "infraestructura de cómputo/servidores" (never "parque computacional").'
 handover_instruction: Return exclusively the final corrected JSON.
