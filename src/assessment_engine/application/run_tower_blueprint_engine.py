@@ -1045,10 +1045,16 @@ def _hydrate_methodological_frameworks(blueprint_payload: dict[str, Any] | Bluep
     ws_mgr = WorkspacePersistenceManager()
     client_intel = ws_mgr.load_client_intelligence(client_name)
     reg_fws = []
-    if client_intel and client_intel.profile:
-        raw_fws = client_intel.profile.regulatory_frameworks
-        if raw_fws:
-            reg_fws = [str(fw) for fw in raw_fws]
+    if client_intel:
+        if hasattr(client_intel, "regulatory_landscape") and client_intel.regulatory_landscape:
+            reg_fws = [
+                str(getattr(fw, "framework_code", fw))
+                for fw in client_intel.regulatory_landscape
+            ]
+        elif hasattr(client_intel, "profile") and client_intel.profile:
+            raw_fws = getattr(client_intel.profile, "regulatory_frameworks", []) or []
+            if raw_fws:
+                reg_fws = [str(fw) for fw in raw_fws]
 
     # If the client has specific regulatory frameworks in their intelligence profile, look them up.
     # Otherwise, fallback to NIS2 for backward compatibility in European scenarios, but this is now data-driven.

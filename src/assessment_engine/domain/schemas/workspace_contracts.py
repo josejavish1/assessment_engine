@@ -73,6 +73,26 @@ class ClientDossierV3(BaseModel):
     executive_context_synthesis: str = Field(default="", description="Consolidated strategic synthesis from context discovery")
     strategic_pain_points: List[str] = Field(default_factory=list, description="List of primary operational pain points")
 
+    @property
+    def profile(self) -> Any:
+        """Backwards-compatible profile accessor returning profile dictionary."""
+        class ProfileShim:
+            def __init__(self, parent: ClientDossierV3):
+                self.parent = parent
+                self.regulatory_frameworks = [
+                    (r.framework_code if hasattr(r, "framework_code") else str(r))
+                    for r in parent.regulatory_landscape
+                ]
+                self.industry = parent.industry_vertical_code
+                self.primary_hq_country_iso = parent.primary_hq_country_iso
+                self.language = parent.output_locale
+                self.annual_revenue = parent.financials.annual_revenue_amount
+
+            def get(self, key: str, default: Any = None) -> Any:
+                return getattr(self, key, default)
+
+        return ProfileShim(self)
+
     @model_validator(mode="before")
     @classmethod
     def adapt_legacy_or_canonical_format(cls, data: Any) -> Any:
