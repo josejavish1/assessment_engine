@@ -135,7 +135,7 @@
     {
       "pillar_id": "T4.P2",
       "pillar_name": "Performance, Capacity & Lifecycle Management",
-      "weight_pct": 20,
+      "weight_pct": 24,
       "kpis": [
         {
           "kpi_id": "T4.P2.K1",
@@ -229,7 +229,7 @@
     {
       "pillar_id": "T4.P4",
       "pillar_name": "Security & Access Controls for Data Platforms",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T4.P4.K1",
@@ -266,7 +266,7 @@
     {
       "pillar_id": "T4.P5",
       "pillar_name": "Platform Integration & Storage Operations",
-      "weight_pct": 20,
+      "weight_pct": 18,
       "kpis": [
         {
           "kpi_id": "T4.P5.K1",

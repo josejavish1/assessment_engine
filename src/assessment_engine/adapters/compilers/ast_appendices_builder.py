@@ -160,14 +160,27 @@ def build_cmmi_methodology_and_capabilities(
     )
     resolver = get_taxonomy_resolver()
 
-    # Pre-calculate integer weights satisfying dual constraint (sum=100 and dot_product=headline_score)
-    raw_weights = [float(p.get("weight_pct", p.get("weight", 20))) for p in pillars_list]
+    # Look up official weights from tower_definition if missing or default in payload
+    official_weights_by_pid = {}
+    if isinstance(t_def, dict):
+        for p_def in t_def.get("pillars", []):
+            official_weights_by_pid[p_def.get("pillar_id")] = float(p_def.get("weight_pct", 20.0))
+
+    raw_weights = []
+    for p in pillars_list:
+        pid = p.get("pillar_id") or p.get("pilar_id") or p.get("id")
+        w = p.get("weight_pct")
+        if (w is None or float(w) == 20.0) and pid in official_weights_by_pid:
+            w = official_weights_by_pid[pid]
+        elif w is None:
+            w = p.get("weight", 20.0)
+        raw_weights.append(float(w))
+
     pillar_scores = [float(p.get("score", p.get("maturity_score", 2.0))) for p in pillars_list]
-    composite_target = float(
-        blueprint_data.get("maturity_score")
-        or blueprint_data.get("current_score")
-        or 2.50
-    )
+    norm_w = [w / sum(raw_weights) for w in raw_weights] if sum(raw_weights) > 0 else [0.2] * len(raw_weights)
+    exact_dot_product = sum(s * w for s, w in zip(pillar_scores, norm_w))
+    composite_target = round(exact_dot_product, 2)
+
     int_weights = harmonize_integer_weights_dual_constraint(
         raw_weights=raw_weights,
         pillar_scores=pillar_scores,

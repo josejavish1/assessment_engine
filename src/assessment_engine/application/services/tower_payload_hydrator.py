@@ -419,12 +419,34 @@ class TowerPayloadHydrator:
         """
         pa = payload.get("pillars_analysis") or []
         if pa:
+            doc_m = payload.get("document_meta") or {}
+            tower_id = str(
+                doc_m.get("tower_id")
+                or doc_m.get("tower_code")
+                or payload.get("tower_id")
+                or payload.get("tower_code")
+                or ""
+            ).strip().upper()
+            official_weights = {}
+            if tower_id:
+                try:
+                    from assessment_engine.infrastructure.runtime_paths import resolve_tower_definition_file
+                    t_def_path = resolve_tower_definition_file(tower_id)
+                    if t_def_path.exists():
+                        with open(t_def_path, "r", encoding="utf-8") as f:
+                            t_def = json.load(f)
+                        for p in t_def.get("pillars", []):
+                            official_weights[p.get("pillar_id")] = float(p.get("weight_pct", 20.0))
+                except Exception:
+                    pass
+
             weighted_sum = Decimal("0.0")
             total_weight = Decimal("0.0")
             simple_scores = []
 
             for p_item in pa:
                 if isinstance(p_item, dict):
+                    pid = p_item.get("pillar_id") or p_item.get("pilar_id") or p_item.get("id")
                     raw_sc = (
                         p_item.get("score")
                         if p_item.get("score") is not None
@@ -432,6 +454,8 @@ class TowerPayloadHydrator:
                     )
                     sc_f = safe_float(raw_sc, locale=doc_lang, allow_zero=True)
                     raw_wt = p_item.get("weight") if p_item.get("weight") is not None else p_item.get("weight_pct")
+                    if (raw_wt is None or float(raw_wt) == 20.0) and pid in official_weights:
+                        raw_wt = official_weights[pid]
                     wt_f = safe_float(raw_wt, locale=doc_lang, allow_zero=True)
 
                     if sc_f is not None:
