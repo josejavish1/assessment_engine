@@ -794,6 +794,7 @@ def build_client_context_packet(
             "review_status": data.get("review", {}).get(
                 "human_review_status", "pending"
             ),
+            "calibration_overrides": data.get("calibration_overrides", []),
         }
 
     return client_intelligence_to_legacy(data)

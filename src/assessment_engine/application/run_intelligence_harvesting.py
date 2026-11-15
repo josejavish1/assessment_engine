@@ -829,6 +829,41 @@ def _assemble_and_persist_dossier(
     """Construct canonical V3 client intelligence JSON, sign with cryptographic seal, and write atomically."""
     import uuid
 
+    # Look up enterprise registry for declarative company profile and empirical calibration overrides
+    reg_path = Path("engine_config/enterprise_registry.json")
+    ent_info: dict[str, Any] = {}
+    calibration_overrides: list[dict[str, Any]] = []
+    if reg_path.exists():
+        try:
+            reg_data = json.loads(reg_path.read_text(encoding="utf-8-sig"))
+            c_token = str(client_name or "").lower()
+            for dom, info in reg_data.get("domains", {}).items():
+                co_name = str(info.get("company_name", "")).lower()
+                dom_stem = dom.split(".")[0].lower()
+                if (dom_stem and (dom_stem in c_token or c_token in dom_stem)) or (co_name and (co_name in c_token or c_token in co_name)):
+                    ent_info = info
+                    calibration_overrides = info.get("calibration_overrides", [])
+                    break
+        except Exception as ex:
+            logger.debug("Enterprise registry resolution failed in dossier assembly: %s", ex)
+
+    target_lang = ent_info.get("default_deliverable_language") or "es"
+    prof_dict: dict[str, Any] = {
+        "industry": industry_str,
+        "hierarchy": "Global Entity",
+        "lang": target_lang,
+        "language": target_lang,
+    }
+    if ent_info.get("revenue_m"):
+        prof_dict["annual_revenue"] = float(ent_info["revenue_m"]) * 1_000_000.0
+        prof_dict["consolidated_annual_revenue"] = float(ent_info["revenue_m"]) * 1_000_000.0
+    if ent_info.get("company_name"):
+        prof_dict["legal_name"] = ent_info["company_name"]
+    if ent_info.get("currency"):
+        prof_dict["currency"] = ent_info["currency"]
+    if ent_info.get("employees"):
+        prof_dict["headcount"] = ent_info["employees"]
+
     final_json = {
         "version": "3.0",
         "client_name": client_name,
@@ -836,9 +871,10 @@ def _assemble_and_persist_dossier(
             "dossier_id": f"{slugify(client_name)}-purist",
             "schema_version": "3.0",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "lang": "en",
+            "lang": target_lang,
         },
-        "profile": {"industry": industry_str, "hierarchy": "Global Entity"},
+        "profile": prof_dict,
+        "calibration_overrides": calibration_overrides,
         "regulatory_context": [],
         "business_context": {
             "ceo_agenda": {"summary": narrative.get("text", "N/A")},

@@ -7,7 +7,7 @@ All models are frozen, extra-forbidden, and validated with strict mathematical i
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Self, Tuple
+from typing import Any, Self, Tuple
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -53,12 +53,37 @@ class MonetaryInterval(BaseModel):
 class ThreeYearCompoundedTCO(BaseModel):
     """36-Month compounded Total Cost of Inaction (COI) projection."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
 
-    lower_bound_eur: int = Field(..., ge=0)
-    upper_bound_eur: int = Field(..., ge=0)
-    midpoint_eur: int = Field(..., ge=0)
+    lower_bound: int = Field(..., ge=0, alias="lower_bound_eur")
+    upper_bound: int = Field(..., ge=0, alias="upper_bound_eur")
+    midpoint: int = Field(..., ge=0, alias="midpoint_eur")
+    compounding_rate_annual: float = Field(default=0.0, ge=0.0, le=1.0)
     currency_iso: str = Field(default="EUR", pattern=r"^[A-Z]{3}$")
+
+    @property
+    def lower_bound_eur(self) -> int:
+        """Backward-compatible property alias."""
+        return self.lower_bound
+
+    @property
+    def upper_bound_eur(self) -> int:
+        """Backward-compatible property alias."""
+        return self.upper_bound
+
+    @property
+    def midpoint_eur(self) -> int:
+        """Backward-compatible property alias."""
+        return self.midpoint
+
+    @model_validator(mode="after")
+    def validate_tco_bounds(self) -> Self:
+        if self.lower_bound > self.upper_bound:
+            raise ValueError(
+                f"Invalid 3Y TCO bounds: lower_bound ({self.lower_bound:,}) "
+                f"> upper_bound ({self.upper_bound:,})"
+            )
+        return self
 
 
 class ChronicOperationalDragBreakdown(BaseModel):
@@ -81,14 +106,16 @@ class ChronicOperationalDragBreakdown(BaseModel):
             + self.contractual_and_licensing_escalation_interval
         )
         if (
-            self.total_chronic_drag_interval.lower_bound != expected.lower_bound
+            self.total_chronic_drag_interval.currency_iso != expected.currency_iso
+            or self.total_chronic_drag_interval.lower_bound != expected.lower_bound
             or self.total_chronic_drag_interval.upper_bound != expected.upper_bound
         ):
             raise ValueError(
                 f"COD Reconciliation Invariant Violated: total_chronic_drag_interval "
                 f"([{self.total_chronic_drag_interval.lower_bound:,}, "
-                f"{self.total_chronic_drag_interval.upper_bound:,}]) must equal exact sum "
-                f"of toil + escalation ([{expected.lower_bound:,}, {expected.upper_bound:,}])."
+                f"{self.total_chronic_drag_interval.upper_bound:,}] {self.total_chronic_drag_interval.currency_iso}) "
+                f"must equal exact sum of toil + escalation "
+                f"([{expected.lower_bound:,}, {expected.upper_bound:,}] {expected.currency_iso})."
             )
         return self
 
@@ -102,6 +129,18 @@ class ProbabilisticOutageALEBreakdown(BaseModel):
     portfolio_subadditivity_factor: float = Field(..., ge=0.50, le=1.0)
     annual_outage_ale_interval: MonetaryInterval
     worst_case_single_outage_event: MonetaryInterval
+
+    @model_validator(mode="after")
+    def verify_outage_currency_consistency(self) -> Self:
+        if (
+            self.annual_outage_ale_interval.currency_iso
+            != self.worst_case_single_outage_event.currency_iso
+        ):
+            raise ValueError(
+                f"Outage currency mismatch: {self.annual_outage_ale_interval.currency_iso} "
+                f"!= {self.worst_case_single_outage_event.currency_iso}"
+            )
+        return self
 
 
 class CostOfInactionTotal(BaseModel):
@@ -147,6 +186,7 @@ class TechnicalRiskScenario(BaseModel):
     title: str = Field(..., min_length=5, max_length=120)
     custody_role: str = Field(
         default="PRIMARY_CUSTODIAN",
+        pattern=r"^(PRIMARY_CUSTODIAN|TANGENTIAL_CONTRIBUTOR)$",
         description="'PRIMARY_CUSTODIAN' or 'TANGENTIAL_CONTRIBUTOR'",
     )
     threat_event_frequency_annual: float = Field(..., ge=0.01, le=100.0)
@@ -190,36 +230,53 @@ class Chapter4SynthesisPayload(BaseModel):
 
     @model_validator(mode="after")
     def verify_chapter_actuarial_monism(self) -> Self:
-        """Enforces ironclad horizontal and vertical accounting identities across Chapter 4."""
+        """Enforces ironclad horizontal, vertical, and currency accounting identities across Chapter 4."""
+        # Invariant 0: Global Currency Monism
+        intervals_to_check = [
+            self.chronic_operational_drag.total_chronic_drag_interval.currency_iso,
+            self.probabilistic_outage_ale.annual_outage_ale_interval.currency_iso,
+            self.total_annual_coi.annual_total_coi_interval.currency_iso,
+            self.three_year_compounded_tco.currency_iso,
+            *(c.calibrated_annual_ale.currency_iso for c in self.technical_risk_cards),
+        ]
+        for curr in intervals_to_check:
+            if curr != self.currency_iso:
+                raise ValueError(
+                    f"Currency Monism Violated: root currency is {self.currency_iso}, "
+                    f"but nested component uses {curr}."
+                )
+
         # Invariant 1: Total Annual COI == COD + Outage ALE
-        expected_coi_low = (
-            self.chronic_operational_drag.total_chronic_drag_interval.lower_bound
-            + self.probabilistic_outage_ale.annual_outage_ale_interval.lower_bound
-        )
-        expected_coi_high = (
-            self.chronic_operational_drag.total_chronic_drag_interval.upper_bound
-            + self.probabilistic_outage_ale.annual_outage_ale_interval.upper_bound
+        expected_coi = (
+            self.chronic_operational_drag.total_chronic_drag_interval
+            + self.probabilistic_outage_ale.annual_outage_ale_interval
         )
         actual_coi = self.total_annual_coi.annual_total_coi_interval
 
         if (
-            actual_coi.lower_bound != expected_coi_low
-            or actual_coi.upper_bound != expected_coi_high
+            actual_coi.lower_bound != expected_coi.lower_bound
+            or actual_coi.upper_bound != expected_coi.upper_bound
         ):
             raise ValueError(
                 f"Split-Brain Invariant 1 Violated: Total Annual COI "
                 f"([{actual_coi.lower_bound:,}, {actual_coi.upper_bound:,}]) "
-                f"!= COD + Outage ALE ([{expected_coi_low:,}, {expected_coi_high:,}])."
+                f"!= COD + Outage ALE ([{expected_coi.lower_bound:,}, {expected_coi.upper_bound:,}])."
             )
 
         # Invariant 2: Sum of primary card ALEs must reconcile with Lever 2 (Outage ALE)
         primary_cards = [
             c for c in self.technical_risk_cards if c.custody_role == "PRIMARY_CUSTODIAN"
         ]
+        outage_ale = self.probabilistic_outage_ale.annual_outage_ale_interval
+
+        if not primary_cards and outage_ale.upper_bound > 0:
+            raise ValueError(
+                "Split-Brain Invariant 2 Violated: Outage ALE > 0 but zero PRIMARY_CUSTODIAN risk cards present."
+            )
+
         if primary_cards:
             cards_low_sum = sum(c.calibrated_annual_ale.lower_bound for c in primary_cards)
             cards_high_sum = sum(c.calibrated_annual_ale.upper_bound for c in primary_cards)
-            outage_ale = self.probabilistic_outage_ale.annual_outage_ale_interval
 
             if (
                 cards_low_sum != outage_ale.lower_bound

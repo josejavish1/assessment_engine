@@ -1371,6 +1371,7 @@ async def run_tower_blueprint(
         pillars_analysis_json=json.dumps(blueprint_payload["pillars_analysis"]),
         intel_str=intel_str,
         total_ale=total_ale,
+        target_language=target_language,
     )
     valid_project_names = [
         proj["name"]

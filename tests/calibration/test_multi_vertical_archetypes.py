@@ -97,8 +97,8 @@ def test_universal_chapter4_calibration_across_archetypes(arch: dict) -> None:
         "worst_crisis_rto_hours": arch["rto_hours"],
         "pillars_analysis": [
             {
-                "pilar_name": f"{arch['tower_name']} Core",
-                "pilar_score": arch["cmmi_score"],
+                "pillar_name": f"{arch['tower_name']} Core",
+                "pillar_score": arch["cmmi_score"],
                 "health_check_asis": [
                     {
                         "capability": f"Critical Capability {i}",

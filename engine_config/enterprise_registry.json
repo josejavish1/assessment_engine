@@ -11,7 +11,17 @@
       "industry": "heavy_manufacturing",
       "employees": 6500,
       "revenue_m": 1250.0,
-      "default_deliverable_language": "es"
+      "default_deliverable_language": "es",
+      "calibration_overrides": [
+        {
+          "tower_id": "T2",
+          "pillar_id": "T2.P2",
+          "declared_score": 4.25,
+          "calibrated_score": 1.0,
+          "divergence_class": "OPERATIONAL_GAP",
+          "calibration_rationale": "Inexistencia de plataformas de contenedores en producción; la totalidad de las cargas operan sobre más de 300 máquinas virtuales tradicionales en VMware vSphere y Proxmox."
+        }
+      ]
     },
     "cementosmolins.es": {
       "company_name": "Cementos Molins",
@@ -21,7 +31,17 @@
       "industry": "heavy_manufacturing",
       "employees": 6500,
       "revenue_m": 1250.0,
-      "default_deliverable_language": "es"
+      "default_deliverable_language": "es",
+      "calibration_overrides": [
+        {
+          "tower_id": "T2",
+          "pillar_id": "T2.P2",
+          "declared_score": 4.25,
+          "calibrated_score": 1.0,
+          "divergence_class": "OPERATIONAL_GAP",
+          "calibration_rationale": "Inexistencia de plataformas de contenedores en producción; la totalidad de las cargas operan sobre más de 300 máquinas virtuales tradicionales en VMware vSphere y Proxmox."
+        }
+      ]
     },
     "starlingbank.co.uk": {
       "company_name": "Starling Bank",

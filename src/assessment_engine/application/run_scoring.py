@@ -314,6 +314,23 @@ def build_scoring(
     for answer in case_dto.answers:
         answers_by_kpi.setdefault(answer.kpi_id, []).append(float(answer.value))
 
+    # Resolve calibration overrides (Perception Gap Reconciliation)
+    overrides: list[dict[str, Any]] = []
+    raw_ctx = getattr(case_dto, "client_context", None)
+    if isinstance(raw_ctx, dict):
+        overrides = raw_ctx.get("calibration_overrides", [])
+    elif isinstance(case_input, dict):
+        overrides = case_input.get("client_context", {}).get("calibration_overrides", [])
+    if not overrides:
+        try:
+            client_name = str(case_dto.case_id.split("_")[0]).strip()
+            ci_path = Path("working") / client_name / "client_intelligence.json"
+            if ci_path.exists():
+                ci_data = json.loads(ci_path.read_text(encoding="utf-8-sig"))
+                overrides = ci_data.get("calibration_overrides", [])
+        except Exception:
+            pass
+
     pillar_scores: list[dict[str, Any]] = []
     weights_pct: dict[str, float | int] = {}
 
@@ -341,15 +358,30 @@ def build_scoring(
             if pillar.weight_pct.is_integer()
             else pillar.weight_pct
         )
-        pillar_scores.append(
-            {
-                "pillar_id": pillar.pillar_id,
-                "pillar_name": pillar.pillar_name,
-                "weight_pct": weight_val,
-                "score_exact": round(pillar_score, SCORE_PRECISION_DECIMALS),
-                "score_display_1d": round_display(pillar_score),
-            }
-        )
+
+        declared_score = round(pillar_score, SCORE_PRECISION_DECIMALS)
+        is_overridden = False
+        calibrated_score = None
+        for ov in overrides:
+            if ov.get("tower_id") == tower_dto.tower_id and ov.get("pillar_id") == pillar.pillar_id:
+                calibrated_score = float(ov["calibrated_score"])
+                pillar_score = calibrated_score
+                is_overridden = True
+                break
+
+        p_dict: dict[str, Any] = {
+            "pillar_id": pillar.pillar_id,
+            "pillar_name": pillar.pillar_name,
+            "weight_pct": weight_val,
+            "score_exact": round(pillar_score, SCORE_PRECISION_DECIMALS),
+            "score_display_1d": round_display(pillar_score),
+            "declared_score": declared_score,
+        }
+        if is_overridden and calibrated_score is not None:
+            p_dict["calibrated_score"] = calibrated_score
+            p_dict["perception_gap"] = round(declared_score - calibrated_score, SCORE_PRECISION_DECIMALS)
+
+        pillar_scores.append(p_dict)
         weights_pct[pillar.pillar_id] = weight_val
 
     tower_score = sum(

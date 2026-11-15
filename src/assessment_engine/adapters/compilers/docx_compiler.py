@@ -274,7 +274,9 @@ def add_markdown_runs(
             if not i_part:
                 continue
             is_italic = i_part.startswith("*") and i_part.endswith("*") and len(i_part) >= 2
-            run_text = i_part[1:-1] if is_italic else i_part
+            raw_text = i_part[1:-1] if is_italic else i_part
+            # Sanitize invalid XML 1.0 control characters that crash lxml
+            run_text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", raw_text)
             run = paragraph.add_run(run_text)
             run.bold = effective_bold
             run.italic = True if is_italic else default_italic

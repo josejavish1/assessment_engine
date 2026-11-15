@@ -301,7 +301,19 @@ def build_case_input(args: argparse.Namespace) -> dict:
             logger.debug(f"[CaseInput] Error leyendo context_path: {ex}")
 
     context_summary = ""
-    if tree_path.exists():
+    if vault_path.exists():
+        try:
+            vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
+            frags = [f.get("content", "") for f in vault_data.get("fragments", [])]
+            if frags:
+                context_summary = "\n\n".join(frags)[:45000]
+        except (OSError, json.JSONDecodeError) as ex:
+            logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
+
+    if not context_summary and context_text:
+        context_summary = context_text[:45000]
+
+    if not context_summary and tree_path.exists():
         try:
             tree_data = json.loads(tree_path.read_text(encoding="utf-8"))
             l1_nodes = [
@@ -313,18 +325,6 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 context_summary = "\n".join(l1_nodes)[:40000]
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo raptor_tree: {ex}")
-
-    if not context_summary and vault_path.exists():
-        try:
-            vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
-            frags = [f.get("content", "") for f in vault_data.get("fragments", [])]
-            if frags:
-                context_summary = "\n".join(frags)[:40000]
-        except (OSError, json.JSONDecodeError) as ex:
-            logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
-
-    if not context_summary and context_text:
-        context_summary = context_text[:40000]
     client_context = (
         build_client_context_packet(intel, tower_id=args.tower) if intel else {}
     )
@@ -335,6 +335,8 @@ def build_case_input(args: argparse.Namespace) -> dict:
         "date": datetime.now(timezone.utc).date().isoformat(),
         "assessment_mode": "Fast Assessment",
         "validation_state": "Exploratoria",
+        "language": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "es",
+        "doc_lang": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "es",
         "tower_id": args.tower,
         "tower_name": normalize_tower_name(tower_definition["tower_name"]),
         "tower_purpose": tower_definition["purpose"],

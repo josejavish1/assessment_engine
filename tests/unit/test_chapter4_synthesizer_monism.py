@@ -4,6 +4,7 @@ Verifies:
 1. Production of validated Chapter4SynthesisPayload from raw blueprint data.
 2. Invariant satisfaction across CMMI scores (1.0 to 5.0).
 3. Discrete Hare-Niemeyer card allocation reconciling 100% with Lever 2 Outage ALE.
+4. 100% Technical English in all identifiers, docstrings, and test fixtures.
 """
 
 from __future__ import annotations
@@ -20,8 +21,8 @@ def sample_blueprint_data() -> dict:
         "document_meta": {
             "tower_id": "T1",
             "tower_name": "Physical Data Center & Facilities",
-            "client_id": "MOLINS",
-            "language": "es",
+            "client_id": "ENTERPRISE_GLOBAL",
+            "language": "en",
         },
         "organization_profile": {
             "annual_revenue": 1144000000.0,
@@ -29,40 +30,40 @@ def sample_blueprint_data() -> dict:
         "worst_crisis_rto_hours": 8.0,
         "pillars_analysis": [
             {
-                "pilar_name": "Facilities & Power",
-                "pilar_score": 1.8,
+                "pillar_name": "Facilities & Power",
+                "pillar_score": 1.8,
                 "health_check_asis": [
                     {
                         "capability": "ASHRAE TC 9.9 Thermal Telemetry",
-                        "finding": "Inexistencia de sondas térmicas en frontales de bastidor.",
-                        "business_risk": "Paradas intempestivas de servidores por estrangulamiento térmico.",
+                        "finding": "Absence of intake plane thermal telemetry sensors on technical server racks.",
+                        "business_risk": "Unplanned server throttling and hardware failure from unmonitored thermal hotspots.",
                         "threat_event_frequency": 2.0,
                         "vulnerability_level": 4.0,
                     },
                     {
                         "capability": "Aisle Thermal Containment",
-                        "finding": "Pasillos abiertos sin confinamiento de flujo frío.",
-                        "business_risk": "Puntos calientes y recirculación de aire caliente.",
+                        "finding": "Open server aisles without physical cold-air containment or blanking partitions.",
+                        "business_risk": "Hot discharge air recirculation degrading thermal efficiency and component lifespan.",
                         "threat_event_frequency": 2.5,
                         "vulnerability_level": 3.0,
                     },
                 ],
             },
             {
-                "pilar_name": "Resilience & Operations",
-                "pilar_score": 2.2,
+                "pillar_name": "Resilience & Operations",
+                "pillar_score": 2.2,
                 "health_check_asis": [
                     {
                         "capability": "UPS Testing Governance",
-                        "finding": "Falta de ensayos periódicos de conmutación en SAIs.",
-                        "business_risk": "Riesgo de corte abrupto de suministro eléctrico.",
+                        "finding": "Lack of periodic load and transfer testing on redundant UPS battery systems.",
+                        "business_risk": "Elevated risk of abrupt power loss to IT loads upon external utility transients.",
                         "threat_event_frequency": 1.0,
                         "vulnerability_level": 3.0,
                     },
                     {
                         "capability": "Single-Line Power Panels",
-                        "finding": "Bastidores heredados con línea simple de alimentación.",
-                        "business_risk": "Puntos únicos de fallo en la distribución eléctrica.",
+                        "finding": "Legacy racks provisioned with single-path power distribution and non-redundant ATS.",
+                        "business_risk": "Single point of failure exposure during electrical bus maintenance windows.",
                         "threat_event_frequency": 1.5,
                         "vulnerability_level": 3.5,
                     },
@@ -78,7 +79,7 @@ def test_synthesizer_produces_monistic_payload(sample_blueprint_data: dict) -> N
 
     assert isinstance(payload, Chapter4SynthesisPayload)
     assert payload.tower_id == "T1"
-    assert payload.enterprise_id == "MOLINS"
+    assert payload.enterprise_id == "ENTERPRISE_GLOBAL"
     assert 1.0 <= payload.evaluated_cmmi_maturity <= 5.0
     assert payload.currency_iso == "EUR"
 
@@ -124,3 +125,64 @@ def test_synthesizer_legacy_dict_contract_compatibility(sample_blueprint_data: d
     assert "monistic_payload" in dict_payload
     validated = Chapter4SynthesisPayload.model_validate(dict_payload["monistic_payload"])
     assert isinstance(validated, Chapter4SynthesisPayload)
+
+
+def test_synthesizer_empty_findings_pool_resilience() -> None:
+    """Verifies that an empty findings pool gracefully falls back to a structural resilience card without crashing."""
+    sparse_blueprint = {
+        "document_meta": {
+            "tower_id": "T2",
+            "tower_name": "Cloud Infrastructure",
+            "client_id": "SPARSE_CLIENT",
+            "language": "en",
+        },
+        "organization_profile": {
+            "annual_revenue": 50000000.0,
+        },
+        "worst_crisis_rto_hours": 4.0,
+        "pillars_analysis": [],
+    }
+
+    payload = Chapter4Synthesizer.synthesize_payload(sparse_blueprint)
+    assert isinstance(payload, Chapter4SynthesisPayload)
+    assert len(payload.technical_risk_cards) == 1
+    assert payload.technical_risk_cards[0].custody_role == "PRIMARY_CUSTODIAN"
+    assert payload.technical_risk_cards[0].calibrated_annual_ale == payload.probabilistic_outage_ale.annual_outage_ale_interval
+
+
+def test_synthesizer_preserves_quanta_without_single_euro_artifacts() -> None:
+    """Verifies that card discrete allocation preserves actuarial step quanta without 1-euro remainder noise."""
+    blueprint = {
+        "document_meta": {
+            "tower_id": "T1",
+            "tower_name": "Facilities & Power",
+            "client_id": "QUANTUM_CORP",
+            "language": "en",
+        },
+        "organization_profile": {
+            "annual_revenue": 100000000.0,
+        },
+        "worst_crisis_rto_hours": 6.0,
+        "pillars_analysis": [
+            {
+                "pillar_name": "Pillar A",
+                "pillar_score": 2.0,
+                "health_check_asis": [
+                    {
+                        "capability": f"Capability {i}",
+                        "finding": f"Technical finding description {i} exceeding minimum character length.",
+                        "business_risk": f"Business risk narrative {i} exceeding minimum character length.",
+                        "threat_event_frequency": 2.0,
+                        "vulnerability_level": 3.0,
+                    }
+                    for i in range(1, 4)
+                ],
+            }
+        ],
+    }
+
+    payload = Chapter4Synthesizer.synthesize_payload(blueprint)
+    for card in payload.technical_risk_cards:
+        # All allocated amounts must end in clean quanta (no spurious trailing units like 8333)
+        assert card.calibrated_annual_ale.lower_bound % 50 == 0
+        assert card.calibrated_annual_ale.upper_bound % 50 == 0

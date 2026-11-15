@@ -5,6 +5,7 @@ Verifies:
 2. Operator overloading on MonetaryInterval.
 3. Closed-form Hare-Niemeyer discrete integer allocation (zero remainder error).
 4. Strict split-brain detection in model_validator identities.
+5. 100% Technical English in all identifiers, docstrings, and test fixtures.
 """
 
 from __future__ import annotations
@@ -112,50 +113,50 @@ def test_chapter4_synthesis_payload_monism_and_split_brain_protection() -> None:
     )
 
     tco_3yr = ThreeYearCompoundedTCO(
-        lower_bound_eur=165000,
-        upper_bound_eur=240000,
-        midpoint_eur=202500,
+        lower_bound=165000,
+        upper_bound=240000,
+        midpoint=202500,
     )
 
     # Risk Cards summing to exact Outage ALE ([20k, 30k])
     card1 = TechnicalRiskScenario(
         risk_id="RSK-T1-01",
-        title="Monitorización Termohigrométrica Granular ASHRAE",
+        title="ASHRAE TC 9.9 Granular Thermohygrometric Telemetry",
         custody_role="PRIMARY_CUSTODIAN",
         threat_event_frequency_annual=1.2,
         vulnerability_ratio=1.0,
         mttr_recovery_hours=8.0,
         calibrated_annual_ale=MonetaryInterval(lower_bound=12000, upper_bound=18000),
         heatmap_coordinate=HeatmapCoordinate(
-            likelihood_index=3, impact_index=4, truncated_title="Monitorización Térmica ASHRAE"
+            likelihood_index=3, impact_index=4, truncated_title="ASHRAE Thermal Telemetry"
         ),
-        physical_evidence="Inexistencia de sensores en frontal de bastidores.",
-        root_cause_mechanism="Clima perimetral sin zonificación de pasillos.",
-        business_impact_narrative="Paradas no programadas en clústeres hiperconvergentes.",
-        required_mitigation="Despliegue de sondas IoT SNMP en rack.",
+        physical_evidence="Absence of intake plane thermal telemetry sensors on technical racks.",
+        root_cause_mechanism="Perimeter cooling architecture without cold-aisle containment zoning.",
+        business_impact_narrative="Unplanned server outages triggered by thermal throttling and CPU degradation.",
+        required_mitigation="Deployment of IoT rack-level SNMP environmental telemetry sensors.",
     )
     card2 = TechnicalRiskScenario(
         risk_id="RSK-T1-02",
-        title="Confinamiento Aerotérmico y Separación de Pasillos",
+        title="Aerothermal Containment and Cold-Aisle Separation",
         custody_role="PRIMARY_CUSTODIAN",
         threat_event_frequency_annual=2.5,
         vulnerability_ratio=0.8,
         mttr_recovery_hours=4.0,
         calibrated_annual_ale=MonetaryInterval(lower_bound=8000, upper_bound=12000),
         heatmap_coordinate=HeatmapCoordinate(
-            likelihood_index=4, impact_index=3, truncated_title="Confinamiento Aerotérmico"
+            likelihood_index=4, impact_index=3, truncated_title="Aerothermal Containment"
         ),
-        physical_evidence="Pasillos abiertos sin paneles ciegos en racks.",
-        root_cause_mechanism="Mezcla de flujos de impulsión y retorno térmico.",
-        business_impact_narrative="Degradación acelerada de fuentes y CPUs.",
-        required_mitigation="Instalación de cerramiento modular de pasillo frío.",
+        physical_evidence="Open aisles without blanking panels or ceiling containment structures.",
+        root_cause_mechanism="Recirculation and mixing of supply air and hot discharge plenum airflow.",
+        business_impact_narrative="Accelerated power supply and fan unit degradation under peak thermal loads.",
+        required_mitigation="Installation of modular cold-aisle physical containment and blanking partitions.",
     )
 
     # Perfect Monistic Payload: MUST SUCCEED
     payload = Chapter4SynthesisPayload(
         tower_id="T1",
         tower_name="Physical Data Center & Facilities",
-        enterprise_id="MOLINS",
+        enterprise_id="ENTERPRISE_GLOBAL",
         evaluated_cmmi_maturity=2.1,
         currency_iso="EUR",
         chronic_operational_drag=cod,
@@ -178,7 +179,7 @@ def test_chapter4_synthesis_payload_monism_and_split_brain_protection() -> None:
         Chapter4SynthesisPayload(
             tower_id="T1",
             tower_name="Physical Data Center & Facilities",
-            enterprise_id="MOLINS",
+            enterprise_id="ENTERPRISE_GLOBAL",
             evaluated_cmmi_maturity=2.1,
             currency_iso="EUR",
             chronic_operational_drag=cod,
@@ -192,25 +193,25 @@ def test_chapter4_synthesis_payload_monism_and_split_brain_protection() -> None:
     # SPLIT-BRAIN ATTACK 2: Cards sum diverges from Lever 2 Outage ALE
     tampered_card2 = TechnicalRiskScenario(
         risk_id="RSK-T1-02",
-        title="Confinamiento Aerotérmico y Separación de Pasillos",
+        title="Aerothermal Containment and Cold-Aisle Separation",
         custody_role="PRIMARY_CUSTODIAN",
         threat_event_frequency_annual=2.5,
         vulnerability_ratio=0.8,
         mttr_recovery_hours=4.0,
         calibrated_annual_ale=MonetaryInterval(lower_bound=9999, upper_bound=12000),  # DIVERGENT!
         heatmap_coordinate=HeatmapCoordinate(
-            likelihood_index=4, impact_index=3, truncated_title="Confinamiento Aerotérmico"
+            likelihood_index=4, impact_index=3, truncated_title="Aerothermal Containment"
         ),
-        physical_evidence="Pasillos abiertos sin paneles ciegos en racks.",
-        root_cause_mechanism="Mezcla de flujos de impulsión y retorno térmico.",
-        business_impact_narrative="Degradación acelerada de fuentes y CPUs.",
-        required_mitigation="Instalación de cerramiento modular de pasillo frío.",
+        physical_evidence="Open aisles without blanking panels or ceiling containment structures.",
+        root_cause_mechanism="Recirculation and mixing of supply air and hot discharge plenum airflow.",
+        business_impact_narrative="Accelerated power supply and fan unit degradation under peak thermal loads.",
+        required_mitigation="Installation of modular cold-aisle physical containment and blanking partitions.",
     )
     with pytest.raises(ValidationError) as exc_info:
         Chapter4SynthesisPayload(
             tower_id="T1",
             tower_name="Physical Data Center & Facilities",
-            enterprise_id="MOLINS",
+            enterprise_id="ENTERPRISE_GLOBAL",
             evaluated_cmmi_maturity=2.1,
             currency_iso="EUR",
             chronic_operational_drag=cod,

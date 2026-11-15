@@ -179,7 +179,11 @@ def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) 
 
 
 def get_closing_orchestrator_prompt(
-    tower_name: str, pillars_analysis_json: str, intel_str: str, total_ale: float = 0.0
+    tower_name: str,
+    pillars_analysis_json: str,
+    intel_str: str,
+    total_ale: float = 0.0,
+    target_language: str = "Spanish",
 ) -> Any:
     """Assembles the final orchestrator prompt for blueprint generation.
 
@@ -207,9 +211,11 @@ def get_closing_orchestrator_prompt(
 
     prompt += "TASK AND TONE RULES:\n"
     for rule in config["task_and_tone"]:
-        prompt += f"- {rule}\n"
+        formatted_rule = rule.replace("{target_language}", target_language)
+        prompt += f"- {formatted_rule}\n"
 
-    prompt += "\n"
+    prompt += f"\nCRITICAL LANGUAGE INSTRUCTION: You MUST generate all narratives, descriptions, and summaries EXCLUSIVELY in {target_language}.\n\n"
+
     for step, desc in config["structure_requirements"].items():
         prompt += f"{step}. {desc}\n"
 
