@@ -157,6 +157,20 @@ def build_cmmi_methodology_and_capabilities(
     )
     resolver = get_taxonomy_resolver()
 
+    # Pre-calculate integer weights summing to exactly 100% via Hare-Niemeyer (zero decimals)
+    raw_weights = [float(p.get("weight_pct", p.get("weight", 20))) for p in pillars_list]
+    tot_w = sum(raw_weights) or 100.0
+    int_weights = [int(w * 100.0 / tot_w) for w in raw_weights]
+    diff_w = 100 - sum(int_weights)
+    if diff_w > 0 and len(raw_weights) > 0:
+        remainders = sorted(
+            range(len(raw_weights)),
+            key=lambda i: (raw_weights[i] * 100.0 / tot_w) - int_weights[i],
+            reverse=True,
+        )
+        for i in range(min(diff_w, len(remainders))):
+            int_weights[remainders[i]] += 1
+
     for p_idx, p in enumerate(pillars_list):
         raw_pid, raw_pname = extract_pillar_identifiers(p)
         p_name = resolver.resolve_pillar_by_any_reference(
@@ -165,7 +179,7 @@ def build_cmmi_methodology_and_capabilities(
             locale=meta_lang,
             tower_id=tower_id,
         )
-        p_weight = int(p.get("weight_pct", p.get("weight", 20)))
+        p_weight = int_weights[p_idx] if p_idx < len(int_weights) else int(p.get("weight_pct", 20))
         kpi_list = p.get("kpis", [])
         distinct_names = []
         for kpi in kpi_list:

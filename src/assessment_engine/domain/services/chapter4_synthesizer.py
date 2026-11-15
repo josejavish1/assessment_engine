@@ -423,8 +423,28 @@ class Chapter4Synthesizer:
             zip(raw_cards, allocated_lows, allocated_highs), start=1
         ):
             is_tier1 = idx <= 2
-            l_idx = int(c_data.get("likelihood_index", 4 if (is_tier1 and idx == 1) else (3 if is_tier1 else 2)))
-            i_idx = int(c_data.get("impact_index", 4 if is_tier1 else 3))
+            safe_low = min(a_low, a_high)
+            safe_high = max(a_low, a_high)
+
+            tef_val = float(c_data.get("tef_annual", 2.4 if is_tier1 else 2.4))
+            vuln_ratio = float(c_data.get("vuln_ratio", 0.80 if is_tier1 else 0.95))
+            lef_val = max(0.01, tef_val * vuln_ratio)
+            sle_mid = ((safe_low / lef_val) + (safe_high / lef_val)) / 2.0
+
+            # Dynamic LM tier resolution based on Open FAIR scale brackets
+            if sle_mid < 1000.0:
+                calc_lm = 1
+            elif sle_mid < 4000.0:
+                calc_lm = 2
+            elif sle_mid < 16000.0:
+                calc_lm = 3
+            elif sle_mid < 64000.0:
+                calc_lm = 4
+            else:
+                calc_lm = 5
+
+            l_idx = int(c_data.get("likelihood_index", 4 if is_tier1 else 4))
+            i_idx = calc_lm
 
             full_title = str(c_data.get("title") or f"Strategic Risk Scenario {idx}")
             truncated = _truncate_smart_words(full_title, max_chars=38)
@@ -434,9 +454,6 @@ class Chapter4Synthesizer:
                 impact_index=max(1, min(5, i_idx)),
                 truncated_title=truncated,
             )
-
-            safe_low = min(a_low, a_high)
-            safe_high = max(a_low, a_high)
 
             scenario = TechnicalRiskScenario(
                 risk_id=f"RSK-{tower_id}-0{idx}",

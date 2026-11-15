@@ -3057,6 +3057,7 @@ class PayloadToASTBridge:
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
         #
+        nodes.append(PageBreakNode())
         nodes.append(
             HeadingNode(
                 text=t("chapter_4_fair_resilience", locale=meta_lang),
@@ -3577,7 +3578,14 @@ class PayloadToASTBridge:
 
         # Build clean heatmap input populated with clean risk codes (e.g. RSK-T2-01)
         heatmap_card_inputs: list[dict[str, Any]] = []
+        synth_cards = synth_dict.get("strategic_risk_cards", []) if isinstance(synth_dict, dict) else []
+        synth_card_by_id = {c.get("risk_id"): c for c in synth_cards if isinstance(c, dict)}
         for card in monistic_payload.technical_risk_cards:
+            sc = synth_card_by_id.get(card.risk_id, {})
+            ev_min = float(sc.get("event_loss_min") or (card.calibrated_annual_ale.lower_bound * 0.5))
+            ev_max = float(sc.get("event_loss_max") or (card.calibrated_annual_ale.upper_bound * 0.8))
+            real_sle = (ev_min + ev_max) / 2.0
+            real_lef = float(sc.get("loss_event_frequency_annual") or 1.92)
             heatmap_card_inputs.append(
                 {
                     "id": card.risk_id,
@@ -3585,9 +3593,9 @@ class PayloadToASTBridge:
                     "title": card.title,
                     "truncated_title": card.heatmap_coordinate.truncated_title,
                     "tef": card.heatmap_coordinate.likelihood_index,
-                    "lef": card.heatmap_coordinate.likelihood_index,
+                    "lef": real_lef,
                     "lm": card.heatmap_coordinate.impact_index,
-                    "sle": float(card.calibrated_annual_ale.midpoint * 1.5),
+                    "sle": real_sle,
                     "ale": float(card.calibrated_annual_ale.midpoint),
                 }
             )
