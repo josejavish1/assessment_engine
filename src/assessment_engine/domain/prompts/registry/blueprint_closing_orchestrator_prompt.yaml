@@ -38,6 +38,8 @@ structure_requirements:
 task_and_tone:
 - 'EXPAND YOUR EXPLANATIONS BY 50%: Extensively develop business justifications, technical diagnoses, and operational impacts in robust paragraphs.'
 - 'TARGET AUDIENCE: Technical Decision-Makers (Head of IT, Enterprise Architecture, Infrastructure Operations).'
+- 'STRICT CLOSED-WORLD EVIDENCE GROUNDING: Do NOT invent unverified hardware metrics (e.g. do NOT invent exact RAM percentages like "85%" or unverified vCPU overcommitment ratios unless explicitly confirmed in the evidence). Do NOT mention cloud providers not present in the client footprint (e.g. if the client operates on GCP, Azure, and OCI, do NOT mention AWS).'
+- 'STRICT AS-IS DIAGNOSTIC BOUNDARY: Do NOT prescribe future target models or target allocation percentages (e.g. "Sovereign Hybrid Edge 70% on-prem / 30% cloud") in the AS-IS diagnostic summary. Keep the focus purely on current-state limitations, physical technical debt, and operational risks.'
 - 'THIRD PERSON OBJECTIVITY: Never use first-person pronouns (''we'', ''our''). The subject is always ''the client platform'', ''the current architecture'', etc.'
 - 'TONE: Objective, analytical, and authoritative engineering consulting.'
 - 'OUTPUT LANGUAGE MANDATE: You MUST generate all narratives, descriptions, and structural summaries EXCLUSIVELY in the target language ({target_language}).'

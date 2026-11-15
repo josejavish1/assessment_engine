@@ -537,15 +537,37 @@ class Chapter4Synthesizer:
             },
         ]
 
+        ctx = context or {}
+        doc_meta = blueprint_data.get("document_meta") or {}
+        target_locale = str(ctx.get("meta_lang") or doc_meta.get("language") or "en").strip().lower()
+        is_es = target_locale.startswith("es")
+
+        tef_labels_es = {
+            1: "< 0,1 eventos/año (menos de 1 vez cada 10 años)",
+            2: "0,1 - 0,5 eventos/año (1 evento cada 2 a 10 años)",
+            3: "0,5 - 2,0 eventos/año (1 evento cada 12 a 24 meses)",
+            4: "2,0 - 10,0 eventos/año (contingencia recurrente anual)",
+            5: "> 10 eventos/año (frecuencia mensual / recurrencia continua)",
+        }
+        tef_labels_en = {
+            1: "< 0.1 events/year (less than once every 10 years)",
+            2: "0.1 - 0.5 events/year (once every 2 to 10 years)",
+            3: "0.5 - 2.0 events/year (once every 12 to 24 months)",
+            4: "2.0 - 10.0 events/year (annual recurring contingency)",
+            5: "> 10 events/year (monthly frequency / continuous recurrence)",
+        }
+
         cards = [
             {
                 "risk_id": card.risk_id,
                 "tier": "TIER_1_CRITICAL" if idx < 2 else "TIER_2_STRUCTURAL",
                 "title": card.title,
                 "affected_perimeter": payload.tower_name,
-                "estimated_frequency_label": "1 event / 12-18 months"
-                if idx < 2
-                else "Continuous Latent Exposure",
+                "estimated_frequency_label": (
+                    tef_labels_es.get(card.heatmap_coordinate.likelihood_index, "0,5 - 2,0 eventos/año")
+                    if is_es
+                    else tef_labels_en.get(card.heatmap_coordinate.likelihood_index, "0.5 - 2.0 events/year")
+                ),
                 "technical_evidence": card.physical_evidence,
                 "operational_impact_chain": card.business_impact_narrative,
                 "event_loss_min": float(
@@ -560,11 +582,6 @@ class Chapter4Synthesizer:
             }
             for idx, card in enumerate(payload.technical_risk_cards)
         ]
-
-        ctx = context or {}
-        doc_meta = blueprint_data.get("document_meta") or {}
-        target_locale = str(ctx.get("meta_lang") or doc_meta.get("language") or "en").strip().lower()
-        is_es = target_locale.startswith("es")
 
         concentration_narrative = [
             f"Eje de Continuidad Operativa Crítica (Tier 1): Concentra la principal exposición por indisponibilidad y resiliencia de la plataforma en {payload.tower_name}.",
