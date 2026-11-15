@@ -2080,6 +2080,22 @@ class PayloadToASTBridge:
         )
         nodes.append(ParagraphNode(text=restore_locale_diacritics(effective_obj, meta_lang), space_after=8))
 
+        # Epistemic Validation State Declaration (Fast Assessment Framework)
+        val_state_text = (
+            "**Estado de Validación del Diagnóstico: Exploratoria (Fast Assessment)** — "
+            "El análisis de madurez y los modelos de exposición cuantitativa de este informe se fundamentan "
+            "en las autoevaluaciones técnicas del cliente, sesiones de contraste arquitectónico y documentación de topología disponible, "
+            "sin captura automatizada de telemetría de red ni inspección forense de configuraciones en producción."
+            if meta_lang.startswith("es")
+            else (
+                "**Methodological Validation State: Exploratory (Fast Assessment)** — "
+                "The maturity analysis and quantitative risk exposure models in this deliverable are grounded "
+                "in client self-assessment survey responses, technical discovery interviews, and declared topology documentation, "
+                "without automated production network telemetry capture or invasive configuration parsing."
+            )
+        )
+        nodes.append(ParagraphNode(text=val_state_text, font_size=8.5, italic=True, space_before=4, space_after=10))
+
         # 2.2 Platform Description & Technical Scope
         nodes.append(SpacerNode(points=6))
         nodes.append(

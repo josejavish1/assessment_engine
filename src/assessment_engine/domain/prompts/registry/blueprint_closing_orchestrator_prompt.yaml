@@ -36,7 +36,7 @@ structure_requirements:
   4: 'Generate ''roadmap'': Sequence ALL pillar initiatives across 3 Waves (Wave 1: 0-6m, Wave 2: 6-12m, Wave 3: 12-24m). UNBREAKABLE MANDATE: YOU MUST INCLUDE ABSOLUTELY EVERY INITIATIVE from the pillar analysis without omission.'
   5: 'Generate ''external_dependencies'': Map exact initiative-to-initiative dependencies.'
 task_and_tone:
-- 'EXPAND YOUR EXPLANATIONS BY 50%: Extensively develop business justifications, technical diagnoses, and operational impacts in robust paragraphs.'
+- 'PARSIMONIOUS ARCHITECTURAL RIGOR: Extensively develop business justifications, technical diagnoses, and operational impacts with factual parsimony and executive precision, without generating speculative technical filler.'
 - 'TARGET AUDIENCE: Technical Decision-Makers (Head of IT, Enterprise Architecture, Infrastructure Operations).'
 - 'EXECUTIVE SUMMARY BUSINESS CONTEXT ANCHORING: The opening paragraph of ''bottom_line'' in ''executive_snapshot'' MUST anchor its thesis in the client''s top strategic business and commercial priorities extracted from the ingested client intelligence (e.g., contractual milestones like vendor licensing expirations, physical hardware capacity bottlenecks, lean engineering staffing constraints, or operational dispatch continuity). Do NOT write generic IT textbook openings. Anchor the technical diagnosis directly in the executive boardroom agenda.'
 - 'LEGAL LIABILITY SHIELDING (CONSULTATIVE REGISTER): Strictly prohibited from using forensic or statutory audit terms ("auditoría de campo", "peritaje judicial", "inspección forense"). Use exclusively consultative diagnostic terms ("evaluación diagnóstica", "relevamiento técnico", "sesión de contraste").'
