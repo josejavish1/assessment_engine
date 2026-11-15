@@ -224,7 +224,7 @@
               "border_left_size": null
             },
             {
-              "text": "~60.000 € - 95.000 € / año",
+              "text": "~40.950 € - 59.800 € / año",
               "bold": true,
               "font_size": 9.5,
               "align": "CENTER",
@@ -576,7 +576,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La plataforma evaluada comprende la infraestructura híbrida de cómputo, virtualización y plataformas multicloud de Molins. En el entorno local (on-premise), el parque se sustenta sobre 6 nodos de infraestructura hiperconvergente (HCI) HPE SimpliVity distribuidos entre el CPD Principal (4 nodos) y el CPD Secundario (2 nodos) de Sant Vicenç dels Horts, operando bajo la plataforma de virtualización VMware vSphere sobre un parque hiperconvergente con un elevado nivel de sobresuscripción de recursos de cómputo y saturación estructural de CPU y memoria RAM en los seis nodos físicos del clúster. Este clúster soporta un censo superior a las 300 máquinas virtuales donde residen las bases de datos transaccionales de SAP, sistemas de pesaje y aplicativos centrales de fábrica. En el plano cloud, el ecosistema integra suscripciones dispersas en Microsoft Azure (integración ERP), Google Cloud Platform (analítica de datos) y Oracle Cloud Infrastructure (OCI), administradas sin Landing Zones declarativas ni pipelines centralizados de automatización.",
+      "text": "La plataforma evaluada comprende la infraestructura híbrida de cómputo, virtualización y plataformas multicloud de Molins. En el entorno local (on-premise), el parque se sustenta sobre 6 nodos de infraestructura hiperconvergente (HCI) HPE SimpliVity distribuidos entre el CPD Principal (4 nodos) y el CPD Secundario (2 nodos) de Sant Vicenç dels Horts, operando bajo la plataforma de virtualización VMware vSphere sobre un parque hiperconvergente con un elevado nivel de sobresuscripción de recursos de cómputo y saturación estructural de CPU y memoria RAM en los seis nodos físicos del clúster. Este clúster soporta un censo superior a las 300 máquinas virtuales donde residen las bases de datos transaccionales de SAP, sistemas de pesaje y aplicaciones centrales de fábrica. En el plano cloud, el ecosistema integra suscripciones dispersas en Microsoft Azure (integración ERP), Google Cloud Platform (analítica de datos) y Oracle Cloud Infrastructure (OCI), administradas sin Landing Zones declarativas ni pipelines centralizados de automatización.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -1718,7 +1718,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El parque computacional está conformado por 6 nodos hiperconvergentes HPE SimpliVity agrupados en tres clústeres independientes de 2 nodos cada uno, gestionados centralmente mediante VMware vCenter y ejecutando hipervisores VMware ESXi. Esta plataforma soporta un censo superior a las 300 máquinas virtuales que sustentan los servicios operativos, de planta y corporativos del grupo.",
+      "text": "El parque de servidores está conformado por 6 nodos hiperconvergentes HPE SimpliVity agrupados en tres clústeres independientes de 2 nodos cada uno, gestionados centralmente mediante VMware vCenter y ejecutando hipervisores VMware ESXi. Esta plataforma soporta un censo superior a las 300 máquinas virtuales que sustentan los servicios operativos, de planta y corporativos del grupo.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -2193,7 +2193,7 @@
               "border_left_size": null
             },
             {
-              "text": "~35.000 € - 45.000 € / año",
+              "text": "~36.000 € - 48.000 € / año",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2239,7 +2239,7 @@
               "border_left_size": null
             },
             {
-              "text": "~10.000 € - 20.000 € / año",
+              "text": "~2.900 € - 6.750 € / año",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2285,7 +2285,7 @@
               "border_left_size": null
             },
             {
-              "text": "~15.000 € - 30.000 € / año",
+              "text": "~2.050 € - 5.050 € / año",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2318,7 +2318,7 @@
               "border_left_size": null
             },
             {
-              "text": "**~60.000 € - 95.000 € / año**",
+              "text": "**~40.950 € - 59.800 € / año**",
               "bold": true,
               "font_size": 8.5,
               "align": "CENTER",
@@ -2397,7 +2397,7 @@
               "border_left_size": null
             },
             {
-              "text": "LM 1\n(< 1.700 €)",
+              "text": "LM 1\n(< 1.000 €)",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2414,7 +2414,7 @@
               "border_left_size": null
             },
             {
-              "text": "LM 2\n(1.700 - 6.800 €)",
+              "text": "LM 2\n(1.000 - 4.000 €)",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2431,7 +2431,7 @@
               "border_left_size": null
             },
             {
-              "text": "LM 3\n(6.800 - 27.200 €)",
+              "text": "LM 3\n(4.000 - 16.000 €)",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2448,7 +2448,7 @@
               "border_left_size": null
             },
             {
-              "text": "LM 4\n(27.200 - 108.800 €)",
+              "text": "LM 4\n(16.000 - 64.000 €)",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2465,7 +2465,7 @@
               "border_left_size": null
             },
             {
-              "text": "LM 5\n(≥ 108.800 €)",
+              "text": "LM 5\n(≥ 64.000 €)",
               "bold": true,
               "font_size": 8.0,
               "align": "CENTER",
@@ -2508,7 +2508,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2521,7 +2521,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2534,7 +2534,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2547,7 +2547,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2560,7 +2560,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2595,9 +2595,9 @@
               "border_left_size": null
             },
             {
-              "text": "RVS05",
+              "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2608,22 +2608,9 @@
               "border_left_size": null
             },
             {
-              "text": "RVS07, RVS08, RVS10",
+              "text": "• Madurez del Catálogo de Servicios y…\n• Barreras de Gobernanza Cloud y…\n(+2 adic.)",
               "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "FCF3CD",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "RVS01, RVS02, RVS06, RVS09",
-              "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2636,7 +2623,20 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "FCF3CD",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2649,7 +2649,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2686,7 +2686,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2699,7 +2699,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2710,9 +2710,9 @@
               "border_left_size": null
             },
             {
-              "text": "RVS03, RVS04, RVS11",
+              "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2725,7 +2725,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2738,7 +2738,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FADBD8",
               "text_color_rgb": null,
@@ -2775,7 +2775,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2788,20 +2788,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "D5F5E3",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "RVS12",
-              "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2814,7 +2801,20 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
+              "align": "CENTER",
+              "bg_color": "D5F5E3",
+              "text_color_rgb": null,
+              "grid_span": 1,
+              "v_merge": null,
+              "width_dxa": null,
+              "border_left_color": null,
+              "border_left_size": null
+            },
+            {
+              "text": "-",
+              "bold": true,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2827,7 +2827,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "FCF3CD",
               "text_color_rgb": null,
@@ -2864,7 +2864,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2877,7 +2877,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2890,7 +2890,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2903,7 +2903,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2916,7 +2916,7 @@
             {
               "text": "-",
               "bold": true,
-              "font_size": 9.0,
+              "font_size": 7.5,
               "align": "CENTER",
               "bg_color": "D5F5E3",
               "text_color_rgb": null,
@@ -2941,641 +2941,7 @@
     },
     {
       "type": "spacer",
-      "points": 6
-    },
-    {
-      "type": "paragraph",
-      "text": "*Leyenda de Criterios: Frecuencia de Amenazas (TEF)*",
-      "bold": true,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 2,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "Nivel TEF",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Denominación",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Frecuencia Anualizada Estimada",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": true,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TEF 1",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Muy Bajo",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "< 0,1 eventos/año (menos de una vez por década)",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TEF 2",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Bajo",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "0,1 - 0,5 eventos/año (frecuencia plurianual baja)",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TEF 3",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Medio",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "0,5 - 2,0 eventos/año (frecuencia anual / moderada)",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TEF 4",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Alto",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "2,0 - 10 eventos/año (frecuencia alta / trimestral)",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "LEFT",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "TEF 5",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Muy Alto",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "> 10 eventos/año (frecuencia muy alta / mensual o superior)",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": null,
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 6
-    },
-    {
-      "type": "paragraph",
-      "text": "*Leyenda de Criterios: Magnitud de Pérdida Financiera (LM)*",
-      "bold": true,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 2,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "Nivel LM",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Clasificación de Impacto",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Límite de Pérdida Financiera (€)",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": true,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "LM 1",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Muy Bajo",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "< 1.700 €",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "LM 2",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Bajo",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "1.700 - 6.800 €",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "LM 3",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Medio",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "6.800 - 27.200 €",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "LM 4",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Alto",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "27.200 - 108.800 €",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "LM 5",
-              "bold": true,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "F2F2F2",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Muy Alto",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "≥ 108.800 €",
-              "bold": false,
-              "font_size": 7.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": null,
-      "column_widths_dxa": null,
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "spacer",
-      "points": 8
+      "points": 10
     },
     {
       "type": "heading",
@@ -3590,498 +2956,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
-      "bold": false,
-      "italic": false,
-      "style": "Normal",
-      "space_after": 8,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 9.5
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "table",
-      "headers": null,
-      "rows": [
-        {
-          "cells": [
-            {
-              "text": "Nivel de Exposición Financiera (AS-IS)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Hallazgos",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Exposición Anualizada (ALE)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Criterio de Clasificación Actuarial (AS-IS)",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": "0072BC",
-              "text_color_rgb": [
-                255,
-                255,
-                255
-              ],
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": true,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Nivel 1 - Riesgos Críticos y de Alto Impacto",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "FADBD8",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "3",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "154.003 €/año (48%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Gestión de Imágenes Base y Obsolescencia de Sistemas Operativos, Gestión del Ciclo de Vida de Clústeres (Actualizaciones de Versión y Obsolescencia de APIs), Gestión del Ciclo de Vida de Cómputo (Parcheo, Firmware y Actualizaciones de SO).",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Nivel 2 - Riesgos de Impacto Moderado",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "FCF3CF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "6",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "156.543 €/año (48%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Gestión de Capacidad y Rendimiento (Sobreasignación y Saturación de CPU/RAM), Respuesta a Incidentes de Plataforma, Post-Mortems Sin Culpa y Runbooks, Disponibilidad de la Plataforma de Cómputo (Alta Disponibilidad de Nodos y Mantenibilidad Concurrente)...",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "Nivel 3 - Riesgos Residuales o Menores",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "D5F5E3",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "3",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "12.356 €/año (4%)",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Barreras de Gobernanza Cloud y Aplicación de Políticas Técnicas (Policy-as-Code), Planificación Predictiva de Capacidad y Prevención Proactiva de Anomalías, Servicios Nucleares de Kubernetes (Ingress, Registry, Certificados y Clases de Almacenamiento).",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "FFFFFF",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**Subtotal Exposición Directa (Suma Fichas 4.4)**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**12**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**335.268 €/año**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Base de riesgo directo evaluada por separado",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "*Corrección por Paradas Solapadas y Dependencias IT*",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "-",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "*-12.366 €/año (-3.7%)*",
-              "bold": false,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Evita duplicar horas de parada en fallos simultáneos",
-              "bold": false,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "F8FAFC",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "**EXPOSICIÓN NETA CONSOLIDADA (Tomo 1 / Cartera)**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "LEFT",
-              "bg_color": "EAECEE",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**12**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "EAECEE",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "**322.902 €/año**",
-              "bold": true,
-              "font_size": 8.5,
-              "align": "CENTER",
-              "bg_color": "EAECEE",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Presupuesto de riesgo neto asignado en balance",
-              "bold": true,
-              "font_size": 8.0,
-              "align": "LEFT",
-              "bg_color": "EAECEE",
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        }
-      ],
-      "style_profile": "Table Grid",
-      "autofit": true,
-      "col_widths": [
-        0.28,
-        0.08,
-        0.24,
-        0.4
-      ],
-      "column_widths_dxa": null,
-      "keep_together": true,
-      "auto_fit_strategy": "CONTENT_PROPORTIONAL"
-    },
-    {
-      "type": "paragraph",
-      "text": "Nota Metodológica sobre la Deduplicación de Cartera: La exposición neta consolidada no es la suma aritmética simple de los riesgos independientes. Aplica una corrección por subaditividad de Euler (12.366 €/año) que modela la correlación de cópula y elimina la doble contabilización horaria de pérdidas operativas cuando dos subsistemas técnicos fallan de manera concurrente.",
-      "bold": false,
-      "italic": true,
-      "style": "Normal",
-      "space_after": 6,
-      "text_color_rgb": null,
-      "align": "JUSTIFY",
-      "font_size": 8.5
-    },
-    {
-      "type": "spacer",
-      "points": 10
-    },
-    {
-      "type": "spacer",
-      "points": 12
-    },
-    {
-      "type": "heading",
-      "text": "Escenario de Fallo Grave y Tiempo Máximo de Recuperación (P90)",
-      "level": 3,
-      "primary_color_rgb": [
-        0,
-        114,
-        188
-      ],
-      "is_appendix": false
-    },
-    {
-      "type": "paragraph",
-      "text": "Para evaluar el límite real de resistencia operativa de esta torre, se ha simulado un escenario extremo pero plausible en el que coinciden varios fallos críticos de forma simultánea (caída crítica simultánea de nodos hiperconvergentes y bloqueo del hipervisor de virtualización). A diferencia de las incidencias aisladas del día a día, este supuesto analiza qué ocurre cuando fallan a la vez el sistema principal y sus mecanismos de respaldo.",
+      "text": "Core Operational Continuity Axis (Tier 1): Concentrates the primary operational and resilience exposure in Cómputo Híbrido y Plataformas.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4092,7 +2967,7 @@
     },
     {
       "type": "paragraph",
-      "text": "En una situación de esta magnitud, la recuperación no consiste simplemente en reiniciar los equipos, sino en reconstruir la operativa paso a paso y comprobar que ningún dato crítico se haya corrompido. Bajo las condiciones técnicas actuales, restablecer el servicio por completo y verificar la integridad de la información requeriría un tiempo estimado de hasta 24,0 horas.",
+      "text": "Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from platform lifecycle aging and maintenance scheduling constraints.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4103,7 +2978,18 @@
     },
     {
       "type": "paragraph",
-      "text": "El impacto económico total de este escenario ascendería a 518.566 €. Esta cifra se divide de forma clara en dos conceptos: 39.600 € derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y 478.966 € en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes guardias de soporte 24/7 y peritaje de restitución operativa).",
+      "text": "**Escenario de Estrés Operativo (Pérdida Máxima por Evento Único):**",
+      "bold": false,
+      "italic": false,
+      "style": "Normal",
+      "space_after": 4,
+      "text_color_rgb": null,
+      "align": "JUSTIFY",
+      "font_size": 9.5
+    },
+    {
+      "type": "paragraph",
+      "text": "En caso de materialización simultánea de fallos en los componentes críticos de Cómputo Híbrido y Plataformas, el impacto económico puntual derivado de la parada de planta y la movilización de servicios de emergencia se sitúa en una horquilla estimada de ~12.750 € a ~26.000 € por incidente mayor.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4111,9 +2997,6 @@
       "text_color_rgb": null,
       "align": "JUSTIFY",
       "font_size": 9.5
-    },
-    {
-      "type": "page_break"
     },
     {
       "type": "heading",
@@ -4128,7 +3011,7 @@
     },
     {
       "type": "paragraph",
-      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
+      "text": "El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estratégicos observados en planta.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -4258,7 +3141,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Estimado por Evento:** ~15.000 € - 20.000 €",
+              "text": "**Impacto Estimado por Evento:** ~12.750 € - 26.000 €",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4271,7 +3154,7 @@
               "border_left_size": null
             },
             {
-              "text": "**Exposición Media Anualizada:** ~10.000 € - 20.000 € / año",
+              "text": "**Exposición Media Anualizada:** ~906 € - 2.109 € / año",
               "bold": true,
               "font_size": 8.5,
               "align": "RIGHT",
@@ -4441,7 +3324,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Estimado por Evento:** ~15.000 € - 20.000 €",
+              "text": "**Impacto Estimado por Evento:** ~12.750 € - 26.000 €",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4454,7 +3337,7 @@
               "border_left_size": null
             },
             {
-              "text": "**Exposición Media Anualizada:** ~10.000 € - 20.000 € / año",
+              "text": "**Exposición Media Anualizada:** ~906 € - 2.109 € / año",
               "bold": true,
               "font_size": 8.5,
               "align": "RIGHT",
@@ -4624,7 +3507,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Estimado por Evento:** ~9.000 € - 15.000 €",
+              "text": "**Impacto Estimado por Evento:** ~12.750 € - 26.000 €",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4637,7 +3520,7 @@
               "border_left_size": null
             },
             {
-              "text": "**Exposición Media Anualizada:** ~7.000 € - 15.000 € / año",
+              "text": "**Exposición Media Anualizada:** ~544 € - 1.266 € / año",
               "bold": true,
               "font_size": 8.5,
               "align": "RIGHT",
@@ -4807,7 +3690,7 @@
         {
           "cells": [
             {
-              "text": "**Impacto Estimado por Evento:** ~9.000 € - 15.000 €",
+              "text": "**Impacto Estimado por Evento:** ~12.750 € - 26.000 €",
               "bold": true,
               "font_size": 8.5,
               "align": "LEFT",
@@ -4820,7 +3703,7 @@
               "border_left_size": null
             },
             {
-              "text": "**Exposición Media Anualizada:** ~7.000 € - 15.000 € / año",
+              "text": "**Exposición Media Anualizada:** ~544 € - 1.266 € / año",
               "bold": true,
               "font_size": 8.5,
               "align": "RIGHT",
@@ -4995,7 +3878,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS01]**",
+              "text": "**[RSK-T2-01]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5054,7 +3937,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS02]**",
+              "text": "**[RSK-T2-02]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5113,7 +3996,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS03]**",
+              "text": "**[RSK-T2-03]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5172,7 +4055,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS04]**",
+              "text": "**[RSK-T2-04]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5231,7 +4114,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS05]**",
+              "text": "**[RSK-T2-05]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5290,7 +4173,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS06]**",
+              "text": "**[RSK-T2-06]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5349,7 +4232,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS07]**",
+              "text": "**[RSK-T2-07]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5408,7 +4291,7 @@
         {
           "cells": [
             {
-              "text": "**[RVS08]**",
+              "text": "**[RSK-T2-08]**",
               "bold": false,
               "font_size": 8.0,
               "align": "CENTER",
@@ -5483,7 +4366,7 @@
     },
     {
       "type": "paragraph",
-      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **322.902 €**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
+      "text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **~40.950 € - 59.800 € / año**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
       "bold": false,
       "italic": false,
       "style": "Normal",
@@ -5874,39 +4757,6 @@
         {
           "cells": [
             {
-              "text": "LM",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": null,
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": null,
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
               "text": "MTTR",
               "bold": true,
               "font_size": 9.0,
@@ -5954,39 +4804,6 @@
             },
             {
               "text": "Directiva de la Unión Europea sobre Ciberresiliencia y Seguridad de Redes y Sistemas de Información para Entidades Críticas.",
-              "bold": false,
-              "font_size": 9.0,
-              "align": "LEFT",
-              "bg_color": null,
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            }
-          ],
-          "is_header": false,
-          "height_dxa": null,
-          "cant_split": true
-        },
-        {
-          "cells": [
-            {
-              "text": "P90",
-              "bold": true,
-              "font_size": 9.0,
-              "align": "CENTER",
-              "bg_color": null,
-              "text_color_rgb": null,
-              "grid_span": 1,
-              "v_merge": null,
-              "width_dxa": null,
-              "border_left_color": null,
-              "border_left_size": null
-            },
-            {
-              "text": "Percentil 90 / Value at Risk (Métrica actuarial que cuantifica el impacto financiero en el 10% de los peores escenarios estocásticos).",
               "bold": false,
               "font_size": 9.0,
               "align": "LEFT",

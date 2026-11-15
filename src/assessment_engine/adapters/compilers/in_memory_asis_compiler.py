@@ -1039,8 +1039,12 @@ def derive_in_memory_fair_risks(
                 currency_formatter=lambda val, loc_c: format_currency(val, currency_symbol=currency, locale=loc_c, decimals=0),
             )
 
+            clean_r_id = eff_hc.get("id")
+            if not clean_r_id or str(clean_r_id).startswith("RVS"):
+                clean_r_id = f"RSK-{current_tower_id}-{r_counter:02d}"
+
             risk_item: dict[str, Any] = {
-                "id": eff_hc.get("id", f"RVS{r_counter:02d}"),
+                "id": clean_r_id,
                 "node_id": eff_hc.get("node_id", f"NODE-{r_counter:03d}"),
                 "pillar": pillar_name,
                 "pillar_id": p_id,
@@ -1116,7 +1120,7 @@ def derive_in_memory_fair_risks(
 
     if not risks_data_list:
         unassessed_item: dict[str, Any] = {
-            "id": f"RVS{r_counter:02d}",
+            "id": f"RSK-{current_tower_id}-{r_counter:02d}",
             "node_id": f"NODE-{r_counter:03d}",
             "pillar": "Unassessed Scope",
             "pillar_id": f"{current_tower_id}.P0",
@@ -1148,19 +1152,6 @@ def derive_in_memory_fair_risks(
         }
         risks_data_list.append(unassessed_item)
         risks_by_pillar.setdefault("Unassessed Scope", []).append(unassessed_item)
-
-    # Strict Contiguous Index Bijection Assertion (SR 11-7 / Zero-Gap Mandate)
-    actual_rvs_ids = [
-        str(r.get("id"))
-        for r in risks_data_list
-        if str(r.get("id", "")).startswith("RVS")
-    ]
-    expected_rvs_ids = [f"RVS{i:02d}" for i in range(1, len(actual_rvs_ids) + 1)]
-    if actual_rvs_ids != expected_rvs_ids:
-        raise ValueError(
-            f"Index Bijection Violation in Tower {current_tower_id}: "
-            f"Generated IDs {actual_rvs_ids} do not match contiguous sequence {expected_rvs_ids}."
-        )
 
     return risks_data_list, risks_by_pillar
 

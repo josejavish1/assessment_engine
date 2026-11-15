@@ -486,7 +486,7 @@ class Volume1AsisASTCompiler:
         if operational_sles:
             worst_sle_val, worst_sle_code, worst_sle_domain = max(operational_sles, key=lambda x: x[0])
         else:
-            worst_sle_val, worst_sle_code, worst_sle_domain = 195915.0, "T6-RVS02", "Ciberseguridad e Identidad Digital"
+            worst_sle_val, worst_sle_code, worst_sle_domain = 195000.0, "RSK-T6-02", "Ciberseguridad e Identidad Digital"
 
         worst_incident_cost = worst_sle_val
         worst_incident_code = worst_sle_code
@@ -1454,7 +1454,15 @@ class Volume1AsisASTCompiler:
                 else float(r.get("ale") or 0.0)
                 for r in t_risks
             )
-            net_ale = sum(float(r.get("ale") or 0.0) for r in t_risks)
+            t_synth = t_payload.get("chapter4_synthesis") or {}
+            anchors = t_synth.get("anchors") or []
+            if len(anchors) >= 2 and anchors[1].get("annual_exposure_max"):
+                net_ale = float(anchors[1]["annual_exposure_max"])
+            else:
+                from assessment_engine.domain.actuarial.rounding import round_to_actuarial_significance
+                raw_net = sum(float(r.get("ale") or 0.0) for r in t_risks)
+                net_ale = float(round_to_actuarial_significance(raw_net))
+
             adj = net_ale - s_ale
             pct = (net_ale / float(total_ale) * 100.0) if total_ale > 0 else 0.0
             row_map[code] = AllocationRow(s_ale=s_ale, net_ale=net_ale, adj=adj, pct=pct)

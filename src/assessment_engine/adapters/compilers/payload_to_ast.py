@@ -3075,8 +3075,9 @@ class PayloadToASTBridge:
                                     calc_lef = max(0.05, tef_val)
                                 calc_sle = ale_val / calc_lef if (ale_val > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
 
+                                t_code_raw = str(ctx.get("tower_id") or "T1").strip().upper()
                                 r_item = {
-                                    "id": f"RVS{r_idx + 1:02d}",
+                                    "id": f"RSK-{t_code_raw}-{r_idx + 1:02d}",
                                     "pillar": pillar_full_name,
                                     "capability": row_data[0].split(" - ")[1]
                                     if " - " in row_data[0]
@@ -3445,53 +3446,28 @@ class PayloadToASTBridge:
         if not risks_data_list:
             return
 
-        vocab = ctx["vocab"]
         meta_lang = ctx["meta_lang"]
         currency = ctx["currency"]
         is_critical = ctx["is_critical"]
         blueprint_data = ctx.get("blueprint_data", {})
 
-        fin_tel = (
-            blueprint_data.get("financial_telemetry")
-            or ctx.get("financial_telemetry")
-            or {}
-        )
-        annual_rev = (
-            safe_float(ctx.get("annual_revenue"))
-            or safe_float(blueprint_data.get("annual_revenue"))
-            or safe_float(fin_tel.get("annual_revenue"))
-        )
-        hourly_burn = (
-            safe_float(ctx.get("hourly_downtime_cost"))
-            or safe_float(ctx.get("hourly_burn_rate"))
-            or safe_float(fin_tel.get("authoritative_hourly_downtime_cost"))
-            or safe_float(blueprint_data.get("hourly_downtime_rate"))
-        )
-        dynamic_lm_bounds = compute_dynamic_lm_thresholds(
-            currency=currency,
-            annual_revenue=annual_rev,
-            hourly_downtime_cost=hourly_burn,
-            is_critical_tier=is_critical,
-            locale=meta_lang,
-        )
-        dynamic_lm_brackets = compute_dynamic_lm_brackets(
-            currency=currency,
-            locale=meta_lang,
-            annual_revenue=annual_rev,
-            hourly_downtime_cost=hourly_burn,
-            is_critical_tier=is_critical,
-            precomputed_thresholds=dynamic_lm_bounds,
-        )
+        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
+        from assessment_engine.domain.actuarial.schemas import Chapter4SynthesisPayload
+        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
 
-        # Enforce strict SSOT read from additive_loss_decomposition (Zero Presentation Math Mutation)
-        for r_item in risks_data_list:
-            decomp = r_item.get("additive_loss_decomposition") or {}
-            if decomp.get("gross_mean_sle") is not None:
-                r_item["sle"] = int(round(float(decomp["gross_mean_sle"])))
-            if decomp.get("mean_lef") is not None:
-                r_item["lef"] = round(float(decomp["mean_lef"]), 4)
-            if decomp.get("net_allocated_ale") is not None and r_item.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
-                r_item["ale"] = int(round(float(decomp["net_allocated_ale"])))
+        rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+        raw_payload = blueprint_data.get("chapter4_monistic_payload")
+        if isinstance(raw_payload, dict):
+            monistic_payload = Chapter4SynthesisPayload.model_validate(raw_payload)
+        elif isinstance(raw_payload, Chapter4SynthesisPayload):
+            monistic_payload = raw_payload
+        else:
+            monistic_payload = Chapter4Synthesizer.synthesize_payload(
+                blueprint_data, context=ctx, rates_catalog=rates_cat
+            )
+        synth_dict = Chapter4Synthesizer.synthesize_chapter4(
+            blueprint_data, context=ctx, rates_catalog=rates_cat
+        )
 
         # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
@@ -3502,59 +3478,34 @@ class PayloadToASTBridge:
             )
         )
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
+
+        # Build clean heatmap input populated with human-readable titles (zero cryptic RVS machine codes)
+        heatmap_card_inputs: list[dict[str, Any]] = []
+        for card in monistic_payload.technical_risk_cards:
+            heatmap_card_inputs.append(
+                {
+                    "title": card.title,
+                    "truncated_title": card.heatmap_coordinate.truncated_title,
+                    "tef": card.heatmap_coordinate.likelihood_index,
+                    "lef": card.heatmap_coordinate.likelihood_index,
+                    "lm": card.heatmap_coordinate.impact_index,
+                    "sle": float(card.calibrated_annual_ale.midpoint * 1.5),
+                    "ale": float(card.calibrated_annual_ale.midpoint),
+                }
+            )
+
+        # Render 5x5 Heatmap with smart titles and overflow capping (RT-03)
         nodes.append(
             _build_heatmap_mosaic(
-                risks_data_list,
+                heatmap_card_inputs,
                 is_critical=is_critical,
-                dynamic_lm_thresholds=dynamic_lm_bounds,
                 locale=meta_lang,
                 currency=currency,
-                annual_revenue=annual_rev,
-                hourly_downtime_cost=hourly_burn,
             )
         )
+        nodes.append(SpacerNode(points=10))
 
-        # 4.2.1 Threat Event Frequency (TEF) Compact Legend (RFC 054)
-        nodes.append(SpacerNode(points=6))
-        nodes.append(
-            ParagraphNode(
-                text=f"*{t('legend_tef_caption', locale=meta_lang)}*",
-                bold=True,
-                font_size=8.5,
-                space_before=6,
-                space_after=2,
-                keep_with_next=True,
-            )
-        )
-        nodes.append(_build_tef_scale_table(vocab, meta_lang, self.alt_row_hex))
-        nodes.append(SpacerNode(points=6))
-
-        # 4.2.2 Loss Magnitude (LM) Compact Legend (RFC 054)
-        nodes.append(
-            ParagraphNode(
-                text=f"*{t('legend_lm_caption', locale=meta_lang)}*",
-                bold=True,
-                font_size=8.5,
-                space_before=6,
-                space_after=2,
-                keep_with_next=True,
-            )
-        )
-        nodes.append(
-            _build_lm_scale_table(
-                vocab,
-                meta_lang,
-                currency,
-                is_critical,
-                self.alt_row_hex,
-                lm_brackets=dynamic_lm_brackets,
-                dynamic_lm_thresholds=dynamic_lm_bounds,
-            )
-        )
-        nodes.append(SpacerNode(points=12))
-
-        # 4.2.3 Pure AS-IS Domain Risk Concentration Profile
-        nodes.append(SpacerNode(points=8))
+        # 4.2.1 Strategic Risk Concentration Narrative (Tier 1 vs Tier 2)
         nodes.append(
             HeadingNode(
                 text=t("ch4_sec2_tiers_subtitle", locale=meta_lang),
@@ -3562,350 +3513,37 @@ class PayloadToASTBridge:
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
-        calibrated_domain_ale = float(ctx.get("total_fair_ale") or 0.0)
-        raw_primary_total = sum(
-            float(r.get("ale") or r.get("ale_val") or 0.0)
-            for r in risks_data_list
-            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-        )
-        total_fair_ale = calibrated_domain_ale if calibrated_domain_ale > 0.0 else raw_primary_total
+        for concentration_p in synth_dict.get("matrix_concentration_narrative", []):
+            nodes.append(ParagraphNode(text=concentration_p, font_size=9.5, space_after=6))
 
-        # Proportional normalization via Hare-Niemeyer scaling to guarantee 100% arithmetic identity across sections
-        if calibrated_domain_ale > 0.0 and raw_primary_total > 0.0 and abs(calibrated_domain_ale - raw_primary_total) > 0.50:
-            scale_factor = calibrated_domain_ale / raw_primary_total
-            for r in risks_data_list:
-                if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR":
-                    raw_val = float(r.get("ale") or r.get("ale_val") or 0.0)
-                    scaled_val = round(raw_val * scale_factor, 2)
-                    r["ale"] = scaled_val
-                    r["ale_val"] = scaled_val
+        # 4.2.2 Operational Stress Scenario (Worst-Case Single Outage Event)
+        worst_case = monistic_payload.probabilistic_outage_ale.worst_case_single_outage_event
+        worst_case_min_str = format_currency(worst_case.lower_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
+        worst_case_max_str = format_currency(worst_case.upper_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
 
-        def _get_ale(item: dict[str, Any]) -> float:
-            return float(item.get("ale") or item.get("ale_val") or 0.0)
-
-        t1_risks, t2_risks, t3_risks = _partition_risks_into_tiers(risks_data_list, total_fair_ale)
-
-        from assessment_engine.domain.actuarial_reconciler import ActuarialReconciler
-        raw_t1 = Decimal(str(round(sum(_get_ale(r) for r in t1_risks), 2)))
-        raw_t2 = Decimal(str(round(sum(_get_ale(r) for r in t2_risks), 2)))
-        raw_t3 = Decimal(str(round(sum(_get_ale(r) for r in t3_risks), 2)))
-
-        target_int = int(round(total_fair_ale))
-        if target_int > 0 and (raw_t1 + raw_t2 + raw_t3) > 0:
-            reconciled_tiers = ActuarialReconciler.reconcile_domain_allocations(
-                target_corporate_ale=target_int,
-                domain_raw_exposures=[("tier1", raw_t1), ("tier2", raw_t2), ("tier3", raw_t3)],
-            )
-            t1_sum = float(reconciled_tiers["tier1"])
-            t2_sum = float(reconciled_tiers["tier2"])
-            t3_sum = float(reconciled_tiers["tier3"])
-        else:
-            t1_sum = float(raw_t1)
-            t2_sum = float(raw_t2)
-            t3_sum = float(raw_t3)
-        t1_pct = int(round((t1_sum / float(target_int) * 100))) if target_int > 0 else 0
-        t2_pct = int(round((t2_sum / float(target_int) * 100))) if target_int > 0 else 0
-        t3_pct = max(0, 100 - t1_pct - t2_pct) if target_int > 0 else 0
-
-        formatted_ale_ch4 = format_number(total_fair_ale, locale=meta_lang, decimals=0)
-        intro_tiers = t(
-            "ch4_sec3_intro",
-            locale=meta_lang,
-            tower_name=str(ctx.get("tower_name") or ""),
-            formatted_ale=formatted_ale_ch4,
-            currency=currency,
-        )
-        nodes.append(ParagraphNode(text=intro_tiers, space_after=8))
-
-        yr_suffix = t("per_year_suffix", locale=meta_lang)
-        tier_header_bg = self.primary_color_hex
-
-        canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        from assessment_engine.domain.taxonomy.archetype_registry import (
-            LossArchetypeType,
-            get_actuarial_archetype_registry,
-        )
-        try:
-            arch_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(canonical_t_id)
-            primary_arch = arch_mapping.primary_archetype
-        except (KeyError, ValueError):
-            primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
-
-        arch_suffix = primary_arch.value.lower()
-        t1_fallback_focus = t(f"ch4_tier1_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier1_focus", locale=meta_lang))
-        t2_fallback_focus = t(f"ch4_tier2_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier2_focus", locale=meta_lang))
-        t3_fallback_focus = t(f"ch4_tier3_focus_{arch_suffix}", locale=meta_lang, default=t("ch4_tier3_focus", locale=meta_lang))
-
-        def _get_tier_focus_summary(tier_risks_list: list[dict[str, Any]], fallback_str: str) -> str:
-            if not tier_risks_list:
-                return fallback_str
-            caps = []
-            for r in tier_risks_list:
-                c_name = str(r.get("capability") or r.get("title") or "").strip()
-                if c_name and c_name not in caps:
-                    caps.append(c_name)
-            if caps:
-                return ", ".join(caps[:3]) + ("." if len(caps) <= 3 else "...")
-            return fallback_str
-
-        t1_focus_str = _get_tier_focus_summary(t1_risks, t1_fallback_focus)
-        t2_focus_str = _get_tier_focus_summary(t2_risks, t2_fallback_focus)
-        t3_focus_str = _get_tier_focus_summary(t3_risks, t3_fallback_focus)
-
-        nodes.append(SpacerNode(points=10))
-
-        # Two-Tier Financial Reconciliation Bridge (Red Team Rule 4 & DEF-02)
-        # Calculates the direct standalone sum of the risk cards to guarantee 100% mathematical closure
-        total_eval_risks = [
-            r for r in risks_data_list
-            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-        ]
-        card_direct_sum = sum(
-            round(float(r.get("sle") or 0.0) * float(f"{float(r.get('lef') or 0.0):.2f}"))
-            if not r.get("is_deterministic") and float(r.get("sle") or 0.0) > 0.0 and float(r.get("lef") or 0.0) > 0.0
-            else float(r.get("ale") or r.get("ale_val") or 0.0)
-            for r in total_eval_risks
-        )
-        simultaneity_delta = round(float(total_fair_ale) - float(card_direct_sum))
-
-        tier_summary_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("ch4_tier_table_col_tier", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
-                    CellNode(text=t("ch4_tier_table_col_count", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("ch4_tier_table_col_ale", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("ch4_tier_table_col_focus", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
-                ],
-                is_header=True,
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("ch4_tier1_label", locale=meta_lang), bold=True, bg_color="FADBD8", font_size=8.5),
-                    CellNode(text=str(len(t1_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t1_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t1_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=t1_focus_str, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("ch4_tier2_label", locale=meta_lang), bold=True, bg_color="FCF3CF", font_size=8.5),
-                    CellNode(text=str(len(t2_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t2_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=t2_focus_str, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("ch4_tier3_label", locale=meta_lang), bold=True, bg_color="D5F5E3", font_size=8.5),
-                    CellNode(text=str(len(t3_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t3_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=t3_focus_str, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-        ]
-
-        # Add explicit closing rows for two-tier reconciliation if simultaneity delta exists
-        is_es_rpt = str(meta_lang).startswith("es")
-        if abs(simultaneity_delta) > 5.0 and card_direct_sum > 0:
-            adj_pct = round((simultaneity_delta / card_direct_sum) * 100.0, 1)
-            tier_summary_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=t("ch4_direct_exposure_subtotal", locale=meta_lang),
-                            bold=True, bg_color="F8FAFC", font_size=8.5
-                        ),
-                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
-                        CellNode(text=f"**{format_number(card_direct_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="F8FAFC", font_size=8.5, bold=True),
-                        CellNode(text=t("ch4_direct_exposure_subtotal_desc", locale=meta_lang), bg_color="F8FAFC", font_size=8.0, italic=True),
-                    ]
-                )
-            )
-            tier_summary_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=t("ch4_overlapping_correction_label", locale=meta_lang),
-                            bg_color="F8FAFC", font_size=8.5, italic=True
-                        ),
-                        CellNode(text="-", align="CENTER", bg_color="F8FAFC", font_size=8.5),
-                        CellNode(text=f"*{format_number(simultaneity_delta, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({adj_pct:+.1f}%)*", align="CENTER", bg_color="F8FAFC", font_size=8.5, italic=True),
-                        CellNode(text=t("ch4_overlapping_correction_desc", locale=meta_lang), bg_color="F8FAFC", font_size=8.0, italic=True),
-                    ]
-                )
-            )
-            tier_summary_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=t("ch4_consolidated_net_exposure_label", locale=meta_lang),
-                            bold=True, bg_color="EAECEE", font_size=8.5
-                        ),
-                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text=t("ch4_consolidated_net_exposure_desc", locale=meta_lang), bg_color="EAECEE", font_size=8.0, bold=True),
-                    ]
-                )
-            )
-        else:
-            tier_summary_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=t("ch4_total_annual_exposure_label", locale=meta_lang),
-                            bold=True, bg_color="EAECEE", font_size=8.5
-                        ),
-                        CellNode(text=f"**{len(total_eval_risks)}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text=f"**{format_number(total_fair_ale, locale=meta_lang, decimals=0)} {currency}{yr_suffix}**", align="CENTER", bg_color="EAECEE", font_size=8.5, bold=True),
-                        CellNode(text=t("ch4_total_annual_exposure_desc", locale=meta_lang), bg_color="EAECEE", font_size=8.0, bold=True),
-                    ]
-                )
-            )
-        nodes.append(TableNode(rows=tier_summary_rows, autofit=True, col_widths=[0.28, 0.08, 0.24, 0.40]))
-        if abs(simultaneity_delta) > 0:
-            delta_str = format_currency(abs(simultaneity_delta), currency_symbol=currency, locale=meta_lang, decimals=0)
-            eul_fn_text = t("euler_portfolio_subadditivity_footnote", locale=meta_lang, delta_formatted=delta_str)
-            if eul_fn_text and not eul_fn_text.startswith("euler_portfolio_"):
-                nodes.append(ParagraphNode(text=eul_fn_text, font_size=8.5, italic=True, space_after=6))
-        nodes.append(SpacerNode(points=10))
-
-        # 4.3.1 P90 Tail Risk Disaster Scenario Callout (RFC 058)
-        from assessment_engine.domain.actuarial.downtime_calibrator import (
-            OperationalTailRiskEngine,
-        )
-        blueprint_data = ctx.get("blueprint_data") or {}
-        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
-        canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        from assessment_engine.domain.taxonomy.archetype_registry import (
-            LossArchetypeType,
-            get_actuarial_archetype_registry,
-        )
-        try:
-            arch_mapping = get_actuarial_archetype_registry().get_mapping_for_tower(canonical_t_id)
-            primary_arch = arch_mapping.primary_archetype
-        except (KeyError, ValueError):
-            primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
-        hourly_rate = float(
-            fin_telemetry.get("authoritative_hourly_downtime_cost")
-            or blueprint_data.get("hourly_downtime_rate")
-            or blueprint_data.get("hourly_burn_rate")
-            or 0.0
-        )
-        if hourly_rate <= 0.0 and total_fair_ale > 0.0:
-            raw_div = safe_float(blueprint_data.get("annual_downtime_divisor"), locale=meta_lang, allow_zero=True) or 0.0
-            if raw_div > 0.0:
-                hourly_rate = total_fair_ale / raw_div
-
-        loc_branch = self.loc_branch
-
-        ceiling_hours = float(
-            fin_telemetry.get("operational_recovery_ceiling_hours")
-            or blueprint_data.get("operational_recovery_ceiling_hours")
-            or OperationalTailRiskEngine.DEFAULT_RECOVERY_CEILING_HOURS
-        )
-        raw_p90_val = float(
-            blueprint_data.get("total_fair_p90")
-            or blueprint_data.get("fair_risk_profile", {}).get("p90_ale")
-            or blueprint_data.get("tail_risk_p90")
-            or total_fair_ale
-        )
-        if raw_p90_val > 0.0 and (raw_p90_val / max(total_fair_ale, 1.0)) <= 3.0:
-            total_p90_val = raw_p90_val
-        else:
-            total_p90_val = round(total_fair_ale * 1.65)
-        tail_decomp = OperationalTailRiskEngine.decompose_tail_risk(
-            expected_annual_loss=total_fair_ale,
-            var_90_total=total_p90_val,
-            composite_hourly_rate=hourly_rate,
-            operational_recovery_ceiling_hours=ceiling_hours,
-        )
-        rounded_hours = round(tail_decomp.capped_operational_p90_hours, 1)
-        p90_rec_hours_str = format_number(rounded_hours, locale=meta_lang, decimals=1)
-        aligned_primary_loss = round(rounded_hours * hourly_rate)
-        aligned_secondary_loss = round(total_p90_val - aligned_primary_loss)
-        if aligned_secondary_loss < 0:
-            aligned_secondary_loss = 0
-            total_p90_val = aligned_primary_loss
-        closed_form_p90_total = aligned_primary_loss + aligned_secondary_loss
-        p90_contingency_str = format_currency(closed_form_p90_total, currency_symbol=currency, locale=meta_lang, decimals=0)
-        direct_stoppage_str = format_currency(aligned_primary_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
-        secondary_spend_str = format_currency(aligned_secondary_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
-
-        dynamic_trigger = str(
-            blueprint_data.get("compound_failure_trigger")
-            or blueprint_data.get("p90_trigger")
-            or ""
-        ).strip()
-        triggers_map = loc_branch.get("tower_p90_triggers", {})
-        trigger_text = dynamic_trigger if dynamic_trigger else (triggers_map.get(canonical_t_id) or triggers_map.get("DEFAULT", ""))
-
-        fmt_kwargs = {
-            "compound_failure_trigger": trigger_text,
-            "p90_recovery_hours": p90_rec_hours_str,
-            "p90_total_contingency": p90_contingency_str,
-            "direct_stoppage_loss": direct_stoppage_str,
-            "secondary_disaster_spend": secondary_spend_str,
-        }
-
-        p90_heading = t("p90_callout_title", locale=meta_lang)
-        nodes.append(SpacerNode(points=12))
+        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Escenario de Estrés Operativo (Pérdida Máxima por Evento Único)")
         nodes.append(
-            HeadingNode(
-                text=p90_heading,
-                level=3,
-                primary_color_rgb=self.primary_color_rgb,
+            ParagraphNode(
+                text=f"**{stress_title}:**",
+                font_size=9.5,
+                space_before=8,
+                space_after=4,
                 keep_with_next=True,
             )
         )
-        if primary_arch == LossArchetypeType.CAPITAL_INEFFICIENCY:
-            p1_text = t("p90_callout_finops_p1", locale=meta_lang, trigger_text=trigger_text)
-            p2_text = t("p90_callout_finops_p2", locale=meta_lang, p90_rec_hours_str=p90_rec_hours_str)
-            p3_text = t(
-                "p90_callout_finops_p3",
-                locale=meta_lang,
-                p90_contingency_str=p90_contingency_str,
-                direct_stoppage_str=direct_stoppage_str,
-                secondary_spend_str=secondary_spend_str,
-            )
-        elif canonical_t_id == "T10":
-            doc_meta = (
-                blueprint_data.get("document_meta", {})
-                if isinstance(blueprint_data.get("document_meta"), dict)
-                else {}
-            )
-            industry = str(
-                blueprint_data.get("industry")
-                or doc_meta.get("industry")
-                or blueprint_data.get("industry_vertical")
-                or ""
-            ).lower()
-            is_plant = any(
-                k in industry
-                for k in ("cement", "manufacturing", "logistics", "heavy", "industrial")
-            )
-            p1_text = t("p90_callout_p1", locale=meta_lang, **fmt_kwargs)
-            p2_text = (
-                t(
-                    "p90_callout_plant_p2",
-                    locale=meta_lang,
-                    p90_rec_hours_str=p90_rec_hours_str,
-                    default=t("p90_callout_p2", locale=meta_lang, **fmt_kwargs),
-                )
-                if is_plant
-                else t("p90_callout_p2", locale=meta_lang, **fmt_kwargs)
-            )
-            p3_text = t("p90_callout_p3", locale=meta_lang, **fmt_kwargs)
-        else:
-            p1_text = t("p90_callout_p1", locale=meta_lang, **fmt_kwargs)
-            p2_text = t("p90_callout_p2", locale=meta_lang, **fmt_kwargs)
-            p3_text = t("p90_callout_p3", locale=meta_lang, **fmt_kwargs)
-
-        from assessment_engine.infrastructure.localization import (
-            restore_locale_diacritics,
+        stress_narrative = t(
+            "ch4_stress_scenario_body",
+            locale=meta_lang,
+            tower_name=str(ctx.get("tower_name") or ""),
+            worst_case_min=worst_case_min_str,
+            worst_case_max=worst_case_max_str,
+            default=(
+                f"En caso de materialización simultánea de fallos en los componentes críticos de {ctx.get('tower_name', '')}, "
+                f"el impacto económico puntual derivado de la parada de planta y la movilización de servicios de emergencia "
+                f"se sitúa en una horquilla estimada de ~{worst_case_min_str} a ~{worst_case_max_str} por incidente mayor."
+            ),
         )
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p1_text, meta_lang), font_size=9.5, space_after=6))
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p2_text, meta_lang), font_size=9.5, space_after=6))
-        nodes.append(ParagraphNode(text=restore_locale_diacritics(p3_text, meta_lang), font_size=9.5, space_after=14))
+        nodes.append(ParagraphNode(text=stress_narrative, font_size=9.5, space_after=14))
 
     def _build_detailed_findings_log(
         self,
@@ -3914,141 +3552,29 @@ class PayloadToASTBridge:
         risks_data_list: list[dict[str, Any]],
         fair_lookup: dict[str, Any],
     ) -> None:
-        vocab = ctx["vocab"]
-        currency = ctx["currency"]
         meta_lang = ctx["meta_lang"]
-        client_name = str(ctx.get("client_name") or "CLIENT")
         blueprint_data = ctx.get("blueprint_data", {})
+        synth = blueprint_data.get("chapter4_synthesis") or {}
 
-        # Deduplication invariant: Only primary custodian risks contribute to financial exposure
-        primary_risks_total = sum(
-            float(r.get("ale") or r.get("ale_val") or 0.0)
-            for r in risks_data_list
-            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-        )
-        total_fair_ale = primary_risks_total if primary_risks_total > 0.0 else float(ctx.get("total_fair_ale") or 0.0)
-
-        if not risks_data_list:
-            return
-
-        blueprint_data = ctx.get("blueprint_data") or {}
-        from assessment_engine.domain.services.chapter4_synthesizer import (
-            Chapter4Synthesizer,
-        )
-        from assessment_engine.infrastructure.config_loader import (
-            load_country_labor_rates,
-        )
-        synth = blueprint_data.get("chapter4_synthesis")
-        if not synth:
-            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
-            synth = Chapter4Synthesizer.synthesize_chapter4(
-                blueprint_data,
-                context=ctx,
-                rates_catalog=rates_cat,
-            )
-
-        nodes.append(PageBreakNode())
+        # 4.3 Catalog of Key Technical Risk Cards
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec3_title", locale=meta_lang),
+                text=t("ch4_sec3_title", locale=meta_lang, default="4.3. Catálogo de Fichas de Riesgo Técnico-Operativas"),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
         nodes.append(
             ParagraphNode(
-                text=t("ch4_sec3_intro", locale=meta_lang),
+                text=t("ch4_sec3_cards_intro", locale=meta_lang, default="El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estratégicos observados en planta."),
+                font_size=9.5,
                 space_after=12,
             )
         )
 
-        strategic_cards = synth.get("strategic_risk_cards") or []
-        if strategic_cards:
-            for card in strategic_cards:
-                card_table = self._build_executive_4block_risk_card(ctx=ctx, card=card)
-                nodes.append(card_table)
-                nodes.append(SpacerNode(points=12))
-            return
-
-        # 1. Global ranking: primary risks ranked by ALE descending, tangential risks appended thereafter
-        sorted_risks = sorted(
-            risks_data_list,
-            key=lambda x: (
-                x.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR",
-                float(x.get("ale") or x.get("ale_val") or 0.0),
-            ),
-            reverse=True,
-        )
-        for rank_idx, r in enumerate(sorted_risks, start=1):
-            r["global_rank"] = rank_idx
-            r_ale = float(r.get("ale") or r.get("ale_val") or 0.0)
-            r["share_pct"] = (r_ale / total_fair_ale * 100.0) if total_fair_ale > 0 else 0.0
-
-        # 2. Partition into the 3 Strategic Portfolios (Identical unified partitioning across 4.3 and 4.4)
-        t1_risks, t2_risks, t3_risks = _partition_risks_into_tiers(risks_data_list, total_fair_ale)
-
-        portfolios = [
-            (1, t("tier_1_catalog_title", locale=meta_lang), t1_risks),
-            (2, t("tier_2_catalog_title", locale=meta_lang), t2_risks),
-            (3, t("tier_3_catalog_title", locale=meta_lang), t3_risks),
-        ]
-
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-        resolver = get_taxonomy_resolver()
-
-        for t_idx, t_title, t_items in portfolios:
-            if not t_items:
-                continue
-
-            subtotal_ale = sum(
-                float(r.get("ale") or r.get("ale_val") or 0.0)
-                for r in t_items
-                if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
-            )
-            subtotal_pct = int(round(subtotal_ale / total_fair_ale * 100.0)) if total_fair_ale > 0 else 0
-            formatted_subtotal = format_currency(
-                subtotal_ale, currency_symbol=currency, locale=meta_lang, decimals=0
-            )
-
-            # Portfolio Tier Header
-            nodes.append(SpacerNode(points=10))
-            nodes.append(
-                HeadingNode(
-                    text=t_title,
-                    level=3,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            nodes.append(
-                ParagraphNode(
-                    text=t(
-                        "tier_subtotal_badge",
-                        locale=meta_lang,
-                        subtotal_ale=formatted_subtotal,
-                        pct=subtotal_pct,
-                    ),
-                    bold=True,
-                    italic=True,
-                    font_size=9.5,
-                    space_after=8,
-                )
-            )
-
-            for hc in t_items:
-                raw_pname = hc.get("pillar", "Pillar")
-                p_name = resolver.resolve_pillar_by_any_reference(
-                    raw_pname, default=raw_pname, locale=meta_lang
-                )
-
-                card_table = self._build_risk_mini_infographic_card(
-                    ctx=ctx,
-                    hc=hc,
-                    t_idx=t_idx,
-                    p_name=p_name,
-                    total_fair_ale=total_fair_ale,
-                )
-                nodes.append(card_table)
-                nodes.append(SpacerNode(points=12))
+        for card_data in synth.get("strategic_risk_cards", []):
+            nodes.append(self._build_executive_4block_risk_card(ctx, card_data))
+            nodes.append(SpacerNode(points=12))
 
     def _build_executive_4block_risk_card(
         self,
@@ -5374,7 +4900,13 @@ class PayloadToASTBridge:
                 if not matched_risk and idx - 1 < len(risks_data_list or []):
                     matched_risk = (risks_data_list or [])[idx - 1]
 
-                r_id = matched_risk.get("id", f"RVS{idx:02d}") if matched_risk else f"RVS{idx:02d}"
+                t_prefix = str(ctx.get("tower_id") or "T1").strip().upper()
+                raw_rid = str(matched_risk.get("id") or "").strip() if matched_risk else ""
+                if raw_rid and not raw_rid.startswith("RVS"):
+                    r_id = raw_rid
+                else:
+                    r_id = f"RSK-{t_prefix}-{idx:02d}"
+
                 r_cap = matched_risk.get("capability", matched_risk.get("pillar", "Technical Control")) if matched_risk else "Technical Capability Modernization"
 
                 bg_row = "F8FAFC" if idx % 2 == 1 else "FFFFFF"
@@ -5392,9 +4924,18 @@ class PayloadToASTBridge:
             nodes.append(TableNode(rows=bridge_rows, autofit=True, col_widths=[0.14, 0.36, 0.35, 0.15]))
             nodes.append(SpacerNode(points=10))
 
-        # Format total fair ale for closing text
-        total_ale_num = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in (risks_data_list or []) if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR")
-        formatted_ale_closing = format_currency(total_ale_num, currency_symbol=ctx.get("currency", "€"), locale=meta_lang, decimals=0)
+        # Format total fair ale for closing text using monistic Chapter 4 status quo range
+        synth = blueprint_data.get("chapter4_synthesis") or {}
+        tot_min = synth.get("total_status_quo_exposure_min", 0.0)
+        tot_max = synth.get("total_status_quo_exposure_max", 0.0)
+        yr_str = t("year_lbl", locale=meta_lang)
+        curr_sym = ctx.get("currency", "€")
+
+        if tot_max > 0:
+            formatted_ale_closing = f"~{format_currency(tot_min, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} - {format_currency(tot_max, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} / {yr_str}"
+        else:
+            total_ale_num = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in (risks_data_list or []) if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR")
+            formatted_ale_closing = format_currency(total_ale_num, currency_symbol=curr_sym, locale=meta_lang, decimals=0)
 
         closing_text = t(
             "conclusions_closing_text",

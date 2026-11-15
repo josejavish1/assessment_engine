@@ -251,9 +251,22 @@ def build_heatmap_mosaic(
         r["fair_coordinates"] = coord_str
         r["coordinates"] = coord_str
         r["matrix_position"] = coord_str
-        risk_id = str(r.get("id") or r.get("risk_id") or "").strip()
-        if risk_id and risk_id not in matrix_cells[r_tef][r_lm]:
-            matrix_cells[r_tef][r_lm].append(risk_id)
+        risk_label = str(
+            r.get("truncated_title")
+            or r.get("short_title")
+            or r.get("title")
+            or r.get("id")
+            or r.get("risk_id")
+            or ""
+        ).strip()
+        if len(risk_label) > 38:
+            truncated = risk_label[:37]
+            if " " in truncated:
+                truncated = truncated.rsplit(" ", 1)[0]
+            risk_label = f"{truncated}…"
+
+        if risk_label and risk_label not in matrix_cells[r_tef][r_lm]:
+            matrix_cells[r_tef][r_lm].append(risk_label)
 
     heatmap_rows = []
     if currency:
@@ -308,7 +321,15 @@ def build_heatmap_mosaic(
         ]
         for lm_val in range(1, 6):
             cell_risks = matrix_cells[tef_val][lm_val]
-            cell_text = ", ".join(cell_risks) if cell_risks else "-"
+            if not cell_risks:
+                cell_text = "-"
+            elif len(cell_risks) <= 2:
+                cell_text = "\n".join(f"• {item}" for item in cell_risks)
+            else:
+                additional_count = len(cell_risks) - 2
+                adic_label = "adic." if str(locale).startswith("es") else "more"
+                cell_text = f"• {cell_risks[0]}\n• {cell_risks[1]}\n(+{additional_count} {adic_label})"
+
             severity = tef_val * lm_val
             if severity >= HEATMAP_SEVERITY_HIGH_THRESHOLD:
                 bg_color = HEATMAP_SEVERITY_HIGH_HEX
@@ -317,7 +338,7 @@ def build_heatmap_mosaic(
             else:
                 bg_color = HEATMAP_SEVERITY_LOW_HEX
             row_cells.append(
-                CellNode(text=cell_text, bold=True, bg_color=bg_color, align="CENTER")
+                CellNode(text=cell_text, bold=True, bg_color=bg_color, align="CENTER", font_size=7.5)
             )
         heatmap_rows.append(TableRowNode(cells=row_cells))
 
