@@ -486,7 +486,9 @@ class Volume1AsisASTCompiler:
         if operational_sles:
             worst_sle_val, worst_sle_code, worst_sle_domain = max(operational_sles, key=lambda x: x[0])
         else:
-            worst_sle_val, worst_sle_code, worst_sle_domain = 195000.0, "RSK-T6-02", "Ciberseguridad e Identidad Digital"
+            worst_sle_val = 0.0
+            worst_sle_code = "N/A"
+            worst_sle_domain = str(t("unassessed_scope", locale=doc_lang, default="General Operational Perimeter"))
 
         worst_incident_cost = worst_sle_val
         worst_incident_code = worst_sle_code

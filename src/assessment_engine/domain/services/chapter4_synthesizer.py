@@ -155,10 +155,18 @@ class Chapter4Synthesizer:
         cmmi_maturity = round(sum(pillar_scores) / len(pillar_scores), 2) if pillar_scores else 2.5
         cmmi_maturity = max(1.0, min(5.0, cmmi_maturity))
 
-        # Continuous Maturity Elasticity
+        # Continuous Maturity Elasticity & Enterprise Scale Normalization
         # Lower maturity (CMMI < 2.0) -> high toil & high outage risk
         # Higher maturity (CMMI > 4.0) -> reduced toil, lower outage prob, high regulatory secondary loss
-        toil_hours_base = 750.0 * (1.30 - 0.15 * (cmmi_maturity - 1.0))
+        headcount = _safe_float(org_profile.get("headcount") or org_profile.get("employee_count"), default=0.0)
+        if headcount > 0.0:
+            scale_factor = max(0.5, math.log10(max(10.0, headcount)) / 3.0)
+        elif annual_revenue > 0.0:
+            scale_factor = max(0.5, math.log10(max(10_000_000.0, annual_revenue)) / 9.0)
+        else:
+            scale_factor = 1.0
+
+        toil_hours_base = 750.0 * scale_factor * (1.30 - 0.15 * (cmmi_maturity - 1.0))
         min_toil_hours = int(round(toil_hours_base * 0.9))
         max_toil_hours = int(round(toil_hours_base * 1.2))
 

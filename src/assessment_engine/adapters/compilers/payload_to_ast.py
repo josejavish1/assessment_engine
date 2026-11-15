@@ -3521,7 +3521,7 @@ class PayloadToASTBridge:
         worst_case_min_str = format_currency(worst_case.lower_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
         worst_case_max_str = format_currency(worst_case.upper_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
 
-        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Escenario de Estrés Operativo (Pérdida Máxima por Evento Único)")
+        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Operational Stress Scenario (Worst-Case Single Loss Exposure)")
         nodes.append(
             ParagraphNode(
                 text=f"**{stress_title}:**",
@@ -3538,9 +3538,8 @@ class PayloadToASTBridge:
             worst_case_min=worst_case_min_str,
             worst_case_max=worst_case_max_str,
             default=(
-                f"En caso de materialización simultánea de fallos en los componentes críticos de {ctx.get('tower_name', '')}, "
-                f"el impacto económico puntual derivado de la parada de planta y la movilización de servicios de emergencia "
-                f"se sitúa en una horquilla estimada de ~{worst_case_min_str} a ~{worst_case_max_str} por incidente mayor."
+                f"In the event of concurrent critical failure across {ctx.get('tower_name', '')}, "
+                f"the single-event financial impact is estimated at ~{worst_case_min_str} to ~{worst_case_max_str} per major incident."
             ),
         )
         nodes.append(ParagraphNode(text=stress_narrative, font_size=9.5, space_after=14))
@@ -3559,14 +3558,14 @@ class PayloadToASTBridge:
         # 4.3 Catalog of Key Technical Risk Cards
         nodes.append(
             HeadingNode(
-                text=t("ch4_sec3_title", locale=meta_lang, default="4.3. Catálogo de Fichas de Riesgo Técnico-Operativas"),
+                text=t("ch4_sec3_title", locale=meta_lang, default="4.3. Technical Risk Scenarios Catalog"),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
         nodes.append(
             ParagraphNode(
-                text=t("ch4_sec3_cards_intro", locale=meta_lang, default="El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estratégicos observados en planta."),
+                text=t("ch4_sec3_intro", locale=meta_lang, default="The operational risk register filters out auxiliary or non-material incidents, focusing strictly on empirical strategic vulnerabilities."),
                 font_size=9.5,
                 space_after=12,
             )
@@ -4929,7 +4928,7 @@ class PayloadToASTBridge:
         tot_min = synth.get("total_status_quo_exposure_min", 0.0)
         tot_max = synth.get("total_status_quo_exposure_max", 0.0)
         yr_str = t("year_lbl", locale=meta_lang)
-        curr_sym = ctx.get("currency", "€")
+        curr_sym = ctx.get("currency") or ctx.get("currency_symbol") or "EUR"
 
         if tot_max > 0:
             formatted_ale_closing = f"~{format_currency(tot_min, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} - {format_currency(tot_max, currency_symbol=curr_sym, locale=meta_lang, decimals=0)} / {yr_str}"
