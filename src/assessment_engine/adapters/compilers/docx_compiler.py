@@ -793,7 +793,18 @@ class DocxCompiler(DocumentCompiler):
         elif node_type == "spacer" or isinstance(node, SpacerNode):
             self._compile_spacer(doc, node)
         elif node_type == "page_break" or isinstance(node, PageBreakNode):
-            doc.add_page_break()
+            # Anti-orphan blank page guard: suppress consecutive page breaks
+            should_break = True
+            if len(doc.paragraphs) > 0:
+                last_p = doc.paragraphs[-1]
+                has_page_break = any(
+                    "w:br" in r._r.xml and "page" in r._r.xml
+                    for r in last_p.runs
+                )
+                if has_page_break and not last_p.text.strip():
+                    should_break = False
+            if should_break:
+                doc.add_page_break()
         elif node_type == "picture" or isinstance(node, PictureNode):
             self._compile_picture(doc, node)
         elif node_type == "toc" or isinstance(node, TOCNode):

@@ -2957,8 +2957,6 @@ class PayloadToASTBridge:
             )
 
             for p_idx, r_item in enumerate(pillars_list, 1):
-                if p_idx in (2, 4):
-                    nodes.append(PageBreakNode())
                 p_id, raw_pname = extract_pillar_identifiers(r_item)
                 lookup_ref = p_id or raw_pname or r_item.get("pillar_name")
                 p_name = resolver.resolve_pillar_by_any_reference(
