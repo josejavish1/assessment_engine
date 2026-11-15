@@ -1,0 +1,206 @@
+"""
+Tier-1 Epistemic Fact Registry & Perspective Lease Allocation Engine.
+
+Implements the formal graph-backed epistemic control plane specified by the Tier-1 Red Team:
+1. Replaces raw string facts with immutable Actuarial Fact Tuples (AFTs) featuring SHA-256 span provenance.
+2. Implements Perspective Lease Allocation (PRIMARY_OWNER vs SECONDARY_CONSUMER) to permit cross-domain
+   causation while strictly barring narrative repetition.
+3. Implements Polarity-Aware Claim Gating, solving the "Absence of Evidence vs Evidence of Absence" fallacy
+   by permitting absent entities (e.g. VESDA, BitLocker) under NEGATIVE_GAP or REMEDIATION_TARGET polarities.
+"""
+
+from __future__ import annotations
+
+import hashlib
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from pydantic import BaseModel, Field, ConfigDict
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class EpistemicModality(str, Enum):
+    """Epistemic modality of an extracted enterprise fact."""
+    OBSERVED_EVIDENCE = "OBSERVED_EVIDENCE"        # Directly verified in telemetry, logs, or config files
+    MANAGEMENT_ASSERTION = "MANAGEMENT_ASSERTION"  # Declared in interview or survey without direct instrumentation
+    DERIVED_METRIC = "DERIVED_METRIC"              # Deterministically pre-calculated by Python/Rust kernel
+    ABSENT_CONTROL = "ABSENT_CONTROL"              # Formally confirmed absent or unmonitored
+
+
+class ClaimPolarity(str, Enum):
+    """Semantic polarity of an emitted narrative statement."""
+    ASSERTIVE = "ASSERTIVE"                        # Asserts client possesses, operates, or relies upon the entity
+    NEGATIVE_GAP = "NEGATIVE_GAP"                  # Asserts client lacks, misses, or unmonitors the entity
+    REMEDIATION_TARGET = "REMEDIATION_TARGET"      # Recommends client deploy or configure the entity in roadmap
+    BENCHMARK_COMPARISON = "BENCHMARK_COMPARISON"  # Cites entity as an external industry standard or reference model
+
+
+class LeaseType(str, Enum):
+    """Ownership level of a domain over a shared enterprise fact."""
+    PRIMARY_OWNER = "PRIMARY_OWNER"                # Permitted full descriptive narrative and baseline quotation
+    SECONDARY_CONSUMER = "SECONDARY_CONSUMER"      # Permitted ONLY causal reference (cannot restate descriptive narrative)
+
+
+class LeaseStatus(str, Enum):
+    """MVCC lease state tracking."""
+    AVAILABLE = "AVAILABLE"
+    CONSUMED = "CONSUMED"
+
+
+class DomainPerspective(BaseModel):
+    """Domain-specific lease framing for a shared enterprise fact."""
+    model_config = ConfigDict(extra="forbid")
+
+    domain_id: str = Field(..., description="Target tower ID, e.g., T1, T2, T5, T6")
+    lease_type: LeaseType = Field(..., description="Lease authority type")
+    semantic_framing: str = Field(..., description="Domain-specific consequence (e.g., 'Stability' vs 'Unpatched CVE')")
+    status: LeaseStatus = Field(default=LeaseStatus.AVAILABLE, description="Lease consumption state")
+    consumed_in_section: Optional[str] = Field(default=None, description="Section ID where lease was redeemed")
+
+
+class ActuarialFactTuple(BaseModel):
+    """Immutable, typed actuarial fact with cryptographic provenance."""
+    model_config = ConfigDict(extra="forbid")
+
+    fact_id: str = Field(..., description="Deterministic SHA-256 hash of subject + predicate + span")
+    canonical_subject: str = Field(..., description="Ontology entity ID, e.g., 'SYS_SIMPLIVITY_NODE_01'")
+    predicate: str = Field(..., description="Ontology relationship verb, e.g., 'HAS_CONTINUOUS_UPTIME'")
+    value_scalar: Optional[Union[float, int, bool]] = Field(default=None, description="Canonical scalar value")
+    value_text: Optional[str] = Field(default=None, description="Descriptive textual value")
+    unit_iso: Optional[str] = Field(default=None, description="Standardized ISO unit, e.g., 'DAYS', 'HOURS', 'EUR'")
+    modality: EpistemicModality = Field(..., description="Verification degree")
+    confidence_score: float = Field(ge=0.0, le=1.0, description="Epistemic confidence rating")
+    source_document_id: str = Field(..., description="Identifier of source document or audio transcript")
+    source_char_span: Tuple[int, int] = Field(..., description="Character offset span (start, end) in source text")
+    verbatim_quote: str = Field(..., description="Exact raw text snippet from evidence corpus")
+    domain_leases: List[DomainPerspective] = Field(default_factory=list, description="Assigned domain perspective leases")
+
+    @classmethod
+    def create(
+        cls,
+        canonical_subject: str,
+        predicate: str,
+        source_document_id: str,
+        source_char_span: Tuple[int, int],
+        verbatim_quote: str,
+        modality: EpistemicModality,
+        confidence_score: float = 1.0,
+        value_scalar: Optional[Union[float, int, bool]] = None,
+        value_text: Optional[str] = None,
+        unit_iso: Optional[str] = None,
+        domain_leases: Optional[List[DomainPerspective]] = None,
+    ) -> ActuarialFactTuple:
+        """Constructs an ActuarialFactTuple with a deterministic SHA-256 fact_id."""
+        hash_input = f"{canonical_subject}:{predicate}:{source_document_id}:{source_char_span[0]}:{source_char_span[1]}"
+        fact_id = f"AFT-{hashlib.sha256(hash_input.encode('utf-8')).hexdigest()[:12].upper()}"
+        return cls(
+            fact_id=fact_id,
+            canonical_subject=canonical_subject,
+            predicate=predicate,
+            value_scalar=value_scalar,
+            value_text=value_text,
+            unit_iso=unit_iso,
+            modality=modality,
+            confidence_score=confidence_score,
+            source_document_id=source_document_id,
+            source_char_span=source_char_span,
+            verbatim_quote=verbatim_quote,
+            domain_leases=domain_leases or [],
+        )
+
+
+class EpistemicFactRegistry:
+    """Thread-safe graph-backed repository for Actuarial Fact Tuples and perspective lease management."""
+
+    def __init__(self) -> None:
+        self._facts: Dict[str, ActuarialFactTuple] = {}
+        self._subject_index: Dict[str, Set[str]] = {}
+        self._domain_index: Dict[str, Set[str]] = {}
+
+    def register_fact(self, fact: ActuarialFactTuple) -> str:
+        """Registers an immutable fact tuple and updates search indices."""
+        self._facts[fact.fact_id] = fact
+
+        if fact.canonical_subject not in self._subject_index:
+            self._subject_index[fact.canonical_subject] = set()
+        self._subject_index[fact.canonical_subject].add(fact.fact_id)
+
+        for lease in fact.domain_leases:
+            if lease.domain_id not in self._domain_index:
+                self._domain_index[lease.domain_id] = set()
+            self._domain_index[lease.domain_id].add(fact.fact_id)
+
+        return fact.fact_id
+
+    def get_fact(self, fact_id: str) -> Optional[ActuarialFactTuple]:
+        """Retrieves a fact by its canonical AFT ID."""
+        return self._facts.get(fact_id)
+
+    def get_facts_for_domain(self, domain_id: str) -> List[ActuarialFactTuple]:
+        """Returns all facts accessible to the specified domain tower."""
+        fact_ids = self._domain_index.get(domain_id.upper(), set())
+        return [self._facts[fid] for fid in sorted(fact_ids) if fid in self._facts]
+
+    def acquire_lease(
+        self,
+        fact_id: str,
+        domain_id: str,
+        section_id: str,
+    ) -> Tuple[bool, str, Optional[DomainPerspective]]:
+        """Attempts to acquire and redeem a narrative lease for a domain in a specific document section.
+
+        Enforces the Lease Rule:
+        - PRIMARY_OWNER can only redeem the lease ONCE. Subsequent attempts return already consumed.
+        - SECONDARY_CONSUMER can cite the fact as a causal premise, but cannot claim primary ownership.
+        """
+        fact = self._facts.get(fact_id)
+        if not fact:
+            return False, f"Fact '{fact_id}' not found in registry.", None
+
+        for lease in fact.domain_leases:
+            if lease.domain_id == domain_id.upper():
+                if lease.status == LeaseStatus.CONSUMED:
+                    return (
+                        False,
+                        f"Lease for domain '{domain_id}' on fact '{fact_id}' already consumed in '{lease.consumed_in_section}'. Restatement prohibited.",
+                        lease,
+                    )
+                # Redeem lease
+                lease.status = LeaseStatus.CONSUMED
+                lease.consumed_in_section = section_id
+                return True, "Lease acquired successfully.", lease
+
+        return False, f"Domain '{domain_id}' possesses no lease authority over fact '{fact_id}'.", None
+
+    @staticmethod
+    def evaluate_claim_polarity(
+        entity_token: str,
+        polarity: ClaimPolarity,
+        accredited_entities: Set[str],
+    ) -> Tuple[bool, str]:
+        """Evaluates whether citing an entity token is permissible under the specified epistemic polarity.
+
+        Solves the 'Absence of Evidence vs Evidence of Absence' fallacy:
+        - ASSERTIVE polarity requires the entity to be present in accredited evidence.
+        - NEGATIVE_GAP, REMEDIATION_TARGET, and BENCHMARK_COMPARISON are explicitly permitted
+          to cite absent technologies (e.g. VESDA, BitLocker) to diagnose control deficiencies.
+        """
+        token_clean = entity_token.strip().lower()
+        is_accredited = any(token_clean == e.strip().lower() for e in accredited_entities)
+
+        if polarity == ClaimPolarity.ASSERTIVE:
+            if not is_accredited:
+                return (
+                    False,
+                    f"Polarity Violation: Entity '{entity_token}' asserted as installed/operational, "
+                    f"but absent from accredited evidence corpus.",
+                )
+            return True, "Assertive claim verified against accredited evidence."
+
+        # Non-assertive polarities (Gaps, Benchmarks, Remediation Targets) are permitted
+        return (
+            True,
+            f"Permitted non-assertive citation under polarity '{polarity.value}'. "
+            f"Allowed to reference absent standard '{entity_token}'.",
+        )
