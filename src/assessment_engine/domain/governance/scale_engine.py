@@ -118,14 +118,11 @@ class GovernanceScaleEngine:
                     if translated:
                         label = translated
                 elif locale.startswith("es"):
-                    spanish_map = {
-                        "band_initial": "Inicial",
-                        "band_managed": "Básico",
-                        "band_defined": "Estandarizado",
-                        "band_quantitatively_managed": "Optimizado",
-                        "band_optimized": "Avanzado",
-                    }
-                    label = spanish_map.get(token, label)
+                    try:
+                        from assessment_engine.infrastructure.localization import t as loc_t
+                        label = loc_t(token, locale=locale, default=label)
+                    except Exception:
+                        pass
 
                 return ResolvedMaturity(
                     raw_score=float_raw,

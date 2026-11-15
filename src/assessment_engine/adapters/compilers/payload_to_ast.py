@@ -2082,13 +2082,13 @@ class PayloadToASTBridge:
 
         # Epistemic Validation State Declaration (Fast Assessment Framework)
         val_state_text = (
-            "**Estado de Validación del Diagnóstico: Exploratoria (Fast Assessment)** — "
+            "**Estado de Validación del Diagnóstico: Exploratoria (Fast Assessment)** - "
             "El análisis de madurez y los modelos de exposición cuantitativa de este informe se fundamentan "
             "en las autoevaluaciones técnicas del cliente, sesiones de contraste arquitectónico y documentación de topología disponible, "
             "sin captura automatizada de telemetría de red ni inspección forense de configuraciones en producción."
             if meta_lang.startswith("es")
             else (
-                "**Methodological Validation State: Exploratory (Fast Assessment)** — "
+                "**Methodological Validation State: Exploratory (Fast Assessment)** - "
                 "The maturity analysis and quantitative risk exposure models in this deliverable are grounded "
                 "in client self-assessment survey responses, technical discovery interviews, and declared topology documentation, "
                 "without automated production network telemetry capture or invasive configuration parsing."

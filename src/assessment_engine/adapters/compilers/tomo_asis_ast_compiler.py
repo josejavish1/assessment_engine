@@ -1449,6 +1449,7 @@ class Volume1AsisASTCompiler:
         for code, clean_tower_name, score, _, _ in domain_topology:
             code_u = code.upper()
             t_risks = tower_risks_map.get(code_u, [])
+            t_payload = tower_payloads.get(code_u) or tower_payloads.get(code) or {}
             
             s_ale = sum(
                 float(r.get("sle") or 0.0) * float(r.get("lef") or 0.0)

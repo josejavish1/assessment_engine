@@ -594,13 +594,6 @@ class Chapter4Synthesizer:
         target_locale = str(ctx.get("meta_lang") or doc_meta.get("language") or "en").strip().lower()
         is_es = target_locale.startswith("es")
 
-        tef_labels_es = {
-            1: "< 0,1 eventos/año (menos de 1 vez cada 10 años)",
-            2: "0,1 - 0,5 eventos/año (1 evento cada 2 a 10 años)",
-            3: "0,5 - 2,0 eventos/año (1 evento cada 12 a 24 meses)",
-            4: "2,0 - 10,0 eventos/año (contingencia recurrente anual)",
-            5: "> 10 eventos/año (frecuencia mensual / recurrencia continua)",
-        }
         tef_labels_en = {
             1: "< 0.1 events/year (less than once every 10 years)",
             2: "0.1 - 0.5 events/year (once every 2 to 10 years)",
@@ -627,11 +620,7 @@ class Chapter4Synthesizer:
                     "tier": "TIER_1_CRITICAL" if idx < 2 else "TIER_2_STRUCTURAL",
                     "title": card.title,
                     "affected_perimeter": payload.tower_name,
-                    "estimated_frequency_label": (
-                        tef_labels_es.get(card.heatmap_coordinate.likelihood_index, "0,5 - 2,0 eventos/año")
-                        if is_es
-                        else tef_labels_en.get(card.heatmap_coordinate.likelihood_index, "0.5 - 2.0 events/year")
-                    ),
+                    "estimated_frequency_label": tef_labels_en.get(card.heatmap_coordinate.likelihood_index, "0.5 - 2.0 events/year"),
                     "technical_evidence": card.physical_evidence,
                     "operational_impact_chain": card.business_impact_narrative,
                     "threat_event_frequency_annual": tef_val,
@@ -646,9 +635,6 @@ class Chapter4Synthesizer:
             )
 
         concentration_narrative = [
-            f"Eje de Continuidad Operativa Crítica (Tier 1): Concentra la principal exposición por indisponibilidad y resiliencia de la plataforma en {payload.tower_name}.",
-            "Eje de Deuda Técnica y Gobernanza (Tier 2): Concentra la exposición derivada del envejecimiento del ciclo de vida de los activos y los condicionantes de mantenimiento operativo.",
-        ] if is_es else [
             f"Core Operational Continuity Axis (Tier 1): Concentrates the primary operational and resilience exposure in {payload.tower_name}.",
             "Technical Debt and Governance Axis (Tier 2): Concentrates exposure arising from platform lifecycle aging and maintenance scheduling constraints.",
         ]

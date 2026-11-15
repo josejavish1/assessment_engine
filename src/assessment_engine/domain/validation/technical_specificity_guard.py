@@ -20,27 +20,31 @@ logger = logging.getLogger(__name__)
 # when the specific entity is NOT present in the verified evidence corpus.
 SPECIFICITY_ABSTRACTION_MAP: Dict[str, str] = {
     # T1 Facilities
-    r"\bVESDA\b": "sistemas de detección precoz por aspiración",
-    r"\bCRAC\b": "unidades de climatización de precisión para salas técnicas",
-    r"\bATS\b": "conmutadores automáticos de transferencia eléctrica",
-    r"\blectores biométricos\b": "mecanismos de control de acceso físico reforzado",
-    r"\bNVR\b": "sistemas de videovigilancia y grabación de seguridad física",
-    r"\bDCIM\b": "herramientas de gestión integral de infraestructuras de centro de datos",
+    r"\bVESDA\b": "aspirating smoke detection systems",
+    r"\bCRAC\b": "precision cooling units for technical rooms",
+    r"\bATS\b": "automatic transfer switches",
+    r"\blectores biom\u00e9tricos\b": "reinforced physical access controls",
+    r"\bNVR\b": "physical security video surveillance systems",
+    r"\bDCIM\b": "data center infrastructure management tools",
 
     # T3 Network
-    r"\bBFD\b": "mecanismos de detección ultrarrápida de fallos de enlace",
-    r"\bSNMPv3\b": "protocolos seguros de monitorización de red",
-    r"\btelemetría de buffers\b": "supervisión avanzada de rendimiento de conmutación",
-    r"\bVRF\b": "segmentación virtual de tablas de enrutamiento",
+    r"\bBFD\b": "sub-second link fault detection mechanisms",
+    r"\bSNMPv3\b": "secure network monitoring protocols",
+    r"\btelemetr\u00eda de buffers\b": "advanced switching performance telemetry",
+    r"\bVRF\b": "virtual routing table segmentation",
 
     # T9 Workplace
-    r"\bZero-Touch Provisioning\b": "aprovisionamiento desasistido de puestos de trabajo",
-    r"\bBitLocker\b": "mecanismos de cifrado de almacenamiento local en endpoints",
-    r"\bEntra ID\b": "directorio corporativo y proveedor centralizado de identidades",
-    r"\bSAML 2\.0\b": "protocolos federados de autenticación única",
-    r"\bOpenID Connect\b": "estándares modernos de federación de identidad",
-    r"\bSSPR\b": "autoservicio de restablecimiento de credenciales",
-    r"\bDLP\b": "políticas de prevención de fugas de información en el endpoint",
+    r"\bZero-Touch Provisioning\b": "unattended workplace deployment",
+    r"\bBitLocker\b": "local endpoint storage encryption",
+    r"\bEntra ID\b": "enterprise identity and directory services",
+    r"\bSAML 2\.0\b": "federated single sign-on protocols",
+    r"\bOpenID Connect\b": "modern identity federation standards",
+    r"\bSSPR\b": "self-service password reset",
+    r"\bDLP\b": "endpoint data loss prevention policies",
+
+    # Universal Governance / Invariant Guardrails
+    r"\bRTO contractual\b": "operational recovery estimate",
+    r"\bRTO Contractual\b": "operational recovery estimate",
 }
 
 

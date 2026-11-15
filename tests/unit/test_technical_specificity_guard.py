@@ -20,9 +20,9 @@ def test_specificity_guard_sanitizes_unaccredited_entities():
     assert "VESDA" not in sanitized
     assert "CRAC" not in sanitized
     assert "BFD" not in sanitized
-    assert "sistemas de detección precoz por aspiración" in sanitized
-    assert "unidades de climatización de precisión para salas técnicas" in sanitized
-    assert "mecanismos de detección ultrarrápida de fallos de enlace" in sanitized
+    assert "aspirating smoke detection systems" in sanitized
+    assert "precision cooling units for technical rooms" in sanitized
+    assert "sub-second link fault detection mechanisms" in sanitized
     assert len(replaced) == 3
 
 def test_specificity_guard_preserves_grounded_entities():
@@ -37,5 +37,5 @@ def test_specificity_guard_preserves_grounded_entities():
     assert "BitLocker" in sanitized
     # Entra ID was NOT in the evidence corpus -> MUST be sanitized
     assert "Entra ID" not in sanitized
-    assert "directorio corporativo y proveedor centralizado de identidades" in sanitized
+    assert "enterprise identity and directory services" in sanitized
     assert replaced == ["entra id"]
