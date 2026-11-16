@@ -95,7 +95,9 @@
       "saml 2.0",
       "rodc",
       "centralized pam vault",
-      "bóveda pam"
+      "bóveda pam",
+      "bgp",
+      "vlan"
     ],
     "es": [
       "cctv",
@@ -106,7 +108,9 @@
       "saml 2.0",
       "rodc",
       "bóveda pam",
-      "boveda pam"
+      "boveda pam",
+      "bgp",
+      "vlan"
     ]
   },
   "technical_specificity_patterns": {

@@ -524,6 +524,10 @@ class PillarBlueprintDraft(BaseModel):
     )
     score: float = 0.0
     target_score: float = 4.0
+    epistemic_regime: str = Field(
+        default="REGIME_EMPIRICAL_CONCRETE",
+        description="The epistemic density regime assigned by the compiler (e.g., REGIME_ZERO_EVIDENCE, REGIME_SPARSE_GOVERNANCE, REGIME_EMPIRICAL_CONCRETE).",
+    )
     asis_architecture_description: str = Field(
         default="Architecture description not available.",
         description="A comprehensive technical narrative detailing current state (AS-IS) architecture and topology, drafted strictly in the target_language.",
@@ -531,6 +535,44 @@ class PillarBlueprintDraft(BaseModel):
     health_check_asis: list[HealthCheckAsIs]
     target_architecture_tobe: TargetArchitectureToBe
     projects_todo: list[ProjectToDo]
+
+    @model_validator(mode="after")
+    def verify_polymorphic_abstraction_ceiling(self) -> "PillarBlueprintDraft":
+        """GATE-31.2: Dynamic Output Schema Polymorphism.
+
+        Physically enforces the abstraction ceiling on the entire Pillar output
+        if the epistemic regime dictates zero qualitative evidence.
+        """
+        if self.epistemic_regime in ["REGIME_ZERO_EVIDENCE", "REGIME_SPARSE_GOVERNANCE"]:
+            from pathlib import Path
+            import json
+
+            cfg_path = (
+                Path(__file__).resolve().parents[4]
+                / "engine_config"
+                / "policies"
+                / "epistemic_dependencies.json"
+            )
+            unauthorized_tokens: set[str] = set()
+            if cfg_path.exists():
+                try:
+                    cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+                    for tokens in cfg_data.get(
+                        "unauthorized_governance_entity_tokens", {}
+                    ).values():
+                        unauthorized_tokens.update(t.lower() for t in tokens)
+                except Exception:
+                    pass
+
+            desc_lower = self.asis_architecture_description.lower()
+            for token in unauthorized_tokens:
+                if token in desc_lower:
+                    raise EpistemicContaminationError(
+                        f"GATE-31.2 BREACH: Pillar '{self.pillar_id}' operates under {self.epistemic_regime}. "
+                        f"Unauthorized entity token '{token}' detected in 'asis_architecture_description'. "
+                        "Unaccredited physical protocols or proprietary vendor names are strictly forbidden."
+                    )
+        return self
 
     @property
     def pilar_id(self) -> str:
