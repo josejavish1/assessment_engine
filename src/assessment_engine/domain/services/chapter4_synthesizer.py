@@ -441,7 +441,17 @@ class Chapter4Synthesizer:
         outage_min = sum(int(s.calibrated_annual_ale.lower_bound) for s in risk_scenarios)
         outage_max = sum(int(s.calibrated_annual_ale.upper_bound) for s in risk_scenarios)
 
-        subadditivity_factor = round(max(0.75, 1.0 - 0.05 * max(0, len(raw_cards) - 1)), 2)
+        # Phase 25: Copula-Driven Portfolio Subadditivity (Replaces linear heuristic)
+        # Psi(N, rho) = sqrt(rho + (1-rho)/N + tau * ((N-1)/N))
+        N_cards = len(raw_cards)
+        rho_copula = 0.25
+        tau_tail = 0.08
+        if N_cards > 0:
+            copula_variance = rho_copula + ((1.0 - rho_copula) / N_cards) + tau_tail * ((N_cards - 1.0) / N_cards)
+            subadditivity_factor = round(max(0.35, math.sqrt(copula_variance)), 2)
+        else:
+            subadditivity_factor = 1.0
+
         gross_standalone_sum = int(round(outage_min / subadditivity_factor))
 
         outage_breakdown = ProbabilisticOutageALEBreakdown(
@@ -457,14 +467,27 @@ class Chapter4Synthesizer:
             ),
         )
 
-        maturity_contract_weight = 0.40 + 0.15 * (cmmi_maturity - 1.0)
-        baseline_economic_anchor = (outage_min * 0.60) + (toil_min * 0.45)
-        contractual_min = round_to_actuarial_significance(
-            baseline_economic_anchor * maturity_contract_weight
-        )
-        contractual_max = round_to_actuarial_significance(
-            ((outage_max * 0.60) + (toil_max * 0.45)) * (maturity_contract_weight + 0.05)
-        )
+        # Phase 25: Pure Orthogonal Contractual Drag (Lever 3)
+        # Decoupled entirely from Outage (Lever 2) and Toil (Lever 1)
+        # 1. Baseline IT Spend = Revenue * Industry Ratio (e.g. 0.052)
+        baseline_it_spend = annual_revenue * 0.052
+        # 2. Addressable Domain Allocation (e.g. 0.20)
+        addressable_domain_spend = baseline_it_spend * 0.20
+        
+        # 3. Annual Escalation Rate (from maturity tier)
+        if cmmi_maturity < 1.6:
+            base_esc = 0.18
+        elif cmmi_maturity < 2.6:
+            base_esc = 0.12
+        elif cmmi_maturity < 3.6:
+            base_esc = 0.07
+        elif cmmi_maturity < 4.6:
+            base_esc = 0.03
+        else:
+            base_esc = 0.01
+
+        contractual_min = round_to_actuarial_significance(addressable_domain_spend * max(0.0, base_esc - 0.04))
+        contractual_max = round_to_actuarial_significance(addressable_domain_spend * (base_esc + 0.05))
         if contractual_max <= contractual_min:
             contractual_max = contractual_min + round_to_actuarial_significance(
                 contractual_min * 0.30

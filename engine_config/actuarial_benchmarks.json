@@ -1,0 +1,38 @@
+{
+  "schema_version": "25.0.0",
+  "description": "Declarative Actuarial Benchmarks for Orthogonal COI Synthesis and Copula Risk Aggregation.",
+  "copula_aggregation_parameters": {
+    "baseline_pairwise_correlation_rho": 0.25,
+    "tail_dependence_surcharge_tau": 0.08,
+    "min_diversification_floor": 0.35
+  },
+  "toil_efficiency_parameters": {
+    "productivity_recapture_factor": {
+      "min": 0.50,
+      "mode": 0.65,
+      "max": 0.80
+    },
+    "annual_productive_hours_per_fte": 1880.0
+  },
+  "contractual_escalation_parameters": {
+    "default_domain_spend_allocation_ratio": {
+      "min": 0.14,
+      "mode": 0.20,
+      "max": 0.28
+    },
+    "annual_escalation_rates_by_maturity": {
+      "1": { "min": 0.12, "mode": 0.18, "max": 0.25 },
+      "2": { "min": 0.08, "mode": 0.12, "max": 0.17 },
+      "3": { "min": 0.04, "mode": 0.07, "max": 0.10 },
+      "4": { "min": 0.01, "mode": 0.03, "max": 0.05 },
+      "5": { "min": 0.00, "mode": 0.01, "max": 0.02 }
+    }
+  },
+  "macroeconomic_profiles": {
+    "default_it_spend_to_revenue_ratio": {
+      "min": 0.035,
+      "mode": 0.052,
+      "max": 0.081
+    }
+  }
+}
