@@ -449,11 +449,26 @@ def format_date_localized(date_val: str | None = None, locale: str = "en") -> st
     return cleaned
 
 
+_SANITIZER = None
+
+
 def restore_locale_diacritics(text: str, locale: str = "en") -> str:
     """RFC-029 Upstream Governance: Payload strings are authoritative UTF-8 literals.
 
-    Maintains language-agnostic pass-through without runtime morphological mutations.
+    Maintains language-agnostic pass-through while applying deterministic epistemic
+    capability archetype sanitization on unverified vendor hallucinations.
     """
     if not text:
         return ""
-    return str(text)
+    global _SANITIZER
+    if _SANITIZER is None:
+        try:
+            from assessment_engine.domain.validation.lexical_epistemic_sanitizer import (
+                LexicalEpistemicSanitizer,
+            )
+            _SANITIZER = LexicalEpistemicSanitizer()
+        except ImportError:
+            return str(text)
+
+    sanitized, _ = _SANITIZER.compile_and_sanitize(str(text), doc_lang=locale)
+    return sanitized
