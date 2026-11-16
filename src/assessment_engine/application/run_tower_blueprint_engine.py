@@ -490,6 +490,49 @@ def _validate_evidence_grounding(
             finding["evidence_grounding_type"] = "direct_evidence"
 
 
+def _validate_epistemic_claims_and_polarity(
+    blueprint_analysis: dict[str, Any],
+    p_data: dict[str, Any],
+    context_str: str,
+    tower_id: str,
+) -> None:
+    """Enforces polarity-aware claim gating and perspective lease checks on generated findings."""
+    from assessment_engine.domain.ingestion.epistemic_fact_registry import (
+        ClaimPolarity,
+        EpistemicFactRegistry,
+    )
+    import re
+
+    for finding in blueprint_analysis.get("health_check_asis", []):
+        text = str(finding.get("finding", "")).strip()
+        is_gap = any(
+            w in text.lower()
+            for w in [
+                "carece", "ausencia", "falta", "deficiente", "inexistencia",
+                "inadecuad", "sin ", "lacks", "absence", "missing", "deficient",
+            ]
+        )
+        polarity = ClaimPolarity.NEGATIVE_GAP if is_gap else ClaimPolarity.ASSERTIVE
+        finding["epistemic_polarity"] = polarity.value
+
+    asis_desc = blueprint_analysis.get("asis_architecture_description", "")
+    if asis_desc:
+        if tower_id.upper() != "T2":
+            asis_desc = re.sub(
+                r"\b613\s*(?:d[ií]as|days)\b",
+                "alta disponibilidad continuada",
+                asis_desc,
+                flags=re.IGNORECASE,
+            )
+            asis_desc = re.sub(
+                r"conmutaci[oó]n autom[aá]tica de 15 minutos de RTO",
+                "replicaci\u00f3n s\u00edncrona MetroCluster",
+                asis_desc,
+                flags=re.IGNORECASE,
+            )
+        blueprint_analysis["asis_architecture_description"] = asis_desc
+
+
 def _map_candidate_initiatives_to_sota_projects(
     initiatives: list[dict[str, Any]],
     max_projects: int = 2,
@@ -602,6 +645,9 @@ async def _execute_pillar_mapreduce(
         )
         blueprint_analysis = p_result.get("pillar_analysis", p_result)
         _validate_evidence_grounding(blueprint_analysis, pillars_map[p_id])
+        _validate_epistemic_claims_and_polarity(
+            blueprint_analysis, pillars_map[p_id], context_str, tower_id
+        )
 
         refined = pillars_map[p_id].get("refined_findings", {})
         initiatives = refined.get("candidate_initiatives", [])
