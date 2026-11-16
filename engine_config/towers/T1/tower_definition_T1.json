@@ -196,21 +196,21 @@
         },
         {
           "kpi_id": "T1.P3.K2",
-          "kpi_name": "Vendor Escort Protocols, Room Access Logging & Permits to Work",
+          "kpi_name": "Physical Access Logging, Audit Trails & Ingress Traceability",
           "questions": [
             {
               "question_id": "T1.P3.K2.PR1",
-              "question_text": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?"
+              "question_text": "How are physical access logs to technical rooms registered, tracked, and periodically audited?"
             }
           ]
         },
         {
           "kpi_id": "T1.P3.K3",
-          "kpi_name": "CCTV Surveillance Coverage, Access Logs & Tamper-Proof Audit Retention",
+          "kpi_name": "Third-Party Contractor Governance, Vendor Escort & Permits to Work",
           "questions": [
             {
               "question_id": "T1.P3.K3.PR1",
-              "question_text": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?"
+              "question_text": "How are third-party vendor visits, contractor interventions, and permits to work managed and supervised in technical rooms?"
             }
           ]
         }
@@ -350,17 +350,17 @@
     },
     {
       "question_id": "T1.P3.K2.PR1",
-      "question_text": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?",
+      "question_text": "How are physical access logs to technical rooms registered, tracked, and periodically audited?",
       "pillar_id": "T1.P3",
       "kpi_id": "T1.P3.K2",
-      "kpi_name": "Vendor Escort Protocols, Room Access Logging & Permits to Work"
+      "kpi_name": "Physical Access Logging, Audit Trails & Ingress Traceability"
     },
     {
       "question_id": "T1.P3.K3.PR1",
-      "question_text": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?",
+      "question_text": "How are third-party vendor visits, contractor interventions, and permits to work managed and supervised in technical rooms?",
       "pillar_id": "T1.P3",
       "kpi_id": "T1.P3.K3",
-      "kpi_name": "CCTV Surveillance Coverage, Access Logs & Tamper-Proof Audit Retention"
+      "kpi_name": "Third-Party Contractor Governance, Vendor Escort & Permits to Work"
     },
     {
       "question_id": "T1.P4.K1.PR1",

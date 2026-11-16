@@ -2527,24 +2527,38 @@ class PayloadToASTBridge:
                     tower_id=tower_id,
                 )
                 if meta_lang.startswith("es"):
-                    note = (
-                        f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** La autoevaluación "
-                        f"preliminar refleja una puntuación declarada de **{float(declared):.2f}/5.00** motivada por la incorporación "
-                        f"de talento especializado y la hoja de ruta de adopción. La evidencia cualitativa disponible en las sesiones "
-                        f"de contraste no permite determinar de forma concluyente el alcance de la explotación productiva frente a "
-                        f"entornos de prueba. Conforme al framework metodológico, se mantiene la calificación declarada de **{float(declared):.2f}*/5.00** "
-                        f"en estado **PROVISIONAL / PENDIENTE DE VALIDACIÓN EN CAMPO**, señalando esta divergencia documental como punto "
-                        f"prioritario de contraste pericial directo sin imputar una degradación artificial a 1,00. *Detalle metodológico:* {reason}"
-                    )
+                    if reason:
+                        note = (
+                            f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** {reason} "
+                            f"Conforme al framework metodológico, se mantiene la calificación declarada de **{float(declared):.2f}*/5.00** "
+                            f"en estado **PROVISIONAL / PENDIENTE DE VALIDACIÓN EN CAMPO**, señalando esta divergencia documental como punto "
+                            f"prioritario de contraste pericial directo sin imputar una degradación artificial a 1,00."
+                        )
+                    else:
+                        note = (
+                            f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** La autoevaluación "
+                            f"preliminar refleja una puntuación declarada de **{float(declared):.2f}/5.00**. La evidencia cualitativa disponible en las sesiones "
+                            f"de contraste no permite determinar de forma concluyente el alcance de la explotación productiva frente a "
+                            f"entornos de prueba. Conforme al framework metodológico, se mantiene la calificación declarada de **{float(declared):.2f}*/5.00** "
+                            f"en estado **PROVISIONAL / PENDIENTE DE VALIDACIÓN EN CAMPO**, señalando esta divergencia documental como punto "
+                            f"prioritario de contraste pericial directo sin imputar una degradación artificial a 1,00."
+                        )
                 else:
-                    note = (
-                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** Preliminary self-assessment "
-                        f"reflected a declared score of **{float(declared):.2f}/5.00** driven by specialized talent acquisition "
-                        f"and adoption roadmap. Qualitative evidence from contrast sessions does not conclusively substantiate "
-                        f"the extent of production deployment versus test environments. In accordance with the methodological framework, "
-                        f"the declared baseline of **{float(declared):.2f}*/5.00** is retained in **PROVISIONAL / PENDING FIELD VALIDATION** "
-                        f"status as a priority item for direct technical verification, avoiding artificial down-scoring to 1.00. *Methodological rationale:* {reason}"
-                    )
+                    if reason:
+                        note = (
+                            f"**Contradictory Sources / Pending Formal Validation ({p_label}):** {reason} "
+                            f"In accordance with the methodological framework, the declared baseline of **{float(declared):.2f}*/5.00** "
+                            f"is retained in **PROVISIONAL / PENDING FIELD VALIDATION** status as a priority item for direct technical verification, "
+                            f"avoiding artificial down-scoring to 1.00."
+                        )
+                    else:
+                        note = (
+                            f"**Contradictory Sources / Pending Formal Validation ({p_label}):** Preliminary self-assessment "
+                            f"reflected a declared score of **{float(declared):.2f}/5.00**. Qualitative evidence from contrast sessions does not conclusively substantiate "
+                            f"the extent of production deployment versus test environments. In accordance with the methodological framework, "
+                            f"the declared baseline of **{float(declared):.2f}*/5.00** is retained in **PROVISIONAL / PENDING FIELD VALIDATION** "
+                            f"status as a priority item for direct technical verification, avoiding artificial down-scoring to 1.00."
+                        )
                 calibration_notes.append(note)
 
         for c_note in calibration_notes:

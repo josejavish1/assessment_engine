@@ -32,12 +32,12 @@
     "es": "¿Qué controles de seguridad física multicapa y autenticación biométrica gobiernan el acceso a salas técnicas y jaulas críticas?"
   },
   "T1.P3.K2.PR1": {
-    "en": "How are third-party vendor visits, room access logs, and permits to work managed and audited for physical facility changes?",
-    "es": "¿Cómo se gestionan y auditan las visitas de proveedores externos, registros de acceso y permisos de trabajo para cambios en instalaciones?"
+    "en": "How are physical access logs to technical rooms registered, tracked, and periodically audited?",
+    "es": "La trazabilidad de accesos permite identificar quién ha accedido al CPD y cuándo. ¿Cómo se registran y revisan los accesos físicos a las instalaciones?"
   },
   "T1.P3.K3.PR1": {
-    "en": "What is the coverage, retention period, and tamper-resistance of CCTV surveillance and physical biometric access audit trails?",
-    "es": "¿Cuál es la cobertura, período de retención e inalterabilidad de los registros de videovigilancia CCTV y accesos físicos biométricos?"
+    "en": "How are third-party vendor visits, contractor interventions, and permits to work managed and supervised in technical rooms?",
+    "es": "Las intervenciones de terceros en el CPD deben controlarse para evitar riesgos operativos o de seguridad. ¿Cómo se gestionan los trabajos de proveedores o terceros en la sala técnica?"
   },
   "T1.P4.K1.PR1": {
     "en": "How are very early warning aspirating smoke detection systems and fire-rated room barriers deployed and tested?",
@@ -628,8 +628,8 @@
     "es": "How does the enterprise govern and measure IT & Business Strategic Alignment (Shared OKRs & Strategic Imperatives) across the operational environment?"
   },
   "T8.P2.K2.PR1": {
-    "en": "How does the enterprise govern and measure Technology Obsolescence & Proactive Lifecycle Refresh Governance across the operational environment?",
-    "es": "¿Cómo gobierna y mide la organización la obsolescencia tecnológica y la renovación proactiva del ciclo de vida en todo el entorno operativo?"
+    "en": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?",
+    "es": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?"
   },
   "T8.P1.K4.PR1": {
     "en": "How does the enterprise govern and measure Architecture Review Board (ARB) & Engineering Guardrails Enforcement across the operational environment?",
@@ -638,10 +638,6 @@
   "T8.P2.K1.PR1": {
     "en": "How does the enterprise govern and measure Adaptive Portfolio Governance (Value-Driven Investment Prioritization) across the operational environment?",
     "es": "How does the enterprise govern and measure Adaptive Portfolio Governance (Value-Driven Investment Prioritization) across the operational environment?"
-  },
-  "T8.P2.K2.PR1": {
-    "en": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?",
-    "es": "How does the enterprise govern and measure Decision Framework Traceability, Delegation & Executive Accountability across the operational environment?"
   },
   "T8.P2.K3.PR1": {
     "en": "How does the enterprise govern and measure Vendor & Partner Governance (Contractual SLAs, Scorecards & Risk) across the operational environment?",
