@@ -7,6 +7,7 @@ Enforces Master Matrix weights and rigorous CMMI scale bounding.
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from typing import Dict, List, Any
+import json
 
 from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
 
@@ -56,7 +57,7 @@ class ScoringEngine:
     def compute_tower_score_by_id(cls, tower_id: str, pillar_scores: Dict[str, float]) -> Decimal:
         """Loads canonical tower definition, extracts official weights, and computes the dot-product tower score."""
         t_id = tower_id.strip().upper()
-        repo_root = Path(__file__).resolve().parents[4]
+        repo_root = Path(__file__).resolve().parents[3]
         t_def_path = repo_root / "engine_config" / "towers" / t_id / f"tower_definition_{t_id}.json"
         if not t_def_path.exists():
             if not pillar_scores:
