@@ -2497,24 +2497,21 @@ class PayloadToASTBridge:
                 )
                 if meta_lang.startswith("es"):
                     note = (
-                        f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** El cuestionario preliminar "
-                        f"reflejó una autoevaluación de **{float(declared):.2f}/5.00** motivada por la incorporación de "
-                        f"talento especializado y la hoja de ruta de adopción. La sesión de contraste técnico determinó que la "
-                        f"organización se encuentra en un estadio de evaluación tecnológica y pruebas de concepto en laboratorio, "
-                        f"sustentándose la operativa productiva actual sobre la arquitectura de virtualización convencional, "
-                        f"manteniéndose la calificación preventiva de **{float(calibrated):.2f}/5.00** "
-                        f"(brecha de percepción de -{float(gap):.2f} puntos) para el diagnóstico del estado actual (AS-IS), "
-                        f"señalando esta divergencia documental como punto prioritario de contraste en campo. *Justificación técnica:* {reason}"
+                        f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** La autoevaluación "
+                        f"preliminar (**{float(declared):.2f}/5.00**) y la evidencia cualitativa disponible en las sesiones "
+                        f"de contraste no permiten determinar de forma concluyente el grado de explotación productiva de esta capacidad. "
+                        f"Conforme al principio de rigor epistemológico, se mantiene la calificación preventiva de **{float(calibrated):.2f}/5.00** "
+                        f"(brecha de percepción de -{float(gap):.2f} puntos) como punto pendiente de validación técnica en campo, "
+                        f"sin prejuzgar la arquitectura subyacente. *Detalle metodológico:* {reason}"
                     )
                 else:
                     note = (
-                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** Preliminary client survey indicated a "
-                        f"self-assessed score of **{float(declared):.2f}/5.00** driven by specialized talent acquisition "
-                        f"and future adoption roadmap. Technical verification observed an incipient adoption trajectory "
-                        f"in laboratory proof-of-concept testing, with current production operations stably anchored on conventional "
-                        f"virtualization, maintaining a precautionary baseline of **{float(calibrated):.2f}/5.00** "
-                        f"(perception gap of -{float(gap):.2f} points) for AS-IS operational resilience, "
-                        f"flagging this source divergence as a priority item for formal field validation. *Technical justification:* {reason}"
+                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** The preliminary self-assessed "
+                        f"score (**{float(declared):.2f}/5.00**) and qualitative evidence from technical contrast sessions "
+                        f"do not conclusively substantiate the extent of production deployment for this capability. "
+                        f"In accordance with epistemic rigor, a precautionary baseline of **{float(calibrated):.2f}/5.00** "
+                        f"(perception gap of -{float(gap):.2f} points) is maintained pending formal field verification, "
+                        f"without inferring unverified architectures. *Methodological rationale:* {reason}"
                     )
                 calibration_notes.append(note)
 
@@ -3078,7 +3075,6 @@ class PayloadToASTBridge:
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
         #
-        nodes.append(PageBreakNode())
         nodes.append(
             HeadingNode(
                 text=t("chapter_4_fair_resilience", locale=meta_lang),
@@ -3685,26 +3681,40 @@ class PayloadToASTBridge:
         for concentration_p in synth_dict.get("matrix_concentration_narrative", []):
             nodes.append(ParagraphNode(text=concentration_p, font_size=9.5, space_after=6))
 
-        # Open FAIR Actuarial Vulnerability Derivation Note
+        # Open FAIR Actuarial Vulnerability Derivation Note (Dynamically Derived)
+        overall_score = _safe_float(blueprint_data.get("score") or blueprint_data.get("executive_summary", {}).get("score", 2.0))
+        from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+        scale_engine = GovernanceScaleEngine.get_instance()
+        resolved_scale = scale_engine.resolve_maturity(overall_score, locale=str(meta_lang), translator=t)
+        maturity_label = resolved_scale.label
+
+        vuln_values = [
+            _safe_float(r.get("fair_vuln_score") or r.get("vulnerability_pct") or r.get("vulnerability_level") or 0.0)
+            for r in synth_dict.get("top_risks_ranked", [])
+        ]
+        vuln_values = [v if v <= 1.0 else v / 100.0 for v in vuln_values if v > 0]
+        if vuln_values:
+            min_v = int(round(min(vuln_values) * 100))
+            max_v = int(round(max(vuln_values) * 100))
+            vuln_range_str = f"{min_v}% - {max_v}%" if min_v != max_v else f"{min_v}%"
+        else:
+            vuln_range_str = "60% - 85%"
+
         if meta_lang.startswith("es"):
             vuln_note = (
                 "**Nota Metodológica sobre Vulnerabilidad Actuarial (O-FAIR):** "
-                "En el estándar internacional Open FAIR™, la frecuencia anual de pérdidas (LEF) representa la proporción "
-                "de amenazas operativas (TEF) que consiguen eludir las salvaguardas y causar impacto económico efectivo "
-                "(LEF = TEF × Vuln). La tasa de vulnerabilidad asignada a los riesgos del estado actual (80% - 95%) "
-                "se deriva objetivamente de la madurez operativa observada (Nivel 1 - Inicial), donde la ausencia "
-                "de automatización declarativa, la gestión manual de despliegues y la contención de recursos "
-                "determinan que la práctica totalidad de las contingencias de plataforma escalen a afectación de negocio."
+                f"En el estándar internacional Open FAIR™, la frecuencia anual de pérdidas (LEF) modela la proporción "
+                f"de amenazas operativas (TEF) que superan las defensas técnicas (LEF = TEF × Vuln). Los coeficientes "
+                f"de vulnerabilidad asignados a este dominio ({vuln_range_str}) se derivan de la madurez "
+                f"operativa ({maturity_label}), reflejando el grado de resiliencia y cobertura de salvaguardas del perímetro."
             )
         else:
             vuln_note = (
                 "**Open FAIR™ Actuarial Vulnerability Derivation Note:** "
-                "Under the international Open FAIR™ standard, Loss Event Frequency (LEF) represents the proportion "
-                "of operational threat events (TEF) that bypass safeguards to cause realized business impact "
-                "(LEF = TEF × Vuln). The vulnerability ratios assigned to current-state risks (80% - 95%) "
-                "derive directly from assessed operational maturity (Level 1 - Initial), where the absence "
-                "of declarative automation, manual deployment triage, and resource saturation ensure that "
-                "unmitigated platform contingencies directly cascade into measurable operational loss."
+                f"Under the Open FAIR™ standard, Loss Event Frequency (LEF) models the proportion of operational threat "
+                f"events (TEF) that overcome technical safeguards (LEF = TEF × Vuln). The vulnerability coefficients "
+                f"assigned to this domain ({vuln_range_str}) derive directly from assessed operational maturity "
+                f"({maturity_label}), reflecting the resilience and preventive control coverage of the perimeter."
             )
         nodes.append(ParagraphNode(text=vuln_note, font_size=8.5, space_before=4, space_after=10))
         nodes.append(SpacerNode(points=10))

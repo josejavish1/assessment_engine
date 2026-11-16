@@ -1049,10 +1049,10 @@ def _hydrate_methodological_frameworks(blueprint_payload: dict[str, Any] | Bluep
     else:
         bp_dict = blueprint_payload
 
-    # 1. Base Frameworks (CMMI and FAIR)
+    # 1. Base Frameworks (Capability-Aligned Fast Assessment Framework and FAIR)
     frameworks = [
         {
-            "standard": "CMMI for Infrastructure",
+            "standard": "Fast Assessment Maturity Framework",
             "scope_key": "norm_row_cmmi_desc",
             "purpose_key": "norm_row_cmmi_purp"
         },
