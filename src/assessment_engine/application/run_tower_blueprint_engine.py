@@ -302,6 +302,29 @@ async def process_pilar_blueprint(
             "4. Discuss WHAT functional capability the score implies, never HOW it is technically implemented. You must explicitly state that technical tooling implementations and telemetry remain subject to field verification."
         )
 
+        # Phase 31.3: Cross-Tower Semantic Shielding (Homomorphic Projection)
+        # Scrub ungrounded physical tokens from the static rubric definitions and context
+        from pathlib import Path
+        import json
+        import re
+        
+        cfg_path = (
+            Path(__file__).resolve().parents[3]
+            / "engine_config"
+            / "policies"
+            / "epistemic_dependencies.json"
+        )
+        if cfg_path.exists():
+            try:
+                cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+                for tokens in cfg_data.get("unauthorized_governance_entity_tokens", {}).values():
+                    for token in tokens:
+                        if len(token) > 2:  # Avoid replacing short acronyms inadvertently
+                            # Homomorphic projection to generic capability terminology
+                            prompt = re.sub(rf"\b{re.escape(token)}\b", "[ENTERPRISE_ASSET]", prompt, flags=re.IGNORECASE)
+            except Exception:
+                pass
+
     # Phase 1: Generate the initial set of findings from the source context.
     try:
         agent_architect = Agent(

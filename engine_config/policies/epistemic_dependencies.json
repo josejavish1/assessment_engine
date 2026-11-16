@@ -87,30 +87,23 @@
   },
   "unauthorized_governance_entity_tokens": {
     "en": [
-      "cctv",
-      "nvr",
-      "netapp csi",
-      "csi de netapp",
-      "worm",
-      "saml 2.0",
-      "rodc",
-      "centralized pam vault",
-      "bóveda pam",
-      "bgp",
-      "vlan"
+      "cctv", "nvr", "netapp csi", "worm", "saml 2.0", "rodc", "centralized pam vault",
+      "bgp", "vlan", "diesel", "epms", "dcim", "rpdu", "crac", "landing zone",
+      "transit gateway", "golden image", "sfp+", "qsfp+", "vrf", "snmpv3", "waap", "bfd",
+      "cifs", "nfs", "iscsi", "qos", "svm", "clean-room", "bare-metal",
+      "netskope", "fortinet", "cis benchmark", "cmdb", "cab", "major incident", "pir",
+      "blameless", "sli", "slo", "scada", "oracle", "sap", "equinix", "edr",
+      "conditional access", "dlp", "sspr", "circuit breaker", "cron", "dlq"
     ],
     "es": [
-      "cctv",
-      "nvr",
-      "netapp csi",
-      "csi de netapp",
-      "worm",
-      "saml 2.0",
-      "rodc",
-      "bóveda pam",
-      "boveda pam",
-      "bgp",
-      "vlan"
+      "cctv", "nvr", "csi de netapp", "worm", "saml 2.0", "rodc", "bóveda pam", "boveda pam",
+      "bgp", "vlan", "diésel", "diesel", "epms", "dcim", "rpdu", "pasillo", "sondas", "crac",
+      "esclusa", "estanca", "landing zone", "transit gateway", "golden image", "sfp+", "qsfp+",
+      "vrf", "snmpv3", "waap", "bfd", "cifs", "nfs", "iscsi", "deduplicación", "compresión hardware",
+      "compactación", "qos", "svm", "clean-room", "clean room", "bare-metal", "bare metal",
+      "netskope", "fortinet", "microsegmentación", "cis benchmark", "cmdb", "cab", "major incident",
+      "pir", "blameless", "sli", "slo", "scada", "oracle", "sap", "equinix", "edr",
+      "conditional access", "dlp", "sspr", "consumidores idempotentes", "circuit breaker", "cron", "dlq"
     ]
   },
   "technical_specificity_patterns": {

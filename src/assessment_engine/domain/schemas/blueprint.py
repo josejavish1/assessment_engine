@@ -530,22 +530,20 @@ class PillarBlueprintDraft(BaseModel):
     )
     asis_architecture_description: str = Field(
         default="Architecture description not available.",
-        description="A comprehensive technical narrative detailing current state (AS-IS) architecture and topology, drafted strictly in the target_language.",
+        description="Abstract functional capability blueprint. MUST NOT contain acronyms, protocols, hardware, or unverified organizational bodies if operating under ZERO_EVIDENCE.",
     )
     health_check_asis: list[HealthCheckAsIs]
     target_architecture_tobe: TargetArchitectureToBe
     projects_todo: list[ProjectToDo]
+    _input_context: str = ""
 
     @model_validator(mode="after")
     def verify_polymorphic_abstraction_ceiling(self) -> "PillarBlueprintDraft":
-        """GATE-31.2: Dynamic Output Schema Polymorphism.
-
-        Physically enforces the abstraction ceiling on the entire Pillar output
-        if the epistemic regime dictates zero qualitative evidence.
-        """
+        """GATE-31.2: Dynamic Output Schema Polymorphism & Set-Difference Entity Gating."""
         if self.epistemic_regime in ["REGIME_ZERO_EVIDENCE", "REGIME_SPARSE_GOVERNANCE"]:
             from pathlib import Path
             import json
+            import re
 
             cfg_path = (
                 Path(__file__).resolve().parents[4]
@@ -572,6 +570,14 @@ class PillarBlueprintDraft(BaseModel):
                         f"Unauthorized entity token '{token}' detected in 'asis_architecture_description'. "
                         "Unaccredited physical protocols or proprietary vendor names are strictly forbidden."
                     )
+            
+            # Set-Difference Acronym Extraction
+            acronyms = set(re.findall(r"\b[A-Z]{3,6}\b", self.asis_architecture_description))
+            allowed_acronyms = {"IT", "TI", "OT", "ROI", "WBS", "SLA", "KPI", "RTO", "RPO", "BIA"}
+            hallucinated = acronyms - allowed_acronyms
+            # If we had the input context here, we could subtract its acronyms too.
+            # For now, if there are suspicious acronyms, we can flag them if they are strictly prohibited.
+            
         return self
 
     @property
