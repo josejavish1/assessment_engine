@@ -245,6 +245,22 @@ class ActuarialFactTuple(BaseModel):
             seen.add(lease.domain_id)
         return self
 
+    @model_validator(mode="after")
+    def _enforce_byte_span_provenance(self) -> "ActuarialFactTuple":
+        """GATE-30.5: Byte-Span Provenance Enforcement.
+
+        Guarantees that an empirical evidence fact cannot be certified as OBSERVED_EVIDENCE
+        unless it carries a valid non-empty byte offset span and non-empty verbatim quote.
+        """
+        if self.modality == EpistemicModality.OBSERVED_EVIDENCE:
+            start, end = self.source_char_span
+            if start < 0 or end <= start or not self.verbatim_quote.strip():
+                raise ValueError(
+                    f"GATE-30.5 Provenance Breach: Fact '{self.fact_id}' declared OBSERVED_EVIDENCE "
+                    f"without valid byte offset span ({start}, {end}) or empty verbatim quote."
+                )
+        return self
+
     @classmethod
     def create(
         cls,
