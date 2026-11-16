@@ -491,13 +491,19 @@ def resolve_risk_matrix_coordinates(
 
     Decouples TEF and LM axes independently so partial telemetry is never discarded.
     """
-    raw_lef = risk_entry.get("lef") if risk_entry.get("lef") is not None else risk_entry.get("tef_annual")
-    if _is_positive_infinity(raw_lef):
+    # Reconcile TEF vertical axis with true Threat Event Frequency (TEF), not LEF
+    raw_tef = risk_entry.get("tef") if risk_entry.get("tef") is not None else (
+        risk_entry.get("tef_annual") or risk_entry.get("threat_event_frequency_annual") or risk_entry.get("lef")
+    )
+    if _is_positive_infinity(raw_tef):
         r_tef = 5
     else:
-        f_lef = safe_float(raw_lef, locale=locale)
-        if f_lef is not None:
-            r_tef = resolve_dynamic_tef_scale_level(f_lef, tef_thresholds, locale=locale)
+        f_tef = safe_float(raw_tef, locale=locale)
+        if f_tef is not None:
+            if isinstance(raw_tef, (int, float)) and 1 <= int(raw_tef) <= 5 and float(raw_tef).is_integer():
+                r_tef = int(raw_tef)
+            else:
+                r_tef = resolve_dynamic_tef_scale_level(f_tef, tef_thresholds, locale=locale)
         elif "tef_scale_level" in risk_entry and risk_entry.get("tef_scale_level") is not None:
             r_tef = clamp_scale_level(risk_entry.get("tef_scale_level"), default=1, locale=locale)
         else:

@@ -1655,25 +1655,45 @@ class PayloadToASTBridge:
         else:
             total_fair_ale = blueprint_data.get("total_fair_ale", 0.0)
 
-        # Respect authoritative survey score from blueprint SSOT (eliminating split-brain with Tomo 1)
-        authoritative_raw = (
-            blueprint_data.get("overall_score")
-            or blueprint_data.get("score")
-            or blueprint_data.get("exact_score")
-            or blueprint_data.get("maturity_score")
-        )
-        exact_score = safe_float(authoritative_raw, locale=meta_lang, allow_zero=True)
-        if exact_score is None:
-            from assessment_engine.application.services.tower_payload_hydrator import (
-                TowerPayloadHydrator,
-            )
+        canonical_tower_id = str(
+            blueprint_data.get("document_meta", {}).get("tower_id")
+            or blueprint_data.get("document_meta", {}).get("tower_code")
+            or blueprint_data.get("tower_id")
+            or "T1"
+        ).strip().upper()
 
-            try:
-                exact_score = TowerPayloadHydrator.compute_canonical_score(
-                    blueprint_data, doc_lang=meta_lang
+        # Recalculate authoritative tower score directly from pillars and master matrix weights
+        # to prevent frozen legacy scores from diverging from visible pillar values
+        from assessment_engine.domain.scoring_engine import ScoringEngine
+        from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
+        try:
+            p_scores_map = {}
+            for p in blueprint_data.get("pillars_analysis", []):
+                if isinstance(p, dict):
+                    pid = extract_pillar_identifiers(p)[0]
+                    p_scores_map[pid] = float(p.get("score", 2.5))
+            exact_score = float(ScoringEngine.compute_tower_score_by_id(
+                tower_id=canonical_tower_id,
+                pillar_scores=p_scores_map,
+            ))
+        except Exception:
+            authoritative_raw = (
+                blueprint_data.get("overall_score")
+                or blueprint_data.get("score")
+                or blueprint_data.get("exact_score")
+                or blueprint_data.get("maturity_score")
+            )
+            exact_score = safe_float(authoritative_raw, locale=meta_lang, allow_zero=True)
+            if exact_score is None:
+                from assessment_engine.application.services.tower_payload_hydrator import (
+                    TowerPayloadHydrator,
                 )
-            except Exception:
-                exact_score = 2.5
+                try:
+                    exact_score = TowerPayloadHydrator.compute_canonical_score(
+                        blueprint_data, doc_lang=meta_lang
+                    )
+                except Exception:
+                    exact_score = 2.5
 
         blueprint_data["score"] = exact_score
         blueprint_data["overall_score"] = exact_score

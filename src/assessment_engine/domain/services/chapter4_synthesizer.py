@@ -301,19 +301,162 @@ class Chapter4Synthesizer:
                 worst_case_event_min * 0.35
             )
 
-        # Annualized failure frequency (scaled continuously by CMMI maturity)
-        freq_factor = max(0.25, 1.25 - 0.22 * (cmmi_maturity - 1.0))
-        outage_min = round_to_actuarial_significance(
-            worst_case_event_min * freq_factor * 0.22
+        # Extract and Formulate Risk Cards with Exact Discrete Sub-Additive Allocation
+        raw_cards = cls._extract_strategic_risk_cards(
+            findings_pool=findings_pool,
+            tower_id=tower_id,
+            tower_name=tower_name,
+            event_loss_min=float(worst_case_event_min),
+            event_loss_max=float(worst_case_event_max),
+            annual_exposure_min=float(worst_case_event_min * 0.5),
+            annual_exposure_max=float(worst_case_event_max * 0.8),
+            cmmi_maturity=cmmi_maturity,
+            target_locale=target_locale,
         )
-        outage_max = round_to_actuarial_significance(
-            worst_case_event_max * freq_factor * 0.25
-        )
-        if outage_max <= outage_min:
-            outage_max = outage_min + round_to_actuarial_significance(outage_min * 0.35)
 
-        # Lever 3: Contractual & Licensing Escalation (Anchored on IT/Infrastructure baseline + maturity)
-        # High-maturity organizations have lower unplanned outages relative to structural licensing lock-in
+        card_weights = [float(c.get("annual_exposure_min", 1000.0)) for c in raw_cards]
+        card_ids = [f"RSK-{tower_id}-0{idx}" for idx in range(1, len(raw_cards) + 1)]
+
+        risk_scenarios: List[TechnicalRiskScenario] = []
+        TEF_ROW_MIDPOINTS: dict[int, float] = {
+            1: 0.05,
+            2: 0.30,
+            3: 1.25,
+            4: 2.40,
+            5: 12.0,
+        }
+
+        # Initialize Seeded PRNG for Deterministic Monte Carlo Convolution (N=50,000)
+        seed_str = f"{enterprise_id}_{tower_id}_{sum(card_weights)}"
+        seed_int = int(hashlib.sha256(seed_str.encode("utf-8")).hexdigest()[:8], 16)
+        rng = np.random.default_rng(np.random.PCG64(seed_int))
+        N_TRIALS = 50000
+
+        for idx, c_data in enumerate(raw_cards, start=1):
+            is_tier1 = idx <= 2
+
+            # Tier 1 represents discrete major contingencies (TEF 3: 0.5 - 2.0/yr)
+            # Tier 2 represents chronic operational friction (TEF 4: 2.0 - 10.0/yr)
+            l_idx = 3 if is_tier1 else 4
+            tef_val = TEF_ROW_MIDPOINTS.get(l_idx, 1.25 if is_tier1 else 2.40)
+
+            # Continuous Non-Linear Control Vulnerability Derivation (Axiom of Continuous Actuarial Susceptibility)
+            control_score_raw = _safe_float(
+                c_data.get("_pillar_score") or c_data.get("control_score") or cmmi_maturity,
+                default=cmmi_maturity,
+            )
+            is_provisional = bool(c_data.get("is_provisional") or "contradict" in str(c_data.get("title", "")).lower())
+            if is_provisional:
+                omega = 0.25
+                effective_control_score = omega * control_score_raw + (1.0 - omega) * 1.50
+            else:
+                effective_control_score = control_score_raw
+
+            norm_score = max(1.0, min(5.0, effective_control_score)) / 5.0
+            eta_ceiling = 0.90 if is_tier1 else 0.85
+            mitigation_capacity = (norm_score ** 1.35) * eta_ceiling
+            vuln_ratio = round(max(0.05, min(0.95, 1.0 - mitigation_capacity)), 2)
+
+            # Beta-PERT Monte Carlo Convolution with Precision Kappa
+            tef_min, tef_max = max(0.01, tef_val * 0.5), tef_val * 1.5
+            tef_samples = rng.triangular(tef_min, tef_val, tef_max, size=N_TRIALS)
+
+            kappa = 20.0 if is_provisional else 45.0
+            beta_alpha = max(0.5, vuln_ratio * kappa)
+            beta_beta = max(0.5, (1.0 - vuln_ratio) * kappa)
+            vuln_samples = rng.beta(beta_alpha, beta_beta, size=N_TRIALS)
+
+            lef_samples = tef_samples * vuln_samples
+            lef_val = float(np.median(lef_samples))
+            lef_val = max(0.01, lef_val)
+
+            # Pure Canonical Open FAIR: Derive independent SLE from event disruption physics,
+            # decoupling SLE from LEF and eliminating goal-seeking artifacts.
+            eff_mttr_hours = float(max(0.5, eff_rto if is_tier1 else max(0.5, eff_rto * 0.5)))
+            base_sle = round_to_actuarial_significance(eff_mttr_hours * disruption_rate)
+            sle_low = float(max(500.0, c_data.get("event_loss_min") or base_sle * 0.70))
+            sle_high = float(max(1000.0, c_data.get("event_loss_max") or base_sle * 1.40))
+            if sle_high <= sle_low:
+                sle_high = sle_low + float(round_to_actuarial_significance(sle_low * 0.35))
+            sle_mid = (sle_low + sle_high) / 2.0
+
+            # Dynamic LM tier resolution based on independent SLE brackets
+            if sle_mid < 1000.0:
+                calc_lm = 1
+            elif sle_mid < 4000.0:
+                calc_lm = 2
+            elif sle_mid < 16000.0:
+                calc_lm = 3
+            elif sle_mid < 64000.0:
+                calc_lm = 4
+            else:
+                calc_lm = 5
+
+            i_idx = calc_lm
+
+            # Derive ALE as canonical product: ALE = LEF * SLE (Pure FAIR Law)
+            ale_low = float(round_to_actuarial_significance(sle_low * lef_val))
+            ale_high = float(round_to_actuarial_significance(sle_high * lef_val))
+            if ale_high <= ale_low:
+                ale_high = ale_low + float(round_to_actuarial_significance(ale_low * 0.35))
+
+            full_title = str(c_data.get("title") or f"Strategic Risk Scenario {idx}")
+            truncated = _truncate_smart_words(full_title, max_chars=38)
+
+            coord = HeatmapCoordinate(
+                likelihood_index=max(1, min(5, l_idx)),
+                impact_index=max(1, min(5, i_idx)),
+                truncated_title=truncated,
+            )
+
+            scenario = TechnicalRiskScenario(
+                risk_id=card_ids[idx - 1],
+                title=full_title,
+                custody_role="PRIMARY_CUSTODIAN",
+                threat_event_frequency_annual=tef_val,
+                vulnerability_ratio=vuln_ratio,
+                mttr_recovery_hours=eff_mttr_hours,
+                calibrated_annual_ale=MonetaryInterval(
+                    lower_bound=ale_low, upper_bound=ale_high, currency_iso=currency_iso
+                ),
+                heatmap_coordinate=coord,
+                physical_evidence=str(
+                    c_data.get("technical_evidence")
+                    or f"Structural evidence observed in {full_title}."
+                ),
+                root_cause_mechanism=str(
+                    c_data.get("operational_impact_chain")
+                    or f"Operational bottleneck identified in {full_title}."
+                ),
+                business_impact_narrative=str(
+                    c_data.get("operational_impact_chain")
+                    or f"Business disruption exposure dependent on {full_title}."
+                ),
+                required_mitigation=f"Architectural modernization and automated resilience controls for {full_title}.",
+                is_full_card_rendered=True,
+            )
+            risk_scenarios.append(scenario)
+
+        # Sum primary risk cards to compute Outage ALE deterministically!
+        outage_min = sum(int(s.calibrated_annual_ale.lower_bound) for s in risk_scenarios)
+        outage_max = sum(int(s.calibrated_annual_ale.upper_bound) for s in risk_scenarios)
+
+        subadditivity_factor = round(max(0.75, 1.0 - 0.05 * max(0, len(raw_cards) - 1)), 2)
+        gross_standalone_sum = int(round(outage_min / subadditivity_factor))
+
+        outage_breakdown = ProbabilisticOutageALEBreakdown(
+            gross_standalone_ale_sum=gross_standalone_sum,
+            portfolio_subadditivity_factor=subadditivity_factor,
+            annual_outage_ale_interval=MonetaryInterval(
+                lower_bound=outage_min, upper_bound=outage_max, currency_iso=currency_iso
+            ),
+            worst_case_single_outage_event=MonetaryInterval(
+                lower_bound=worst_case_event_min,
+                upper_bound=worst_case_event_max,
+                currency_iso=currency_iso,
+            ),
+        )
+
         maturity_contract_weight = 0.40 + 0.15 * (cmmi_maturity - 1.0)
         baseline_economic_anchor = (outage_min * 0.60) + (toil_min * 0.45)
         contractual_min = round_to_actuarial_significance(
@@ -360,36 +503,6 @@ class Chapter4Synthesizer:
             ),
         )
 
-        # Extract and Formulate Risk Cards with Exact Discrete Sub-Additive Allocation
-        raw_cards = cls._extract_strategic_risk_cards(
-            findings_pool=findings_pool,
-            tower_id=tower_id,
-            tower_name=tower_name,
-            event_loss_min=float(worst_case_event_min),
-            event_loss_max=float(worst_case_event_max),
-            annual_exposure_min=float(outage_min),
-            annual_exposure_max=float(outage_max),
-            cmmi_maturity=cmmi_maturity,
-            target_locale=target_locale,
-        )
-
-        # Dynamic sub-additivity factor based on portfolio card count (1 card = 1.0, 4 cards = 0.80)
-        subadditivity_factor = round(max(0.75, 1.0 - 0.05 * max(0, len(raw_cards) - 1)), 2)
-        gross_standalone_sum = int(round(outage_min / subadditivity_factor))
-
-        outage_breakdown = ProbabilisticOutageALEBreakdown(
-            gross_standalone_ale_sum=gross_standalone_sum,
-            portfolio_subadditivity_factor=subadditivity_factor,
-            annual_outage_ale_interval=MonetaryInterval(
-                lower_bound=outage_min, upper_bound=outage_max, currency_iso=currency_iso
-            ),
-            worst_case_single_outage_event=MonetaryInterval(
-                lower_bound=worst_case_event_min,
-                upper_bound=worst_case_event_max,
-                currency_iso=currency_iso,
-            ),
-        )
-
         total_coi = CostOfInactionTotal(
             lever_1_toil_share_pct=toil_share,
             lever_2_outage_ale_share_pct=outage_share,
@@ -401,7 +514,6 @@ class Chapter4Synthesizer:
             ),
         )
 
-        # 36-Month Compounded TCO (incorporates contractual escalation compounding rate)
         escalation_rate = float(rate_card.get("annual_contractual_escalation_rate", 0.0))
         compounding_multiplier = 1.0 + (1.0 + escalation_rate) + ((1.0 + escalation_rate) ** 2)
         tco_low = int(round(total_coi_min * compounding_multiplier)) if escalation_rate > 0 else total_coi_min * 3
@@ -414,126 +526,6 @@ class Chapter4Synthesizer:
             compounding_rate_annual=escalation_rate,
             currency_iso=currency_iso,
         )
-
-        # Quantum-preserving Hare-Niemeyer allocation for exact sum matching Lever 2 Outage ALE
-        card_weights = [float(c.get("annual_exposure_min", 1000.0)) for c in raw_cards]
-        card_ids = [f"RSK-{tower_id}-0{idx}" for idx in range(1, len(raw_cards) + 1)]
-        allocated_lows = allocate_subadditive_ale_to_cards(outage_min, card_weights, card_ids=card_ids)
-        allocated_highs = allocate_subadditive_ale_to_cards(outage_max, card_weights, card_ids=card_ids)
-
-        risk_scenarios: List[TechnicalRiskScenario] = []
-        # Canonical TEF midpoint anchor per heatmap likelihood row
-        TEF_ROW_MIDPOINTS: dict[int, float] = {
-            1: 0.05,
-            2: 0.30,
-            3: 1.25,
-            4: 2.40,
-            5: 12.0,
-        }
-        
-        # Initialize Seeded PRNG for Deterministic Monte Carlo Convolution (N=50,000)
-        seed_str = f"{enterprise_id}_{tower_id}_{sum(card_weights)}"
-        seed_int = int(hashlib.sha256(seed_str.encode("utf-8")).hexdigest()[:8], 16)
-        rng = np.random.default_rng(np.random.PCG64(seed_int))
-        N_TRIALS = 50000
-
-        for idx, (c_data, a_low, a_high) in enumerate(
-            zip(raw_cards, allocated_lows, allocated_highs), start=1
-        ):
-            is_tier1 = idx <= 2
-            safe_low = min(a_low, a_high)
-            safe_high = max(a_low, a_high)
-
-            # Tier 1 represents discrete major contingencies (TEF 3: 0.5 - 2.0/yr)
-            # Tier 2 represents chronic operational friction (TEF 4: 2.0 - 10.0/yr)
-            l_idx = 3 if is_tier1 else 4
-            tef_val = TEF_ROW_MIDPOINTS.get(l_idx, 1.25 if is_tier1 else 2.40)
-
-            # Continuous Non-Linear Control Vulnerability Derivation (Axiom of Continuous Actuarial Susceptibility)
-            # Control Capacity: C_j = (M_i / 5.0)^1.35 * eta (with eta=0.90 max theoretical ceiling)
-            control_score_raw = _safe_float(
-                c_data.get("_pillar_score") or c_data.get("control_score") or cmmi_maturity,
-                default=cmmi_maturity,
-            )
-            # Check for provisional / uncorroborated contradiction state
-            is_provisional = bool(c_data.get("is_provisional") or "contradict" in str(c_data.get("title", "")).lower())
-            if is_provisional:
-                # Bayesian Epistemic Shrinkage: shrink toward conservative prior (1.50)
-                omega = 0.25
-                effective_control_score = omega * control_score_raw + (1.0 - omega) * 1.50
-            else:
-                effective_control_score = control_score_raw
-
-            norm_score = max(1.0, min(5.0, effective_control_score)) / 5.0
-            eta_ceiling = 0.90 if is_tier1 else 0.85
-            mitigation_capacity = (norm_score ** 1.35) * eta_ceiling
-            vuln_ratio = round(max(0.05, min(0.95, 1.0 - mitigation_capacity)), 2)
-
-            # Beta-PERT Monte Carlo Convolution with Precision Kappa
-            tef_min, tef_max = max(0.01, tef_val * 0.5), tef_val * 1.5
-            tef_samples = rng.triangular(tef_min, tef_val, tef_max, size=N_TRIALS)
-            
-            kappa = 20.0 if is_provisional else 45.0
-            beta_alpha = max(0.5, vuln_ratio * kappa)
-            beta_beta = max(0.5, (1.0 - vuln_ratio) * kappa)
-            vuln_samples = rng.beta(beta_alpha, beta_beta, size=N_TRIALS)
-            
-            lef_samples = tef_samples * vuln_samples
-            lef_val = float(np.median(lef_samples))
-            
-            lef_val = max(0.01, lef_val)
-            sle_mid = ((safe_low / lef_val) + (safe_high / lef_val)) / 2.0
-
-            # Dynamic LM tier resolution based on Open FAIR scale brackets
-            if sle_mid < 1000.0:
-                calc_lm = 1
-            elif sle_mid < 4000.0:
-                calc_lm = 2
-            elif sle_mid < 16000.0:
-                calc_lm = 3
-            elif sle_mid < 64000.0:
-                calc_lm = 4
-            else:
-                calc_lm = 5
-
-            i_idx = calc_lm
-
-            full_title = str(c_data.get("title") or f"Strategic Risk Scenario {idx}")
-            truncated = _truncate_smart_words(full_title, max_chars=38)
-
-            coord = HeatmapCoordinate(
-                likelihood_index=max(1, min(5, l_idx)),
-                impact_index=max(1, min(5, i_idx)),
-                truncated_title=truncated,
-            )
-
-            scenario = TechnicalRiskScenario(
-                risk_id=card_ids[idx - 1],
-                title=full_title,
-                custody_role="PRIMARY_CUSTODIAN",
-                threat_event_frequency_annual=tef_val,
-                vulnerability_ratio=vuln_ratio,
-                mttr_recovery_hours=float(max(0.1, eff_rto if is_tier1 else max(0.5, eff_rto * 0.6))),
-                calibrated_annual_ale=MonetaryInterval(
-                    lower_bound=safe_low, upper_bound=safe_high, currency_iso=currency_iso
-                ),
-                heatmap_coordinate=coord,
-                physical_evidence=str(
-                    c_data.get("technical_evidence")
-                    or f"Structural evidence observed in {full_title}."
-                ),
-                root_cause_mechanism=str(
-                    c_data.get("operational_impact_chain")
-                    or f"Operational bottleneck identified in {full_title}."
-                ),
-                business_impact_narrative=str(
-                    c_data.get("operational_impact_chain")
-                    or f"Business disruption exposure dependent on {full_title}."
-                ),
-                required_mitigation=f"Architectural modernization and automated resilience controls for {full_title}.",
-                is_full_card_rendered=True,
-            )
-            risk_scenarios.append(scenario)
 
         payload = Chapter4SynthesisPayload(
             tower_id=tower_id,

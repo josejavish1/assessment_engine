@@ -5,6 +5,7 @@ Enforces Master Matrix weights and rigorous CMMI scale bounding.
 """
 
 from decimal import Decimal, ROUND_HALF_UP
+from pathlib import Path
 from typing import Dict, List, Any
 
 from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
@@ -50,6 +51,32 @@ class ScoringEngine:
 
         dot_product = sum(s * w for s, w in zip(active_scores, normalized_weights))
         return dot_product.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    @classmethod
+    def compute_tower_score_by_id(cls, tower_id: str, pillar_scores: Dict[str, float]) -> Decimal:
+        """Loads canonical tower definition, extracts official weights, and computes the dot-product tower score."""
+        t_id = tower_id.strip().upper()
+        repo_root = Path(__file__).resolve().parents[4]
+        t_def_path = repo_root / "engine_config" / "towers" / t_id / f"tower_definition_{t_id}.json"
+        if not t_def_path.exists():
+            if not pillar_scores:
+                return Decimal("2.50")
+            avg = sum(Decimal(str(v)) for v in pillar_scores.values()) / Decimal(len(pillar_scores))
+            return avg.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        with open(t_def_path, "r", encoding="utf-8") as f:
+            t_def = json.load(f)
+
+        p_scores = []
+        p_weights = []
+        for p in t_def.get("pillars", []):
+            pid = p.get("pillar_id")
+            w = Decimal(str(p.get("weight_pct", 20.0)))
+            s_val = Decimal(str(pillar_scores.get(pid, 2.5)))
+            p_scores.append(s_val)
+            p_weights.append(w)
+
+        return cls.compute_tower_score(p_scores, p_weights)
 
     @staticmethod
     def generate_audit_trail(tower_id: str, kpi_ledger: Dict[str, float], pillar_defs: List[Dict[str, Any]]) -> Dict[str, Any]:
