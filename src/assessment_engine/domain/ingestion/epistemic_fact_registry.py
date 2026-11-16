@@ -85,6 +85,37 @@ class SharedFactRecord(BaseModel):
                 return False
         return True
 
+    def lift_to_governance_deficit(self) -> "SharedFactRecord":
+        """GATE-30.3: Kleene Three-Valued Logic Epistemic Lifting Operator (uparrow_gov).
+
+        Projects an UNINSTRUMENTED_BLINDSPOT (Unknown) in technical strata into a
+        VERIFIED_PRESENT governance finding, mathematically converting an unmeasured
+        technical metric into an audit-grade governance/telemetry deficit finding.
+        """
+        if self.epistemic_state != EpistemicState.UNINSTRUMENTED_BLINDSPOT:
+            raise ValueError(
+                f"Epistemic Lifting Violation: Only UNINSTRUMENTED_BLINDSPOT facts can be lifted. "
+                f"Fact '{self.fact_id}' has state '{self.epistemic_state}'."
+            )
+
+        lifted_fact_id = f"{self.fact_id}_GOV_DEFICIT"
+        lifted_metric = f"Governance & Telemetry Deficit regarding {self.metric_name}"
+
+        return SharedFactRecord(
+            fact_id=lifted_fact_id,
+            domain="ENTERPRISE_GOVERNANCE",
+            subject_entity=self.subject_entity,
+            metric_name=lifted_metric,
+            epistemic_state=EpistemicState.INSTRUMENTED_VERIFIED,
+            observed_value=f"VERIFIED_ABSENCE_OF_FORMAL_TELEMETRY: {self.metric_name}",
+            unit="GOVERNANCE_GAP",
+            accredited_vendors_or_tech=[],
+            allowed_semantic_inference=(
+                f"Verified operational governance deficit: The enterprise lacks formal instrumentation, "
+                f"telemetry capture, and capacity threshold alerts for {self.metric_name} on {self.subject_entity}."
+            ),
+        )
+
 
 class ResolutionStatus(str, Enum):
     """Resolution status of an entity reference in the evidence corpus."""
