@@ -8,7 +8,7 @@ All models are frozen, extra-forbidden, and validated with strict mathematical i
 from __future__ import annotations
 
 from typing import Any, Self, Tuple
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class MonetaryInterval(BaseModel):
@@ -175,6 +175,14 @@ class HeatmapCoordinate(BaseModel):
     likelihood_index: int = Field(..., ge=1, le=5)
     impact_index: int = Field(..., ge=1, le=5)
     truncated_title: str = Field(..., min_length=3, max_length=42)
+
+    @field_validator("truncated_title", mode="before")
+    @classmethod
+    def _truncate_title(cls, v: Any) -> str:
+        s = str(v).strip()
+        if len(s) > 42:
+            return s[:39] + "..."
+        return s
 
 
 class TechnicalRiskScenario(BaseModel):
