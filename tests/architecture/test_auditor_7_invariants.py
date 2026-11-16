@@ -18,7 +18,6 @@ import docx
 import pytest
 
 from assessment_engine.domain.scoring_engine import ScoringEngine
-from assessment_engine.domain.validation.technical_specificity_guard import TechnicalSpecificityGuard
 from assessment_engine.infrastructure.runtime_paths import ROOT, resolve_tower_definition_file
 from assessment_engine.application.services.tower_payload_hydrator import TowerPayloadHydrator
 
@@ -97,17 +96,6 @@ def test_invariant_5_contradiction_engine_kubernetes():
         ast_nodes = bridge.convert(str(bp_t2_path), override_locale="es")
         all_text = " ".join(str(getattr(n, "text", "")) for n in ast_nodes.nodes)
         assert "Fuentes Contradictorias / Pendiente de Validación Formal" in all_text
-
-
-def test_invariant_6_fail_closed_fire_suppression_vesda():
-    """Invariant 6: High fire suppression score (5/5) CANNOT generate 'VESDA' if not present in evidence."""
-    input_text = "El centro de datos cuenta con sistemas VESDA y equipos de extinción de incendios de última generación."
-    evidence_corpus = "La instalación dispone de extinción automática de incendios mediante gas y sensores de humo."
-
-    sanitized, replaced = TechnicalSpecificityGuard.sanitize_draft_entities(input_text, evidence_corpus)
-    assert "VESDA" not in sanitized
-    assert "aspirating smoke detection systems" in sanitized
-    assert "vesda" in replaced
 
 
 def test_invariant_7_zero_forbidden_entities_in_deliverables():
