@@ -287,19 +287,19 @@ async def process_pilar_blueprint(
         "and output only the finalized Partner-grade deliverable."
     )
 
-    has_transcript_evidence = bool(context_str and len(context_str.strip()) > 80)
-    if not has_transcript_evidence:
+    # Phase 31.1: Epistemic Density Routing & Dynamic Ontology Pruning
+    epistemic_regime = pilar_data.get("epistemic_regime", "REGIME_EMPIRICAL_CONCRETE")
+    epistemic_density = pilar_data.get("epistemic_density", 1.0)
+    
+    if epistemic_regime != "REGIME_EMPIRICAL_CONCRETE":
         prompt += (
-            "\n\n### EPISTEMIC BASIS: SURVEY_ATTESTED_ONLY (ACTUARIAL ATTESTATION MODE)\n"
-            "This capability domain contains quantitative management survey scores, but ZERO qualitative "
-            "interview transcript evidence. In accordance with strict Tier-1 Due Diligence standards:\n"
-            "1. You are operating in ACTUARIAL ATTESTATION MODE.\n"
-            "2. In 'asis_architecture_description' and all findings, you MUST describe the normative functional "
-            "operational outcomes expected of this assessed maturity tier in attested/subjunctive voice.\n"
-            "3. You are STRICTLY FORBIDDEN from asserting concrete unverified commercial vendor product names "
-            "(e.g., BitLocker, Entra ID, VESDA, CRAC, CrowdStrike, Splunk, ONTAP, Palo Alto) or unverified physical topologies.\n"
-            "4. You must explicitly state that while management attests to this operational baseline, specific technical "
-            "tooling implementations and telemetry remain subject to field verification."
+            f"\n\n### EPISTEMIC BASIS: {epistemic_regime} (ACTUARIAL ATTESTATION MODE)\n"
+            f"Epistemic Density (ρ) = {epistemic_density:.4f}. ZERO empirical transcript citations exist for this domain.\n"
+            "In accordance with strict Tier-1 Due Diligence standards:\n"
+            "1. You are operating under a STRICT ABSTRACTION CEILING.\n"
+            "2. In 'asis_architecture_description' and all findings, you MUST synthesize operational maturity strictly in terms of process repeatability, management standardization, and organizational governance.\n"
+            "3. You are STRICTLY FORBIDDEN from asserting concrete unverified commercial vendor product names (e.g., BitLocker, Entra ID, VESDA, CRAC, SimpliVity, NetApp, Splunk, ONTAP, BGP, VLAN) or physical hardware topologies.\n"
+            "4. Discuss WHAT functional capability the score implies, never HOW it is technically implemented. You must explicitly state that technical tooling implementations and telemetry remain subject to field verification."
         )
 
     # Phase 1: Generate the initial set of findings from the source context.
@@ -473,10 +473,34 @@ def _build_pillars_map(
             p_data["score"] = pillar_audits[p_id]["computed_score"]
             p_data["maturity_band"] = pillar_audits[p_id]["maturity_band"]
             p_data["weight_pct"] = pillar_audits[p_id]["weight_pct"]
+
+        qualitative_evidence_count = 0
+        total_kpis = len(p_data.get("answers", []))
+        
         for p_find in refined_findings.get("pillar_findings", []):
             if p_find.get("pillar_id") == p_id:
                 p_data["refined_findings"] = p_find
+                # Calculate Epistemic Density based on qualitative transcript chunks
+                evs = p_find.get("evidence", [])
+                for e in evs:
+                    e_str = str(e).lower()
+                    if "score" not in e_str and "cuestionario" not in e_str and "evaluación declarada" not in e_str:
+                        qualitative_evidence_count += 1
                 break
+                
+        # Phase 31.1: Epistemic Density Quantification
+        if total_kpis > 0 and qualitative_evidence_count > 0:
+            coverage_ratio = min(1.0, qualitative_evidence_count / total_kpis)
+            p_data["epistemic_density"] = round(coverage_ratio, 4)
+        else:
+            p_data["epistemic_density"] = 0.0
+
+        if p_data["epistemic_density"] == 0.0:
+            p_data["epistemic_regime"] = "REGIME_ZERO_EVIDENCE"
+        elif p_data["epistemic_density"] < 0.35:
+            p_data["epistemic_regime"] = "REGIME_SPARSE_GOVERNANCE"
+        else:
+            p_data["epistemic_regime"] = "REGIME_EMPIRICAL_CONCRETE"
 
     return pillars_map, audit_trail
 
