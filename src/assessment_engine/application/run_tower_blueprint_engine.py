@@ -287,6 +287,21 @@ async def process_pilar_blueprint(
         "and output only the finalized Partner-grade deliverable."
     )
 
+    has_transcript_evidence = bool(context_str and len(context_str.strip()) > 80)
+    if not has_transcript_evidence:
+        prompt += (
+            "\n\n### EPISTEMIC BASIS: SURVEY_ATTESTED_ONLY (ACTUARIAL ATTESTATION MODE)\n"
+            "This capability domain contains quantitative management survey scores, but ZERO qualitative "
+            "interview transcript evidence. In accordance with strict Tier-1 Due Diligence standards:\n"
+            "1. You are operating in ACTUARIAL ATTESTATION MODE.\n"
+            "2. In 'asis_architecture_description' and all findings, you MUST describe the normative functional "
+            "operational outcomes expected of this assessed maturity tier in attested/subjunctive voice.\n"
+            "3. You are STRICTLY FORBIDDEN from asserting concrete unverified commercial vendor product names "
+            "(e.g., BitLocker, Entra ID, VESDA, CRAC, CrowdStrike, Splunk, ONTAP, Palo Alto) or unverified physical topologies.\n"
+            "4. You must explicitly state that while management attests to this operational baseline, specific technical "
+            "tooling implementations and telemetry remain subject to field verification."
+        )
+
     # Phase 1: Generate the initial set of findings from the source context.
     try:
         agent_architect = Agent(
@@ -305,6 +320,19 @@ async def process_pilar_blueprint(
             message=prompt,
             schema=PillarBlueprintDraft,
         )
+        if raw_output and isinstance(raw_output, dict):
+            from assessment_engine.domain.validation.lexical_epistemic_sanitizer import (
+                LexicalEpistemicSanitizer,
+            )
+            sanitizer = LexicalEpistemicSanitizer()
+            raw_desc = raw_output.get("asis_architecture_description", "")
+            if raw_desc:
+                sanitized_desc, _ = sanitizer.compile_and_sanitize(raw_desc, doc_lang=target_language)
+                raw_output["asis_architecture_description"] = sanitized_desc
+            for finding in raw_output.get("health_check_asis", []):
+                if isinstance(finding, dict) and finding.get("finding"):
+                    s_find, _ = sanitizer.compile_and_sanitize(finding["finding"], doc_lang=target_language)
+                    finding["finding"] = s_find
         return raw_output
     except Exception as e:
         logger.error("Error processing pillar %s: %s", pilar_label, e, exc_info=True)
