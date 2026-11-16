@@ -1,9 +1,14 @@
 import uuid
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, model_validator
 
 from .common import VersionedPayload
+
+
+class EpistemicContaminationError(ValueError):
+    """Raised when an unaccredited technical product or protocol is smuggled into a governance finding."""
+    pass
 
 
 class HealthCheckAsIs(BaseModel):
@@ -119,6 +124,60 @@ class HealthCheckAsIs(BaseModel):
     epistemic_state: Optional[str] = Field(
         None, description="Epistemic validation state of the finding evidence."
     )
+
+    @model_validator(mode="after")
+    def verify_closed_world_confinement(self, info: ValidationInfo) -> "HealthCheckAsIs":
+        """GATE-30.1: Closed-World Entity Symbol Table Confinement Validator.
+
+        Prevents 'Trojan String' semantic smuggling inside free-form narrative strings
+        when a capability finding lacks direct empirical evidence citations.
+        """
+        evidence_str = str(self.literal_evidence or "")
+        is_governance_only = (
+            self.epistemic_state == "CAPABILITY_GOVERNANCE_ONLY"
+            or not self.fragment_id
+            or not evidence_str.strip()
+            or "score" in evidence_str.lower()
+        )
+
+        if is_governance_only:
+            from pathlib import Path
+            import json
+
+            cfg_path = (
+                Path(__file__).resolve().parents[4]
+                / "engine_config"
+                / "policies"
+                / "epistemic_dependencies.json"
+            )
+            unauthorized_tokens: set[str] = set()
+            if cfg_path.exists():
+                try:
+                    cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+                    for tokens in cfg_data.get(
+                        "unauthorized_governance_entity_tokens", {}
+                    ).values():
+                        unauthorized_tokens.update(t.lower() for t in tokens)
+                except Exception:
+                    pass
+
+            authorized_entities: set[str] = set()
+            if info and info.context:
+                auth_ctx = info.context.get("authorized_entities") or info.context.get(
+                    "authorized_entity_pointers"
+                )
+                if auth_ctx:
+                    authorized_entities = {str(e).lower() for e in auth_ctx}
+
+            narrative = f"{self.risk_observed or ''} {self.impact or ''}".lower()
+            for token in unauthorized_tokens:
+                if token in narrative and token not in authorized_entities:
+                    raise EpistemicContaminationError(
+                        f"GATE-30.1 BREACH: Unauthorized entity token '{token}' detected in "
+                        f"CAPABILITY_GOVERNANCE_ONLY finding '{self.node_id}'. "
+                        "Unaccredited physical protocols or proprietary vendor names are strictly forbidden."
+                    )
+        return self
 
 
 class ArchitecturalGravityProfile(BaseModel):

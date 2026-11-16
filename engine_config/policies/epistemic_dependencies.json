@@ -85,6 +85,30 @@
     "en": ["transcript", "interview", "telemetry", "qualitative evidence"],
     "es": ["transcripcion", "entrevista", "telemetria", "evidencia cualitativa"]
   },
+  "unauthorized_governance_entity_tokens": {
+    "en": [
+      "cctv",
+      "nvr",
+      "netapp csi",
+      "csi de netapp",
+      "worm",
+      "saml 2.0",
+      "rodc",
+      "centralized pam vault",
+      "bóveda pam"
+    ],
+    "es": [
+      "cctv",
+      "nvr",
+      "netapp csi",
+      "csi de netapp",
+      "worm",
+      "saml 2.0",
+      "rodc",
+      "bóveda pam",
+      "boveda pam"
+    ]
+  },
   "technical_specificity_patterns": {
     "\\bb[óo]veda(?:\\s+de)?\\s+pam(?:\\s+centralizada)?\\b": "centralized privileged access management controls",
     "\\bgrabaci[óo]n\\s+de\\s+sesi[óo]n(?:es)?\\b": "session audit traceability",
