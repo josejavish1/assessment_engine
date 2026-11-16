@@ -10,7 +10,7 @@ substitutes it with an authoritative, vendor-neutral consulting capability descr
 preventing hallucinated technical architectures from entering the executive deliverable.
 """
 
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 import re
 import logging
 
@@ -23,17 +23,28 @@ SPECIFICITY_ABSTRACTION_MAP: Dict[str, str] = {
     r"\bVESDA\b": "aspirating smoke detection systems",
     r"\bCRAC\b": "precision cooling units for technical rooms",
     r"\bATS\b": "automatic transfer switches",
-    r"\blectores biom\u00e9tricos\b": "reinforced physical access controls",
     r"\bNVR\b": "physical security video surveillance systems",
+    r"\bCCTV\b": "video surveillance monitoring systems",
     r"\bDCIM\b": "data center infrastructure management tools",
+    r"\bN\+1\s*(?:or|o)\s*2N\b": "modular redundancy architecture",
 
     # T3 Network
+    r"\bBGP\b": "dynamic routing protocols",
     r"\bBFD\b": "sub-second link fault detection mechanisms",
     r"\bSNMPv3\b": "secure network monitoring protocols",
-    r"\btelemetr\u00eda de buffers\b": "advanced switching performance telemetry",
+    r"\bSFP\+\b": "high-speed network interfaces",
+    r"\bQSFP\+\b": "optical aggregation interfaces",
     r"\bVRF\b": "virtual routing table segmentation",
 
-    # T9 Workplace
+    # T4 Storage
+    r"\bNetApp Volume Encryption\b": "storage encryption at rest",
+    r"\bWORM\b": "storage immutability policies",
+    r"\bVAAI\b": "storage hardware offload primitives",
+    r"\bSVM\b": "storage virtual machines",
+
+    # T6 Identity & Security / T9 Workplace
+    r"\bRODC\b": "read-only directory services",
+    r"\bEDR\b": "endpoint detection and response controls",
     r"\bZero-Touch Provisioning\b": "unattended workplace deployment",
     r"\bBitLocker\b": "local endpoint storage encryption",
     r"\bEntra ID\b": "enterprise identity and directory services",
@@ -76,12 +87,19 @@ class TechnicalSpecificityGuard:
                 continue
 
             # Check if this specific entity exists in the evidence corpus
-            raw_keyword = pattern.replace(r"\b", "").replace(r"\.", ".").lower()
+            raw_keyword = pattern.replace(r"\b", "").replace(r"\.", ".").replace(r"\+", "+").lower()
             if raw_keyword in evidence_lower:
-                # Grounded in evidence -> permit explicit mention
-                continue
+                # Check for negation in evidence: e.g. "no usamos BGP"
+                negation_pattern = re.compile(
+                    r"\b(?:no\s+(?:tenemos|usamos|hay|disponemos|contamos\s+con)|carece\s+de)\s+[^.\n]*"
+                    + re.escape(raw_keyword),
+                    re.IGNORECASE,
+                )
+                if not negation_pattern.search(evidence_lower):
+                    # Grounded in positive evidence -> permit explicit mention
+                    continue
 
-            # Unaccredited specific entity detected -> sanitize to neutral capability
+            # Unaccredited or negated specific entity detected -> sanitize to neutral capability
             sanitized_text = re.sub(pattern, neutral_replacement, sanitized_text, flags=re.IGNORECASE)
             sanitized_entities.append(raw_keyword)
             logger.info(

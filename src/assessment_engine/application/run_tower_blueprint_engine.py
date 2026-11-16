@@ -1044,7 +1044,7 @@ def _enforce_executive_dignity_on_payload(obj: Any) -> Any:
     return obj
 
 
-def _enforce_technical_specificity_guard_on_payload(obj: Any, evidence_corpus: str) -> Any:
+def _enforce_technical_specificity_guard_on_payload(obj: Any, evidence_corpus: str, doc_lang: str = "es") -> Any:
     """Recursively applies TechnicalSpecificityGuard to abstract unaccredited technical entities."""
     from assessment_engine.domain.validation.technical_specificity_guard import (
         TechnicalSpecificityGuard,
@@ -1052,16 +1052,16 @@ def _enforce_technical_specificity_guard_on_payload(obj: Any, evidence_corpus: s
 
     if isinstance(obj, dict):
         return {
-            k: _enforce_technical_specificity_guard_on_payload(v, evidence_corpus)
+            k: _enforce_technical_specificity_guard_on_payload(v, evidence_corpus, doc_lang=doc_lang)
             for k, v in obj.items()
         }
     elif isinstance(obj, list):
         return [
-            _enforce_technical_specificity_guard_on_payload(x, evidence_corpus)
+            _enforce_technical_specificity_guard_on_payload(x, evidence_corpus, doc_lang=doc_lang)
             for x in obj
         ]
     elif isinstance(obj, str):
-        sanitized, _ = TechnicalSpecificityGuard.sanitize_draft_entities(obj, evidence_corpus)
+        sanitized, _ = TechnicalSpecificityGuard.sanitize_draft_entities(obj, evidence_corpus, doc_lang=doc_lang)
         return sanitized
     return obj
 
@@ -1491,7 +1491,7 @@ async def run_tower_blueprint(
     blueprint_payload = _scrub_client_placeholders(blueprint_payload, client_name)
     blueprint_payload = _enforce_executive_dignity_on_payload(blueprint_payload)
     blueprint_payload = _enforce_technical_specificity_guard_on_payload(
-        blueprint_payload, context_str
+        blueprint_payload, context_str, doc_lang=doc_lang
     )
     _hydrate_methodological_frameworks(blueprint_payload, client_name, tower_id)
 

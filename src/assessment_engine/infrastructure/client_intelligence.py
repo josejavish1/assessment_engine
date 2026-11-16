@@ -758,25 +758,51 @@ def build_client_context_packet(
                     business_context.get("constraints", [])
                 ),
             },
-            "technology_context": {
-                "footprint_summary": technology_context.get(
-                    "footprint_summary", {}
-                ).get("summary", ""),
-                "technology_drivers": [
-                    item.get("name", "")
-                    for item in technology_context.get("technology_drivers", [])
-                    if isinstance(item, dict)
-                ],
-                "vendor_dependencies": _as_list_of_strings(
-                    technology_context.get("vendor_dependencies", [])
-                ),
-                "operating_constraints": _as_list_of_strings(
-                    technology_context.get("operating_constraints", [])
-                ),
-                "recent_incident_signals": _as_list_of_strings(
-                    technology_context.get("recent_incident_signals", [])
-                ),
-            },
+            "technology_context": (
+                {
+                    "footprint_summary": "Enterprise hybrid infrastructure footprint requiring strategic lifecycle management, contractual governance, and FinOps cost allocation.",
+                    "technology_drivers": [
+                        item.get("name", "")
+                        for item in technology_context.get("technology_drivers", [])
+                        if isinstance(item, dict) and any(
+                            kw in str(item.get("name", "")).lower()
+                            for kw in ["cloud", "finops", "governance", "compliance", "cost", "license", "renewal", "contract", "portfolio"]
+                        )
+                    ],
+                    "vendor_dependencies": [
+                        v
+                        for v in _as_list_of_strings(technology_context.get("vendor_dependencies", []))
+                        if any(
+                            kw in v.lower()
+                            for kw in ["microsoft", "sap", "oracle", "vmware", "azure", "aws", "gcp", "enterprise", "software"]
+                        )
+                    ],
+                    "operating_constraints": _as_list_of_strings(
+                        technology_context.get("operating_constraints", [])
+                    ),
+                    "recent_incident_signals": [],
+                }
+                if tower_id and str(tower_id).upper() == "T8"
+                else {
+                    "footprint_summary": technology_context.get(
+                        "footprint_summary", {}
+                    ).get("summary", ""),
+                    "technology_drivers": [
+                        item.get("name", "")
+                        for item in technology_context.get("technology_drivers", [])
+                        if isinstance(item, dict)
+                    ],
+                    "vendor_dependencies": _as_list_of_strings(
+                        technology_context.get("vendor_dependencies", [])
+                    ),
+                    "operating_constraints": _as_list_of_strings(
+                        technology_context.get("operating_constraints", [])
+                    ),
+                    "recent_incident_signals": _as_list_of_strings(
+                        technology_context.get("recent_incident_signals", [])
+                    ),
+                }
+            ),
             "regulatory_context": [
                 item.get("name", "")
                 for item in regulatory_context
