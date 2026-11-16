@@ -1275,7 +1275,7 @@
         "pillar_intro_0": "Evalúa la resiliencia operativa y los baselines técnicos",
         "pillar_intro_1": "Audita el estado funcional y los controles",
         "pillar_intro_2": "Verifica la infraestructura y políticas",
-        "pillar_intro_3": "Evalúa la reproducibilidad, automatización IaC y autoservicio",
+        "pillar_intro_3": "Evalúa la eficacia operativa, procedimientos y estándares de ejecución",
         "pillar_intro_4": "Supervisa la monitorización, gobernanza y continuidad",
         "tef_levels": [
             "Muy Bajo",
@@ -4504,7 +4504,7 @@
         "pillar_intro_0": "Evaluates operational resilience and technical baselines",
         "pillar_intro_1": "Audits functional state and controls",
         "pillar_intro_2": "Verifies infrastructure and policies",
-        "pillar_intro_3": "Evaluates reproducibility, IaC automation, and self-service",
+        "pillar_intro_3": "Evaluates operational efficacy, procedures, and execution standards",
         "pillar_intro_4": "Supervises monitoring, governance, and continuity",
         "tef_levels": [
             "Very Low",
