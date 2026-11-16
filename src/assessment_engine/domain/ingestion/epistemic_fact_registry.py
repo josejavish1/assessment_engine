@@ -22,6 +22,70 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class EpistemicState(str, Enum):
+    """Three-Valued Logic (3VL) epistemic state for shared telemetry facts."""
+    INSTRUMENTED_VERIFIED = "INSTRUMENTED_VERIFIED"
+    UNINSTRUMENTED_BLINDSPOT = "UNINSTRUMENTED_BLINDSPOT"
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"
+
+
+class SharedFactRecord(BaseModel):
+    """Shared telemetry fact record implementing Three-Valued Logic to eliminate hallucinated overcommitments."""
+    model_config = ConfigDict(extra="ignore")
+
+    fact_id: str = Field(..., pattern=r"^FACT-[A-Z0-9_]+$")
+    domain: str
+    subject_entity: str
+    metric_name: str
+    epistemic_state: EpistemicState
+    observed_value: Optional[Union[float, int, str]] = None
+    unit: Optional[str] = None
+    accredited_vendors_or_tech: List[str] = Field(default_factory=list)
+    allowed_semantic_inference: str = ""
+
+    @model_validator(mode="after")
+    def enforce_epistemic_discipline(self) -> "SharedFactRecord":
+        if self.epistemic_state == EpistemicState.UNINSTRUMENTED_BLINDSPOT:
+            if self.observed_value is not None:
+                raise ValueError("Epistemic Violation: Uninstrumented facts cannot hold observed values.")
+            self.allowed_semantic_inference = (
+                f"Lack of telemetry/instrumentation regarding {self.metric_name} on {self.subject_entity}. "
+                f"PROHIBITED INFERENCE: Do not claim resource exhaustion, overcommitment, or saturation."
+            )
+        return self
+
+    def is_claim_allowed(self, claim_text: str) -> bool:
+        """Evaluates whether an emitted narrative claim complies with the fact's epistemic state."""
+        if self.epistemic_state != EpistemicState.UNINSTRUMENTED_BLINDSPOT:
+            return True
+
+        from pathlib import Path
+        import json
+
+        forbidden_patterns = [
+            "overcommitment",
+            "severe saturation",
+            "critical oversubscription",
+            "resource exhaustion",
+        ]
+        
+        # Load external localized prohibited tokens from configuration
+        cfg_path = Path(__file__).resolve().parents[4] / "engine_config" / "policies" / "epistemic_dependencies.json"
+        if cfg_path.exists():
+            try:
+                cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+                for tokens in cfg_data.get("uninstrumented_forbidden_tokens", {}).values():
+                    forbidden_patterns.extend(tokens)
+            except Exception:
+                pass
+
+        claim_lower = claim_text.lower()
+        for pattern in forbidden_patterns:
+            if pattern in claim_lower:
+                return False
+        return True
+
+
 class EpistemicModality(str, Enum):
     """Epistemic modality of an extracted enterprise fact."""
     OBSERVED_EVIDENCE = "OBSERVED_EVIDENCE"        # Directly verified in telemetry, logs, or config files

@@ -26,5 +26,24 @@
       {"parent": "T8", "child": "T4", "weight": 0.85},
       {"parent": "T6", "child": "T1", "weight": 0.60}
     ]
+  },
+  "uninstrumented_forbidden_tokens": {
+    "en": [
+      "overcommitment",
+      "oversubscription",
+      "critical saturation",
+      "resource exhaustion"
+    ],
+    "es": [
+      "sobreasignación",
+      "sobresuscripción",
+      "sobreasignacion",
+      "sobresuscripcion",
+      "contención de vcpu",
+      "contencion de vcpu",
+      "saturación crítica",
+      "saturacion critica",
+      "severos niveles"
+    ]
   }
 }
