@@ -236,3 +236,52 @@ def harmonize_integer_weights_dual_constraint(
                     best_weights = cand
 
     return best_weights
+
+
+def allocate_portfolio_euler_subadditivity(
+    single_event_max_ale: Union[int, float, Decimal],
+    tower_risk_weights: dict[str, Union[int, float, Decimal]],
+    annual_revenue: Union[int, float, Decimal],
+) -> dict[str, int]:
+    """GATE-30.4: Actuarial Sub-Additivity Bound & Multi-Tower Euler Allocation.
+
+    Guarantees that when shared core assets or enterprise-wide operational disruptions
+    are evaluated across multiple towers, the allocated Chapter 4 Business Interruption
+    ALEs across all contributing towers strictly satisfy:
+        sum(ALE_i) <= single_event_max_ale <= annual_revenue
+    using discrete Euler allocation, with zero cross-tower double-counting.
+    """
+    revenue_dec = Decimal(str(annual_revenue))
+    max_ale_dec = Decimal(str(single_event_max_ale))
+
+    # Invariant: single_event_max_ale cannot exceed annual revenue
+    capped_max_ale = min(max_ale_dec, revenue_dec)
+    target_int = int(round_to_actuarial_significance(capped_max_ale))
+
+    if not tower_risk_weights or target_int <= 0:
+        return {tid: 0 for tid in tower_risk_weights}
+
+    tower_ids = sorted(list(tower_risk_weights.keys()))
+    standalone_weights = [tower_risk_weights[tid] for tid in tower_ids]
+
+    allocated_shares = allocate_subadditive_ale_to_cards(
+        target_total_ale=target_int,
+        standalone_ales=standalone_weights,
+        preserve_quanta=True,
+        card_ids=tower_ids,
+    )
+
+    result = dict(zip(tower_ids, allocated_shares))
+
+    # Mathematical proof of Subadditivity Bound
+    total_allocated = sum(result.values())
+    if total_allocated > target_int:
+        raise ValueError(
+            f"Actuarial Subadditivity Bound violated: {total_allocated} > {target_int}"
+        )
+    if total_allocated > int(revenue_dec):
+        raise ValueError(
+            f"Enterprise Valuation Cap violated: {total_allocated} > {revenue_dec}"
+        )
+
+    return result
