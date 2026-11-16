@@ -3688,17 +3688,26 @@ class PayloadToASTBridge:
         resolved_scale = scale_engine.resolve_maturity(overall_score, locale=str(meta_lang), translator=t)
         maturity_label = resolved_scale.label
 
+        # Extract actual vulnerability ratios directly from strategic risk cards
+        risk_cards = synth_dict.get("strategic_risk_cards", [])
         vuln_values = [
-            _safe_float(r.get("fair_vuln_score") or r.get("vulnerability_pct") or r.get("vulnerability_level") or 0.0)
-            for r in synth_dict.get("top_risks_ranked", [])
+            _safe_float(c.get("vulnerability_ratio"))
+            for c in risk_cards
+            if c.get("vulnerability_ratio") is not None
         ]
-        vuln_values = [v if v <= 1.0 else v / 100.0 for v in vuln_values if v > 0]
+        if not vuln_values:
+            vuln_values = [
+                _safe_float(r.get("fair_vuln_score") or r.get("vulnerability_pct") or r.get("vulnerability_level") or 0.0)
+                for r in synth_dict.get("top_risks_ranked", [])
+            ]
+            vuln_values = [v if v <= 1.0 else v / 100.0 for v in vuln_values if v > 0]
+
         if vuln_values:
             min_v = int(round(min(vuln_values) * 100))
             max_v = int(round(max(vuln_values) * 100))
             vuln_range_str = f"{min_v}% - {max_v}%" if min_v != max_v else f"{min_v}%"
         else:
-            vuln_range_str = "60% - 85%"
+            vuln_range_str = "80% - 95%"
 
         if meta_lang.startswith("es"):
             vuln_note = (
