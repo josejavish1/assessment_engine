@@ -45,5 +45,19 @@
       "saturacion critica",
       "severos niveles"
     ]
+  },
+  "ambiguous_entity_forbidden_tokens": {
+    "en": [
+      "clusters 3 and 4",
+      "cluster 3 and 4",
+      "nodes 3 and 4 of simplivity"
+    ],
+    "es": [
+      "clústeres 3 y 4",
+      "clusteres 3 y 4",
+      "agrupaciones 3 y 4",
+      "nodos de simplivity 3 y 4",
+      "nodos simplivity 3 y 4"
+    ]
   }
 }

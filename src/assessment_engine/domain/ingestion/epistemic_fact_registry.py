@@ -86,6 +86,64 @@ class SharedFactRecord(BaseModel):
         return True
 
 
+class ResolutionStatus(str, Enum):
+    """Resolution status of an entity reference in the evidence corpus."""
+    RESOLVED = "RESOLVED"
+    AMBIGUOUS = "AMBIGUOUS"
+    UNVERIFIED = "UNVERIFIED"
+
+
+class AmbiguousEntityReference(BaseModel):
+    """Tracks unresolved entity references (e.g. '3 y 4') to prevent speculative materialization."""
+    model_config = ConfigDict(extra="ignore")
+
+    reference_id: str = Field(..., pattern=r"^REF-[A-Z0-9_\-]+$")
+    raw_span: str
+    source_chunk_id: str
+    resolution_status: ResolutionStatus = ResolutionStatus.AMBIGUOUS
+    candidate_entity_types: List[str] = Field(default_factory=list)
+    allowed_semantic_framing: str = ""
+
+    @model_validator(mode="after")
+    def enforce_ambiguity_guard(self) -> "AmbiguousEntityReference":
+        if self.resolution_status == ResolutionStatus.AMBIGUOUS:
+            self.allowed_semantic_framing = (
+                f"Observed items referenced as '{self.raw_span}' without formal topology confirmation. "
+                "PROHIBITED INFERENCE: Do not materialize into specific cluster, host, or node names."
+            )
+        return self
+
+    def is_claim_allowed(self, claim_text: str) -> bool:
+        """Determines whether a claim impermissibly materializes the ambiguous entity."""
+        if self.resolution_status != ResolutionStatus.AMBIGUOUS:
+            return True
+
+        from pathlib import Path
+        import json
+
+        forbidden_patterns = [
+            "clusters 3 and 4",
+            "cluster 3 and 4",
+            "nodes 3 and 4 of simplivity",
+            "simplivity nodes 3 and 4",
+        ]
+
+        cfg_path = Path(__file__).resolve().parents[4] / "engine_config" / "policies" / "epistemic_dependencies.json"
+        if cfg_path.exists():
+            try:
+                cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+                for tokens in cfg_data.get("ambiguous_entity_forbidden_tokens", {}).values():
+                    forbidden_patterns.extend(tokens)
+            except Exception:
+                pass
+
+        claim_lower = claim_text.lower()
+        for pattern in forbidden_patterns:
+            if pattern in claim_lower:
+                return False
+        return True
+
+
 class EpistemicModality(str, Enum):
     """Epistemic modality of an extracted enterprise fact."""
     OBSERVED_EVIDENCE = "OBSERVED_EVIDENCE"        # Directly verified in telemetry, logs, or config files
