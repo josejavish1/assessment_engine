@@ -73,3 +73,29 @@ def test_tower_8_payload_hardware_leakage_cleanliness():
             violations.append(f"Tower T8 contains unisolated hardware brand: '{brand}'")
 
     assert not violations, "Tower 8 Context Contamination Invariant violated:\n" + "\n".join(violations)
+
+
+def test_gate_30_2_stratum_cardinality_projection_for_tower_8():
+    """3. GATE-30.2: Tower 8 context contains deterministic stratum_summaries count vectors."""
+    raw_intel = {
+        "version": "3.0",
+        "metadata": {},
+        "profile": {},
+        "business_context": {},
+        "client_name": "MOLINS",
+        "asset_telemetry": {"total_hosts": 6},
+        "technology_context": {
+            "vendor_dependencies": ["SimpliVity", "NetApp", "VMware"],
+            "technology_drivers": [{"name": "FinOps Cloud Cost Optimization"}],
+        },
+    }
+
+    t8_packet = build_client_context_packet(raw_intel, tower_id="T8")
+    tech_context = t8_packet.get("technology_context", {})
+    summaries = tech_context.get("stratum_summaries", {})
+
+    assert "LOGICAL_COMPUTE_STORAGE" in summaries
+    compute_sum = summaries["LOGICAL_COMPUTE_STORAGE"]
+    assert compute_sum["verified_asset_count"] == 6
+    assert compute_sum["unverified_telemetry_ratio"] > 0.0
+    assert compute_sum["portfolio_lifecycle_state"] == "HYBRID_LEGACY_MAINTENANCE"

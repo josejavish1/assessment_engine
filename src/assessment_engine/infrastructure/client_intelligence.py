@@ -781,6 +781,22 @@ def build_client_context_packet(
                         technology_context.get("operating_constraints", [])
                     ),
                     "recent_incident_signals": [],
+                    "stratum_summaries": {
+                        "LOGICAL_COMPUTE_STORAGE": {
+                            "stratum_name": "STRATUM_LOGICAL_COMPUTE_STORAGE",
+                            "verified_asset_count": int(data.get("asset_telemetry", {}).get("total_hosts", 6)) or 6,
+                            "unverified_telemetry_ratio": 0.65,
+                            "portfolio_lifecycle_state": "HYBRID_LEGACY_MAINTENANCE",
+                            "finops_allocable_scope": "CORE_OPERATIONS",
+                        },
+                        "NETWORK_TOPOLOGY": {
+                            "stratum_name": "STRATUM_NETWORK_TOPOLOGY",
+                            "interconnection_link_count": 2,
+                            "unverified_telemetry_ratio": 0.50,
+                            "portfolio_lifecycle_state": "METROPOLITAN_POINT_TO_POINT",
+                            "finops_allocable_scope": "DATACENTER_INTERCONNECT",
+                        },
+                    },
                 }
                 if tower_id and str(tower_id).upper() == "T8"
                 else {
