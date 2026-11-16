@@ -84,5 +84,12 @@
   "transcript_indicator_tokens": {
     "en": ["transcript", "interview", "telemetry", "qualitative evidence"],
     "es": ["transcripcion", "entrevista", "telemetria", "evidencia cualitativa"]
+  },
+  "technical_specificity_patterns": {
+    "\\bb[óo]veda(?:\\s+de)?\\s+pam(?:\\s+centralizada)?\\b": "centralized privileged access management controls",
+    "\\bgrabaci[óo]n\\s+de\\s+sesi[óo]n(?:es)?\\b": "session audit traceability",
+    "\\bregistro\\s+de\\s+comandos\\b": "command-level administrative monitoring",
+    "\\bsegregaci[óo]n\\s+de\\s+canalizaciones\\b": "pathway segregation",
+    "\\bdiversidad\\s+f[íi]sica\\s+de\\s+trazado\\b": "interconnection link availability"
   }
 }

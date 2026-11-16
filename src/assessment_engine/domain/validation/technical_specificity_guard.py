@@ -38,25 +38,51 @@ SPECIFICITY_ABSTRACTION_MAP: Dict[str, str] = {
 
     # T4 Storage
     r"\bNetApp Volume Encryption\b": "storage encryption at rest",
+    r"\bVolume Encryption\b": "storage encryption at rest",
     r"\bWORM\b": "storage immutability policies",
     r"\bVAAI\b": "storage hardware offload primitives",
     r"\bSVM\b": "storage virtual machines",
 
     # T6 Identity & Security / T9 Workplace
+    r"\bcentralized PAM vault\b": "centralized privileged access management controls",
+    r"\bsession recording\b": "session audit traceability",
+    r"\bcommand logging\b": "command-level administrative monitoring",
     r"\bRODC\b": "read-only directory services",
     r"\bEDR\b": "endpoint detection and response controls",
     r"\bZero-Touch Provisioning\b": "unattended workplace deployment",
     r"\bBitLocker\b": "local endpoint storage encryption",
     r"\bEntra ID\b": "enterprise identity and directory services",
-    r"\bSAML 2\.0\b": "federated single sign-on protocols",
+    r"\bSAML\s*(?:2(?:\.0)?)?\b": "federated single sign-on protocols",
     r"\bOpenID Connect\b": "modern identity federation standards",
     r"\bSSPR\b": "self-service password reset",
     r"\bDLP\b": "endpoint data loss prevention policies",
+    r"\bWindows 10/11 Enterprise\b": "corporate endpoint operating systems",
+    r"\bCSAT/NPS\b": "end-user satisfaction metrics",
 
     # Universal Governance / Invariant Guardrails
     r"\bRTO contractual\b": "operational recovery estimate",
     r"\bRTO Contractual\b": "operational recovery estimate",
 }
+
+
+def _load_localized_specificity_patterns() -> Dict[str, str]:
+    """Dynamically loads localized non-English regex patterns from configuration."""
+    from pathlib import Path
+    import json
+
+    cfg_path = (
+        Path(__file__).resolve().parents[4]
+        / "engine_config"
+        / "policies"
+        / "epistemic_dependencies.json"
+    )
+    if cfg_path.exists():
+        try:
+            cfg_data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+            return cfg_data.get("technical_specificity_patterns", {})
+        except Exception:
+            pass
+    return {}
 
 
 class TechnicalSpecificityGuard:
@@ -80,7 +106,10 @@ class TechnicalSpecificityGuard:
         sanitized_entities = []
         evidence_lower = accredited_evidence_corpus.lower()
 
-        for pattern, neutral_replacement in SPECIFICITY_ABSTRACTION_MAP.items():
+        patterns_to_scan = dict(SPECIFICITY_ABSTRACTION_MAP)
+        patterns_to_scan.update(_load_localized_specificity_patterns())
+
+        for pattern, neutral_replacement in patterns_to_scan.items():
             # Check if pattern matches in text
             matches = list(re.finditer(pattern, sanitized_text, flags=re.IGNORECASE))
             if not matches:
