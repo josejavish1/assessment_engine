@@ -59,5 +59,30 @@
       "nodos de simplivity 3 y 4",
       "nodos simplivity 3 y 4"
     ]
+  },
+  "ungrounded_hardware_claim_tokens": {
+    "en": [
+      "cctv",
+      "nvr",
+      "blind spots",
+      "retention < 30 days"
+    ],
+    "es": [
+      "cctv",
+      "nvr",
+      "videovigilancia",
+      "ángulos muertos",
+      "angulos muertos",
+      "retención inferior a treinta días",
+      "retencion inferior a treinta dias"
+    ]
+  },
+  "survey_indicator_tokens": {
+    "en": ["score", "survey", "self-assessment", "declared"],
+    "es": ["score", "cuestionario", "evaluacion", "autoevaluacion"]
+  },
+  "transcript_indicator_tokens": {
+    "en": ["transcript", "interview", "telemetry", "qualitative evidence"],
+    "es": ["transcripcion", "entrevista", "telemetria", "evidencia cualitativa"]
   }
 }
