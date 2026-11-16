@@ -433,6 +433,9 @@ class Chapter4Synthesizer:
                     or f"Business disruption exposure dependent on {full_title}."
                 ),
                 required_mitigation=f"Architectural modernization and automated resilience controls for {full_title}.",
+                tef_source=f"HISTORICAL_INCIDENT_BASELINE_TEF_ROW_{l_idx}",
+                vulnerability_source=f"CONTINUOUS_CONTROL_DEGRADATION_C_j_POW_1.35_ETA_{eta_ceiling:.2f}",
+                sle_source=f"FINANCIAL_DOWNTIME_HOURLY_RATE_{disruption_rate:.2f}_{currency_iso}_X_MTTR_{eff_mttr_hours:.1f}H",
                 is_full_card_rendered=True,
             )
             risk_scenarios.append(scenario)

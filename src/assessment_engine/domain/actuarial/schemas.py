@@ -198,6 +198,18 @@ class TechnicalRiskScenario(BaseModel):
     root_cause_mechanism: str = Field(..., min_length=20)
     business_impact_narrative: str = Field(..., min_length=20)
     required_mitigation: str = Field(..., min_length=20)
+    tef_source: str = Field(
+        default="HISTORICAL_INCIDENT_BASELINE",
+        description="Formal origin of the Threat Event Frequency parameter",
+    )
+    vulnerability_source: str = Field(
+        default="CONTINUOUS_CONTROL_DEGRADATION",
+        description="Mathematical derivation origin of the Vulnerability ratio",
+    )
+    sle_source: str = Field(
+        default="FINANCIAL_DOWNTIME_HOURLY_RATE",
+        description="Empirical or financial rate source for Single Loss Expectancy",
+    )
     is_full_card_rendered: bool = Field(
         default=True,
         description="True for Tier 1 and Tier 2 strategic risks; False for residual table rows.",
