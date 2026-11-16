@@ -7,6 +7,7 @@ KPI responses as MISSING_OR_INVALID to preserve mathematical and epistemic integ
 """
 
 from typing import Any, Dict, List
+import math
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ class MissingDataCircuitBreaker:
     ) -> List[Dict[str, Any]]:
         """Validates all expected KPIs from the tower definition against parsed responses.
 
-        If a KPI was not answered, has an empty value, or has an invalid/corrupt string
-        (such as a stray comma or non-numeric token), it explicitly tags it as
+        If a KPI was not answered, has an empty value, or has an invalid/corrupt token
+        (such as a boolean, stray comma, or non-numeric token), it explicitly tags it as
         MISSING_OR_INVALID with value=None, prohibiting downstream silent imputation.
         """
         inspected_answers = []
@@ -32,14 +33,23 @@ class MissingDataCircuitBreaker:
             qid = f"{kpi['kpi_id']}.PR1"
             raw_val = parsed_scores.get(qid)
 
-            if raw_val is not None and isinstance(raw_val, (int, float)) and 1.0 <= float(raw_val) <= 5.0:
+            # Strict numeric guard: disallow booleans (subclass of int in Python) and NaNs
+            is_valid_numeric = (
+                raw_val is not None
+                and not isinstance(raw_val, bool)
+                and isinstance(raw_val, (int, float))
+                and not math.isnan(float(raw_val))
+                and 1.0 <= float(raw_val) <= 5.0
+            )
+
+            if is_valid_numeric:
                 val = float(raw_val)
                 evidence_status = "VALIDATED"
-                validation_state = "Exploratoria"
+                validation_state = "EXPLORATORY"
             else:
                 val = None
                 evidence_status = "MISSING_OR_INVALID"
-                validation_state = "NO_EVIDENCIADO"
+                validation_state = "UNOBSERVED"
                 logger.warning(
                     "[MissingDataCircuitBreaker] KPI %s (%s) has no valid 1-5 score in responses for tower %s. "
                     "Explicitly logging MISSING_OR_INVALID without silent imputation.",

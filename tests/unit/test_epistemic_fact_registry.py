@@ -21,11 +21,11 @@ from assessment_engine.domain.ingestion.epistemic_fact_registry import (
 def test_actuarial_fact_tuple_deterministic_provenance():
     """Verify deterministic SHA-256 ID generation for ActuarialFactTuple."""
     aft = ActuarialFactTuple.create(
-        canonical_subject="SYS_SIMPLIVITY_NODE_01",
+        canonical_subject="SYS_COMPUTE_HOST_01",
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="este lleva activo 613 días continuos sin reinicio",
+        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
         value_scalar=613,
         unit_iso="DAYS",
@@ -35,11 +35,11 @@ def test_actuarial_fact_tuple_deterministic_provenance():
 
     # Re-creating with exact same span produces exact same hash
     aft2 = ActuarialFactTuple.create(
-        canonical_subject="SYS_SIMPLIVITY_NODE_01",
+        canonical_subject="SYS_COMPUTE_HOST_01",
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="este lleva activo 613 días continuos sin reinicio",
+        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
         value_scalar=613,
         unit_iso="DAYS",
@@ -52,11 +52,11 @@ def test_perspective_lease_allocation_prevents_narrative_duplication():
     registry = EpistemicFactRegistry()
 
     aft = ActuarialFactTuple.create(
-        canonical_subject="SYS_SIMPLIVITY_NODE_01",
+        canonical_subject="SYS_COMPUTE_HOST_01",
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="este lleva activo 613 días continuos sin reinicio",
+        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
         value_scalar=613,
         unit_iso="DAYS",
@@ -64,12 +64,12 @@ def test_perspective_lease_allocation_prevents_narrative_duplication():
             DomainPerspective(
                 domain_id="T2",
                 lease_type=LeaseType.PRIMARY_OWNER,
-                semantic_framing="Plataforma de Cómputo: Estabilidad operativa de hipervisores locales",
+                semantic_framing="Compute Platform: Continuous operational stability of hypervisor cluster",
             ),
             DomainPerspective(
                 domain_id="T6",
                 lease_type=LeaseType.SECONDARY_CONSUMER,
-                semantic_framing="Ciberseguridad: Exposición a vulnerabilidades no parcheadas por ausencia de reinicio",
+                semantic_framing="Cybersecurity: Exposure to unpatched kernel CVEs due to delayed reboot cycle",
             ),
         ],
     )
@@ -93,7 +93,7 @@ def test_perspective_lease_allocation_prevents_narrative_duplication():
     assert lease3 is not None
     assert lease3.lease_type == LeaseType.SECONDARY_CONSUMER
 
-    # 4. T4 (Unauthorized domain) attempts to acquire lease -> FAILS (Stops NetApp leakage!)
+    # 4. T4 (Unauthorized domain) attempts to acquire lease -> FAILS (Stops storage cross-contamination)
     success4, msg4, lease4 = registry.acquire_lease(fact_id, domain_id="T4", section_id="sec_3_2_storage")
     assert success4 is False
     assert "possesses no lease authority" in msg4
@@ -101,7 +101,7 @@ def test_perspective_lease_allocation_prevents_narrative_duplication():
 
 def test_polarity_aware_claim_gating_permits_negative_benchmarks():
     """Verify that absent controls can be cited under NEGATIVE_GAP or REMEDIATION_TARGET polarities."""
-    accredited_corpus_entities = {"vmware vsphere", "hpe simplivity", "zabbix", "huawei"}
+    accredited_corpus_entities = {"hypervisor platform", "converged nodes", "monitoring agent", "core switch"}
 
     # 1. Assertive claim of uninstalled technology (VESDA) -> REJECTED
     allowed1, reason1 = EpistemicFactRegistry.evaluate_claim_polarity(
@@ -112,16 +112,15 @@ def test_polarity_aware_claim_gating_permits_negative_benchmarks():
     assert allowed1 is False
     assert "Polarity Violation" in reason1
 
-    # 2. Assertive claim of accredited technology (VMware) -> PERMITTED
+    # 2. Assertive claim of accredited technology -> PERMITTED
     allowed2, reason2 = EpistemicFactRegistry.evaluate_claim_polarity(
-        entity_token="VMware vSphere",
+        entity_token="hypervisor platform",
         polarity=ClaimPolarity.ASSERTIVE,
         accredited_entities=accredited_corpus_entities,
     )
     assert allowed2 is True
 
     # 3. Negative gap claim citing absent technology (VESDA) -> PERMITTED!
-    # (Solves the Absence of Evidence vs Evidence of Absence fallacy)
     allowed3, reason3 = EpistemicFactRegistry.evaluate_claim_polarity(
         entity_token="VESDA",
         polarity=ClaimPolarity.NEGATIVE_GAP,

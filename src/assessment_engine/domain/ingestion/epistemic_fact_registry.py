@@ -7,11 +7,13 @@ Implements the formal graph-backed epistemic control plane specified by the Tier
    causation while strictly barring narrative repetition.
 3. Implements Polarity-Aware Claim Gating, solving the "Absence of Evidence vs Evidence of Absence" fallacy
    by permitting absent entities (e.g. VESDA, BitLocker) under NEGATIVE_GAP or REMEDIATION_TARGET polarities.
+4. Enforces full concurrency thread-safety via reentrant locking (threading.RLock).
 """
 
 from __future__ import annotations
 
 import hashlib
+import threading
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from pydantic import BaseModel, Field, ConfigDict
@@ -61,10 +63,10 @@ class DomainPerspective(BaseModel):
 
 class ActuarialFactTuple(BaseModel):
     """Immutable, typed actuarial fact with cryptographic provenance."""
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", frozen=True)
 
     fact_id: str = Field(..., description="Deterministic SHA-256 hash of subject + predicate + span")
-    canonical_subject: str = Field(..., description="Ontology entity ID, e.g., 'SYS_SIMPLIVITY_NODE_01'")
+    canonical_subject: str = Field(..., description="Ontology entity ID, e.g., 'SYS_COMPUTE_HOST_01'")
     predicate: str = Field(..., description="Ontology relationship verb, e.g., 'HAS_CONTINUOUS_UPTIME'")
     value_scalar: Optional[Union[float, int, bool]] = Field(default=None, description="Canonical scalar value")
     value_text: Optional[str] = Field(default=None, description="Descriptive textual value")
@@ -74,7 +76,7 @@ class ActuarialFactTuple(BaseModel):
     source_document_id: str = Field(..., description="Identifier of source document or audio transcript")
     source_char_span: Tuple[int, int] = Field(..., description="Character offset span (start, end) in source text")
     verbatim_quote: str = Field(..., description="Exact raw text snippet from evidence corpus")
-    domain_leases: List[DomainPerspective] = Field(default_factory=list, description="Assigned domain perspective leases")
+    domain_leases: Tuple[DomainPerspective, ...] = Field(default_factory=tuple, description="Assigned domain perspective leases")
 
     @classmethod
     def create(
@@ -106,7 +108,7 @@ class ActuarialFactTuple(BaseModel):
             source_document_id=source_document_id,
             source_char_span=source_char_span,
             verbatim_quote=verbatim_quote,
-            domain_leases=domain_leases or [],
+            domain_leases=tuple(domain_leases or []),
         )
 
 
@@ -114,33 +116,38 @@ class EpistemicFactRegistry:
     """Thread-safe graph-backed repository for Actuarial Fact Tuples and perspective lease management."""
 
     def __init__(self) -> None:
+        self._lock = threading.RLock()
         self._facts: Dict[str, ActuarialFactTuple] = {}
         self._subject_index: Dict[str, Set[str]] = {}
         self._domain_index: Dict[str, Set[str]] = {}
 
     def register_fact(self, fact: ActuarialFactTuple) -> str:
-        """Registers an immutable fact tuple and updates search indices."""
-        self._facts[fact.fact_id] = fact
+        """Registers an immutable fact tuple and updates search indices in a thread-safe manner."""
+        with self._lock:
+            self._facts[fact.fact_id] = fact
 
-        if fact.canonical_subject not in self._subject_index:
-            self._subject_index[fact.canonical_subject] = set()
-        self._subject_index[fact.canonical_subject].add(fact.fact_id)
+            if fact.canonical_subject not in self._subject_index:
+                self._subject_index[fact.canonical_subject] = set()
+            self._subject_index[fact.canonical_subject].add(fact.fact_id)
 
-        for lease in fact.domain_leases:
-            if lease.domain_id not in self._domain_index:
-                self._domain_index[lease.domain_id] = set()
-            self._domain_index[lease.domain_id].add(fact.fact_id)
+            for lease in fact.domain_leases:
+                d_id = lease.domain_id.upper()
+                if d_id not in self._domain_index:
+                    self._domain_index[d_id] = set()
+                self._domain_index[d_id].add(fact.fact_id)
 
-        return fact.fact_id
+            return fact.fact_id
 
     def get_fact(self, fact_id: str) -> Optional[ActuarialFactTuple]:
         """Retrieves a fact by its canonical AFT ID."""
-        return self._facts.get(fact_id)
+        with self._lock:
+            return self._facts.get(fact_id)
 
     def get_facts_for_domain(self, domain_id: str) -> List[ActuarialFactTuple]:
         """Returns all facts accessible to the specified domain tower."""
-        fact_ids = self._domain_index.get(domain_id.upper(), set())
-        return [self._facts[fid] for fid in sorted(fact_ids) if fid in self._facts]
+        with self._lock:
+            fact_ids = self._domain_index.get(domain_id.upper(), set())
+            return [self._facts[fid] for fid in sorted(fact_ids) if fid in self._facts]
 
     def acquire_lease(
         self,
@@ -154,24 +161,25 @@ class EpistemicFactRegistry:
         - PRIMARY_OWNER can only redeem the lease ONCE. Subsequent attempts return already consumed.
         - SECONDARY_CONSUMER can cite the fact as a causal premise, but cannot claim primary ownership.
         """
-        fact = self._facts.get(fact_id)
-        if not fact:
-            return False, f"Fact '{fact_id}' not found in registry.", None
+        with self._lock:
+            fact = self._facts.get(fact_id)
+            if not fact:
+                return False, f"Fact '{fact_id}' not found in registry.", None
 
-        for lease in fact.domain_leases:
-            if lease.domain_id == domain_id.upper():
-                if lease.status == LeaseStatus.CONSUMED:
-                    return (
-                        False,
-                        f"Lease for domain '{domain_id}' on fact '{fact_id}' already consumed in '{lease.consumed_in_section}'. Restatement prohibited.",
-                        lease,
-                    )
-                # Redeem lease
-                lease.status = LeaseStatus.CONSUMED
-                lease.consumed_in_section = section_id
-                return True, "Lease acquired successfully.", lease
+            for lease in fact.domain_leases:
+                if lease.domain_id == domain_id.upper():
+                    if lease.status == LeaseStatus.CONSUMED:
+                        return (
+                            False,
+                            f"Lease for domain '{domain_id}' on fact '{fact_id}' already consumed in '{lease.consumed_in_section}'. Restatement prohibited.",
+                            lease,
+                        )
+                    # Redeem lease
+                    lease.status = LeaseStatus.CONSUMED
+                    lease.consumed_in_section = section_id
+                    return True, "Lease acquired successfully.", lease
 
-        return False, f"Domain '{domain_id}' possesses no lease authority over fact '{fact_id}'.", None
+            return False, f"Domain '{domain_id}' possesses no lease authority over fact '{fact_id}'.", None
 
     @staticmethod
     def evaluate_claim_polarity(
@@ -198,7 +206,6 @@ class EpistemicFactRegistry:
                 )
             return True, "Assertive claim verified against accredited evidence."
 
-        # Non-assertive polarities (Gaps, Benchmarks, Remediation Targets) are permitted
         return (
             True,
             f"Permitted non-assertive citation under polarity '{polarity.value}'. "
