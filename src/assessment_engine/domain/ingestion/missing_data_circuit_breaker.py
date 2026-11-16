@@ -21,6 +21,9 @@ class MissingDataCircuitBreaker:
         tower_id: str,
         expected_kpis: List[Dict[str, Any]],
         parsed_scores: Dict[str, float],
+        min_score: float = 1.0,
+        max_score: float = 5.0,
+        question_suffix: str = "PR1",
     ) -> List[Dict[str, Any]]:
         """Validates all expected KPIs from the tower definition against parsed responses.
 
@@ -30,17 +33,17 @@ class MissingDataCircuitBreaker:
         """
         inspected_answers = []
         for kpi in expected_kpis:
-            qid = f"{kpi['kpi_id']}.PR1"
+            qid = f"{kpi['kpi_id']}.{question_suffix}" if question_suffix else str(kpi["kpi_id"])
             raw_val = parsed_scores.get(qid)
 
-            # Strict numeric guard: disallow booleans (subclass of int in Python) and NaNs
-            is_valid_numeric = (
-                raw_val is not None
-                and not isinstance(raw_val, bool)
-                and isinstance(raw_val, (int, float))
-                and not math.isnan(float(raw_val))
-                and 1.0 <= float(raw_val) <= 5.0
-            )
+            # Strict numeric guard: disallow booleans (subclass of int in Python), NaNs, and Infinities
+            is_valid_numeric = False
+            if raw_val is not None and not isinstance(raw_val, bool) and isinstance(raw_val, (int, float)):
+                try:
+                    f_val = float(raw_val)
+                    is_valid_numeric = math.isfinite(f_val) and (min_score <= f_val <= max_score)
+                except OverflowError:
+                    is_valid_numeric = False
 
             if is_valid_numeric:
                 val = float(raw_val)

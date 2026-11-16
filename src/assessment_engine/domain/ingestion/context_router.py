@@ -34,7 +34,7 @@ class EpistemicContextRouter:
             "dns", "dhcp", "firewall", "bgp", "vlan", "bandwidth", "telemetry link", "dci",
         },
         "T4": {
-            "storage", "disk", "san", "nas", "storage array", "metrocluster", "iops",
+            "storage", "disk", "san", "nas", "storage array", "synchronous replication", "iops",
             "throughput", "tiering", "nvme", "flash", "block storage", "object storage",
             "volume", "snapshot", "nfs", "iscsi", "s3", "data tier",
         },

@@ -16,7 +16,7 @@ import hashlib
 import threading
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -60,6 +60,11 @@ class DomainPerspective(BaseModel):
     status: LeaseStatus = Field(default=LeaseStatus.AVAILABLE, description="Lease consumption state")
     consumed_in_section: Optional[str] = Field(default=None, description="Section ID where lease was redeemed")
 
+    @field_validator("domain_id")
+    @classmethod
+    def _normalize_domain_id(cls, v: str) -> str:
+        return v.strip().upper()
+
 
 class ActuarialFactTuple(BaseModel):
     """Immutable, typed actuarial fact with cryptographic provenance."""
@@ -68,7 +73,7 @@ class ActuarialFactTuple(BaseModel):
     fact_id: str = Field(..., description="Deterministic SHA-256 hash of subject + predicate + span")
     canonical_subject: str = Field(..., description="Ontology entity ID, e.g., 'SYS_COMPUTE_HOST_01'")
     predicate: str = Field(..., description="Ontology relationship verb, e.g., 'HAS_CONTINUOUS_UPTIME'")
-    value_scalar: Optional[Union[float, int, bool]] = Field(default=None, description="Canonical scalar value")
+    value_scalar: Optional[Union[bool, int, float]] = Field(default=None, description="Canonical scalar value")
     value_text: Optional[str] = Field(default=None, description="Descriptive textual value")
     unit_iso: Optional[str] = Field(default=None, description="Standardized ISO unit, e.g., 'DAYS', 'HOURS', 'EUR'")
     modality: EpistemicModality = Field(..., description="Verification degree")
@@ -77,6 +82,15 @@ class ActuarialFactTuple(BaseModel):
     source_char_span: Tuple[int, int] = Field(..., description="Character offset span (start, end) in source text")
     verbatim_quote: str = Field(..., description="Exact raw text snippet from evidence corpus")
     domain_leases: Tuple[DomainPerspective, ...] = Field(default_factory=tuple, description="Assigned domain perspective leases")
+
+    @model_validator(mode="after")
+    def _enforce_unique_domain_leases(self) -> "ActuarialFactTuple":
+        seen: Set[str] = set()
+        for lease in self.domain_leases:
+            if lease.domain_id in seen:
+                raise ValueError(f"Duplicate DomainPerspective for domain '{lease.domain_id}' in fact '{self.fact_id}'.")
+            seen.add(lease.domain_id)
+        return self
 
     @classmethod
     def create(
@@ -88,7 +102,7 @@ class ActuarialFactTuple(BaseModel):
         verbatim_quote: str,
         modality: EpistemicModality,
         confidence_score: float = 1.0,
-        value_scalar: Optional[Union[float, int, bool]] = None,
+        value_scalar: Optional[Union[bool, int, float]] = None,
         value_text: Optional[str] = None,
         unit_iso: Optional[str] = None,
         domain_leases: Optional[List[DomainPerspective]] = None,
@@ -166,18 +180,19 @@ class EpistemicFactRegistry:
             if not fact:
                 return False, f"Fact '{fact_id}' not found in registry.", None
 
+            target_domain = domain_id.strip().upper()
             for lease in fact.domain_leases:
-                if lease.domain_id == domain_id.upper():
+                if lease.domain_id == target_domain:
                     if lease.status == LeaseStatus.CONSUMED:
                         return (
                             False,
                             f"Lease for domain '{domain_id}' on fact '{fact_id}' already consumed in '{lease.consumed_in_section}'. Restatement prohibited.",
-                            lease,
+                            lease.model_copy(deep=True),
                         )
                     # Redeem lease
                     lease.status = LeaseStatus.CONSUMED
                     lease.consumed_in_section = section_id
-                    return True, "Lease acquired successfully.", lease
+                    return True, "Lease acquired successfully.", lease.model_copy(deep=True)
 
             return False, f"Domain '{domain_id}' possesses no lease authority over fact '{fact_id}'.", None
 

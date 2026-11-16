@@ -25,9 +25,9 @@ def test_actuarial_fact_tuple_deterministic_provenance():
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
+        verbatim_quote="this host has been continuously operating for 450 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
-        value_scalar=613,
+        value_scalar=450,
         unit_iso="DAYS",
     )
     assert aft.fact_id.startswith("AFT-")
@@ -39,9 +39,9 @@ def test_actuarial_fact_tuple_deterministic_provenance():
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
+        verbatim_quote="this host has been continuously operating for 450 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
-        value_scalar=613,
+        value_scalar=450,
         unit_iso="DAYS",
     )
     assert aft.fact_id == aft2.fact_id
@@ -56,9 +56,9 @@ def test_perspective_lease_allocation_prevents_narrative_duplication():
         predicate="HAS_CONTINUOUS_UPTIME",
         source_document_id="transcript_20261014.docx",
         source_char_span=(12450, 12580),
-        verbatim_quote="this host has been continuously operating for 613 days without a reboot",
+        verbatim_quote="this host has been continuously operating for 450 days without a reboot",
         modality=EpistemicModality.MANAGEMENT_ASSERTION,
-        value_scalar=613,
+        value_scalar=450,
         unit_iso="DAYS",
         domain_leases=[
             DomainPerspective(

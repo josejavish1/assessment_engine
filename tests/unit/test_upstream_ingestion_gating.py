@@ -55,7 +55,7 @@ def test_epistemic_context_router_isolates_tower_domains():
     raw_fragments = [
         "The primary data center facilities utilize two redundant chillers and diesel backup generators.",
         "Cloud spend in public cloud and operating budget constraints directly impact the annual IT strategy.",
-        "The core network backbone leverages redundant switches and a point to point dark fiber 10 Gbps interconnect.",
+        "The core network backbone leverages redundant switches and a high-capacity dark fiber interconnect.",
         "Industrial SCADA telemetry controllers and shop floor weighbridge systems feed the legacy ERP database.",
     ]
 
