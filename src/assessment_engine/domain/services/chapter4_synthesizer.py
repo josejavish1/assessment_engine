@@ -448,19 +448,36 @@ class Chapter4Synthesizer:
             # Tier 2 represents chronic operational friction (TEF 4: 2.0 - 10.0/yr)
             l_idx = 3 if is_tier1 else 4
             tef_val = TEF_ROW_MIDPOINTS.get(l_idx, 1.25 if is_tier1 else 2.40)
-            
-            # Deterministic Vulnerability Sigmoid Curve
-            vuln_score_base = float(c_data.get("vuln_ratio", 3.0)) # Mapping score to vuln
-            # Vuln(S) = 1 / (1 + exp(1.65 * (S - 3.0)))
-            vuln_ratio = 1.0 / (1.0 + math.exp(1.65 * (vuln_score_base - 3.0))) if vuln_score_base > 1.0 else (0.80 if is_tier1 else 0.95)
-            vuln_ratio = max(0.01, min(0.99, vuln_ratio))
-            
-            # Beta-PERT Monte Carlo Convolution
+
+            # Continuous Non-Linear Control Vulnerability Derivation (Axiom of Continuous Actuarial Susceptibility)
+            # Control Capacity: C_j = (M_i / 5.0)^1.35 * eta (with eta=0.90 max theoretical ceiling)
+            control_score_raw = _safe_float(
+                c_data.get("_pillar_score") or c_data.get("control_score") or cmmi_maturity,
+                default=cmmi_maturity,
+            )
+            # Check for provisional / uncorroborated contradiction state
+            is_provisional = bool(c_data.get("is_provisional") or "contradict" in str(c_data.get("title", "")).lower())
+            if is_provisional:
+                # Bayesian Epistemic Shrinkage: shrink toward conservative prior (1.50)
+                omega = 0.25
+                effective_control_score = omega * control_score_raw + (1.0 - omega) * 1.50
+            else:
+                effective_control_score = control_score_raw
+
+            norm_score = max(1.0, min(5.0, effective_control_score)) / 5.0
+            eta_ceiling = 0.90 if is_tier1 else 0.85
+            mitigation_capacity = (norm_score ** 1.35) * eta_ceiling
+            vuln_ratio = round(max(0.05, min(0.95, 1.0 - mitigation_capacity)), 2)
+
+            # Beta-PERT Monte Carlo Convolution with Precision Kappa
             tef_min, tef_max = max(0.01, tef_val * 0.5), tef_val * 1.5
-            # Beta-PERT approximation: alpha = 1 + 4*((mode-min)/(max-min)), beta = 1 + 4*((max-mode)/(max-min))
-            # For simplicity in Numpy, we can sample triangular and multiply by a Beta-sampled vulnerability
             tef_samples = rng.triangular(tef_min, tef_val, tef_max, size=N_TRIALS)
-            vuln_samples = rng.beta(vuln_ratio * 10, (1 - vuln_ratio) * 10, size=N_TRIALS)
+            
+            kappa = 20.0 if is_provisional else 45.0
+            beta_alpha = max(0.5, vuln_ratio * kappa)
+            beta_beta = max(0.5, (1.0 - vuln_ratio) * kappa)
+            vuln_samples = rng.beta(beta_alpha, beta_beta, size=N_TRIALS)
+            
             lef_samples = tef_samples * vuln_samples
             lef_val = float(np.median(lef_samples))
             
