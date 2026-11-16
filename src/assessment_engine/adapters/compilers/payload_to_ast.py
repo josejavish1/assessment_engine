@@ -2456,8 +2456,7 @@ class PayloadToASTBridge:
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
 
             # Map score to official CMMI v2.0 international band label and canonical color via GovernanceScaleEngine SSOT
-            resolved_p = scale_engine.resolve_maturity(p_score, locale=str(meta_lang), translator=t)
-            p_status = resolved_p.label
+            is_prov = bool(p.get("is_provisional") or (p.get("declared_score") and p.get("perception_gap") and float(p.get("perception_gap")) > 0.05))
             status_colors = {
                 5: "D9F2D9",
                 4: "E2F0D9",
@@ -2465,7 +2464,19 @@ class PayloadToASTBridge:
                 2: "FCE4D6",
                 1: "F2D9D9",
             }
-            p_bg_color = status_colors.get(resolved_p.level, "FFFFFF")
+
+            if is_prov and p.get("declared_score") is not None:
+                dec_val = float(p["declared_score"])
+                score_formatted = f"{format_number(dec_val, locale=meta_lang, decimals=2)}*"
+                resolved_p = scale_engine.resolve_maturity(dec_val, locale=str(meta_lang), translator=t)
+                p_status = f"{resolved_p.label}*"
+                p_bg_color = "FFF3CD"
+            else:
+                p_score = float(p.get("score", 3.0))
+                score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
+                resolved_p = scale_engine.resolve_maturity(p_score, locale=str(meta_lang), translator=t)
+                p_status = resolved_p.label
+                p_bg_color = status_colors.get(resolved_p.level, "FFFFFF")
 
             health_rows.append(
                 TableRowNode(
@@ -2487,7 +2498,7 @@ class PayloadToASTBridge:
             calibrated = p.get("calibrated_score") or p.get("score")
             gap = p.get("perception_gap")
             reason = p.get("calibration_reason") or p.get("calibration_rationale") or ""
-            if declared is not None and calibrated is not None and gap and float(gap) > 0.05:
+            if declared is not None and (p.get("is_provisional") or (gap and float(gap) > 0.05)):
                 raw_pid, raw_pname = extract_pillar_identifiers(p)
                 p_label = resolver.resolve_pillar_by_any_reference(
                     raw_pid or raw_pname,
@@ -2498,20 +2509,21 @@ class PayloadToASTBridge:
                 if meta_lang.startswith("es"):
                     note = (
                         f"**Fuentes Contradictorias / Pendiente de Validación Formal ({p_label}):** La autoevaluación "
-                        f"preliminar (**{float(declared):.2f}/5.00**) y la evidencia cualitativa disponible en las sesiones "
-                        f"de contraste no permiten determinar de forma concluyente el grado de explotación productiva de esta capacidad. "
-                        f"Conforme al principio de rigor epistemológico, se mantiene la calificación preventiva de **{float(calibrated):.2f}/5.00** "
-                        f"(brecha de percepción de -{float(gap):.2f} puntos) como punto pendiente de validación técnica en campo, "
-                        f"sin prejuzgar la arquitectura subyacente. *Detalle metodológico:* {reason}"
+                        f"preliminar refleja una puntuación declarada de **{float(declared):.2f}/5.00** motivada por la incorporación "
+                        f"de talento especializado y la hoja de ruta de adopción. La evidencia cualitativa disponible en las sesiones "
+                        f"de contraste no permite determinar de forma concluyente el alcance de la explotación productiva frente a "
+                        f"entornos de prueba. Conforme al framework metodológico, se mantiene la calificación declarada de **{float(declared):.2f}*/5.00** "
+                        f"en estado **PROVISIONAL / PENDIENTE DE VALIDACIÓN EN CAMPO**, señalando esta divergencia documental como punto "
+                        f"prioritario de contraste pericial directo sin imputar una degradación artificial a 1,00. *Detalle metodológico:* {reason}"
                     )
                 else:
                     note = (
-                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** The preliminary self-assessed "
-                        f"score (**{float(declared):.2f}/5.00**) and qualitative evidence from technical contrast sessions "
-                        f"do not conclusively substantiate the extent of production deployment for this capability. "
-                        f"In accordance with epistemic rigor, a precautionary baseline of **{float(calibrated):.2f}/5.00** "
-                        f"(perception gap of -{float(gap):.2f} points) is maintained pending formal field verification, "
-                        f"without inferring unverified architectures. *Methodological rationale:* {reason}"
+                        f"**Contradictory Sources / Pending Formal Validation ({p_label}):** Preliminary self-assessment "
+                        f"reflected a declared score of **{float(declared):.2f}/5.00** driven by specialized talent acquisition "
+                        f"and adoption roadmap. Qualitative evidence from contrast sessions does not conclusively substantiate "
+                        f"the extent of production deployment versus test environments. In accordance with the methodological framework, "
+                        f"the declared baseline of **{float(declared):.2f}*/5.00** is retained in **PROVISIONAL / PENDING FIELD VALIDATION** "
+                        f"status as a priority item for direct technical verification, avoiding artificial down-scoring to 1.00. *Methodological rationale:* {reason}"
                     )
                 calibration_notes.append(note)
 
