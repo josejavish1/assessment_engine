@@ -16,95 +16,96 @@ verification_mode: editorial
 ---
 # AGENTS
 
-Este fichero es la **puerta de entrada corta para cualquier agente de IA** que trabaje en `assessment-engine`.
+This document serves as the **short operational entry gate for any AI agent** operating on `assessment-engine`.
 
-## Lee en este orden
+## Reading Order
 
 1. [`README.md`](README.md)
 2. [`docs/README.md`](docs/README.md)
 3. [`docs/ai/documentation-governance.md`](docs/ai/documentation-governance.md)
-4. [`docs/operations/agentic-development-workflow.md`](docs/operations/agentic-development-workflow.md) si vas a trabajar con cambios asistidos por IA
-5. [`docs/operations/engineering-quality-gates.md`](docs/operations/engineering-quality-gates.md) si vas a tocar código o tests
-6. el documento canónico más cercano al cambio que vayas a hacer
+4. [`docs/operations/agentic-development-workflow.md`](docs/operations/agentic-development-workflow.md) when executing AI-assisted modifications
+5. [`docs/operations/engineering-quality-gates.md`](docs/operations/engineering-quality-gates.md) when writing or modifying code or tests
+6. The canonical document closest to the target component
 
-## Reglas mínimas
+## Core Invariants
 
-- no trates este archivo como fuente de verdad del proyecto;
-- no introduzcas aquí arquitectura, contratos ni operación detallada;
-- usa el código, tests, schemas y workflows como verdad primaria;
-- no implementes sobre una instrucción vaga: explicita problema, alcance, fuente de verdad e invariantes;
-- materializa reglas importantes en código, tests, schemas o workflows, no solo en prompts;
-- actualiza `docs/documentation-map.yaml` si cambia el estado o el destino de un documento;
-- si una afirmación no puede verificarse, márcala como `Needs Review` en vez de inventarla;
-- **GOLDEN PATHS (Estricto):** Nunca crees un archivo desde cero para un nuevo servicio, worker o endpoint. DEBES usar las plantillas ubicadas en `templates/golden_paths/` como base y rellenar únicamente la lógica de negocio. No alteres la estructura de logging ni las validaciones base de la plantilla. Si el archivo que estás creando es un simple modelo Pydantic, un DTO o un helper puro sin estado, puedes usar un archivo en blanco pero DEBES incluir el comentario `# golden-path: ignore` en la cabecera para que el Validador de Arquitectura lo permita.
+- Do not treat this file as a standalone source of truth for repository architecture.
+- Do not introduce detailed architecture, contracts, or operations here; store them in `docs/`.
+- Rely on verified code, test suites, schemas, and CI workflows as primary truth.
+- Never act upon ambiguous instructions: make the problem, scope, source of truth, and invariants explicit first.
+- Materialize critical rules into executable code, automated tests, schemas, or CI gates—never solely in prompts.
+- Keep `docs/documentation-map.yaml` synchronized whenever a document's status or path changes.
+- If a technical statement cannot be verified empirically, mark it as `Needs Review` rather than hallucinating details.
+- **GOLDEN PATHS (Strict):** Never create files from scratch for a new service, worker, or endpoint. You MUST use base templates located in `templates/golden_paths/` and implement solely the business logic. Preserve baseline logging structure and validation layers. For stateless Pydantic models, DTOs, or pure helpers, you may start from a blank file provided `# golden-path: ignore` is present in the header.
 
-## Leyes de Ingeniería No Negociables (Zero-Tolerance Rules)
+## Sovereign Non-Negotiable Engineering Laws (Zero-Tolerance Rules)
 
-Todo agente (Gemini, ChatGPT, Cursor o Copilot) debe someterse a estas leyes soberanas del repositorio:
+Every agent (Gemini, ChatGPT, Claude, Cursor, Copilot) must submit unconditionally to these sovereign laws:
 
-1. **La Tiranía del Protocolo (Anti-Complacencia):** La calidad técnica es superior a la velocidad. Queda estrictamente prohibido forzar pases de CI/CD, ignorar advertencias, deshabilitar pruebas automáticas o forzar merges eludiendo las barreras de protección de rama.
-2. **Cero Parches (Zero Workarounds):** Ante cualquier fallo o error en tiempo de ejecución, de tipado o de linter, es obligatorio investigar la causa raíz y aplicar una solución definitiva y estructuralmente correcta. Nunca silencies warnings ni captures excepciones de manera genérica sin resolver la causa.
-3. **Arquitectura de Entropía Cero (Zero-Entropy):** No se permite dejar archivos comprimidos (`.zip`), duplicados de respaldo, scripts de prueba sueltos en la raíz ni directorios vacíos. Git es la única máquina del tiempo. Toda la base de código debe ser limpia y simétrica.
-4. **Desacoplamiento Lingüístico e Idioma Único (100% Technical English):** Con total independencia del idioma que use el desarrollador en el chat (aunque dialogue o pregunte en español), **ABSOLUTAMENTE TODO** el código fuente, comentarios, firmas, docstrings, mensajes de log, excepciones, prompts de agentes, variables, tests y mensajes de commit deben redactarse exclusivamente en **Technical English**. Queda terminantemente prohibido hardcodear cadenas en español o `locale="es"` en el código ejecutable de Python o TypeScript. Todo texto multilingüe debe residir exclusivamente en la capa declarativa (`engine_config/locales.json`). La suite de calidad `test_no_spanish_characters_in_python_code` y `test_no_hardcoded_locale_es_in_src` bloquea determinísticamente cualquier regresión.
-5. **Verificación Empírica Obligatoria:** Nunca asumas el éxito de un cambio basándote únicamente en que el compilador no arrojó errores. Es obligatorio ejecutar la suite de pruebas unitarias (`pytest`) y comprobar empíricamente los resultados de ejecución antes de dar la tarea por concluida.
-6. **Inmunidad de la Capa de Presentación (Zero Presentation-Layer Patching):** Queda terminantemente prohibido calcular, recalcular, modificar o parchear métricas, lógicas de negocio o cotas matemáticas en los compiladores de presentación (`payload_to_ast.py` / `docx_compiler.py`). La capa de vista es un consumidor pasivo que solo da formato visual. Si un número o texto está mal en el documento final, el fallo reside obligatoriamente en el motor de cálculo upstream (`calculators.py`, `fair_risk.py`, `continuous_risk_allocator.py`).
-7. **Auditoría Obligatoria de Linaje de Datos (Data Lineage Tracing):** Ante cualquier anomalía en un valor o texto, el agente tiene la obligación de rastrear el linaje de la variable desde su origen (input) hasta el renderizador final, verificando qué línea exacta y qué servicio muta el estado. Prohibido actuar sobre el síntoma sin auditar el flujo de datos completo.
-8. **Cero Tolerancia a Atajos Heurísticos y Teatro Estocástico:** El motor actuarial probabilístico (Cópula Bayesiana / Monte Carlo) es el ÚNICO Single Source of Truth (SSOT) autorizado para escribir en el payload. Queda prohibido mantener atajos heurísticos, multiplicadores fijos o códigos duplicados que anulen o puentee la simulación estocástica real. Todo código muerto o puenteo condicional (`if payload.get(...) is None`) debe ser eliminado físicamente.
+1. **Protocol Tyranny (Anti-Complacency):** Technical and architectural integrity supersedes delivery speed. Never force CI/CD pipelines to pass, suppress warnings, disable automated tests, or execute administrative merges to bypass branch protections.
+2. **Zero Workarounds:** For any runtime, typing, or linting failure, investigate and resolve the exact root cause. Never silence warnings with generic exception handlers or bypasses.
+3. **Zero-Entropy Architecture:** Compressed archives (`.zip`), temporary backup folders (`_archive`, `old`), and loose test scripts in the root directory are strictly prohibited. Git is the sole time machine. Keep the entire codebase clean and symmetric.
+4. **Language Decoupling (100% Technical English):** Regardless of the language used by the human operator in conversational chat (even when discussing in Spanish), **ALL** source code, comments, signatures, docstrings, log messages, exception messages, agent prompts, variable names, automated tests, and git commit messages MUST be written strictly in **Technical English**. Hardcoded Spanish literals or `locale="es"` defaults in Python or TypeScript source code are strictly prohibited. Multilingual text resides exclusively in declarative catalogs (`engine_config/locales.json`). The test suite (`test_no_spanish_characters_in_python_code` and `test_no_hardcoded_locale_es_in_src`) deterministically enforces this rule.
+5. **Mandatory Empirical Verification:** Never assume changes succeed based solely on the absence of compiler errors. You MUST run the full automated test suite (`pytest`) and verify execution artifacts before concluding any task.
+6. **Presentation-Layer Immunity (Zero Presentation-Layer Patching):** Never calculate, recalculate, adjust, or patch business metrics or mathematical bounds in presentation compilers (`payload_to_ast.py` / `docx_compiler.py`). The presentation layer is a passive visual consumer. If a metric is inaccurate in a deliverable, the defect resides upstream in calculation engines (`calculators.py`, `fair_risk.py`, `continuous_risk_allocator.py`).
+7. **Mandatory Data Lineage Audit:** When identifying anomalies in values or text, trace complete variable lineage from input ingestion through each transformation step before proposing a code modification.
+8. **Zero Stochastic Theater:** The probabilistic actuarial model (Bayesian Copula / Monte Carlo) is the sole Single Source of Truth (SSOT) authorized to compute risks and loss bounds. Hardcoded heuristic fallbacks or conditional bypasses (`if payload.get(...) is None`) that discard simulation data are prohibited.
+9. **Behavioral Drift Sentinel (Canary Protocol):** To detect attention dilution and context rot in extended sessions, autonomous agents MUST prepend every response with the deterministic sentinel: `[CANARY: V4 | MONISM: SSOT | LOCALE: EN]`. Omission of this tag signals context degradation, requiring immediate session re-initialization.
 
-## Dónde escribir
+## Where to Write
 
-- arquitectura: `docs/SYSTEM_ARCHITECTURE.md` o futura `docs/architecture/`
-- contratos: `docs/contracts/`
-- workflow con agentes: `docs/operations/agentic-development-workflow.md`
-- orquestador product owner: `docs/operations/product-owner-orchestrator.md`
-- calidad de implementación: `docs/operations/engineering-quality-gates.md`
-- política documental: `docs/ai/documentation-governance.md`
-- índice y estado: `docs/README.md` y `docs/documentation-map.yaml`
+- Architecture: `docs/SYSTEM_ARCHITECTURE.md` or scoped `docs/architecture/`
+- Contracts & Schemas: `docs/contracts/`
+- Agent Workflows: `docs/operations/agentic-development-workflow.md`
+- Product Owner Orchestrator: `docs/operations/product-owner-orchestrator.md`
+- Quality & CI: `docs/operations/engineering-quality-gates.md`
+- Documentation Governance: `docs/ai/documentation-governance.md`
+- Master Map & Status: `docs/README.md` and `docs/documentation-map.yaml`
 
-Los archivos específicos por agente, como `GEMINI.md`, `CHATGPT.md` o `.github/copilot-instructions.md`, solo adaptan esta misma base común.
-
----
-
-## Checklist de Disciplina de Cambio para Agentes IA
-
-Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment Engine DEBE seguir estas reglas de seguridad operativa antes de dar por completado un cambio:
-
-### 1. El contrato es lo primero (Contract-First)
-- [x] El esquema Pydantic (`intelligence.py`) define claramente la jerarquía Holding -> Filial.
-- [x] Se han añadido los campos `technical_stack` y `field_metrics` como blindaje de información técnica.
-
-### 2. No a la regresión silenciosa
-- [x] El motor de Inteligencia V16.1 ha sido verificado mediante la "Prueba de Fuego" desde cero.
-- [x] Se ha verificado que marcas críticas como Siemens, ABB y Dynatrace no se diluyen (FidelitySentinel).
-- [x] La atribución por sociedad (Reintel, Redinter, Red Eléctrica) es quirúrgica y veraz.
-
-### 3. Si modificas MAPEOS O PAYLOADS
-- [x] El payload resultante sigue el esquema ClientDossierV3.
-- [x] Los tests de soberanía web (`zero-lockin-guard`) pasan en verde tras el saneamiento de seguridad.
-
-### 4. Observabilidad y FinOps
-- [x] El motor registra el consumo de tokens y el coste estimado en cada llamada a Vertex AI.
-- [x] Los logs estructurados capturan la telemetría de los agentes.
-
-### 5. Documentación
-- [x] Se ha actualizado `docs/architecture/assessment_factory_flow.md` con los nuevos patrones de herencia y fidelidad atómica.
-- [x] El validador de gobernanza de documentación ha certificado la integridad de los enlaces.
+Agent-specific adapters (`GEMINI.md`, `.github/copilot-instructions.md`, `.cursor/rules/`) only provide operational adaptations of this baseline.
 
 ---
 
-## Restricciones Negativas Explícitas (Anti-patterns)
+## Agentic Change Discipline Checklist
 
-Queda estrictamente prohibido que cualquier agente autónomo o desarrollador incurra en las siguientes prácticas:
+Every AI agent or software engineer modifying the Assessment Engine pipeline MUST verify this checklist before completing work:
 
-1. **No escribirás pruebas de integración o de unidad que dependan de red externa:** Las pruebas que dependan de llamadas a APIs externas (como DuckDuckGo, Kroki o Google Grounding) deben aislarse como playgrounds en `tests/diagnostics/` bajo el prefijo `diag_*.py`, nunca incluirse en la suite automática de `pytest`.
-2. **No silenciarás MyPy ni el linter mediante parches:** Prohibido el uso de `# type: ignore` o casts sintácticos (`Any`, `cast`) para silenciar errores de tipado sin una justificación de diseño comentada. Resuelve la causa raíz de forma tipada.
-3. **No alterarás rutas mediante `sys.path` de forma manual:** Todas las importaciones de módulos deben resolverse mediante el namespace nativo absoluto (ej., `from assessment_engine.application...`). Nunca uses `sys.path.append` o `PYTHONPATH` locales.
-4. **No dejarás código muerto comentado:** El código comentado en desuso debe ser eliminado físicamente de inmediato. Git es la única máquina del tiempo.
+### 1. Contract-First
+- [ ] Pydantic schemas define rigorous validation hierarchies.
+- [ ] Strict schemas guard technical stacks and field metrics against silent structural regressions.
 
-## Modos de Fallo Comunes y Autocuración (Troubleshooting)
+### 2. Regression Prevention
+- [ ] Epistemic intelligence engines are validated from clean baselines.
+- [ ] Technical entities and brand identities are protected against dilution (FidelitySentinel).
 
-Si la suite de pruebas o la ejecución fallan, sigue este protocolo de autocuración antes de solicitar intervención:
+### 3. Payload Modifications
+- [ ] Resulting payloads validate against canonical schemas.
+- [ ] Sovereign security tests (`zero-lockin-guard`) execute green.
 
-- **Error: `TemplateNotFound` (Jinja2):** Verifica que la plantilla existe físicamente bajo la carpeta `/templates/` de la raíz del repositorio y que la constante de ruta en `runtime_paths.py` apunta correctamente a ella.
-- **Error: `TypeError: string indices must be integers`:** Ocurre si pasas traducciones en lugar de definiciones estructuradas de rango de madurez a la función de resolución. Asegura el mapeo del esquema.
-- **Error: `ModuleNotFoundError` o `ImportError`:** Ocurre si el linter o el movimiento de carpetas dejó importaciones relativas obsoletas. Usa el espacio de nombres absoluto calificado `assessment_engine.application...` o `assessment_engine.infrastructure...`.
+### 4. Observability & FinOps
+- [ ] Token consumption and cost telemetry are captured for remote AI API calls.
+- [ ] Structured logs preserve agent telemetry.
+
+### 5. Documentation
+- [ ] Architecture documents are updated to reflect workflow and schema changes.
+- [ ] The documentation governance validator certifies link and frontmatter integrity.
+
+---
+
+## Explicit Prohibitions (Anti-patterns)
+
+Autonomous agents and engineers are strictly forbidden from the following anti-patterns:
+
+1. **No External Network Dependencies in Automated Tests:** Tests requiring external network calls (DuckDuckGo, Kroki, Google Search) must reside exclusively under `tests/diagnostics/` prefixed with `diag_*.py`, never in standard `pytest` test suites.
+2. **No Suppression of Static Analysis or Typing:** Never use `# type: ignore` or type casts (`Any`, `cast`) to bypass typing errors without an explicit, documented architectural rationale.
+3. **No Dynamic sys.path Modification:** All module imports must resolve via the absolute namespace (`from assessment_engine.application...`). Never manipulate `sys.path` dynamically.
+4. **No Commented-Out Dead Code:** Stale, commented-out code must be removed immediately. Git is the sole time machine.
+
+## Common Failure Modes & Auto-Healing (Troubleshooting)
+
+If the test suite or runtime execution fails, follow these auto-healing heuristics:
+
+- **Error: `TemplateNotFound` (Jinja2):** Verify that the template file exists under `/templates/` at repository root and that runtime path constants in `runtime_paths.py` resolve correctly.
+- **Error: `TypeError: string indices must be integers`:** Occurs when passing translated strings rather than structured objects to domain resolvers. Reconcile schema mapping.
+- **Error: `Incompatible types in assignment` / Type Errors (MyPy):** Never bypass with `# type: ignore` or `cast()`. The engine enforces strict schema-driven typing. Reconcile by returning validated Pydantic models or applying explicit runtime type guards (`isinstance(...)`).
+- **Error: `ModuleNotFoundError` or `ImportError`:** Caused by obsolete relative imports following directory restructuring. Use fully qualified namespace imports (`assessment_engine.application...`, `assessment_engine.infrastructure...`).

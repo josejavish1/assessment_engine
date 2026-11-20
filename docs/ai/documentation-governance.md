@@ -27,7 +27,7 @@ Mantener una documentación única, auditable y reusable, evitando la duplicidad
 
 1. **Base documental unificada:** No existen bases de conocimiento paralelas. Humanos y agentes consumen y mantienen exactamente el mismo corpus técnico.
 2. **Supremacía del repositorio ejecutable:** El código fuente, las suites de pruebas, las automatizaciones de CI/CD, los esquemas de validación y la configuración física constituyen la única fuente de verdad definitiva y prevalecen sobre cualquier descripción prosa.
-3. **Inmutabilidad por adaptadores:** Los archivos específicos por agente (`GEMINI.md`, `AGENTS.md`, `CHATGPT.md`, `.github/copilot-instructions.md`) actúan únicamente como adaptadores operativos de contexto. No redefinen, extienden ni modifican las especificaciones declaradas en la documentación canónica.
+3. **Inmutabilidad por adaptadores:** Los archivos específicos por agente (`GEMINI.md`, `AGENTS.md`, `.github/copilot-instructions.md`) actúan únicamente como adaptadores operativos de contexto. No redefinen, extienden ni modifican las especificaciones declaradas en la documentación canónica.
 4. **Verificación empírica rigurosa:** Queda estrictamente prohibida la asunción de capacidades no implementadas. Cualquier componente o flujo cuya coincidencia empírica no pueda certificarse debe clasificarse de inmediato como `Needs Review` o `Draft`.
 5. **Trazabilidad determinista:** Cualquier cambio estructural o de comportamiento en el sistema debe verse reflejado de forma explícita en su correspondiente ruta de documentación técnica.
 
@@ -76,7 +76,7 @@ Actualiza o reverifica documentación cuando cambie cualquiera de estas áreas:
 | `src/assessment_engine/application/**`, `src/assessment_engine/mcp_server.py` | arquitectura y operación |
 | `src/assessment_engine/domain/schemas/**` | contratos y docs de payloads |
 | `.github/workflows/**` | operación y CI |
-| `pyproject.toml`, `requirements.txt` | onboarding, instalación y validación |
+| `pyproject.toml`, `uv.lock` | onboarding, instalación y validación |
 | prompts o configuración de motor | operación y referencia técnica |
 
 ## Enforcement en GitHub
@@ -152,6 +152,6 @@ En la práctica, esto también aplica a refactors internos que no cambian la fun
 ## Tratamiento del material heredado
 
 - `GEMINI.md` se mantiene como adaptador operativo en transición.
-- `AGENTS.md`, `CHATGPT.md` y `.github/copilot-instructions.md` son adaptadores breves y no deben acumular documentación canónica.
+- `AGENTS.md` y `.github/copilot-instructions.md` son adaptadores breves y no deben acumular documentación canónica.
 - `docs/reference/generated/legacy-gemini/` es el archivo neutral de la antigua documentación de Gemini y ya no forma parte de la capa estratégica.
 - Los documentos heredados pueden seguir siendo útiles, pero deben quedar clasificados como `Needs Review` o `Deprecated` hasta su realineación.

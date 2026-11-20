@@ -1,0 +1,19 @@
+---
+description: Sovereign Engineering Laws and Non-Negotiable Quality Invariants for Assessment Engine
+globs: *
+alwaysApply: true
+---
+
+# Sovereign Engineering Laws — Assessment Engine V4
+
+All autonomous agents and software engineers contributing to `assessment-engine` MUST strictly obey these non-negotiable laws:
+
+1. **Protocol Tyranny (Anti-Complacency):** Technical and architectural integrity supersedes delivery speed. Never force CI/CD pipelines to pass, suppress compiler or type-checking warnings, disable automated tests, or bypass branch protections.
+2. **Zero Workarounds:** When encountering any runtime, typing, or linting error, investigate and remediate the root cause. Never silence warnings with generic exceptions, hacky workarounds, or hidden bypasses.
+3. **Zero-Entropy Architecture:** The repository root and core directories must remain pristine. Ephemeral outputs, compressed archives (`.zip`), and temporary backups are strictly prohibited outside `working/out/[client_id]/`. Git is the sole time machine.
+4. **Single Technical Language (100% Technical English):** Regardless of conversational language in chat, all source code, comments, docstrings, log messages, commit messages, agent prompts, and tests MUST be written in 100% Technical English. Multilingual content is strictly confined to declarative dictionaries (`engine_config/locales.json`).
+5. **Empirical Verification (Trust but Verify):** Never assume success based solely on absence of compile-time errors. Changes must be validated empirically via `pytest` and direct execution tests before declaring completion.
+6. **Presentation-Layer Immunity:** The view and document compilers (`docx_compiler.py`, `payload_to_ast.py`) are passive presentation formatters. Never calculate, recalculate, or patch actuarial numbers or business metrics in presentation layers. Defects in rendered documents must be resolved upstream in calculation engines (`calculators.py`, `fair_risk.py`).
+7. **Mandatory Data Lineage Audit:** When investigating numerical or textual discrepancies, trace full variable lineage from initial input to rendered artifact before proposing changes.
+8. **Zero Stochastic Theater:** Probabilistic models (Bayesian Copula, Monte Carlo) are the Single Source of Truth (SSOT). Hardcoded heuristic shortcuts or defensive bypasses (`if payload.get(...) is None`) are prohibited.
+9. **Behavioral Drift Sentinel (Canary Protocol):** To detect attention dilution and context rot in extended sessions, autonomous agents MUST prepend every response with the deterministic sentinel: `[CANARY: V4 | MONISM: SSOT | LOCALE: EN]`. Omission of this tag signals context degradation, requiring immediate session re-initialization.

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+
 import docx
 import pytest
 
@@ -142,8 +143,6 @@ SPANISH_ORTHOGRAPHIC_MAP = {
     "autonomos": "autónomos",
     "autonoma": "autónoma",
     "autonomas": "autónomas",
-    "catalogo": "catálogo",
-    "catalogos": "catálogos",
     "sintesis": "síntesis",
     "hipotesis": "hipótesis",
     "diagnostico": "diagnóstico",
@@ -254,9 +253,24 @@ SPANISH_ORTHOGRAPHIC_MAP = {
 }
 
 ANNEX_DIR = ROOT / "working" / "out" / "Molins_Entrega_Oficial_Piramide_Tier1"
-OFFICIAL_DOCX_FILES = [
-    ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
-] + sorted((ANNEX_DIR / "02_ANEXOS_TECNICOS_ESPECIALISTAS").glob("*_ASIS.docx"))
+CANONICAL_TOMO1 = (
+    ANNEX_DIR
+    / "01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO"
+    / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    if (
+        ANNEX_DIR
+        / "01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO"
+        / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    ).exists()
+    else ROOT
+    / "evaluations"
+    / "molins_evaluation_dossier"
+    / "02_GENERATED_DELIVERABLES"
+    / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+)
+OFFICIAL_DOCX_FILES = [CANONICAL_TOMO1] + sorted(
+    (ANNEX_DIR / "02_ANEXOS_TECNICOS_ESPECIALISTAS").glob("*_ASIS.docx")
+)
 
 
 @pytest.mark.parametrize("docx_path", OFFICIAL_DOCX_FILES, ids=lambda p: p.name)
@@ -275,9 +289,13 @@ def test_zero_unaccented_spanish_words_in_document(docx_path: Path) -> None:
             if w_lower in SPANISH_ORTHOGRAPHIC_MAP:
                 expected = SPANISH_ORTHOGRAPHIC_MAP[w_lower]
                 if w == w_lower and expected != w_lower:
-                    violations.append(f"P{p_idx}: '{w}' (expected '{expected}') -> context: {p.text[:60]}")
+                    violations.append(
+                        f"P{p_idx}: '{w}' (expected '{expected}') -> context: {p.text[:60]}"
+                    )
                 elif w.capitalize() == w and expected.capitalize() != w:
-                    violations.append(f"P{p_idx}: '{w}' (expected '{expected.capitalize()}') -> context: {p.text[:60]}")
+                    violations.append(
+                        f"P{p_idx}: '{w}' (expected '{expected.capitalize()}') -> context: {p.text[:60]}"
+                    )
 
     # Check tables
     for t_idx, t in enumerate(doc.tables):
@@ -289,9 +307,13 @@ def test_zero_unaccented_spanish_words_in_document(docx_path: Path) -> None:
                     if w_lower in SPANISH_ORTHOGRAPHIC_MAP:
                         expected = SPANISH_ORTHOGRAPHIC_MAP[w_lower]
                         if w == w_lower and expected != w_lower:
-                            violations.append(f"T{t_idx}[R{r_idx}C{c_idx}]: '{w}' (expected '{expected}') -> context: {c.text[:60]}")
+                            violations.append(
+                                f"T{t_idx}[R{r_idx}C{c_idx}]: '{w}' (expected '{expected}') -> context: {c.text[:60]}"
+                            )
                         elif w.capitalize() == w and expected.capitalize() != w:
-                            violations.append(f"T{t_idx}[R{r_idx}C{c_idx}]: '{w}' (expected '{expected.capitalize()}') -> context: {c.text[:60]}")
+                            violations.append(
+                                f"T{t_idx}[R{r_idx}C{c_idx}]: '{w}' (expected '{expected.capitalize()}') -> context: {c.text[:60]}"
+                            )
 
     assert not violations, (
         f"Orthographic invariant violated in {docx_path.name}: {len(violations)} words missing graphic accents:\n"

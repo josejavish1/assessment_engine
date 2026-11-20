@@ -4,11 +4,13 @@ Perform Software Composition Analysis (SCA) and generate CycloneDX 1.6 SBOMs usi
 - Query the Google OSV.dev API for live CVE detection.
 - Generate immutable SBOM manifests compliant with the EU Cyber Resilience Act (CRA).
 """
+
 from __future__ import annotations
 
 import json
 import logging
 import re
+import tomllib
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -20,7 +22,9 @@ logger = logging.getLogger("assessment_engine.infrastructure.auditor.supply_chai
 OSV_BATCH_QUERY_URL = "https://api.osv.dev/v1/querybatch"
 
 
-def query_osv_vulnerabilities(queries: list[dict[str, Any]], timeout: float = 4.0) -> list[dict[str, Any]]:
+def query_osv_vulnerabilities(
+    queries: list[dict[str, Any]], timeout: float = 4.0
+) -> list[dict[str, Any]]:
     """Batch query the Google OSV.dev vulnerability database."""
     if not queries:
         return []
@@ -28,8 +32,11 @@ def query_osv_vulnerabilities(queries: list[dict[str, Any]], timeout: float = 4.
     req = urllib.request.Request(
         OSV_BATCH_QUERY_URL,
         data=payload,
-        headers={"Content-Type": "application/json", "User-Agent": "Soverik-Quality-Engine/1.0"},
-        method="POST"
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "Soverik-Quality-Engine/1.0",
+        },
+        method="POST",
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -40,33 +47,32 @@ def query_osv_vulnerabilities(queries: list[dict[str, Any]], timeout: float = 4.
         return []
 
 
-def generate_cyclonedx_sbom(components: list[dict[str, Any]], project_name: str = "project") -> dict[str, Any]:
+def generate_cyclonedx_sbom(
+    components: list[dict[str, Any]], project_name: str = "project"
+) -> dict[str, Any]:
     """Generate a standard CycloneDX v1.6 SBOM manifest compliant with the EU Cyber Resilience Act (CRA)."""
     return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",
         "serialNumber": f"urn:uuid:{project_name}-sbom-2026",
         "version": 1,
-        "metadata": {
-            "component": {
-                "name": project_name,
-                "type": "application"
-            }
-        },
+        "metadata": {"component": {"name": project_name, "type": "application"}},
         "components": [
             {
                 "type": "library",
                 "name": c["name"],
                 "version": c["version"] or "unspecified",
                 "purl": f"pkg:{c['ecosystem'].lower()}/{c['name']}@{c['version'] or 'latest'}",
-                "scope": "required"
+                "scope": "required",
             }
             for c in components
-        ]
+        ],
     }
 
 
-def _parse_requirements_file(req_file: Path) -> tuple[int, int, list[dict[str, Any]], list[dict[str, Any]], list[AuditFinding]]:
+def _parse_requirements_file(
+    req_file: Path,
+) -> tuple[int, int, list[dict[str, Any]], list[dict[str, Any]], list[AuditFinding]]:
     deps_count = 0
     pinned_count = 0
     components: list[dict[str, Any]] = []
@@ -88,25 +94,45 @@ def _parse_requirements_file(req_file: Path) -> tuple[int, int, list[dict[str, A
             pkg_name = parts[0].strip()
             pkg_ver = parts[1].split(";")[0].split()[0].strip()
             pinned_count += 1
-            components.append({"name": pkg_name, "version": pkg_ver, "ecosystem": "PyPI", "file": "requirements.txt"})
-            osv_queries.append({"package": {"name": pkg_name, "ecosystem": "PyPI"}, "version": pkg_ver})
+            components.append(
+                {
+                    "name": pkg_name,
+                    "version": pkg_ver,
+                    "ecosystem": "PyPI",
+                    "file": "requirements.txt",
+                }
+            )
+            osv_queries.append(
+                {"package": {"name": pkg_name, "ecosystem": "PyPI"}, "version": pkg_ver}
+            )
         else:
             pkg_name = re.split(r"[><=~;]", line_str)[0].strip()
-            components.append({"name": pkg_name, "version": None, "ecosystem": "PyPI", "file": "requirements.txt"})
-            findings.append(AuditFinding(
-                category="SUPPLY_CHAIN",
-                severity="LOW",
-                file_path="requirements.txt",
-                line_number=line_idx,
-                rule_id="SCA-UNPINNED-DEP",
-                message=f"Unpinned dependency: '{line_str}'",
-                recommendation="Pin exact version with '==' to ensure deterministic reproducibility."
-            ))
+            components.append(
+                {
+                    "name": pkg_name,
+                    "version": None,
+                    "ecosystem": "PyPI",
+                    "file": "requirements.txt",
+                }
+            )
+            findings.append(
+                AuditFinding(
+                    category="SUPPLY_CHAIN",
+                    severity="LOW",
+                    file_path="requirements.txt",
+                    line_number=line_idx,
+                    rule_id="SCA-UNPINNED-DEP",
+                    message=f"Unpinned dependency: '{line_str}'",
+                    recommendation="Pin exact version with '==' to ensure deterministic reproducibility.",
+                )
+            )
 
     return deps_count, pinned_count, components, osv_queries, findings
 
 
-def _parse_package_json_file(pkg_file: Path, target_dir: Path) -> tuple[int, int, list[dict[str, Any]], list[dict[str, Any]], list[AuditFinding]]:
+def _parse_package_json_file(
+    pkg_file: Path, target_dir: Path
+) -> tuple[int, int, list[dict[str, Any]], list[dict[str, Any]], list[AuditFinding]]:
     deps_count = 0
     pinned_count = 0
     components: list[dict[str, Any]] = []
@@ -118,29 +144,55 @@ def _parse_package_json_file(pkg_file: Path, target_dir: Path) -> tuple[int, int
 
     try:
         pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
-        deps = {**pkg_data.get("dependencies", {}), **pkg_data.get("devDependencies", {})}
+        deps = {
+            **pkg_data.get("dependencies", {}),
+            **pkg_data.get("devDependencies", {}),
+        }
         rel_pkg = str(pkg_file.relative_to(target_dir))
 
         for dep_name, version in deps.items():
             deps_count += 1
             clean_ver = re.sub(r"[\^~]", "", str(version)).strip()
-            is_pinned = not (version.startswith(("^", "~", "*", ">", "<")) or version == "*")
+            is_pinned = not (
+                version.startswith(("^", "~", "*", ">", "<")) or version == "*"
+            )
 
             if is_pinned:
                 pinned_count += 1
-                components.append({"name": dep_name, "version": clean_ver, "ecosystem": "npm", "file": rel_pkg})
-                osv_queries.append({"package": {"name": dep_name, "ecosystem": "npm"}, "version": clean_ver})
+                components.append(
+                    {
+                        "name": dep_name,
+                        "version": clean_ver,
+                        "ecosystem": "npm",
+                        "file": rel_pkg,
+                    }
+                )
+                osv_queries.append(
+                    {
+                        "package": {"name": dep_name, "ecosystem": "npm"},
+                        "version": clean_ver,
+                    }
+                )
             else:
-                components.append({"name": dep_name, "version": clean_ver, "ecosystem": "npm", "file": rel_pkg})
-                findings.append(AuditFinding(
-                    category="SUPPLY_CHAIN",
-                    severity="LOW",
-                    file_path=rel_pkg,
-                    line_number=None,
-                    rule_id="SCA-LOOSE-SEMVER",
-                    message=f"Dependencia npm '{dep_name}' usa rango flotante '{version}'",
-                    recommendation="Use pnpm-lock.yaml or pin exact versions for reproducible builds."
-                ))
+                components.append(
+                    {
+                        "name": dep_name,
+                        "version": clean_ver,
+                        "ecosystem": "npm",
+                        "file": rel_pkg,
+                    }
+                )
+                findings.append(
+                    AuditFinding(
+                        category="SUPPLY_CHAIN",
+                        severity="LOW",
+                        file_path=rel_pkg,
+                        line_number=None,
+                        rule_id="SCA-LOOSE-SEMVER",
+                        message=f"Dependencia npm '{dep_name}' usa rango flotante '{version}'",
+                        recommendation="Use pnpm-lock.yaml or pin exact versions for reproducible builds.",
+                    )
+                )
     except (json.JSONDecodeError, OSError):
         # Intentional fallback / handled exception
         _ = True
@@ -191,7 +243,9 @@ def _is_version_vulnerable(version_str: str, vuln: dict[str, Any]) -> bool:
     return False
 
 
-def _check_osv_vulnerabilities(osv_queries: list[dict[str, Any]]) -> tuple[int, list[AuditFinding]]:
+def _check_osv_vulnerabilities(
+    osv_queries: list[dict[str, Any]],
+) -> tuple[int, list[AuditFinding]]:
     findings: list[AuditFinding] = []
     known_cves_count = 0
     if not osv_queries:
@@ -210,17 +264,102 @@ def _check_osv_vulnerabilities(osv_queries: list[dict[str, Any]]) -> tuple[int, 
                 known_cves_count += 1
                 vuln_id = v.get("id", "OSV-VULN")
                 aliases = ", ".join(v.get("aliases", [])) or vuln_id
-                summary = v.get("summary", "Vulnerabilidad conocida en componente de terceros")
-                findings.append(AuditFinding(
-                    category="SUPPLY_CHAIN",
-                    severity="CRITICAL" if "RCE" in summary or "Arbitrary" in summary else "HIGH",
-                    file_path="requirements.txt" if target_query["package"]["ecosystem"] == "PyPI" else "package.json",
-                    line_number=None,
-                    rule_id=f"SCA-{vuln_id}",
-                    message=f"Vulnerabilidad conocida en {p_name}=={p_ver}: {summary} ({aliases})",
-                    recommendation=f"Upgrade {p_name} to patched version according to advisory {vuln_id}."
-                ))
+                summary = v.get(
+                    "summary", "Vulnerabilidad conocida en componente de terceros"
+                )
+                findings.append(
+                    AuditFinding(
+                        category="SUPPLY_CHAIN",
+                        severity="CRITICAL"
+                        if "RCE" in summary or "Arbitrary" in summary
+                        else "HIGH",
+                        file_path="requirements.txt"
+                        if target_query["package"]["ecosystem"] == "PyPI"
+                        else "package.json",
+                        line_number=None,
+                        rule_id=f"SCA-{vuln_id}",
+                        message=f"Vulnerabilidad conocida en {p_name}=={p_ver}: {summary} ({aliases})",
+                        recommendation=f"Upgrade {p_name} to patched version according to advisory {vuln_id}.",
+                    )
+                )
     return known_cves_count, findings
+
+
+def _parse_pyproject_file(
+    pyproject_file: Path,
+) -> tuple[int, int, list[dict[str, Any]], list[dict[str, Any]], list[AuditFinding]]:
+    deps_count = 0
+    pinned_count = 0
+    components: list[dict[str, Any]] = []
+    osv_queries: list[dict[str, Any]] = []
+    findings: list[AuditFinding] = []
+
+    if not pyproject_file.exists():
+        return deps_count, pinned_count, components, osv_queries, findings
+
+    try:
+        data = tomllib.loads(pyproject_file.read_text(encoding="utf-8"))
+        deps = data.get("project", {}).get("dependencies", [])
+        for line_idx, line_str in enumerate(deps, 1):
+            line_str = line_str.strip()
+            if not line_str or line_str.startswith("#"):
+                continue
+
+            deps_count += 1
+            if "==" in line_str:
+                parts = line_str.split("==")
+                pkg_name = parts[0].strip()
+                pkg_ver = parts[1].split(";")[0].split()[0].strip()
+                pinned_count += 1
+                components.append(
+                    {
+                        "name": pkg_name,
+                        "version": pkg_ver,
+                        "ecosystem": "PyPI",
+                        "file": "pyproject.toml",
+                    }
+                )
+                osv_queries.append(
+                    {
+                        "package": {"name": pkg_name, "ecosystem": "PyPI"},
+                        "version": pkg_ver,
+                    }
+                )
+            else:
+                pkg_name = re.split(r"[><=~;]", line_str)[0].strip()
+                components.append(
+                    {
+                        "name": pkg_name,
+                        "version": None,
+                        "ecosystem": "PyPI",
+                        "file": "pyproject.toml",
+                    }
+                )
+                findings.append(
+                    AuditFinding(
+                        category="SUPPLY_CHAIN",
+                        severity="LOW",
+                        file_path="pyproject.toml",
+                        line_number=line_idx,
+                        rule_id="SCA-UNPINNED-DEP",
+                        message=f"Unpinned dependency in pyproject.toml: '{line_str}'",
+                        recommendation="Declare pinned versions or manage exact pins in uv.lock.",
+                    )
+                )
+    except Exception as exc:
+        findings.append(
+            AuditFinding(
+                category="SUPPLY_CHAIN",
+                severity="MEDIUM",
+                file_path="pyproject.toml",
+                line_number=1,
+                rule_id="SCA-PYPROJECT-PARSE-ERR",
+                message=f"Failed to parse pyproject.toml: {exc}",
+                recommendation="Fix TOML formatting errors in pyproject.toml.",
+            )
+        )
+
+    return deps_count, pinned_count, components, osv_queries, findings
 
 
 def run_supply_chain_probe(target_dir: Path) -> ProbeResult:
@@ -229,14 +368,32 @@ def run_supply_chain_probe(target_dir: Path) -> ProbeResult:
     components: list[dict[str, Any]] = []
     osv_queries: list[dict[str, Any]] = []
 
-    r_deps, r_pinned, r_comps, r_queries, r_finds = _parse_requirements_file(target_dir / "requirements.txt")
-    components.extend(r_comps)
-    osv_queries.extend(r_queries)
-    findings.extend(r_finds)
+    req_file = target_dir / "requirements.txt"
+    pyproject_file = target_dir / "pyproject.toml"
+
+    if req_file.exists():
+        r_deps, r_pinned, r_comps, r_queries, r_finds = _parse_requirements_file(
+            req_file
+        )
+        components.extend(r_comps)
+        osv_queries.extend(r_queries)
+        findings.extend(r_finds)
+    elif pyproject_file.exists():
+        r_deps, r_pinned, r_comps, r_queries, r_finds = _parse_pyproject_file(
+            pyproject_file
+        )
+        components.extend(r_comps)
+        osv_queries.extend(r_queries)
+        findings.extend(r_finds)
+    else:
+        r_deps, r_pinned = 0, 0
 
     pkg_candidates = [
-        p for p in target_dir.rglob("package.json")
-        if "node_modules" not in p.parts and ".next" not in p.parts and "dist" not in p.parts
+        p
+        for p in target_dir.rglob("package.json")
+        if "node_modules" not in p.parts
+        and ".next" not in p.parts
+        and "dist" not in p.parts
     ]
     p_deps = 0
     p_pinned = 0
@@ -258,8 +415,7 @@ def run_supply_chain_probe(target_dir: Path) -> ProbeResult:
     out_dir = target_dir / "docs" / "audits"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "SBOM_CYCLONEDX.json").write_text(
-        json.dumps(sbom_data, indent=2, ensure_ascii=False),
-        encoding="utf-8"
+        json.dumps(sbom_data, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
     score = 100.0
@@ -281,7 +437,7 @@ def run_supply_chain_probe(target_dir: Path) -> ProbeResult:
             "pinning_ratio": round(pinned_count / max(1, dependencies_count), 2),
             "known_cves_detected": known_cves_count,
             "sbom_format": "CycloneDX v1.6",
-            "sbom_path": str(out_dir / "SBOM_CYCLONEDX.json")
+            "sbom_path": str(out_dir / "SBOM_CYCLONEDX.json"),
         },
-        findings=findings
+        findings=findings,
     )

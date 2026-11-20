@@ -93,6 +93,25 @@ entries:
   notes: Project entry point and onboarding index.
   diataxis: explanation
   verification_mode: editorial
+- path: CONTRIBUTING.md
+  kind: document
+  title: Tier-1 engineering contribution guidelines
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/README.md
+  - docs/ai/documentation-governance.md
+  - docs/operations/engineering-quality-gates.md
+  - pyproject.toml
+  - .github/workflows/quality.yml
+  last_verified_against: '2026-11-12'
+  notes: Tier-1 engineering contribution guidelines, AI-assisted development policy, and testing discipline.
+  diataxis: how_to
+  verification_mode: editorial
 - path: docs/README.md
   kind: document
   title: Documentation master map
@@ -154,22 +173,6 @@ entries:
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
   notes: Puerta de entrada breve para agentes; no contiene verdad canónica nueva.
-  diataxis: how_to
-  verification_mode: editorial
-- path: CHATGPT.md
-  kind: document
-  title: ChatGPT adapter
-  doc_type: operational
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - chatgpt
-  source_of_truth:
-  - AGENTS.md
-  - docs/ai/documentation-governance.md
-  - docs/README.md
-  last_verified_against: '2026-11-12'
-  notes: Adaptador específico para ChatGPT; debe permanecer breve.
   diataxis: how_to
   verification_mode: editorial
 - path: .github/copilot-instructions.md
@@ -256,7 +259,7 @@ entries:
   - ai-agents
   source_of_truth:
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - docs/operations/engineering-quality-gates.md
   - src/assessment_engine/application/tools/run_incremental_quality_gate.py
   last_verified_against: '2026-11-12'
@@ -275,7 +278,7 @@ entries:
   - ai-agents
   source_of_truth:
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - docs/operations/engineering-quality-gates.md
   - src/assessment_engine/application/tools/run_incremental_typecheck.py
   last_verified_against: '2026-11-12'
@@ -643,7 +646,7 @@ entries:
   - ai-agents
   source_of_truth:
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
@@ -668,7 +671,7 @@ entries:
   - ai-agents
   source_of_truth:
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - tests/unit/test_environment.py
   - .github/workflows/ci.yml
   - src/assessment_engine/infrastructure/runtime_env.py
@@ -689,7 +692,7 @@ entries:
   source_of_truth:
   - docs/operations/agentic-development-workflow.md
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
   - .github/pull_request_template.md
@@ -702,7 +705,7 @@ entries:
   review_when_source_changes:
   - docs/operations/agentic-development-workflow.md
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
   - .github/pull_request_template.md
@@ -1071,7 +1074,7 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - .github/workflows/typing.yml
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   last_verified_against: '2026-11-12'
   notes: Runner que calcula los ficheros Python cambiados en la superficie viva y
     les aplica mypy de forma incremental.
@@ -1341,7 +1344,7 @@ automation_rules:
 - name: runtime-validation-changes
   when_changed:
   - pyproject.toml
-  - requirements.txt
+  - uv.lock
   - .github/workflows/**
   require_review_of:
   - README.md
@@ -1361,7 +1364,6 @@ automation_rules:
 - name: governance-adapter-changes
   when_changed:
   - AGENTS.md
-  - CHATGPT.md
   - .github/copilot-instructions.md
   - GEMINI.md
   require_review_of:
@@ -1370,8 +1372,8 @@ automation_rules:
 coverage:
   include:
   - README.md
+  - CONTRIBUTING.md
   - AGENTS.md
-  - CHATGPT.md
   - GEMINI.md
   - .github/copilot-instructions.md
   - docs/**/*.md

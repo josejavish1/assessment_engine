@@ -6,7 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "assessment-engine"
 version = "0.1.0"
 description = "AI Assessment Engine for Technology Architecture"
+readme = "README.md"
 requires-python = ">=3.11,<3.12"
+license = { text = "Proprietary" }
+authors = [
+    { name = "NTT DATA" }
+]
 dependencies = [
     "fastapi",
     "google-adk",
@@ -75,13 +80,9 @@ ignore = ["E501", "D100", "D104", "D205", "D209", "D107", "D103", "E402", "E701"
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-# Exclude tests and legacy packages from strict docstring and commented-out code checks
+# Exclude tests from strict docstring and commented-out code checks
 "tests/**/*.py" = ["D", "ERA"]
 "src/assessment_engine/**/*.py" = ["D", "ERA"]
-
-# Relax docstring requirements in application helpers and adapters to prevent over-engineering
-"src/application/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
-"src/adapters/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -95,7 +96,7 @@ no_implicit_optional = true
 strict_optional = true
 namespace_packages = true
 explicit_package_bases = true
-exclude = ["_PROJECT_ARCHIVE_/", "working/", "src/adapters/", "src/application/tools/", "src/application/render_", "src/application/generate_", "src/infrastructure/docx_render_utils.py"]
+exclude = ["working/", "src/assessment_engine/application/tools/"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -126,20 +127,15 @@ module = "tests.*"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = [
-    "adapters.*",
-    "application.*",
-    "assessment_engine.*",
-    "infrastructure.*",
-    "domain.*",
-    "ports.*"
-]
+module = "assessment_engine.*"
 ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-norecursedirs = [".git", "_PROJECT_ARCHIVE_", "_legacy", ".venv", "working", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
+norecursedirs = [".git", ".venv", "working", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
 addopts = "-ra -q -n auto --dist loadgroup"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "contract: marks tests that validate data contracts between pipeline stages"
 ]

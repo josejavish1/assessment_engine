@@ -12,15 +12,31 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+
 import docx
 import pytest
 
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
 ANNEX_DIR = ROOT / "working" / "out" / "Molins_Entrega_Oficial_Piramide_Tier1"
-OFFICIAL_DOCX_FILES = [
-    ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
-] + sorted((ANNEX_DIR / "02_ANEXOS_TECNICOS_ESPECIALISTAS").glob("*_ASIS.docx"))
+CANONICAL_TOMO1 = (
+    ANNEX_DIR
+    / "01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO"
+    / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    if (
+        ANNEX_DIR
+        / "01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO"
+        / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    ).exists()
+    else ROOT
+    / "evaluations"
+    / "molins_evaluation_dossier"
+    / "02_GENERATED_DELIVERABLES"
+    / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+)
+OFFICIAL_DOCX_FILES = [CANONICAL_TOMO1] + sorted(
+    (ANNEX_DIR / "02_ANEXOS_TECNICOS_ESPECIALISTAS").glob("*_ASIS.docx")
+)
 
 
 @pytest.mark.parametrize("docx_path", OFFICIAL_DOCX_FILES, ids=lambda p: p.name)
@@ -42,7 +58,9 @@ def test_eradication_of_cryptic_rvs_codes(docx_path: Path) -> None:
             for c_idx, c in enumerate(r.cells):
                 matches = rvs_pattern.findall(c.text)
                 if matches:
-                    violations.append(f"Table {t_idx}[R{r_idx}C{c_idx}]: found {matches} in '{c.text[:60]}'")
+                    violations.append(
+                        f"Table {t_idx}[R{r_idx}C{c_idx}]: found {matches} in '{c.text[:60]}'"
+                    )
 
     assert not violations, (
         f"Cryptic machine code invariant violated in {docx_path.name}:\n"
@@ -62,14 +80,18 @@ def test_eradication_of_false_precision_numbers(docx_path: Path) -> None:
     for p_idx, p in enumerate(doc.paragraphs):
         for target in legacy_unrounded:
             if target in p.text:
-                violations.append(f"Paragraph {p_idx}: found '{target}' in '{p.text[:60]}'")
+                violations.append(
+                    f"Paragraph {p_idx}: found '{target}' in '{p.text[:60]}'"
+                )
 
     for t_idx, t in enumerate(doc.tables):
         for r_idx, r in enumerate(t.rows):
             for c_idx, c in enumerate(r.cells):
                 for target in legacy_unrounded:
                     if target in c.text:
-                        violations.append(f"Table {t_idx}[R{r_idx}C{c_idx}]: found '{target}' in '{c.text[:60]}'")
+                        violations.append(
+                            f"Table {t_idx}[R{r_idx}C{c_idx}]: found '{target}' in '{c.text[:60]}'"
+                        )
 
     assert not violations, (
         f"False precision invariant violated in {docx_path.name}:\n"

@@ -75,6 +75,7 @@ _archive_*/
 *.pptx
 
 # Archivos Específicos del Proyecto que no van al repo
+llms-full.txt
 commercial_report_payload.json
 global_report_payload.json
 sa-key.json

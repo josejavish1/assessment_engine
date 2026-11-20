@@ -14,7 +14,6 @@
 /docs/ @docs-governance
 /README.md @docs-governance
 /AGENTS.md @docs-governance
-/CHATGPT.md @docs-governance
 /GEMINI.md @docs-governance
 
 # =================================================================
@@ -34,7 +33,7 @@
 /tests/ @josejavish1
 /engine_config/ @josejavish1
 /pyproject.toml @josejavish1
-/requirements.txt @josejavish1
+/uv.lock @josejavish1
 
 # =================================================================
 # Código Fuente: Business Command Center (Frontend)

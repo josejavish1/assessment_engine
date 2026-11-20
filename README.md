@@ -5,7 +5,7 @@ source_of_truth:
 - docs/README.md
 - docs/ai/documentation-governance.md
 - pyproject.toml
-- src/assessment_engine/
+- src/assessment_engine
 - .github/workflows/quality.yml
 last_verified_against: 2026-11-12
 applies_to:
@@ -18,73 +18,108 @@ notes: Project entry point and onboarding index.
 ---
 # Assessment Engine
 
-`assessment-engine` es un motor de procesamiento de datos y compilación de informes técnicos de evaluación. Su pipeline asíncrono transforma el contexto de un cliente, las evidencias documentales y las respuestas de auditoría en un grafo de relaciones semánticas (Grafo Epistémico), resolviendo niveles de madurez técnica y compilando entregables ejecutivos en formato OpenXML (.docx) y HTML.
+`assessment-engine` is an actuarial intelligence engine and technical assessment compilation platform. It transforms unstructured client transcripts, audit questionnaires, and documentary evidence into a structured Epistemic Knowledge Graph, executes dual TCO + Open FAIR Monte Carlo simulations (10,000 iterations), and compiles executive and technical deliverables in OpenXML (.docx) and HTML formats.
 
 ---
 
-## 1. Estructura de Paquetes (Arquitectura Hexagonal)
+## 1. System Topology & Directory Routing
 
-La base de código está encapsulada bajo el espacio de nombres unificado de Python `src/assessment_engine/` y sigue un patrón de diseño hexagonal desacoplado:
-
-*   **`src/assessment_engine/domain/`:** Contiene las clases de negocio, las invariantes lógicas y los esquemas de datos estructurados de Pydantic (`schemas/ast.py`, `schemas/blueprint.py`, etc.) y las plantillas declarativas de prompts (`domain/prompts/`).
-*   **`src/assessment_engine/ports/`:** Define las interfaces de puerto abstractas (ej., `document_compiler.py`) que desacoplan el dominio de la tecnología física de renderizado.
-*   **`src/assessment_engine/adapters/`:** Implementa los adaptadores de entrada/salida físicos, compiladores OpenXML y renderizadores (`adapters/compilers/docx_compiler.py` para Word, y maquetadores de HTML).
-*   **`src/assessment_engine/application/`:** Contiene los entrypoints lógicos de los pipelines de procesamiento de torre, consolidación global y comercial (`run_tower_pipeline.py`).
-*   **`src/assessment_engine/application/tools/`:** Aloja las utilidades operativas y la suite de validación continua de calidad documental.
-*   **`src/assessment_engine/infrastructure/`:** Implementa la persistencia del grafo, clientes de APIs efímeros de Vertex AI/Gemini (`ai_client.py`) y utilidades comunes.
-*   **`src/assessment_engine/prompts/`:** Almacena el registro de prompts de soporte de los agentes.
-
----
-
-## 2. Onboarding e Instalación Local
-
-### Prerequisites:
-*   Python 3.11 installed.
-*   `uv` package manager (`https://docs.astral.sh/uv/`).
-
-### Environment Setup:
-1.  **Sync environment and dependencies:**
-    ```bash
-    uv sync --all-groups
-    ```
-2.  **Activate virtual environment (optional, or use `uv run`):**
-    ```bash
-    source .venv/bin/activate
-    ```
-3.  **Install Git pre-commit hooks:**
-    ```bash
-    uv run pre-commit install
-    ```
-
----
-
-## 3. Validation and Testing
-
-To verify engine stability:
-
-```bash
-uv run pytest tests/
+```
+assessment_engine/
+├── src/assessment_engine/             # Core Backend (Hexagonal Architecture)
+│   ├── domain/                        # Pure business models, actuarial logic, Pydantic schemas (NO I/O)
+│   ├── ports/                         # Abstract interface ports (document_compiler.py, graph_analyzer.py)
+│   ├── adapters/                      # OpenXML/HTML AST compilers, JSON converters, HTTP clients
+│   ├── application/                   # Pipeline runners, CLI entrypoints, PO orchestrator, linters
+│   ├── infrastructure/                # Graph persistence, Vertex AI / Gemini clients, runtime env
+│   └── mcp_server.py                  # Model Context Protocol (FastMCP) server with SQLite job store
+├── business_command_center/           # Executive War Room & Client Portal (Next.js 15, React, TS, Refine)
+├── engine_config/                     # Actuarial Single Source of Truth (SSOT): rate cards, taxonomies, scales
+├── templates/                         # Word (.docx) templates, HTML assets, and golden path scaffolding
+├── tests/                             # Hermetic automated test suite (unit, integration, architecture)
+└── docs/                              # Canonical Diataxis documentation governed by documentation-map.yaml
 ```
 
-La suite de pruebas contiene 105 tests y está configurada en `pyproject.toml` para ignorar advertencias cruzadas y evitar el descubrimiento de directorios de trabajo efímeros (`working/`).
+---
+
+## 2. Type-State Pipeline Architecture
+
+Data flows strictly across validated type boundaries from raw input to immutable deliverable:
+
+1. **Ingestion & Evidence Graph:**
+   - Raw transcripts & questionnaire answers $\to$ `RawTranscriptParser` / `EmpiricalResponseParser`
+   - Facts and citations $\to$ `EpistemicGraphService` $\to$ `EvidenceLedger` with SHA-256 byte-span provenance.
+2. **Actuarial Simulation (Dual TCO + FAIR):**
+   - Priors $\to$ Conjugate Bayesian Inference (Gamma-Poisson for TEF, Beta-Binomial for VULN).
+   - `PolicyEngine` executes 10,000 thread-safe Monte Carlo iterations $\to$ `ActuarialTensor` (ALE, SLE, ROSI).
+3. **Immutable Document AST:**
+   - `PayloadToASTBridge` maps actuarial tensors and tower findings into a declarative `DocumentAST`.
+   - The presentation layer is strictly decoupled: view compilers format AST nodes without recalculating metrics.
+4. **Hermetic OpenXML & HTML Compilation:**
+   - `Volume1AsisASTCompiler` and `DocxCompiler` render validated DOCX deliverables. Zero PDF output.
 
 ---
 
-## 4. Gobernanza y Calidad Documental
+## 3. Canonical Entrypoints & Execution Commands
 
-El repositorio cuenta con un sistema de verificación estricta de la documentación para evitar la obsolescencia y la deriva de información (*documentation drift*):
+### Prerequisites & Dependency Sync
+```bash
+# Requires Python 3.11 and uv
+uv sync --all-groups
+source .venv/bin/activate
+uv run pre-commit install
+```
 
-*   **Sincronización de Esquemas:** El linter automático verifica que las propiedades y tipos de las tablas en `docs/contracts/` coincidan bit a bit con los esquemas Pydantic del código de Python.
-*   **Bucle de Auto-Curación Pre-Commit:** Al ejecutar `git commit`, un gancho local de pre-commit corrige de forma desatendida y actualiza las tablas Markdown con cualquier cambio que hayas introducido en el código.
-*   **Quality Gates en CI/CD:** GitHub Actions ejecuta un flujo estricto de calidad (`quality.yml`) y auditoría para verificar la integridad del código, análisis estático y estabilidad del repositorio.
+### Pipeline Execution (CLI)
+```bash
+# Execute end-to-end tower assessment pipeline
+uv run python -m assessment_engine.application.cli --client-id <client_slug> --towers all
+
+# Execute isolated consolidated Tomo 1 compiler
+uv run python scripts/build_full_client_delivery_suite.py --tomo1-only
+```
+
+### Model Context Protocol (MCP) Server
+```bash
+# Start MCP server exposing autonomous assessment tools to AI agents
+uv run python -m assessment_engine.mcp_server
+```
+
+### Business Command Center (Next.js 15 Web Portal)
+```bash
+cd business_command_center
+npm install
+npm run dev
+```
+
+### Verification & Automated Testing
+```bash
+# Run the hermetic test suite (100% network isolated)
+uv run pytest tests/
+
+# Validate documentation governance, frontmatter, and schema synchronization
+uv run pytest tests/functional/test_validate_documentation_governance.py tests/functional/test_compile_llms_full.py
+```
 
 ---
 
-## 5. Orden de Lectura Recomendado
+## 4. Sovereign Architectural Invariants (Negative Constraints)
 
-Para asimilar el funcionamiento de la plataforma en profundidad:
+All autonomous agents and software engineers must strictly adhere to these non-negotiable constraints:
 
-1.  **Gobernanza:** [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md) (Reglas de calidad documental).
-2.  **Arquitectura:** [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) (Diagrama de capas y flujos de datos).
-3.  **Contratos:** [docs/contracts/payload-render-boundaries.md](docs/contracts/payload-render-boundaries.md) (Límites de payloads).
-4.  **Operaciones:** [docs/operations/troubleshooting-working.md](docs/operations/troubleshooting-working.md) (Manual de resolución de incidencias y regeneración de humo).
+- **Language Decoupling:** All source code, docstrings, variable names, logs, tests, and commit messages MUST be 100% Technical English. Multilingual content resides solely in declarative catalogs (`engine_config/locales.json`).
+- **Presentation-Layer Immunity:** Never calculate, adjust, or patch business metrics in presentation compilers (`payload_to_ast.py`, `docx_compiler.py`). Deficiencies must be resolved upstream in domain calculation engines.
+- **Zero External Network in Tests:** Standard `pytest` runs must execute completely hermetic. Network-dependent diagnostics reside under `tests/diagnostics/` prefixed with `diag_*.py`.
+- **Zero-Entropy Architecture:** Output artifacts must be isolated in `working/out/[client_id]/`. Never leave loose files, compressed `.zip` archives, or logs in the repository root.
+- **SSOT Monism:** Probabilistic models are the sole authoritative source of truth. Hardcoded heuristic fallbacks or defensive bypasses (`if payload.get(...) is None`) that discard simulation data are prohibited.
+
+---
+
+## 5. Navigation & Canonical Documentation
+
+- **Agent Constitution & Laws:** [`AGENTS.md`](AGENTS.md)
+- **Agent Operational Adapters:** [`GEMINI.md`](GEMINI.md) | [`.cursor/rules/`](.cursor/rules/)
+- **Documentation Master Map:** [`docs/README.md`](docs/README.md) and [`docs/documentation-map.yaml`](docs/documentation-map.yaml)
+- **System Architecture Deep Dive:** [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md)
+- **Contract & Payload Boundaries:** [`docs/contracts/payload-render-boundaries.md`](docs/contracts/payload-render-boundaries.md)
+- **Troubleshooting & Operations Runbook:** [`docs/operations/troubleshooting-working.md`](docs/operations/troubleshooting-working.md)

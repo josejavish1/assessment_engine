@@ -1,0 +1,21 @@
+---
+description: Python standards, hexagonal architecture boundaries, and typing rules
+globs: src/**/*.py,tests/**/*.py,scripts/**/*.py
+alwaysApply: false
+---
+
+# Python Code Standards & Architectural Invariants
+
+## Architecture Boundaries
+- **Hexagonal Architecture:** All core backend code resides strictly in `assessment_engine` namespace inside `src/assessment_engine/` (`domain`, `application`, `ports`, `adapters`, `infrastructure`).
+- **Domain Purity:** Domain modules must NEVER import from outer layers (`infrastructure`, `adapters`, `application`) and must NOT perform direct filesystem side-effects or network calls.
+- **Golden Paths:** When adding services, workers, or endpoints, use base templates in `templates/golden_paths/`. For pure models or helpers without state, add `# golden-path: ignore` in the header.
+
+## Typing and Linters
+- **Strict Typing:** All function and method signatures must have complete type annotations. Avoid `Any` and explicit casts (`cast()`) unless accompanied by an architectural comment explaining why the type system cannot resolve it.
+- **Google-Style Docstrings:** Public interfaces must include Google-style docstrings with `Args:`, `Returns:`, and `Raises:` sections.
+- **Linter & Formatting:** Code must pass `ruff check .` and `ruff format .` without suppressions.
+
+## Testing Standards
+- **Zero External Network in pytest:** Unit and integration tests must run fully hermetic. External API playgrounds belong under `tests/diagnostics/` prefixed with `diag_*.py`.
+- **Reproducibility:** Flaky tests or hardcoded timestamps are prohibited. Use cryptographic SHA-256 stable seeds for deterministic stochastic testing.

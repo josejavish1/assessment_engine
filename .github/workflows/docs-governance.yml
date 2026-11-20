@@ -111,7 +111,7 @@ jobs:
         run: |
           git config --global user.name "Apex Documentation Bot"
           git config --global user.email "doc-bot@assessment-engine.local"
-          git add docs/ docs/documentation-map.yaml AGENTS.md CHATGPT.md GEMINI.md README.md .github/copilot-instructions.md
+          git add docs/ docs/documentation-map.yaml AGENTS.md GEMINI.md README.md .github/copilot-instructions.md
           if ! git diff --staged --quiet; then
             git commit -m "docs(chore): automated nightly self-healing and documentation decay [skip ci]"
             git push origin HEAD:${{ github.ref }}

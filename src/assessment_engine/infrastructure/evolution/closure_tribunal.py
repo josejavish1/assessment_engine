@@ -459,7 +459,7 @@ class ClosureTribunal:
         actionable_instructions: list[str] = []
         forbidden_actions: list[str] = [
             "Do not rewrite from scratch functions that already passed AST gates.",
-            "Do not introduce external libraries into requirements.txt or package.json without architectural justification.",
+            "Do not introduce external libraries into pyproject.toml or package.json without architectural justification.",
             "Maintain cyclomatic complexity strictly below V(G) <= 10.",
         ]
 

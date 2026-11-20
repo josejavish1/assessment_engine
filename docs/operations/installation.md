@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
-- ../../requirements.txt
+- ../../uv.lock
 - ../../tests/unit/test_environment.py
 - ../../.github/workflows/ci.yml
 - ../../src/assessment_engine/infrastructure/runtime_env.py
@@ -73,12 +73,12 @@ python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-
 ```
 Este simulacro en seco (*dry-run*) forma parte de los controles de gobernanza activa del repositorio y certifica que el entorno es capaz de procesar y compilar el pipeline global canónico de forma íntegra, absteniéndose de requerir lógicas de retrocompatibilidad heredadas.
 
-## Resolución de Dependencias: `pyproject.toml` vs `requirements.txt`
+## Resolución de Dependencias: `pyproject.toml` vs `uv.lock`
 
-1.  **`pyproject.toml`:** Especifica el metapaquete del motor y declara la firma de dependencias abstractas obligatorias para el empaquetado.
-2.  **`requirements.txt`:** Bloquea y congela un entorno de trabajo determinista de desarrollo y testing, alineado de manera idéntica con el entorno de ejecución de la integración continua (CI).
+1.  **`pyproject.toml`:** Especifica el metapaquete del motor y declara la firma de dependencias abstractas obligatorias para el empaquetado (PEP 517/621).
+2.  **`uv.lock`:** Bloquea y congela un árbol determinista universal de desarrollo, testing y CI, garantizando reproducibilidad exacta sin duplicidades de ficheros exportados.
 
-El pipeline de CI se aprovisiona consumiendo `requirements.txt` para asegurar la reproducibilidad absoluta y mitigar la deriva de paquetes.
+El pipeline de CI y el entorno local se aprovisionan consumiendo `uv.lock` mediante `uv sync --all-groups`.
 
 ## Estado Final de Éxito de Aprovisionamiento
 

@@ -57,21 +57,16 @@ def test_compile_llms_full_missing_sitemap(tmp_path: Path) -> None:
     assert result is False
 
 
-def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
-    """Ensures that the committed 'llms-full.txt' is perfectly synchronized.
+def test_real_llms_compilation_succeeds(tmp_path: Path) -> None:
+    """Ensures that compiling the repository's real llms.txt succeeds deterministically.
 
-    This test prevents documentation drift during commits. If any Markdown file
-    or the sitemap has been modified, this test will fail during pytest,
-    blocking the gate until 'python src/assessment_engine/application/tools/compile_llms_full.py' is run.
+    Verifies that all documents referenced in the active llms.txt sitemap exist,
+    can be read, and compile cleanly into a unified output bundle without error.
     """
     repo_root = Path(__file__).resolve().parents[2]
     real_sitemap = repo_root / "llms.txt"
-    real_output = repo_root / "llms-full.txt"
 
     assert real_sitemap.exists(), "Repository's 'llms.txt' is missing!"
-    assert real_output.exists(), (
-        "Repository's 'llms-full.txt' is missing! Run compile_llms_full.py first."
-    )
 
     temp_output = tmp_path / "llms-full.txt.tmp"
 
@@ -79,16 +74,13 @@ def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
     success = compile_llms_full(str(repo_root), str(temp_output))
     assert success is True, "Failed to compile the real repository documents."
 
-    # Compare content
-    expected_content = real_output.read_text(encoding="utf-8")
-    actual_content = temp_output.read_text(encoding="utf-8")
-
-    assert actual_content == expected_content, (
-        "[-] DOCUMENTATION DRIFT DETECTED!\n"
-        "The committed 'llms-full.txt' is out of sync with 'llms.txt' or some of its referenced documents.\n"
-        "To resolve this and make your PR pass, please run:\n"
-        "  /.venv/bin/python src/assessment_engine/application/tools/compile_llms_full.py\n"
-        "And commit the updated 'llms-full.txt' file."
+    assert temp_output.exists(), "Compiled output file was not generated."
+    content = temp_output.read_text(encoding="utf-8")
+    assert len(content) > 5000, "Compiled bundle is suspiciously small."
+    assert "AGENTS.md" in content, "AGENTS.md was not compiled into output bundle."
+    assert "README.md" in content, "README.md was not compiled into output bundle."
+    assert "CONTRIBUTING.md" in content, (
+        "CONTRIBUTING.md was not compiled into output bundle."
     )
 
 

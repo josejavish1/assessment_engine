@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../../docs/operations/agentic-development-workflow.md
 - ../../pyproject.toml
-- ../../requirements.txt
+- ../../uv.lock
 - ../../.github/workflows/quality.yml
 - ../../.github/workflows/typing.yml
 - ../../.github/pull_request_template.md

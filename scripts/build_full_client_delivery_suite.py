@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -56,7 +55,9 @@ def convert_docx_to_pdf(docx_path: Path, output_pdf_path: Path) -> bool:
 def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
     """Compiles all 10 specialist AS-IS annexes via the Declarative AST Engine."""
     print("\n" + "=" * 80)
-    print("PHASE: COMPILING ALL 10 SPECIALIST ANNEXES VIA DECLARATIVE AST ENGINE (T1-T10)")
+    print(
+        "PHASE: COMPILING ALL 10 SPECIALIST ANNEXES VIA DECLARATIVE AST ENGINE (T1-T10)"
+    )
     print("=" * 80)
 
     official_annex_dir = (
@@ -68,7 +69,8 @@ def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
     mirrors = [
         official_annex_dir,
         REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/02_DIAGNOSTICOS_ASIS",
-        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/02_ANEXOS_TECNICOS_POR_DOMINIO",
+        REPO_ROOT
+        / "working/out/Molins_Entrega_Piramide_Tier1/02_ANEXOS_TECNICOS_POR_DOMINIO",
     ]
 
     for code, filename in MOLINS_CANONICAL_FILENAMES.items():
@@ -76,14 +78,18 @@ def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
         out_dir = REPO_ROOT / f"working/out/molins/{code}"
         out_dir.mkdir(parents=True, exist_ok=True)
         primary_docx = out_dir / filename
-        payload_path = REPO_ROOT / f"working/molins/{code}/blueprint_{code.lower()}_payload.json"
+        payload_path = (
+            REPO_ROOT / f"working/molins/{code}/blueprint_{code.lower()}_payload.json"
+        )
 
         if not payload_path.exists():
             print(f"   ⚠️ Payload missing for {code}: {payload_path}")
             continue
 
         compile_asis_docx_via_ast(payload_path, primary_docx, doc_lang="es")
-        print(f"   ✓ Generated AST DOCX: {primary_docx.name} ({primary_docx.stat().st_size:,} bytes)")
+        print(
+            f"   ✓ Generated AST DOCX: {primary_docx.name} ({primary_docx.stat().st_size:,} bytes)"
+        )
 
         # Replicate DOCX to package mirrors
         for m_dir in mirrors:
@@ -92,7 +98,9 @@ def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Compile and mirror client deliverables.")
+    parser = argparse.ArgumentParser(
+        description="Compile and mirror client deliverables."
+    )
     parser.add_argument(
         "--only",
         choices=["all", "tomo1", "tomo1_asis", "annexes"],
@@ -119,14 +127,25 @@ def main() -> None:
     from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
 
     synced_heatmap = []
-    for code in sorted(hydrated_payloads.keys(), key=lambda x: int(x[1:]) if x[1:].isdigit() else 99):
+    for code in sorted(
+        hydrated_payloads.keys(), key=lambda x: int(x[1:]) if x[1:].isdigit() else 99
+    ):
         p = hydrated_payloads[code]
         pa = p.get("pillars_analysis", [])
-        pa_scores = [p_item.get("score") for p_item in pa if p_item.get("score") is not None]
+        pa_scores = [
+            p_item.get("score") for p_item in pa if p_item.get("score") is not None
+        ]
         avg_score = (sum(pa_scores) / len(pa_scores)) if pa_scores else 2.5
-        score_val = safe_float(p.get("score") or p.get("overall_score") or p.get("exact_score") or avg_score)
+        score_val = safe_float(
+            p.get("score")
+            or p.get("overall_score")
+            or p.get("exact_score")
+            or avg_score
+        )
         name_val = p.get("tower_name") or CANONICAL_TOWER_NAMES.get(code, code)
-        synced_heatmap.append({"id": code, "tower_code": code, "tower_name": name_val, "score": score_val})
+        synced_heatmap.append(
+            {"id": code, "tower_code": code, "tower_name": name_val, "score": score_val}
+        )
     global_payload["heatmap"] = synced_heatmap
     with open(global_payload_path, "w", encoding="utf-8") as f:
         json.dump(global_payload, f, indent=2, ensure_ascii=False)
@@ -159,14 +178,17 @@ def main() -> None:
             output_docx_path=tomo1_out,
             doc_lang="es",
         )
-        print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
+        print(
+            f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)"
+        )
 
-        # Mirror DOCX to root and packages
+        # Mirror DOCX to packages
         for mirror_dest in [
-            REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
             REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-            REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT
+            / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT
+            / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         ]:
             if mirror_dest.parent.exists():
                 shutil.copy2(tomo1_out, mirror_dest)
@@ -202,20 +224,25 @@ def main() -> None:
         output_docx_path=tomo1_out,
         doc_lang="es",
     )
-    print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
+    print(
+        f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)"
+    )
 
     # Mirror Tomo 1 DOCX
     for mirror_dest in [
-        REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
         REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
-        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT
+        / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT
+        / "working/out/Molins_Entrega_Cliente_Final/01_DIAGNOSTICO_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
     ]:
         if mirror_dest.parent.exists():
             shutil.copy2(tomo1_out, mirror_dest)
 
     print("\n" + "=" * 80)
-    print("ALL 10 ANNEXES + TOMO 1 CONSOLIDATED DELIVERABLE GENERATION COMPLETE (DOCX-ONLY)")
+    print(
+        "ALL 10 ANNEXES + TOMO 1 CONSOLIDATED DELIVERABLE GENERATION COMPLETE (DOCX-ONLY)"
+    )
     print("=" * 80)
 
 

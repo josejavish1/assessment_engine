@@ -5,23 +5,34 @@ Audit legal compliance, copyleft licenses, and GDPR requirements against SPDX IS
 - Column-level encryption at rest auditing (GDPR Art. 32).
 - Proprietary LICENSE file verification.
 """
+
 from __future__ import annotations
 
-import json
 import re
+import tomllib
 from pathlib import Path
-from typing import Any
 
-from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult, find_target_files
+from assessment_engine.infrastructure.auditor.models import (
+    AuditFinding,
+    ProbeResult,
+    find_target_files,
+)
 
 EXCLUDE_DIRS = {
-    ".git", "venv", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache",
-    ".ruff_cache", "node_modules", "dist", "build", "archive"
+    ".git",
+    "venv",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "node_modules",
+    "dist",
+    "build",
+    "archive",
 }
 
-KNOWN_COPYLEFT_PACKAGES = {
-    "pygpl", "gpl_lib", "agpl_tool", "pyqt5", "pyqt6"
-}
+KNOWN_COPYLEFT_PACKAGES = {"pygpl", "gpl_lib", "agpl_tool", "pyqt5", "pyqt6"}
 
 VIRAL_COPYLEFT_PATTERNS = [
     re.compile(r"""(?i)\b(GNU\s+General\s+Public\s+License|GPL|AGPL|Affero|SSPL)\b"""),
@@ -32,6 +43,7 @@ def _check_package_license(package_name: str) -> str | None:
     """Query the declared license in the active environment using importlib.metadata."""
     try:
         import importlib.metadata
+
         meta = importlib.metadata.metadata(package_name)
         lic = meta.get("License")
         if lic and lic.strip() and lic.lower() != "unknown":
@@ -46,7 +58,9 @@ def _check_package_license(package_name: str) -> str | None:
     return None
 
 
-def _audit_copyleft_dependencies(req_file: Path) -> tuple[dict[str, str], list[str], list[AuditFinding]]:
+def _audit_copyleft_dependencies(
+    req_file: Path,
+) -> tuple[dict[str, str], list[str], list[AuditFinding]]:
     """Analiza dependencias en requirements.txt buscando licencias virales Copyleft."""
     analyzed_licenses: dict[str, str] = {}
     copyleft_violations: list[str] = []
@@ -67,15 +81,17 @@ def _audit_copyleft_dependencies(req_file: Path) -> tuple[dict[str, str], list[s
 
         if pkg_name.lower() in KNOWN_COPYLEFT_PACKAGES:
             copyleft_violations.append(pkg_name)
-            findings.append(AuditFinding(
-                category="LEGAL",
-                severity="CRITICAL",
-                file_path="requirements.txt",
-                line_number=line_idx,
-                rule_id="LEGAL-COPYLEFT-CONTAMINATION",
-                message=f"Dependency '{pkg_name}' subject to viral Copyleft license (GPL/AGPL): restricts proprietary distribution",
-                recommendation="Replace with permissive commercial alternative (MIT / Apache-2.0 / BSD)."
-            ))
+            findings.append(
+                AuditFinding(
+                    category="LEGAL",
+                    severity="CRITICAL",
+                    file_path="requirements.txt",
+                    line_number=line_idx,
+                    rule_id="LEGAL-COPYLEFT-CONTAMINATION",
+                    message=f"Dependency '{pkg_name}' subject to viral Copyleft license (GPL/AGPL): restricts proprietary distribution",
+                    recommendation="Replace with permissive commercial alternative (MIT / Apache-2.0 / BSD).",
+                )
+            )
             continue
 
         lic_meta = _check_package_license(pkg_name)
@@ -84,20 +100,24 @@ def _audit_copyleft_dependencies(req_file: Path) -> tuple[dict[str, str], list[s
             for pat in VIRAL_COPYLEFT_PATTERNS:
                 if pat.search(lic_meta) and "LGPL" not in lic_meta:
                     copyleft_violations.append(pkg_name)
-                    findings.append(AuditFinding(
-                        category="LEGAL",
-                        severity="CRITICAL",
-                        file_path="requirements.txt",
-                        line_number=line_idx,
-                        rule_id="LEGAL-COPYLEFT-CONTAMINATION",
-                        message=f"Copyleft/viral license detected in '{pkg_name}': {lic_meta} (IP contamination risk)",
-                        recommendation="Replace with a permissive library (MIT, Apache-2.0, BSD) for enterprise compliance."
-                    ))
+                    findings.append(
+                        AuditFinding(
+                            category="LEGAL",
+                            severity="CRITICAL",
+                            file_path="requirements.txt",
+                            line_number=line_idx,
+                            rule_id="LEGAL-COPYLEFT-CONTAMINATION",
+                            message=f"Copyleft/viral license detected in '{pkg_name}': {lic_meta} (IP contamination risk)",
+                            recommendation="Replace with a permissive library (MIT, Apache-2.0, BSD) for enterprise compliance.",
+                        )
+                    )
 
     return analyzed_licenses, copyleft_violations, findings
 
 
-def _audit_rgpd_compliance(target_dir: Path) -> tuple[bool, bool, bool, bool, list[AuditFinding]]:
+def _audit_rgpd_compliance(
+    target_dir: Path,
+) -> tuple[bool, bool, bool, bool, list[AuditFinding]]:
     """Inspect source code for PII entities and GDPR technical enforcement mechanisms."""
     has_pii_entities = False
     has_art17_erasure = False
@@ -111,38 +131,83 @@ def _audit_rgpd_compliance(target_dir: Path) -> tuple[bool, bool, bool, bool, li
         except (OSError, UnicodeDecodeError):
             continue
 
-        if any(kw in code for kw in ("users", "clientes", "pacientes", "customers", "auth_hash", "email")):
+        if any(
+            kw in code
+            for kw in (
+                "users",
+                "clientes",
+                "pacientes",
+                "customers",
+                "auth_hash",
+                "email",
+            )
+        ):
             has_pii_entities = True
-        if any(kw in code for kw in ("data_erasure_cascade", "erase_user_pii", "derecho_olvido", "anonymize_user")):
+        if any(
+            kw in code
+            for kw in (
+                "data_erasure_cascade",
+                "erase_user_pii",
+                "derecho_olvido",
+                "anonymize_user",
+            )
+        ):
             has_art17_erasure = True
-        if any(kw in code for kw in ("data_portability_exporter", "export_full_user_archive", "export_user_data", "portabilidad")):
+        if any(
+            kw in code
+            for kw in (
+                "data_portability_exporter",
+                "export_full_user_archive",
+                "export_user_data",
+                "portabilidad",
+            )
+        ):
             has_art20_portability = True
-        if any(kw in code for kw in ("column_encryption", "encrypt_field", "fernet", "aes_256", "decrypt_field")):
+        if any(
+            kw in code
+            for kw in (
+                "column_encryption",
+                "encrypt_field",
+                "fernet",
+                "aes_256",
+                "decrypt_field",
+            )
+        ):
             has_column_encryption = True
 
     if has_pii_entities:
         if not has_art17_erasure:
-            findings.append(AuditFinding(
-                category="RGPD",
-                severity="HIGH",
-                file_path="api/src/main.py",
-                line_number=None,
-                rule_id="LEGAL-GDPR-ART17-MISSING",
-                message="Technical mechanism for irreversible erasure of personal data missing (GDPR Art. 17 Right to Erasure)",
-                recommendation="Integrate 'data_erasure_cascade' primitive to purge PII and anonymize transactions."
-            ))
+            findings.append(
+                AuditFinding(
+                    category="RGPD",
+                    severity="HIGH",
+                    file_path="api/src/main.py",
+                    line_number=None,
+                    rule_id="LEGAL-GDPR-ART17-MISSING",
+                    message="Technical mechanism for irreversible erasure of personal data missing (GDPR Art. 17 Right to Erasure)",
+                    recommendation="Integrate 'data_erasure_cascade' primitive to purge PII and anonymize transactions.",
+                )
+            )
         if not has_art20_portability:
-            findings.append(AuditFinding(
-                category="RGPD",
-                severity="MEDIUM",
-                file_path="api/src/main.py",
-                line_number=None,
-                rule_id="LEGAL-GDPR-ART20-MISSING",
-                message="Technical mechanism for structured data export missing (GDPR Art. 20 Portability)",
-                recommendation="Integrar la primitiva 'data_portability_exporter' para emitir paquetes JSON interoperables."
-            ))
+            findings.append(
+                AuditFinding(
+                    category="RGPD",
+                    severity="MEDIUM",
+                    file_path="api/src/main.py",
+                    line_number=None,
+                    rule_id="LEGAL-GDPR-ART20-MISSING",
+                    message="Technical mechanism for structured data export missing (GDPR Art. 20 Portability)",
+                    recommendation="Integrar la primitiva 'data_portability_exporter' para emitir paquetes JSON interoperables.",
+                )
+            )
 
-    return has_pii_entities, has_art17_erasure, has_art20_portability, has_column_encryption, findings
+    return (
+        has_pii_entities,
+        has_art17_erasure,
+        has_art20_portability,
+        has_column_encryption,
+        findings,
+    )
 
 
 def _calculate_legal_score(
@@ -150,7 +215,7 @@ def _calculate_legal_score(
     has_pii: bool,
     has_art17: bool,
     has_art20: bool,
-    has_license: bool
+    has_license: bool,
 ) -> tuple[float, bool]:
     """Calculate the weighted legal score and determine whether it passes the quality gate."""
     score = 100.0
@@ -167,26 +232,112 @@ def _calculate_legal_score(
     return score, passed
 
 
+def _audit_copyleft_from_pyproject(
+    pyproject_file: Path,
+) -> tuple[dict[str, str], list[str], list[AuditFinding]]:
+    """Inspect dependencies in pyproject.toml for viral Copyleft licenses."""
+    analyzed_licenses: dict[str, str] = {}
+    copyleft_violations: list[str] = []
+    findings: list[AuditFinding] = []
+
+    if not pyproject_file.exists():
+        return analyzed_licenses, copyleft_violations, findings
+
+    try:
+        data = tomllib.loads(pyproject_file.read_text(encoding="utf-8"))
+        deps = data.get("project", {}).get("dependencies", [])
+        for line_idx, line_str in enumerate(deps, 1):
+            line_str = line_str.strip()
+            if not line_str or line_str.startswith("#"):
+                continue
+
+            pkg_name = (
+                line_str.split("==")[0]
+                .split(">=")[0]
+                .split("<=")[0]
+                .split("~=")[0]
+                .strip()
+            )
+            if not pkg_name:
+                continue
+
+            if pkg_name.lower() in KNOWN_COPYLEFT_PACKAGES:
+                copyleft_violations.append(pkg_name)
+                findings.append(
+                    AuditFinding(
+                        category="LEGAL",
+                        severity="CRITICAL",
+                        file_path="pyproject.toml",
+                        line_number=line_idx,
+                        rule_id="LEGAL-COPYLEFT-CONTAMINATION",
+                        message=f"Dependency '{pkg_name}' subject to viral Copyleft license (GPL/AGPL): restricts proprietary distribution",
+                        recommendation="Replace with permissive commercial alternative (MIT / Apache-2.0 / BSD).",
+                    )
+                )
+                continue
+
+            lic_meta = _check_package_license(pkg_name)
+            if lic_meta:
+                analyzed_licenses[pkg_name] = lic_meta
+                for pat in VIRAL_COPYLEFT_PATTERNS:
+                    if pat.search(lic_meta) and "LGPL" not in lic_meta:
+                        copyleft_violations.append(pkg_name)
+                        findings.append(
+                            AuditFinding(
+                                category="LEGAL",
+                                severity="CRITICAL",
+                                file_path="pyproject.toml",
+                                line_number=line_idx,
+                                rule_id="LEGAL-COPYLEFT-CONTAMINATION",
+                                message=f"Copyleft/viral license detected in '{pkg_name}': {lic_meta} (IP contamination risk)",
+                                recommendation="Replace with a permissive library (MIT, Apache-2.0, BSD) for enterprise compliance.",
+                            )
+                        )
+    except Exception:
+        pass
+
+    return analyzed_licenses, copyleft_violations, findings
+
+
 def run_legal_compliance_probe(target_dir: Path) -> ProbeResult:
     """Execute a comprehensive audit of intellectual property licenses and GDPR compliance."""
     findings: list[AuditFinding] = []
 
-    analyzed_licenses, copyleft_violations, copyleft_finds = _audit_copyleft_dependencies(target_dir / "requirements.txt")
-    findings.extend(copyleft_finds)
+    req_file = target_dir / "requirements.txt"
+    pyproject_file = target_dir / "pyproject.toml"
 
-    has_root_license = (target_dir / "LICENSE").exists() or (target_dir / "LICENSE.md").exists()
+    if req_file.exists():
+        analyzed_licenses, copyleft_violations, copyleft_finds = (
+            _audit_copyleft_dependencies(req_file)
+        )
+        findings.extend(copyleft_finds)
+    elif pyproject_file.exists():
+        analyzed_licenses, copyleft_violations, copyleft_finds = (
+            _audit_copyleft_from_pyproject(pyproject_file)
+        )
+        findings.extend(copyleft_finds)
+    else:
+        analyzed_licenses, copyleft_violations = {}, []
+
+    has_root_license = (target_dir / "LICENSE").exists() or (
+        target_dir / "LICENSE.md"
+    ).exists()
     if not has_root_license:
-        findings.append(AuditFinding(
-            category="LEGAL",
-            severity="LOW",
-            file_path="LICENSE",
-            line_number=None,
-            rule_id="LEGAL-NO-ROOT-LICENSE",
-            message="Repository root lacks a 'LICENSE' file",
-            recommendation="Define software license (e.g. Proprietary or MIT) for legal certainty."
-        ))
+        findings.append(
+            AuditFinding(
+                category="LEGAL",
+                severity="LOW",
+                file_path="LICENSE",
+                line_number=None,
+                rule_id="LEGAL-NO-ROOT-LICENSE",
+                message="Repository root lacks a 'LICENSE' file",
+                recommendation="Define software license (e.g. Proprietary or MIT) for legal certainty.",
+            )
+        )
 
-    has_pii, has_art17, has_art20, has_enc, rgpd_finds = _audit_rgpd_compliance(target_dir)
+    has_pii, has_art17, has_art20, has_enc, rgpd_finds = _audit_rgpd_compliance(
+        target_dir
+    )
     findings.extend(rgpd_finds)
 
     score, passed = _calculate_legal_score(
@@ -205,7 +356,7 @@ def run_legal_compliance_probe(target_dir: Path) -> ProbeResult:
             "has_gdpr_art17_erasure": has_art17,
             "has_gdpr_art20_portability": has_art20,
             "has_column_encryption": has_enc,
-            "analyzed_dependencies_count": len(analyzed_licenses)
+            "analyzed_dependencies_count": len(analyzed_licenses),
         },
-        findings=findings
+        findings=findings,
     )

@@ -13,36 +13,37 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-# Gemini adapter
+# Gemini Adapter
 
-Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentación canónica del proyecto.
+This file acts as the **concise operational adapter for Gemini CLI**, not as canonical project documentation.
 
-## Herencia de Gobernanza (Estricto)
+## Governance Inheritance (Strict)
 
-Como agente de Google, **DEBES leer y someterte obligatoriamente a las Leyes de Ingeniería No Negociables y el Checklist de Disciplina de Cambio definidos en [AGENTS.md](AGENTS.md)**. Esas leyes de calidad son absolutas e inmutables para esta base de código.
+As a Google AI agent, **YOU MUST read and unconditionally submit to the Sovereign Engineering Laws and the Change Discipline Checklist defined in [AGENTS.md](AGENTS.md)**. These quality laws are absolute and immutable across this codebase.
 
-### Desacoplamiento Lingüístico Obligatorio (Language Decoupling Law)
-- **Regla Inmutable:** Aunque el usuario interactúe en español en el chat, **NUNCA** debes escribir código, comentarios, docstrings, excepciones, logs, prompts o tests en español.
-- **Todo artefacto de ingeniería debe ser 100% Technical English.**
-- El español u otros idiomas solo existen como datos en `engine_config/locales.json` para renderizar informes al cliente final cuando este lo solicite con un parámetro explícito.
-- Prohibido hardcodear `locale="es"` o usar `"es"` como valor por defecto en firmas de funciones; el valor por defecto del sistema es siempre `"en"`.
+### Mandatory Language Decoupling Law
+- **Immutable Rule:** Even if the human operator dialogues or prompts in Spanish, **NEVER** write source code, inline comments, docstrings, exceptions, logs, prompts, or tests in Spanish.
+- **Every engineering artifact must be 100% Technical English.**
+- Spanish or other localized languages exist solely as data in `engine_config/locales.json` to render client deliverables when explicitly parameterized.
+- Hardcoding `locale="es"` or using `"es"` as a function signature default is strictly prohibited; the system default is always `"en"`.
 
-## Orden de lectura
+## Reading Order
 
 1. [README.md](README.md)
 2. [docs/README.md](docs/README.md)
 3. [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md)
 4. [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)
-5. el documento canónico más cercano al cambio
+5. The canonical document closest to the target change
 
-## Reglas
+## Operational Rules
 
-- no uses este archivo como fuente única de verdad;
-- apóyate en código, tests, schemas y workflows reales;
-- cuando una afirmación no pueda verificarse, trátala como `Needs Review`;
-- no acumules aquí arquitectura detallada, roadmap ni memoria histórica del proyecto;
-- si el cambio toca arquitectura, contratos, operación o gobernanza, actualiza la documentación canónica correspondiente.
+- Prepend every response with the deterministic sentinel: `[CANARY: V4 | MONISM: SSOT | LOCALE: EN]`.
+- Do not use this file as a standalone single source of truth.
+- Rely on verified source code, automated test suites, schemas, and real workflows.
+- When a factual assertion cannot be verified, treat it as `Needs Review`.
+- Do not accumulate historical architecture notes, roadmap discussions, or transient logs in this file.
+- If a change impacts architecture, contracts, operations, or governance, update canonical documentation in `docs/`.
 
-## Nota de transición
+## Transition Note
 
-`GEMINI.md` contenía memoria operativa histórica útil, pero parte de ese contenido mezclaba estado actual con visión futura. Esa lectura debe considerarse superada por la base común en `docs/`.
+Historical operational memory from previous iterations is superseded by the unified canonical documentation base under `docs/`.

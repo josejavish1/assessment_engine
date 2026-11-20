@@ -41,7 +41,7 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 MARKDOWN_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
 MARKDOWN_HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$", re.MULTILINE)
-DEFAULT_COVERAGE_INCLUDE = ["README.md", "AGENTS.md", "CHATGPT.md", "docs/**/*.md"]
+DEFAULT_COVERAGE_INCLUDE = ["README.md", "AGENTS.md", "docs/**/*.md"]
 DEFAULT_COVERAGE_EXCLUDE = [
     "docs/reference/generated/legacy-gemini/**",
     "docs/strategy/**",
@@ -49,7 +49,6 @@ DEFAULT_COVERAGE_EXCLUDE = [
 DEFAULT_VERIFIED_MAX_AGE_DAYS = 180
 AGENT_ADAPTER_PATHS = {
     "AGENTS.md",
-    "CHATGPT.md",
     "GEMINI.md",
     ".github/copilot-instructions.md",
 }
