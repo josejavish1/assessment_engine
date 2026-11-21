@@ -8,32 +8,49 @@ and neutralizes the corruptions.
 from __future__ import annotations
 
 import ast
-import ast
 import logging
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult
-from assessment_engine.infrastructure.auditor.mutation_probe import (
-    MutationTestingProbe,
-)
 
 PYTEST_CMD = [sys.executable, "-m", "pytest"]
 
 CORE_MUTATION_TARGETS: list[tuple[str, str]] = [
     ("src/assessment_engine/mcp_server.py", "tests/unit/test_mcp_server.py"),
-    ("src/assessment_engine/domain/cfo_actuarial_gate.py", "tests/unit/test_cfo_actuarial_gate.py"),
-    ("src/assessment_engine/domain/framework_urn.py", "tests/unit/test_framework_urn.py"),
-    ("src/assessment_engine/domain/actuarial_scale_calibrator.py", "tests/unit/test_actuarial_scale_calibrator.py"),
-    ("src/assessment_engine/domain/actuarial_reconciler.py", "tests/unit/test_actuarial_reconciler.py"),
-    ("src/assessment_engine/domain/services/score_reconciler.py", "tests/unit/test_score_reconciler.py"),
-    ("src/assessment_engine/domain/bayesian_fair_copula_engine.py", "tests/unit/test_bayesian_fair_copula_engine.py"),
-    ("src/assessment_engine/infrastructure/rosi_calculator.py", "tests/unit/test_rosi_actuarial_engine.py"),
+    (
+        "src/assessment_engine/domain/cfo_actuarial_gate.py",
+        "tests/unit/test_cfo_actuarial_gate.py",
+    ),
+    (
+        "src/assessment_engine/domain/framework_urn.py",
+        "tests/unit/test_framework_urn.py",
+    ),
+    (
+        "src/assessment_engine/domain/actuarial_scale_calibrator.py",
+        "tests/unit/test_actuarial_scale_calibrator.py",
+    ),
+    (
+        "src/assessment_engine/domain/actuarial_reconciler.py",
+        "tests/unit/test_actuarial_reconciler.py",
+    ),
+    (
+        "src/assessment_engine/domain/services/score_reconciler.py",
+        "tests/unit/test_score_reconciler.py",
+    ),
+    (
+        "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
+        "tests/unit/test_bayesian_fair_copula_engine.py",
+    ),
+    (
+        "src/assessment_engine/infrastructure/rosi_calculator.py",
+        "tests/unit/test_rosi_actuarial_engine.py",
+    ),
 ]
 
 
@@ -59,7 +76,7 @@ class DiscreteMutantCollector(ast.NodeVisitor):
         """Visit comparison nodes to register potential comparison inversion mutants."""
         if self._in_func > 0 and len(node.ops) == 1:
             op = node.ops[0]
-            mutated_op = None
+            mutated_op: ast.cmpop | None = None
             desc = ""
             if isinstance(op, ast.Gt):
                 mutated_op = ast.LtE()
@@ -133,13 +150,18 @@ class SingleMutantInjector(ast.NodeTransformer):
 
     def visit_Compare(self, node: ast.Compare) -> ast.AST:
         """Transform target comparison node by injecting the mutant operator."""
-        if self._in_func > 0 and len(node.ops) == 1 and type(node.ops[0]) in (
-            ast.Gt,
-            ast.Lt,
-            ast.Eq,
-            ast.NotEq,
-            ast.In,
-            ast.NotIn,
+        if (
+            self._in_func > 0
+            and len(node.ops) == 1
+            and type(node.ops[0])
+            in (
+                ast.Gt,
+                ast.Lt,
+                ast.Eq,
+                ast.NotEq,
+                ast.In,
+                ast.NotIn,
+            )
         ):
             if self._current_id == self.target_id:
                 node.ops = [self.replacement]
@@ -187,10 +209,10 @@ def generate_first_order_mutants(
 
 def _discover_mutation_targets(target_dir: Path) -> list[tuple[Path, Path]]:
     """Dynamically discover all Python files in the domain layer and map to their tests."""
-    targets = []
+    targets: list[tuple[Path, Path]] = []
     domain_dir = target_dir / "src/assessment_engine/domain"
     tests_dir = target_dir / "tests/unit"
-    
+
     if not domain_dir.exists() or not tests_dir.exists():
         return targets
 
@@ -205,7 +227,9 @@ def _discover_mutation_targets(target_dir: Path) -> list[tuple[Path, Path]]:
     return targets
 
 
-def run_mutation_gate_probe(target_dir: Path, mutants_per_module: int = 4) -> ProbeResult:
+def run_mutation_gate_probe(
+    target_dir: Path, mutants_per_module: int = 4
+) -> ProbeResult:
     """Execute comprehensive AST mutation testing across core business targets."""
     findings: list[AuditFinding] = []
     total_mutants = 0
@@ -214,8 +238,8 @@ def run_mutation_gate_probe(target_dir: Path, mutants_per_module: int = 4) -> Pr
 
     dynamic_targets = _discover_mutation_targets(target_dir)
 
-    import tempfile
     import shutil
+    import tempfile
 
     with tempfile.TemporaryDirectory() as temp_workspace_str:
         temp_workspace = Path(temp_workspace_str) / "repo"
@@ -224,9 +248,16 @@ def run_mutation_gate_probe(target_dir: Path, mutants_per_module: int = 4) -> Pr
             target_dir,
             temp_workspace,
             ignore=shutil.ignore_patterns(
-                ".git", ".venv", "__pycache__", "workspaces", "node_modules",
-                ".pytest_cache", ".mypy_cache", ".ruff_cache", "business_command_center"
-            )
+                ".git",
+                ".venv",
+                "__pycache__",
+                "workspaces",
+                "node_modules",
+                ".pytest_cache",
+                ".mypy_cache",
+                ".ruff_cache",
+                "business_command_center",
+            ),
         )
 
         for target_path_orig, test_path_orig in dynamic_targets:
@@ -243,13 +274,17 @@ def run_mutation_gate_probe(target_dir: Path, mutants_per_module: int = 4) -> Pr
             except OSError:
                 continue
 
-            mutants = generate_first_order_mutants(original_code, max_mutants=mutants_per_module)
+            mutants = generate_first_order_mutants(
+                original_code, max_mutants=mutants_per_module
+            )
             if not mutants:
                 continue
 
             target_path_isolated = temp_workspace / target_rel
             try:
-                test_path_isolated = temp_workspace / str(test_path_orig.relative_to(target_dir))
+                test_path_isolated = temp_workspace / str(
+                    test_path_orig.relative_to(target_dir)
+                )
             except ValueError:
                 test_path_isolated = test_path_orig
 
