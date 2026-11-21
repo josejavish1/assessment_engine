@@ -11,6 +11,7 @@ Written in 100% Technical English.
 from __future__ import annotations
 
 from decimal import Decimal
+
 import pytest
 
 from assessment_engine.domain.governance import (
@@ -100,35 +101,35 @@ def test_dimensionless_open_fair_scaling_with_hourly_burn_rate(engine: Governanc
     T1 = 1.0 * rate, T2 = 4.0 * rate, T3 = 16.0 * rate, T4 = 64.0 * rate.
     Zero static currency amounts or hardcoded currency symbols.
     """
-    # Case 1: Industrial enterprise with 13,061.00 currency_units/hour (e.g. Molins in EUR)
-    rate_molins = Decimal("13061.0")
+    # Case 1: Industrial enterprise with 13,061.00 currency_units/hour (e.g. Acme Corp in EUR)
+    rate_acme_corp = Decimal("13061.0")
 
     # Under 1 hour (< 13,061) -> LM1
-    r_lm1 = engine.resolve_financial_risk(10000, hourly_burn_rate=rate_molins, locale="es")
+    r_lm1 = engine.resolve_financial_risk(10000, hourly_burn_rate=rate_acme_corp, locale="es")
     assert r_lm1.open_fair_lm == "LM1"
     assert r_lm1.severity == FinancialSeverityCode.LOW
     assert r_lm1.label == "Muy Bajo"
 
     # Between 1h and 4h (13,061 to 52,244) -> LM2 (e.g. 35,000)
-    r_lm2 = engine.resolve_financial_risk(35000, hourly_burn_rate=rate_molins, locale="es")
+    r_lm2 = engine.resolve_financial_risk(35000, hourly_burn_rate=rate_acme_corp, locale="es")
     assert r_lm2.open_fair_lm == "LM2"
     assert r_lm2.severity == FinancialSeverityCode.MODERATE
     assert r_lm2.label == "Bajo"
 
     # Between 4h and 16h (52,244 to 208,976) -> LM3 (e.g. 83,859 in T2)
-    r_lm3 = engine.resolve_financial_risk(83859, hourly_burn_rate=rate_molins, locale="es")
+    r_lm3 = engine.resolve_financial_risk(83859, hourly_burn_rate=rate_acme_corp, locale="es")
     assert r_lm3.open_fair_lm == "LM3"
     assert r_lm3.severity == FinancialSeverityCode.ELEVATED
     assert r_lm3.label == "Medio"
 
     # Between 16h and 64h (208,976 to 835,904) -> LM4 (e.g. 253,959 in T2)
-    r_lm4 = engine.resolve_financial_risk(253959, hourly_burn_rate=rate_molins, locale="es")
+    r_lm4 = engine.resolve_financial_risk(253959, hourly_burn_rate=rate_acme_corp, locale="es")
     assert r_lm4.open_fair_lm == "LM4"
     assert r_lm4.severity == FinancialSeverityCode.HIGH
     assert r_lm4.label == "Alto"
 
     # Over 64h (>= 835,904) -> LM5
-    r_lm5 = engine.resolve_financial_risk(1000000, hourly_burn_rate=rate_molins, locale="es")
+    r_lm5 = engine.resolve_financial_risk(1000000, hourly_burn_rate=rate_acme_corp, locale="es")
     assert r_lm5.open_fair_lm == "LM5"
     assert r_lm5.severity == FinancialSeverityCode.CRITICAL
     assert r_lm5.label == "Muy Alto"
@@ -166,3 +167,26 @@ def test_sr11_7_model_provenance_audit_trail(engine: GovernanceScaleEngine) -> N
     res = engine.resolve_financial_risk(50000, hourly_burn_rate=10000)
     assert "SR11-7" in res.model_provenance
     assert "PHYSICAL-DOWNTIME-SCALE" in res.model_provenance
+
+
+def test_resolve_statutory_target_dora_and_nis2(engine: GovernanceScaleEngine) -> None:
+    """Verifies that resolve_statutory_target respects legal regulatory floors and step-size realism."""
+    # Under DORA, T7 (Cybersecurity) has a statutory floor of 3.80
+    floor_t7 = engine.resolve_statutory_target("T7", framework_codes=["DORA"])
+    assert floor_t7 == Decimal("3.80")
+
+    # If current posture is 2.00, single horizon H1 is capped at step_size +1.20 -> 3.20
+    target_low = engine.resolve_statutory_target("T7", framework_codes=["DORA"], current_as_is=2.0, max_horizon_step=1.2)
+    assert target_low == Decimal("3.20")
+
+    # If current posture is 3.50, gap to 3.80 is 0.30 (within step size), so target is 3.80
+    target_close = engine.resolve_statutory_target("T7", framework_codes=["DORA"], current_as_is=3.5, max_horizon_step=1.2)
+    assert target_close == Decimal("3.80")
+
+    # Under FISC (Japan Banking), T6 (Cloud) has a statutory floor of 3.80
+    target_fisc = engine.resolve_statutory_target("T6", framework_codes=["FISC"], current_as_is=3.0, max_horizon_step=1.2)
+    assert target_fisc == Decimal("3.80")
+
+    # Under ISO 27001 baseline, floor is 3.00
+    target_iso = engine.resolve_statutory_target("T4", framework_codes=["ISO_27001"], current_as_is=2.5)
+    assert target_iso == Decimal("3.00")

@@ -13,7 +13,8 @@ Implements:
 
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_HALF_EVEN
+import json
+from decimal import ROUND_HALF_EVEN, Decimal
 from typing import Any, Callable, Dict, Optional
 
 from assessment_engine.domain.governance.primitives import (
@@ -119,8 +120,13 @@ class GovernanceScaleEngine:
                         label = translated
                 elif locale.startswith("es"):
                     try:
-                        from assessment_engine.infrastructure.localization import t as loc_t
-                        label = loc_t(token, locale=locale, default=label)
+                        from assessment_engine.domain.config_path import (
+                            resolve_domain_engine_config_dir,
+                        )
+                        loc_file = resolve_domain_engine_config_dir() / "locales.json"
+                        if loc_file.exists():
+                            loc_data = json.loads(loc_file.read_text(encoding="utf-8"))
+                            label = loc_data.get("es", {}).get(token, label)
                     except Exception:
                         pass
 
@@ -230,3 +236,57 @@ class GovernanceScaleEngine:
             threshold_applied=thresh_applied,
             model_provenance=provenance
         )
+
+    def resolve_statutory_target(
+        self,
+        tower_code: str,
+        framework_codes: Optional[list[str]] = None,
+        current_as_is: Optional[float | Decimal] = None,
+        max_horizon_step: float = 1.2,
+    ) -> Decimal:
+        """
+        Resolves the legally grounded, realistic target maturity (TO-BE) for a specific tower.
+
+        Enforces:
+        1. Regulatory Compliance Floor: max(framework.statutory_floors[tower]) across all applicable regulations.
+        2. Horizon Step-Size Realism: prevents organizational leapfrog failures by capping single-horizon jumps.
+        3. Strict Decimal bounds [1.00, 5.00] with 2 decimal places.
+        """
+        clean_tower = tower_code.strip().upper()
+        if not clean_tower.startswith("T") and clean_tower.isdigit():
+            clean_tower = f"T{clean_tower}"
+
+        floors: list[Decimal] = []
+        target_fws = framework_codes or ["ISO_27001"]
+
+        try:
+            from assessment_engine.domain.config_path import resolve_domain_engine_config_dir
+            reg_file = resolve_domain_engine_config_dir() / "regulatory_frameworks.json"
+            if reg_file.exists():
+                with open(reg_file, "r", encoding="utf-8-sig") as f:
+                    cat = json.load(f).get("frameworks_catalog", {})
+                    for fw in target_fws:
+                        fw_spec = cat.get(fw.strip().upper())
+                        if fw_spec and "statutory_floors" in fw_spec:
+                            tower_floor = fw_spec["statutory_floors"].get(clean_tower)
+                            if tower_floor is not None:
+                                floors.append(Decimal(str(tower_floor)))
+        except Exception:
+            pass
+
+        statutory_floor = max(floors) if floors else Decimal("3.00")
+
+        if current_as_is is None:
+            return statutory_floor.quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+
+        as_is_dec = sanitize_to_decimal(current_as_is)
+        step_dec = Decimal(str(max_horizon_step))
+
+        if as_is_dec < statutory_floor:
+            gap = statutory_floor - as_is_dec
+            target = as_is_dec + min(step_dec, gap)
+        else:
+            target = min(Decimal("5.00"), as_is_dec + Decimal("0.50"))
+
+        clamped = max(Decimal("1.00"), min(Decimal("5.00"), target))
+        return clamped.quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
