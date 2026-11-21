@@ -57,3 +57,43 @@ def test_sle_severity_monotonicity(rto: float, rate: float) -> None:
     sle_low, _, _, _ = calculate_severity_weighted_sle(rto, rate, "LOW", is_spof=False)
 
     assert sle_crit >= sle_high >= sle_med >= sle_low
+
+
+@settings(max_examples=100)
+@given(
+    negative_val=st.floats(max_value=-0.001, allow_nan=False, allow_infinity=False),
+    positive_val=st.floats(min_value=0.0, max_value=100_000.0, allow_nan=False, allow_infinity=False),
+)
+def test_sle_rejects_negative_boundary_inputs(negative_val: float, positive_val: float) -> None:
+    """Axiom 4: Strict Non-Negativity Precondition. Negative downtime or rate raises ValueError."""
+    with pytest.raises(ValueError, match="must be non-negative"):
+        calculate_severity_weighted_sle(negative_val, positive_val, "HIGH")
+
+    with pytest.raises(ValueError, match="must be non-negative"):
+        calculate_severity_weighted_sle(positive_val, negative_val, "HIGH")
+
+
+def test_sle_rejects_nan_and_inf() -> None:
+    import math
+    with pytest.raises(ValueError, match="cannot be NaN"):
+        calculate_severity_weighted_sle(math.nan, 10.0, "LOW")
+    with pytest.raises(ValueError, match="cannot be NaN"):
+        calculate_severity_weighted_sle(10.0, math.nan, "LOW")
+    with pytest.raises(ValueError, match="cannot be infinite"):
+        calculate_severity_weighted_sle(math.inf, 10.0, "LOW")
+    with pytest.raises(ValueError, match="cannot be infinite"):
+        calculate_severity_weighted_sle(10.0, -math.inf, "LOW")
+
+
+@settings(max_examples=50)
+@given(
+    severity=st.sampled_from(["CRITICAL", "HIGH", "MEDIUM", "LOW"]),
+    is_spof=st.booleans(),
+)
+def test_sle_zero_burn_rate_produces_zero_loss(severity: str, is_spof: bool) -> None:
+    """Axiom 5: Zero-Burn Invariant. If rate is 0.0, total operational exposure is strictly 0.0."""
+    sle, alpha, repl, sec = calculate_severity_weighted_sle(10.0, 0.0, severity, is_spof)
+    assert sle == 0.0
+    assert repl == 0.0
+    assert sec == 0.0
+

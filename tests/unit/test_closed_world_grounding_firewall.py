@@ -12,6 +12,7 @@ Strictly 100% Technical English and tenant-agnostic.
 
 from __future__ import annotations
 
+from typing import Sequence
 import pytest
 
 from assessment_engine.domain.services.closed_world_grounding_firewall import (
@@ -296,3 +297,26 @@ def test_score_primacy_audit_pure_english_defaults() -> None:
     assert len(result.detected_violations) >= 1
     assert "total absence" not in result.sanitized_text
     assert "with room for improvement under peak contingency conditions" in result.sanitized_text
+
+
+def test_subtag_locale_fallback_in_firewall() -> None:
+    """Verify that regional language subtags (e.g. es-ES, en-US) fall back to base language."""
+    class MockRegionalLocalizationProvider:
+        def get_localized_list(self, key: str, locale: str = "en") -> Sequence[str]:
+            if locale == "es" and key == "speculative_artifact_regexes":
+                return [r"\bpinzas\b"]
+            return []
+
+        def translate(self, key: str, locale: str = "en") -> str:
+            if locale == "es" and key == "speculative_clause_prefix_regex":
+                return r"\b(utilizando|mediante)\b"
+            return key
+
+    firewall = ClosedWorldGroundingFirewall(
+        source_evidence_corpus="Entorno sin telemetría.",
+        doc_lang="es-ES",
+        localization_provider=MockRegionalLocalizationProvider(),
+    )
+    assert r"\bpinzas\b" in firewall._speculative_patterns
+    assert firewall._clause_prefix_regex_str == r"\b(utilizando|mediante)\b"
+

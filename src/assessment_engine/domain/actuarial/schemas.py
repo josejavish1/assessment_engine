@@ -192,6 +192,15 @@ class TechnicalRiskScenario(BaseModel):
 
     risk_id: str = Field(..., pattern=r"^[A-Z0-9_\-\.]+$")
     title: str = Field(..., min_length=5, max_length=120)
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def _truncate_title(cls, v: Any) -> str:
+        s = str(v).strip()
+        if len(s) > 120:
+            return s[:117] + "..."
+        return s
+
     custody_role: str = Field(
         default="PRIMARY_CUSTODIAN",
         pattern=r"^(PRIMARY_CUSTODIAN|TANGENTIAL_CONTRIBUTOR)$",

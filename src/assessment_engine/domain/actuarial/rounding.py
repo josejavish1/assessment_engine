@@ -11,7 +11,7 @@ Implements the Argon Actuarial Rounding Policy:
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import List, Sequence, Union
+from typing import List, Mapping, Optional, Sequence, Union
 
 
 def compute_step_quantum(val: Decimal) -> Decimal:
@@ -240,7 +240,7 @@ def harmonize_integer_weights_dual_constraint(
 
 def allocate_portfolio_euler_subadditivity(
     single_event_max_ale: Union[int, float, Decimal],
-    tower_risk_weights: dict[str, Union[int, float, Decimal]],
+    tower_risk_weights: Mapping[str, Union[int, float, Decimal]],
     annual_revenue: Union[int, float, Decimal],
 ) -> dict[str, int]:
     """GATE-30.4: Actuarial Sub-Additivity Bound & Multi-Tower Euler Allocation.

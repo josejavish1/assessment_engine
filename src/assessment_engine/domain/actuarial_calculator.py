@@ -139,6 +139,16 @@ def calculate_severity_weighted_sle(
     Scale-invariant, pure function mapping recovery time and hourly downtime burn into:
     (sle_total, alpha_blast_radius, replacement_cost, secondary_cost).
     """
+    import math
+    if math.isnan(rto_hours) or math.isnan(effective_rate):
+        raise ValueError(f"Inputs cannot be NaN (rto={rto_hours}, rate={effective_rate})")
+    if math.isinf(rto_hours) or math.isinf(effective_rate):
+        raise ValueError(f"Inputs cannot be infinite (rto={rto_hours}, rate={effective_rate})")
+    if rto_hours < 0.0 or effective_rate < 0.0:
+        raise ValueError(
+            f"Recovery time ({rto_hours}) and downtime burn rate ({effective_rate}) must be non-negative."
+        )
+
     is_crit = is_spof or severity == "CRITICAL"
     if is_crit:
         alpha = 0.85

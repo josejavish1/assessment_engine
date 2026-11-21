@@ -123,3 +123,20 @@ def test_gatekeeper_sanitizes_mixed_findings(
     assert sanitized[0]["node_id"] == "T1-P4-HC02"
     assert len(quarantined) == 1
     assert quarantined[0].detected_foreign_domain_id == "T2"
+
+
+def test_match_lexicon_terms_multi_word_phrase() -> None:
+    """Verify that multi-word phrases in lexicon match correctly via regex word boundaries."""
+    from assessment_engine.domain.validation.semantic_gatekeeper import (
+        match_lexicon_terms,
+        normalize_text,
+    )
+
+    text = "The enterprise relies on active directory federation and multi-factor authentication."
+    norm_text = normalize_text(text)
+    tokens = set(norm_text.split())
+    lexicon = ["active directory", "singleword"]
+
+    hits = match_lexicon_terms(norm_text, tokens, lexicon)
+    assert "active directory" in hits
+

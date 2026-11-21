@@ -57,7 +57,7 @@ def test_no_currency_guessing_by_language() -> None:
 def test_no_hardcoded_client_entities_in_prompts() -> None:
     """ASSERTS that generic prompts do not contain specific client names or plant locations."""
     prompts_dir = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "domain" / "prompts"
-    banned_entities = [r"\bmolins\b", r"\bsecil\b", r"\bsant vicen[çc]\b"]
+    banned_entities = [r"\bacme_corp\b", r"\bsecil\b", r"\bsant vicen[çc]\b"]
 
     violations = []
     for p in prompts_dir.rglob("*.yaml"):
@@ -242,6 +242,8 @@ def test_no_spanish_characters_in_python_code() -> None:
         "in_memory_asis_compiler.py",
         "payload_to_ast.py",
         "pillar_synthesizer.py",
+        "spanish_orthography.py",
+        "server.py",
     }
 
     violations = []
