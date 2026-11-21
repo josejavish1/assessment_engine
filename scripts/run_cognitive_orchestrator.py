@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-The Cognitive Arbiter — Flight Deck CLI (RFC-015 SOTA Master Pipeline).
+"""The Cognitive Arbiter — Flight Deck CLI (RFC-015 SOTA Master Pipeline).
 
 5 Fases Deterministas de Meta-Consciencia:
 [1/6] Ephemeral Git Worktree Sandbox (Zero-Risk Blast Radius Isolation).
@@ -21,7 +20,6 @@ import logging
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 from typing import Any
 
@@ -35,12 +33,16 @@ from assessment_engine.infrastructure.evolution.closure_tribunal import closure_
 from assessment_engine.infrastructure.evolution.cognitive_arbiter import (
     CognitiveArbiter,
     SkepticRole,
-    SurgicalPatchError,
     SynthesizerRole,
     VerdictStatus,
 )
-from assessment_engine.infrastructure.evolution.epistemic_distiller import epistemic_distiller
-from assessment_engine.infrastructure.evolution.worktree_runner import EphemeralWorktree, worktree_runner
+from assessment_engine.infrastructure.evolution.epistemic_distiller import (
+    epistemic_distiller,
+)
+from assessment_engine.infrastructure.evolution.worktree_runner import (
+    EphemeralWorktree,
+    worktree_runner,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("cognitive_orchestrator")
@@ -72,10 +74,12 @@ class OrchestratorPresenter:
         self.output_json = output_json
 
     def log(self, msg: str, end: str = "\n", flush: bool = False) -> None:
+        """Log message to standard output when not in JSON mode."""
         if not self.output_json:
             print(msg, end=end, flush=flush)
 
     def header(self, task: str, target_rels: list[Path]) -> None:
+        """Render banner header for the orchestration run."""
         if not self.output_json:
             targets_str = ", ".join(str(p) for p in target_rels)
             print("\n" + "=" * 78)
@@ -233,7 +237,9 @@ def _run_dialectical_phase(
     genai_client = None
     if not offline_only:
         try:
-            from assessment_engine.infrastructure.genai_client import create_genai_client
+            from assessment_engine.infrastructure.genai_client import (
+                create_genai_client,
+            )
             genai_client = create_genai_client()
         except (RuntimeError, ValueError, KeyError, OSError, TypeError) as ex:
             logger.debug(f"[Orchestrator] GenAI initialization skipped: {ex}")
@@ -248,7 +254,9 @@ def _run_dialectical_phase(
     _ = skeptic.query_web_standards(query)
     presenter.log(f"      - Skeptic queried standards: '{query[:48]}...'")
 
-    from assessment_engine.infrastructure.evolution.reflexion_ledger import reflexion_ledger
+    from assessment_engine.infrastructure.evolution.reflexion_ledger import (
+        reflexion_ledger,
+    )
 
     preflight_memories = [reflexion_ledger.format_preflight_prompt_block(str(p)) for p in target_rels]
     joined_preflight = "\n".join(m for m in preflight_memories if m)
@@ -470,17 +478,17 @@ def _handle_merge_interaction(
         )
         if res_merge.returncode == 0:
             print("[Merge] Merge completed successfully. Main branch updated.")
+            # Physical safety synchronization for certified files
+            if target_rels:
+                for rel in target_rels:
+                    src = worktree.worktree_path / rel
+                    dst = repo_root / rel
+                    if src.exists():
+                        dst.parent.mkdir(parents=True, exist_ok=True)
+                        dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
         else:
             print(f"[Merge] Aviso fast-forward: {res_merge.stderr.strip()}")
-
-        # Physical safety synchronization for certified files
-        if target_rels:
-            for rel in target_rels:
-                src = worktree.worktree_path / rel
-                dst = repo_root / rel
-                if src.exists():
-                    dst.parent.mkdir(parents=True, exist_ok=True)
-                    dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            print("[Merge] Aborting physical sync to preserve clean working tree.")
     else:
         print("[Cancelled] Merge cancelled by user. Main branch preserved intact.")
 

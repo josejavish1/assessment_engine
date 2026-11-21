@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from assessment_engine.application.services.blueprint_synthesis_service import (
+    resolve_contextual_technology,
+    synthesize_tower_blueprints,
+)
 from assessment_engine.application.services.cegar_synthesis_engine import (
     CegarSynthesisEngine,
     SynthesisGeneratorPort,
@@ -30,4 +34,6 @@ __all__ = [
     "SynthesisAntiCorruptionLayer",
     "SynthesisGeneratorPort",
     "SynthesisMode",
+    "resolve_contextual_technology",
+    "synthesize_tower_blueprints",
 ]

@@ -6,8 +6,9 @@ source_of_truth:
 - docs/ai/documentation-governance.md
 - pyproject.toml
 - src/assessment_engine
+- business_command_center/package.json
 - .github/workflows/quality.yml
-last_verified_against: 2026-11-12
+last_verified_against: '2026-11-21'
 applies_to:
 - humans
 - ai-agents
@@ -18,7 +19,7 @@ notes: Project entry point and onboarding index.
 ---
 # Assessment Engine
 
-`assessment-engine` is an actuarial intelligence engine and technical assessment compilation platform. It transforms unstructured client transcripts, audit questionnaires, and documentary evidence into a structured Epistemic Knowledge Graph, executes dual TCO + Open FAIR Monte Carlo simulations (10,000 iterations), and compiles executive and technical deliverables in OpenXML (.docx) and HTML formats.
+`assessment-engine` is an actuarial intelligence engine and technical assessment compilation platform. It ingests unstructured client transcripts, audit questionnaires, and documentary evidence into a structured Epistemic Knowledge Graph, executes dual TCO + Open FAIR Monte Carlo simulations (10,000 iterations), and compiles executive and technical deliverables in OpenXML (.docx) and HTML formats.
 
 ---
 
@@ -33,7 +34,7 @@ assessment_engine/
 │   ├── application/                   # Pipeline runners, CLI entrypoints, PO orchestrator, linters
 │   ├── infrastructure/                # Graph persistence, Vertex AI / Gemini clients, runtime env
 │   └── mcp_server.py                  # Model Context Protocol (FastMCP) server with SQLite job store
-├── business_command_center/           # Executive War Room & Client Portal (Next.js 15, React, TS, Refine)
+├── business_command_center/           # Executive War Room & Client Portal (Next.js 16.2 Turbopack, React 19, Refine)
 ├── engine_config/                     # Actuarial Single Source of Truth (SSOT): rate cards, taxonomies, scales
 ├── templates/                         # Word (.docx) templates, HTML assets, and golden path scaffolding
 ├── tests/                             # Hermetic automated test suite (unit, integration, architecture)
@@ -42,7 +43,22 @@ assessment_engine/
 
 ---
 
-## 2. Type-State Pipeline Architecture
+## 2. Canonical Contracts & SSOT Schemas
+
+Autonomous agents must resolve data structures against canonical Pydantic schemas rather than inferring shapes:
+
+| Subsystem | Canonical Path | Primary Contract Symbols |
+|---|---|---|
+| **Epistemic Knowledge Graph** | `src/assessment_engine/domain/schemas/epistemic_ledger.py` | `EvidenceLedger`, `RawUtterance`, `AuthorityRole` |
+| **Actuarial Risk & Loss** | `src/assessment_engine/domain/actuarial/schemas.py` | `ActuarialTensor`, `LossMagnitudeDistribution`, `TEFEstimate` |
+| **Document AST Nodes** | `src/assessment_engine/domain/schemas/ast.py` | `DocumentAST`, `SectionNode`, `TableNode`, `ParagraphNode` |
+| **Technical Blueprint** | `src/assessment_engine/domain/schemas/blueprint.py` | `TechnicalBlueprintPayload`, `PillarArchitecture` |
+| **Multi-Tenant Workspaces** | `src/assessment_engine/domain/schemas/workspace_contracts.py` | `WorkspaceManifest`, `TenantProfile` |
+| **FastMCP Server Interface** | `src/assessment_engine/mcp_server.py` | `FastMCP`, `@mcp.tool` definitions |
+
+---
+
+## 3. Type-State Pipeline Architecture
 
 Data flows strictly across validated type boundaries from raw input to immutable deliverable:
 
@@ -60,7 +76,7 @@ Data flows strictly across validated type boundaries from raw input to immutable
 
 ---
 
-## 3. Canonical Entrypoints & Execution Commands
+## 4. Deterministic Execution & Reproducible Oracles
 
 ### Prerequisites & Dependency Sync
 ```bash
@@ -70,52 +86,70 @@ source .venv/bin/activate
 uv run pre-commit install
 ```
 
-### Pipeline Execution (CLI)
-```bash
-# Execute end-to-end tower assessment pipeline
-uv run python -m assessment_engine.application.cli --client-id <client_slug> --towers all
+### Reproducible Pipeline Execution (CLI)
+Execute an end-to-end assessment pipeline with zero hallucination using verified synthetic control fixtures:
 
-# Execute isolated consolidated Tomo 1 compiler
-uv run python scripts/build_full_client_delivery_suite.py --tomo1-only
+```bash
+uv run python -m assessment_engine.application.cli run \
+  --client "Starling Bank" \
+  --slug uk_fintech \
+  --context tests/test_data/synthetic_clients/uk_fintech/transcription_interview_session.docx \
+  --responses tests/test_data/synthetic_clients/uk_fintech/assessment_responses.txt \
+  --towers "T1 T2"
 ```
 
-### Model Context Protocol (MCP) Server
+Available fixture slugs: `uk_fintech`, `br_healthcare`, `fr_logistics`, `mx_retail`, `us_saas` (rebuilt via `uv run python scripts/build_synthetic_control_fixture.py`).
+
+### Multi-Tenant Client Delivery Suite Compiler
 ```bash
-# Start MCP server exposing autonomous assessment tools to AI agents
+uv run python scripts/build_client_delivery_suite.py --client uk_fintech
+```
+
+### Model Context Protocol (FastMCP) Server
+```bash
 uv run python -m assessment_engine.mcp_server
 ```
 
-### Business Command Center (Next.js 15 Web Portal)
+### Business Command Center (Next.js 16.2 Turbopack Web Portal)
 ```bash
-cd business_command_center
-npm install
-npm run dev
+# Development mode
+npm --prefix business_command_center run dev
+
+# Production build and TypeScript certification
+npm --prefix business_command_center run build
 ```
 
-### Verification & Automated Testing
-```bash
-# Run the hermetic test suite (100% network isolated)
-uv run pytest tests/
+### Autonomous Agent Inner-Loop Oracles
 
-# Validate documentation governance, frontmatter, and schema synchronization
-uv run pytest tests/functional/test_validate_documentation_governance.py tests/functional/test_compile_llms_full.py
+```bash
+# 1. Fast smoke test oracle (<3 seconds, use in Plan -> Act -> Validate cycles):
+uv run pytest tests/unit/domain/test_coherence_gatekeeper.py -q
+
+# 2. Strict type compliance:
+uv run mypy --config-file pyproject.toml src/
+
+# 3. Documentation governance and frontmatter validation:
+uv run pytest tests/functional/test_validate_documentation_governance.py -q
+
+# 4. Full hermetic test suite (100% network isolated):
+uv run pytest tests/ -q
 ```
 
 ---
 
-## 4. Sovereign Architectural Invariants (Negative Constraints)
+## 5. Sovereign Architectural Invariants (Zero-Tolerance Rules)
 
 All autonomous agents and software engineers must strictly adhere to these non-negotiable constraints:
 
-- **Language Decoupling:** All source code, docstrings, variable names, logs, tests, and commit messages MUST be 100% Technical English. Multilingual content resides solely in declarative catalogs (`engine_config/locales.json`).
-- **Presentation-Layer Immunity:** Never calculate, adjust, or patch business metrics in presentation compilers (`payload_to_ast.py`, `docx_compiler.py`). Deficiencies must be resolved upstream in domain calculation engines.
-- **Zero External Network in Tests:** Standard `pytest` runs must execute completely hermetic. Network-dependent diagnostics reside under `tests/diagnostics/` prefixed with `diag_*.py`.
-- **Zero-Entropy Architecture:** Output artifacts must be isolated in `working/out/[client_id]/`. Never leave loose files, compressed `.zip` archives, or logs in the repository root.
-- **SSOT Monism:** Probabilistic models are the sole authoritative source of truth. Hardcoded heuristic fallbacks or defensive bypasses (`if payload.get(...) is None`) that discard simulation data are prohibited.
+- **Language Decoupling (Law 4):** All source code, docstrings, variable names, logs, tests, and commit messages MUST be 100% Technical English. Multilingual content resides solely in declarative catalogs (`engine_config/locales.json`).
+- **Presentation-Layer Immunity (Law 6):** Never calculate, adjust, or patch business metrics in presentation compilers (`payload_to_ast.py`, `docx_compiler.py`). Deficiencies must be resolved upstream in domain calculation engines.
+- **Zero External Network in Tests (Anti-pattern 1):** Standard `pytest` runs must execute completely hermetic. Network-dependent diagnostics reside under `tests/diagnostics/` prefixed with `diag_*.py`.
+- **Zero-Entropy Architecture (Law 3):** Output artifacts must be isolated in `working/out/[client_id]/`. Never leave loose files, compressed `.zip` archives, or logs in the repository root.
+- **SSOT Monism (Law 8):** Probabilistic models are the sole authoritative source of truth. Hardcoded heuristic fallbacks or defensive bypasses (`if payload.get(...) is None`) that discard simulation data are prohibited.
 
 ---
 
-## 5. Navigation & Canonical Documentation
+## 6. Machine Navigation & Documentation Index
 
 - **Agent Constitution & Laws:** [`AGENTS.md`](AGENTS.md)
 - **Agent Operational Adapters:** [`GEMINI.md`](GEMINI.md) | [`.cursor/rules/`](.cursor/rules/)

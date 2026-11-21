@@ -10,7 +10,6 @@ Executes end-to-end artifact generation and physical DOCX validation for 4 globa
 from __future__ import annotations
 
 import json
-import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,10 +19,10 @@ import numpy as np
 from docx import Document
 
 from assessment_engine.adapters.compilers.docx_compiler import DocxCompiler
-from assessment_engine.adapters.render_commercial_report import render_commercial_report
 from assessment_engine.adapters.compilers.payload_to_ast import (
     compile_asis_docx_via_ast,
 )
+from assessment_engine.adapters.render_commercial_report import render_commercial_report
 from assessment_engine.domain.schemas.ast import (
     CellNode,
     DocumentAST,
@@ -55,7 +54,7 @@ from assessment_engine.infrastructure.policies.fair_risk import FairRiskPolicy
 from assessment_engine.infrastructure.text_utils import format_currency_custom, slugify
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE_OUTPUT_DIR = ROOT / "working" / "out" / "simulations"
+BASE_OUTPUT_DIR = ROOT / "workspaces" / "simulations"
 ANNEX_TEMPLATE_PATH = ROOT / "templates" / "docx" / "tower_annex_template.docx"
 COMMERCIAL_TEMPLATE_PATH = ROOT / "templates" / "docx" / "global_report_template.docx"
 
@@ -174,6 +173,235 @@ ARCHETYPES: list[ArchetypeConfig] = [
 ]
 
 
+def _build_commercial_payload(cfg: ArchetypeConfig, ale_formatted: str) -> CommercialPayload:
+    """Builds a localized CommercialPayload strictly adhering to the target language without cross-contamination."""
+    if cfg.doc_lang == "de":
+        purchase_driver = f"Transformation der {cfg.company_name} unter den regulatorischen Vorgaben {', '.join(cfg.regulatory_frameworks)}."
+        vendor_win_theme = "Führung in Cloud-Automatisierung und technologischer Souveränität"
+        how_we_win = [
+            f"Nachgewiesene Expertise im Sektor {cfg.industry}",
+            "Automatisierungs-Beschleuniger und technologische Souveränität",
+            "Automatisierte Einhaltung gesetzlicher Vorgaben",
+        ]
+        trojan_horse = "Kontrollierter Pilotbetrieb in kritischer Infrastruktur"
+        self_funded = f"Kostenoptimierung zur Eigenfinanzierung von Phase 2 ({ale_formatted} gemindertes Risiko)"
+        lock_in = f"Progressive Entkopplung über offene APIs für Souveränität in {cfg.jurisdiction}"
+        sh_role = "Executive Sponsor"
+        sh_focus = f"Einhaltung {cfg.regulatory_frameworks[0]} und Hochverfügbarkeit"
+        sh_msg = "Empirisch verifizierte Wertschöpfung"
+        opp_name = f"Modernisierung von {cfg.critical_systems[0]}"
+        opp_rev_type = "Professional Services"
+        opp_obj = "Ausfallrisiko im Produktivbetrieb"
+        opp_handling = "Canary-Deployment mit automatischer Rollback-Fähigkeit"
+        prop_name = f"Kerninitiative für {cfg.critical_systems[0]}"
+        prop_origin = f"Technische Bewertung für {cfg.industry}"
+        prop_target = f"Resiliente verteilte Architektur für {cfg.critical_systems[0]}."
+        prop_metric = "99,99% Verfügbarkeit und RTO < 15 Min"
+        prop_phases = ["Phase 1: Diagnose & Telemetrie", "Phase 2: Pilotbetrieb", "Phase 3: Produktion"]
+        prop_delivs = ["HLD/LLD-Architektur", "Betriebskontinuitätsplan"]
+        prop_oos = ["Entwicklung neuer Endanwender-Apps"]
+        prop_ai = "Beschleunigung durch autonome Überwachungsagenten und Code-Assistenz."
+        prop_gov = "Zweiwöchentlicher Lenkungsausschuss"
+        prop_assumptions = ["Zugriff auf Systemspezifikationen kritischer Systeme"]
+        prop_risk = "Unterbrechung während der Migration"
+        prop_mitigation = "Canary-Deployment mit sofortigem Rollback."
+        prop_activation = ["Diagnosephase", "Pilotimplementierung", "Produktivsetzung"]
+        prop_accel = ["PaC / IaC Automatisierungs-Framework"]
+        prop_partner = "Strategische globale Tier-1 Allianz mit Hyperscalern"
+        prop_duration = "6 Monate"
+        prop_synth = f"Nachweisbarer ROI und Risikominderung von {ale_formatted} im ersten Jahr."
+    elif cfg.doc_lang == "ja":
+        purchase_driver = f"{cfg.company_name}における{', '.join(cfg.regulatory_frameworks)}基準に準拠した基幹システム変革。"
+        vendor_win_theme = "クラウド自動化と技術主権におけるグローバルリーダーシップ"
+        how_we_win = [
+            f"{cfg.industry}分野における実証済みアーキテクチャ実績",
+            "オブザーバビリティと技術主権の加速",
+            "規制コンプライアンスの自動化",
+        ]
+        trojan_horse = "基幹環境における制御されたPoV検証パイロット"
+        self_funded = f"フェーズ2を自己資金化するコスト最適化（{ale_formatted}の潜在リスク低減）"
+        lock_in = f"{cfg.jurisdiction}における主権確保のためのオープンAPIによる段階的分離"
+        sh_role = "エグゼクティブスポンサー"
+        sh_focus = f"{cfg.regulatory_frameworks[0]}遵守および可用性確保"
+        sh_msg = "実証済みの価値提案"
+        opp_name = f"{cfg.critical_systems[0]}のモダナイゼーション"
+        opp_rev_type = "プロフェッショナルサービス"
+        opp_obj = "本番環境における停止リスク"
+        opp_handling = "カナリア展開と自動ロールバック"
+        prop_name = f"{cfg.critical_systems[0]}中核モダナイゼーション"
+        prop_origin = f"{cfg.industry}技術評価"
+        prop_target = f"{cfg.critical_systems[0]}の高可用性分散アーキテクチャ。"
+        prop_metric = "稼働率99.99%およびRTO 15分未満"
+        prop_phases = ["フェーズ1: 現状診断とテレメトリ", "フェーズ2: パイロット検証", "フェーズ3: 本番移行"]
+        prop_delivs = ["HLD/LLD設計書", "事業継続計画書"]
+        prop_oos = ["エンドユーザー向け新規アプリ開発"]
+        prop_ai = "自律監視エージェントおよびコード生成支援による加速。"
+        prop_gov = "隔週ステアリングコミッティ"
+        prop_assumptions = ["基幹システム仕様書へのアクセス"]
+        prop_risk = "移行期間中の業務停止"
+        prop_mitigation = "即時ロールバック可能なカナリア移行戦略。"
+        prop_activation = ["診断フェーズ", "パイロット導入", "本番稼働"]
+        prop_accel = ["PaC / IaC自動化フレームワーク"]
+        prop_partner = "ハイパースケーラーとのTier-1アライアンス"
+        prop_duration = "6ヶ月"
+        prop_synth = f"初年度における実証可能な投資対効果と{ale_formatted}のリスク直接低減。"
+    elif cfg.doc_lang == "en":
+        purchase_driver = f"Enterprise transformation for {cfg.company_name} under {', '.join(cfg.regulatory_frameworks)} standards."
+        vendor_win_theme = "Autonomous Cloud Automation & Sovereign Infrastructure Resilience"
+        how_we_win = [
+            f"Proven capability in {cfg.industry}",
+            "Observability accelerators and technological sovereignty",
+            "Automated regulatory compliance",
+        ]
+        trojan_horse = "Controlled Proof-of-Value on mission-critical infrastructure"
+        self_funded = f"Opex optimization self-funding Phase 2 ({ale_formatted} mitigated exposure)"
+        lock_in = f"Progressive decoupling via open interfaces ensuring sovereignty in {cfg.jurisdiction}"
+        sh_role = "Executive Sponsor"
+        sh_focus = f"Compliance with {cfg.regulatory_frameworks[0]} and Availability"
+        sh_msg = "Empirically verified business case"
+        opp_name = f"Modernization of {cfg.critical_systems[0]}"
+        opp_rev_type = "Professional Services"
+        opp_obj = "Risk of production downtime during cutover"
+        opp_handling = "Canary deployment with automated zero-impact rollback"
+        prop_name = f"Core Modernization for {cfg.critical_systems[0]}"
+        prop_origin = f"Technical assessment of {cfg.industry}"
+        prop_target = f"Resilient distributed architecture for {cfg.critical_systems[0]}."
+        prop_metric = "99.99% Availability & RTO < 15 min"
+        prop_phases = ["Phase 1: Diagnostic & Telemetry", "Phase 2: Pilot Deployment", "Phase 3: Production Rollout"]
+        prop_delivs = ["HLD/LLD Architecture Blueprints", "Contingency & DR Plan"]
+        prop_oos = ["New end-user application development"]
+        prop_ai = "Engineering acceleration via supervisor agents and Gemini Code Assist."
+        prop_gov = "Bi-weekly steering committee"
+        prop_assumptions = ["Access to critical system telemetry and specifications"]
+        prop_risk = "Operational friction during workload migration"
+        prop_mitigation = "Canary deployment strategy with automated rollback."
+        prop_activation = ["Diagnostic Phase", "Pilot Implementation", "Production Cutover"]
+        prop_accel = ["PaC / IaC Automation Framework"]
+        prop_partner = "Global Strategic Tier-1 Hyperscaler Alliance"
+        prop_duration = "6 months"
+        prop_synth = f"Demonstrable ROI and direct mitigation of {ale_formatted} risk in year one."
+    else:
+        purchase_driver = f"Transformación de {cfg.company_name} bajo los estándares {', '.join(cfg.regulatory_frameworks)}."
+        vendor_win_theme = "Liderazgo en Automatización Cloud y Soberanía Tecnológica"
+        how_we_win = [
+            f"Capacidad comprobada en {cfg.industry}",
+            "Aceleradores de observabilidad y soberanía tecnológica",
+            "Cumplimiento automatizado de normativas",
+        ]
+        trojan_horse = "Piloto controlado en infraestructura crítica"
+        self_funded = f"Optimización de costes para autofinanciar la fase 2 ({ale_formatted} mitigados)"
+        lock_in = f"Desacoplamiento progresivo mediante APIs abiertas para soberanía en {cfg.jurisdiction}"
+        sh_role = "Sponsor Ejecutivo"
+        sh_focus = f"Cumplimiento {cfg.regulatory_frameworks[0]} y Disponibilidad"
+        sh_msg = "Propuesta de valor verificada empíricamente"
+        opp_name = f"Modernización de {cfg.critical_systems[0]}"
+        opp_rev_type = "Servicios Profesionales"
+        opp_obj = "Riesgo de indisponibilidad en producción"
+        opp_handling = "Despliegue Canary y rollback automatizado"
+        prop_name = f"Iniciativa Núcleo para {cfg.critical_systems[0]}"
+        prop_origin = f"Auditoría técnica de {cfg.industry}"
+        prop_target = f"Arquitectura distribuida resiliente para {cfg.critical_systems[0]}."
+        prop_metric = "Disponibilidad 99.99% y RTO < 15 min"
+        prop_phases = ["Fase 1: Diagnóstico", "Fase 2: Piloto", "Fase 3: Producción"]
+        prop_delivs = ["Documento HLD/LLD", "Plan de contingencia"]
+        prop_oos = ["Desarrollo de nuevas aplicaciones de usuario"]
+        prop_ai = "Aceleración con agentes supervisores y Gemini Code Assist."
+        prop_gov = "Comité de seguimiento quincenal"
+        prop_assumptions = ["Acceso a especificaciones de sistemas críticos"]
+        prop_risk = "Interrupción durante la migración"
+        prop_mitigation = "Estrategia Canary Deployment con rollback instantáneo."
+        prop_activation = ["Fase de Diagnóstico", "Implementación Piloto", "Pase a Producción"]
+        prop_accel = ["Framework de automatización PaC / IaC"]
+        prop_partner = "Alianza estratégica global Tier-1 con Hyperscalers"
+        prop_duration = "6 meses"
+        prop_synth = f"Retorno demostrable y mitigación directa del riesgo de {ale_formatted} en el primer año."
+
+    return CommercialPayload(
+        meta=CommercialDocumentMeta(
+            client=cfg.company_name,
+            date="2026-10-28",
+            version="1.0.0",
+            doc_lang=cfg.doc_lang,
+            currency_symbol=cfg.currency_symbol,
+        ),
+        commercial_summary=CommercialSummaryDraft(
+            deal_flash=DealFlash(
+                purchase_driver=purchase_driver,
+                vendor_win_theme=vendor_win_theme,
+            ),
+            why_now_bullets=cfg.strategic_objectives,
+            how_we_win_bullets=how_we_win,
+            estimated_tam=cfg.estimated_tam_str,
+        ),
+        gtm_strategy=GtmStrategy(
+            trojan_horse=trojan_horse,
+            self_funded_transformation=self_funded,
+            lock_in=lock_in,
+        ),
+        stakeholder_matrix=[
+            StakeholderMatrixItem(
+                name="CIO / CISO",
+                role=sh_role,
+                focus=sh_focus,
+                message=sh_msg,
+            )
+        ],
+        opportunities_pipeline=[
+            OpportunityPipelineItem(
+                initiative=opp_name,
+                tower_origin="T1",
+                vendor_cosell="Enterprise Architecture Core",
+                revenue_type=opp_rev_type,
+                estimated_tcv=cfg.estimated_capex_str,
+                cost_of_inaction=f"ALE: {ale_formatted}",
+                client_objection=opp_obj,
+                objection_handling=opp_handling,
+            )
+        ],
+        proactive_proposals=[
+            ProposalDraft(
+                initiative_name=prop_name,
+                context_and_why=ContextAndWhy(
+                    origin=prop_origin,
+                    cost_of_inaction=f"ALE: {ale_formatted}",
+                ),
+                solution_and_what=SolutionAndWhat(
+                    target_state=prop_target,
+                    north_star_metric=prop_metric,
+                ),
+                scope_and_how=ScopeAndHow(
+                    phases=prop_phases,
+                    deliverables=prop_delivs,
+                    out_of_scope=prop_oos,
+                ),
+                delivery_team=DeliveryTeam(team_roles=["Principal Enterprise Architect", "Lead SRE Engineer"]),
+                ai_transformation_strategy=prop_ai,
+                governance_and_assumptions=GovernanceAndAssumptions(
+                    governance_model=prop_gov,
+                    assumptions=prop_assumptions,
+                ),
+                risk_management=[
+                    RiskManagementItem(
+                        risk=prop_risk,
+                        mitigation=prop_mitigation,
+                    )
+                ],
+                activation_plan=prop_activation,
+                why_ntt_data=WhyPartner(
+                    accelerators=prop_accel,
+                    partnerships=prop_partner,
+                ),
+                investment_and_timeline=InvestmentAndTimeline(
+                    estimated_duration=prop_duration,
+                    tcv_range=cfg.tcv_range_str,
+                ),
+                executive_synthesis=prop_synth,
+            )
+        ],
+        intelligence_dossier={"systems": cfg.critical_systems, "jurisdiction": cfg.jurisdiction},
+    )
+
+
 def extract_docx_text(path: Path) -> str:
     """Extract all text runs from paragraphs and tables in a DOCX document."""
     doc = Document(str(path))
@@ -232,94 +460,7 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
     audit_results["generated_files"].append(str(fair_json_path))
 
     # 2. Build Commercial Proposal Deliverable
-    comm_payload = CommercialPayload(
-        meta=CommercialDocumentMeta(
-            client=cfg.company_name,
-            date="2026-10-28",
-            version="1.0.0",
-            doc_lang=cfg.doc_lang,
-            currency_symbol=cfg.currency_symbol,
-        ),
-        commercial_summary=CommercialSummaryDraft(
-            deal_flash=DealFlash(
-                purchase_driver=f"Transformación de {cfg.company_name} bajo los estándares {', '.join(cfg.regulatory_frameworks)}.",
-                vendor_win_theme="Liderazgo en Automatización Cloud y Soberanía Tecnológica",
-            ),
-            why_now_bullets=cfg.strategic_objectives,
-            how_we_win_bullets=[
-                f"Capacidad comprobada en {cfg.industry}",
-                "Aceleradores de observabilidad y soberanía tecnológica",
-                "Cumplimiento automatizado de normativas",
-            ],
-            estimated_tam=cfg.estimated_tam_str,
-        ),
-        gtm_strategy=GtmStrategy(
-            trojan_horse="Piloto controlado en infraestructura crítica",
-            self_funded_transformation=f"Optimización de costes para autofinanciar la fase 2 ({ale_formatted} mitigados)",
-            lock_in=f"Desacoplamiento progresivo mediante APIs abiertas para soberanía en {cfg.jurisdiction}",
-        ),
-        stakeholder_matrix=[
-            StakeholderMatrixItem(
-                name="CIO / CISO",
-                role="Sponsor Ejecutivo",
-                focus=f"Cumplimiento {cfg.regulatory_frameworks[0]} y Disponibilidad",
-                message="Propuesta de valor verificada empíricamente",
-            )
-        ],
-        opportunities_pipeline=[
-            OpportunityPipelineItem(
-                initiative=f"Modernización de {cfg.critical_systems[0]}",
-                tower_origin="T1",
-                vendor_cosell="Enterprise Architecture Core",
-                revenue_type="Servicios Profesionales",
-                estimated_tcv=cfg.estimated_capex_str,
-                cost_of_inaction=f"ALE proyectado de {ale_formatted}",
-                client_objection="Riesgo de indisponibilidad en producción",
-                objection_handling="Despliegue Canary y rollback automatizado",
-            )
-        ],
-        proactive_proposals=[
-            ProposalDraft(
-                initiative_name=f"Iniciativa Núcleo para {cfg.critical_systems[0]}",
-                context_and_why=ContextAndWhy(
-                    origin=f"Auditoría técnica de {cfg.industry}",
-                    cost_of_inaction=f"Exposición a pérdidas de {ale_formatted}",
-                ),
-                solution_and_what=SolutionAndWhat(
-                    target_state=f"Arquitectura distribuida resiliente para {cfg.critical_systems[0]}.",
-                    north_star_metric="Disponibilidad 99.99% y RTO < 15 min",
-                ),
-                scope_and_how=ScopeAndHow(
-                    phases=["Fase 1: Diagnóstico", "Fase 2: Piloto", "Fase 3: Producción"],
-                    deliverables=["Documento HLD/LLD", "Plan de contingencia"],
-                    out_of_scope=["Desarrollo de nuevas aplicaciones de usuario"],
-                ),
-                delivery_team=DeliveryTeam(team_roles=["Principal Enterprise Architect", "Lead SRE Engineer"]),
-                ai_transformation_strategy="Aceleración con agentes supervisores y Gemini Code Assist.",
-                governance_and_assumptions=GovernanceAndAssumptions(
-                    governance_model="Comité de seguimiento quincenal",
-                    assumptions=["Acceso a especificaciones de sistemas críticos"],
-                ),
-                risk_management=[
-                    RiskManagementItem(
-                        risk="Interrupción durante la migración",
-                        mitigation="Estrategia Canary Deployment con rollback instantáneo.",
-                    )
-                ],
-                activation_plan=["Fase de Diagnóstico", "Implementación Piloto", "Pase a Producción"],
-                why_ntt_data=WhyPartner(
-                    accelerators=["Framework de automatización PaC / IaC"],
-                    partnerships="Alianza estratégica global Tier-1 con Hyperscalers",
-                ),
-                investment_and_timeline=InvestmentAndTimeline(
-                    estimated_duration="6 meses",
-                    tcv_range=cfg.tcv_range_str,
-                ),
-                executive_synthesis=f"Retorno demostrable y mitigación directa del riesgo de {ale_formatted} en el primer año.",
-            )
-        ],
-        intelligence_dossier={"systems": cfg.critical_systems, "jurisdiction": cfg.jurisdiction},
-    )
+    comm_payload = _build_commercial_payload(cfg, ale_formatted)
 
     comm_docx_path = out_dir / f"Propuesta_Comercial_{slug}.docx"
     render_commercial_report(comm_payload, COMMERCIAL_TEMPLATE_PATH, comm_docx_path)
@@ -329,8 +470,21 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
     annex_payload_data = json.loads(Path("tests/test_data/approved_annex_t2.template_payload.json").read_text(encoding="utf-8"))
     annex_payload_data["document_meta"]["client_name"] = cfg.company_name
     annex_payload_data["document_meta"]["language"] = cfg.doc_lang
+    annex_payload_data["document_meta"]["currency"] = cfg.currency_symbol
+    annex_payload_data["document_meta"]["currency_symbol"] = cfg.currency_symbol
+    annex_payload_data["document_meta"]["currency_code"] = cfg.currency_code
     annex_payload_data["document_meta"]["regulatory_context"] = cfg.regulatory_frameworks
     annex_payload_data["document_meta"]["source_client"] = "redeia_v3"
+    annex_payload_data["document_meta"]["annual_revenue"] = 500_000_000.0
+    annex_payload_data["currency"] = cfg.currency_symbol
+    annex_payload_data["currency_symbol"] = cfg.currency_symbol
+    annex_payload_data["financial_telemetry"] = {
+        "global_annual_revenue": 500_000_000.0,
+        "consolidated_annual_revenue": 500_000_000.0,
+        "hourly_downtime_rate": cfg.hourly_rate_sre * 10.0,
+        "currency": cfg.currency_code,
+        "currency_symbol": cfg.currency_symbol,
+    }
 
     annex_payload_str = json.dumps(annex_payload_data, ensure_ascii=False)
     for src_name in ["redeia_v3", "REDEIA", "Redeia", "Red Eléctrica"]:
