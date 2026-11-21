@@ -149,9 +149,13 @@ async def run_step_async(
                 out_msg = stdout.decode("utf-8").strip() if stdout else ""
                 err_msg = stderr.decode("utf-8").strip() if stderr else ""
                 if out_msg:
-                    logger.info(f"\n📢 [STDOUT before Timeout in {step_name}]:\n{out_msg}")
+                    logger.info(
+                        f"\n📢 [STDOUT before Timeout in {step_name}]:\n{out_msg}"
+                    )
                 if err_msg:
-                    logger.info(f"\n📢 [STDERR before Timeout in {step_name}]:\n{err_msg}")
+                    logger.info(
+                        f"\n📢 [STDERR before Timeout in {step_name}]:\n{err_msg}"
+                    )
                 raise RuntimeError(
                     f"Timeout in {step_name} after {timeout_seconds:.0f}s."
                 ) from exc
@@ -382,7 +386,9 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
             "Build evidence_ledger",
         )
     else:
-        logger.info("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
+        logger.info(
+            "⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping."
+        )
 
     client_dir = resolve_client_dir(cfg.client_slug)
     client_intel_path = client_dir / "client_intelligence.json"
@@ -464,7 +470,9 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
                 cfg.args.client, cfg.tower_id, industry_key
             )
         except Exception as e:
-            logger.info(f"⚠️ [Financial Calibrator] Financial scale calibration failed: {e}")
+            logger.info(
+                f"⚠️ [Financial Calibrator] Financial scale calibration failed: {e}"
+            )
     else:
         logger.info(
             "⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping."
@@ -702,15 +710,17 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
         )
 
-
     logger.info("\n🚀 Starting Universal Payload Enrichment...")
-    enriched_payload_path = cfg.case_dir / f"approved_annex_{cfg.tower_id.lower()}.enriched_payload.json"
+    enriched_payload_path = (
+        cfg.case_dir / f"approved_annex_{cfg.tower_id.lower()}.enriched_payload.json"
+    )
     if (
         cfg.force
         or not enriched_payload_path.exists()
         or enriched_payload_path.stat().st_size == 0
     ):
         from assessment_engine.infrastructure.runtime_paths import ROOT
+
         taxonomy_path = ROOT / "engine_config/taxonomy_multilingual.json"
 
         await run_step_async(
@@ -718,13 +728,20 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 cfg.python_bin,
                 "-m",
                 "assessment_engine.cli.enrich_tower_payload_cli",
-                "--tower-id", cfg.tower_id,
-                "--input-payload", str(cfg.blueprint_payload_path),
-                "--output-payload", str(enriched_payload_path),
-                "--taxonomy-path", str(taxonomy_path),
-                "--actuarial-gate-path", str(cfg.case_dir / "custom_risk_profile.json"),
-                "--forensic-ledger-path", str(cfg.case_dir / "evidence_ledger.json"),
-                "--tenant-config-path", str(cfg.case_dir / "case_input.json"),
+                "--tower-id",
+                cfg.tower_id,
+                "--input-payload",
+                str(cfg.blueprint_payload_path),
+                "--output-payload",
+                str(enriched_payload_path),
+                "--taxonomy-path",
+                str(taxonomy_path),
+                "--actuarial-gate-path",
+                str(cfg.case_dir / "custom_risk_profile.json"),
+                "--forensic-ledger-path",
+                str(cfg.case_dir / "evidence_ledger.json"),
+                "--tenant-config-path",
+                str(cfg.case_dir / "case_input.json"),
             ],
             cfg.env,
             "Universal Payload Enricher (Pre-flight T1..T10)",
@@ -737,11 +754,13 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
     # Sync enriched 21-key payload to active blueprint payload path for downstream compilation stages
     if enriched_payload_path.exists() and enriched_payload_path.stat().st_size > 0:
         import shutil
+
         shutil.copy2(enriched_payload_path, cfg.blueprint_payload_path)
         logger.info(
             "[Pipeline] Synced 21-key enriched payload to active blueprint path: %s",
             cfg.blueprint_payload_path.name,
         )
+
 
 async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
     """Concurrently compile final AS-IS diagnostic report, radar charts, and Blueprint Word DOCX documents."""
@@ -770,17 +789,20 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             "Generate short radar",
         )
 
-        # Phase 1 SOTA: Unified compilation exclusively via Declarative AST Engine
-        from assessment_engine.adapters.compilers.payload_to_ast import (
-            compile_asis_docx_via_ast,
-        )
-
+        # Phase 1: Unified compilation exclusively via Declarative AST Engine in isolated subprocess
         doc_lang = cfg.env.get("ASSESSMENT_DOC_LANG", "es")
-        compile_asis_docx_via_ast(
-            payload_path=cfg.payload_path,
-            output_docx_path=cfg.output_asis_docx,
-            doc_lang=doc_lang,
-            modules_dir=cfg.case_dir,
+        compile_expr = (
+            "from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_docx_via_ast; "
+            "from pathlib import Path; "
+            f"compile_asis_docx_via_ast(payload_path=Path({repr(str(cfg.payload_path))}), "
+            f"output_docx_path=Path({repr(str(cfg.output_asis_docx))}), "
+            f"doc_lang={repr(doc_lang)}, "
+            f"modules_dir=Path({repr(str(cfg.case_dir))}))"
+        )
+        await run_step_async(
+            [cfg.python_bin, "-c", compile_expr],
+            cfg.env,
+            f"Compile AS-IS deliverable for {cfg.tower_id}",
         )
         import shutil
 

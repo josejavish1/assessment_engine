@@ -2,92 +2,96 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/mcp_server.py
-- ../../src/assessment_engine/application/
-last_verified_against: 2026-11-12
+- src/assessment_engine/mcp_server.py
+- src/assessment_engine/application
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
+notes: Canonical architecture specification of the FastMCP tool server and agentic execution protocol.
 ---
-# MCP mode
+# Model Context Protocol (MCP) Server Architecture
 
-Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP para que un agente supervisor externo invoque capacidades del motor bajo demanda.
+Canonical specification defining the Model Context Protocol (MCP) server architecture, tool interfaces, subprocess isolation, and asynchronous job execution in `src/assessment_engine/mcp_server.py`.
 
-## Implementación actual
+---
 
-El servidor vive en:
+## 1. Architectural Scope & Service Model
 
-- `src/assessment_engine/mcp_server.py`
+The MCP service mode exposes discrete capabilities of the `assessment-engine` platform as typed tool interfaces conforming to the Anthropic Model Context Protocol specification:
 
-Usa:
+```
+[ External AI Agent / Supervisor ]
+                |
+                v (JSON-RPC over stdio / SSE)
++---------------------------------------------------------------------------------------+
+| FAST_MCP SERVER: src/assessment_engine/mcp_server.py                                  |
+| - Tool Discovery & Signature Introspection                                            |
+| - Subprocess Confinement & Execution Isolation                                         |
+| - Persistent Job Store (sqlite3 / job queue)                                          |
+| - Safety Action Gatekeeper                                                            |
++---------------------------------------------------------------------------------------+
+                |
+         +------+------+
+         |             |
+         v             v
+[ Python Runtime ]  [ OpenXML AST Compilers ]
+(application/*.py)  (payload_to_ast.py + docx_compiler.py)
+```
 
-- `FastMCP`
+- **Module Path:** `src/assessment_engine/mcp_server.py`.
+- **Framework:** `fastmcp.FastMCP`.
+- **Primary Objective:** Provide external LLM supervisors with deterministic execution primitives, structured state inspection, and on-demand AST compilation without running entire batch pipelines.
 
-Y ejecuta scripts internos mediante:
+---
 
-- `python -m assessment_engine.application.<module>`
+## 2. FastMCP Tool Catalog
 
-## Rol arquitectónico
+The service exposes 13 typed tool interfaces across three functional categories:
 
-El modo MCP no sustituye al pipeline completo. Su papel es:
+### A. State Inspection & Telemetry
+| Tool Identifier | Input Parameters | Return Schema | Operational Invariant |
+|---|---|---|---|
+| `get_tower_state` | `client_id: str`, `tower: str`, `working_dir: Optional[str]` | `Dict[str, Any]` | Validates physical JSON files against `BlueprintPayload` and `AnnexPayload` schemas, returning status (`valid`, `invalid`, `missing`, `error`). |
 
-- exponer operaciones concretas como herramientas;
-- permitir orquestación dinámica por un supervisor externo;
-- ofrecer inspección de estado y renderizado puntual sin obligar a ejecutar todo el pipeline.
+### B. Declarative AST Compilation & Delivery
+| Tool Identifier | Input Parameters | Return Schema | Operational Invariant |
+|---|---|---|---|
+| `compile_tower_annex_ast` | `payload_json: str`, `output_docx: str`, `doc_lang: str = "en"` | `str` (Confirmation) | Compiles OpenXML DOCX directly via `payload_to_ast.py` and `docx_compiler.py`. |
+| `render_tower_docx` | `annex_payload_json: str`, `template_docx: str`, `output_docx: str` | `str` (Confirmation) | Legacy Word template rendering adapter. |
+| `build_tower_payload` | `client_id: str`, `tower: str` | `str` (JSON Path) | Backward-compatible builder for legacy intermediate payload structures. |
+| `generate_radar_chart` | `global_payload_json: str`, `output_path: str` | `str` (PNG Path) | Renders multi-axis capability radar chart from global report payload. |
+| `render_commercial_docx` | `commercial_payload_json: str`, `template_docx: str`, `output_docx: str` | `str` (Confirmation) | Compiles Account Action Plan deliverable binary. |
 
-## Herramientas expuestas actualmente
+### C. Asynchronous Agentic Jobs & Human-in-the-Loop Gates
+| Tool Identifier | Input Parameters | Return Schema | Operational Invariant |
+|---|---|---|---|
+| `start_plan_generation` | `client_id: str`, `tower: str`, `instructions: str` | `Dict[str, Any]` (`job_id`) | Enqueues background planning job in persistent job store. |
+| `check_plan_status` | `job_id: str` | `Dict[str, Any]` | Polls asynchronous plan generation status (`running`, `completed`, `failed`). |
+| `start_plan_execution` | `job_id: str` | `Dict[str, Any]` | Dispatches stage execution across child worker threads. |
+| `check_execution_status`| `job_id: str` | `Dict[str, Any]` | Returns execution telemetry, task logs, and error traces. |
+| `check_action_gate` | `job_id: str` | `Dict[str, Any]` | Interrogates active safety gates requiring explicit operator approval. |
+| `authorize_action_gate`| `job_id: str`, `gate_id: str`, `action: str` | `Dict[str, Any]` | Authorizes or declines paused execution transitions. |
+| `abort_and_revert` | `job_id: str` | `Dict[str, Any]` | Aborts execution and restores workspace to clean state. |
 
-| Tool | Propósito |
-|---|---|
-| `build_tower_payload` | Construye un payload intermedio **legacy** para anexo de torre a partir de un annex refined heredado |
-| `render_tower_docx` | Renderiza el DOCX final del anexo |
-| `generate_radar_chart` | Genera el radar global desde payload global |
-| `render_commercial_docx` | Renderiza el documento comercial final |
-| `get_tower_state` | Inspecciona artefactos de una torre y resume su estado |
-| `start_plan_generation` | Inicia la generación asíncrona de planes agénticos |
-| `check_plan_status` | Comprueba el estado de un trabajo de planificación agéntica |
-| `start_plan_execution` | Inicia la ejecución del plan agéntico de forma asíncrona |
-| `check_execution_status` | Comprueba el estado del trabajo de ejecución del plan |
-| `check_action_gate` | Evalúa si existe alguna compuerta de aprobación de seguridad activa |
-| `authorize_action_gate` | Autoriza la ejecución de un paso en la compuerta de seguridad |
-| `abort_and_revert` | Comando destructivo que aborta la sesión y revierte el espacio a un estado limpio |
+---
 
-## Modelo de ejecución
+## 3. Subprocess Execution & Security Isolation
 
-Cada tool:
+When invoking internal application modules, the MCP server enforces strict process boundaries:
 
-- llama a un script interno aislado;
-- propaga `PYTHONPATH`;
-- captura `stdout` y `stderr`;
-- falla explícitamente si el subproceso devuelve código distinto de cero.
+1. **Subprocess Confinement:** Subprocesses invoke explicitly via `python -m assessment_engine.application.<module>`. Direct in-process execution is prohibited for heavy stages to prevent global state pollution.
+2. **Environment Propagation:** Propagates `PYTHONPATH`, Google Cloud credentials, and locale parameters deterministically.
+3. **Structured Failure Traps:** Captures both `stdout` and `stderr`. Non-zero exit codes raise structured JSON errors preventing opaque failures.
+4. **Canonical Primacy:** State inspection in `get_tower_state` evaluates modern `blueprint_<tower>_payload.json` and `approved_annex_<tower>.template_payload.json` first, treating legacy section files as secondary diagnostic data.
 
-## Estado e inspección
+---
 
-La tool `get_tower_state` prioriza ya el flujo canónico y devuelve un bloque `canonical` con:
+## 4. Architectural Invariants for AI Agents
 
-- `blueprint_*_payload.json`
-- `approved_annex_*.template_payload.json`
-- DOCX derivados cuando existen
-
-Además, valida esos payloads contra `BlueprintPayload` y `AnnexPayload`, y degrada de forma estructurada a `invalid` o `error` si encuentra contratos rotos, JSON corrupto o artefactos no decodificables.
-
-El detalle legacy por secciones (`asis`, `risks`, `gap`, `tobe`, `todo`, `conclusion`) sigue expuesto como superficie diagnóstica secundaria, no como lectura principal del estado operativo.
-
-## Relación con la arquitectura vigente
-
-Hay una tensión útil que conviene mantener visible:
-
-1. el modo pipeline actual está claramente orientado a `blueprint -> annex`;
-2. la inspección MCP ya refleja primero ese flujo canónico;
-3. `build_tower_payload` y el detalle legacy restante en `get_tower_state` deben entenderse como compatibilidad explícita para superficies heredadas, no como modelo principal.
-
-## Uso recomendado en documentación
-
-Trata el modo MCP como:
-
-- **capacidad de servicio y automatización**, no como la narrativa principal del flujo canónico;
-- una capa útil para supervisores externos, integraciones y tooling;
-- una superficie ya alineada en su inspección principal con el flujo top-down vigente, aunque conserve adaptadores legacy puntuales.
+1. **Schema Validation on Read:** `get_tower_state` must execute Pydantic model validation against disk payloads before reporting a state as `valid`.
+2. **Asynchronous Safety:** Destructive operations or multi-tower runs must require explicit approval through `check_action_gate` and `authorize_action_gate`.
+3. **Format Monism:** All render tools compile strictly to Microsoft Word (`.docx`). PDF and HTML output tools are prohibited.

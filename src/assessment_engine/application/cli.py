@@ -32,6 +32,7 @@ try:
     from assessment_engine.infrastructure.json_taxonomy_catalog_loader import (
         JsonTaxonomyCatalogLoader,
     )
+
     register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
 except Exception:
     pass
@@ -50,7 +51,15 @@ def build_economic_profile_from_cli_args(
     rate_card_file: str | None = None,
 ) -> Any | None:
     """Builds a TenantEconomicProfile from CLI options if any economic argument was specified."""
-    if not any([currency, country_code, rate_multiplier is not None, disruption_rate is not None, rate_card_file]):
+    if not any(
+        [
+            currency,
+            country_code,
+            rate_multiplier is not None,
+            disruption_rate is not None,
+            rate_card_file,
+        ]
+    ):
         return None
 
     import json
@@ -140,7 +149,9 @@ def run_pipeline(
     print("========================================================")
 
     if force and working_dir.exists():
-        print(f"🧹 [--force] Cleaning previous execution directory under: {working_dir}...")
+        print(
+            f"🧹 [--force] Cleaning previous execution directory under: {working_dir}..."
+        )
         shutil.rmtree(working_dir)
     elif working_dir.exists():
         print(
@@ -190,7 +201,9 @@ def run_pipeline(
     rag_cache = working_dir / "raptor_tree.json"
     client_intel_path = working_dir / "client_intelligence.json"
 
-    print("\n🚀 PHASES 0 & 1: Executing Document Ingestion & Intelligence Harvesting in parallel...")
+    print(
+        "\n🚀 PHASES 0 & 1: Executing Document Ingestion & Intelligence Harvesting in parallel..."
+    )
 
     def _execute_phase_0() -> int:
         if not force and rag_cache.exists() and rag_cache.stat().st_size > 0:
@@ -230,12 +243,19 @@ def run_pipeline(
         return res.returncode
 
     def _execute_phase_1() -> int:
-        if not force and client_intel_path.exists() and client_intel_path.stat().st_size > 0:
-            print("⏭️  FASE 1: [Cache Bypass] Reutilizando client_intelligence.json existente.")
+        if (
+            not force
+            and client_intel_path.exists()
+            and client_intel_path.stat().st_size > 0
+        ):
+            print(
+                "⏭️  FASE 1: [Cache Bypass] Reutilizando client_intelligence.json existente."
+            )
             return 0
         print("🔍 FASE 1: Harvesting Client & Market Strategic Intelligence...")
         intel_script = (
-            repo_root / "src/assessment_engine/application/run_intelligence_harvesting.py"
+            repo_root
+            / "src/assessment_engine/application/run_intelligence_harvesting.py"
         )
         res = subprocess.run(
             [python_bin, str(intel_script), client, context], cwd=repo_root
@@ -310,9 +330,7 @@ def run_pipeline(
             )
 
             case_dir = working_dir / tower_id
-            canonical_asis, canonical_tobe = get_canonical_tower_filenames(
-                tower_id
-            )
+            canonical_asis, canonical_tobe = get_canonical_tower_filenames(tower_id)
             asis_docx = case_dir / f"Diagnostico_ASIS_{tower_id}_{slug}.docx"
             blueprint_docx = (
                 case_dir / f"Blueprint_Transformacion_{tower_id}_{slug}.docx"
@@ -328,12 +346,15 @@ def run_pipeline(
             ) or (asis_docx.exists() and asis_docx.stat().st_size > 0)
 
             has_blueprint = (
-                (case_dir / canonical_tobe).exists()
-                and (case_dir / canonical_tobe).stat().st_size > 0
-            ) or (
-                blueprint_docx.exists() and blueprint_docx.stat().st_size > 0
-            ) or (
-                alt_blueprint_docx.exists() and alt_blueprint_docx.stat().st_size > 0
+                (
+                    (case_dir / canonical_tobe).exists()
+                    and (case_dir / canonical_tobe).stat().st_size > 0
+                )
+                or (blueprint_docx.exists() and blueprint_docx.stat().st_size > 0)
+                or (
+                    alt_blueprint_docx.exists()
+                    and alt_blueprint_docx.stat().st_size > 0
+                )
             )
 
             if (
@@ -388,9 +409,7 @@ def run_pipeline(
         for t_id, r in results.items():
             if not r.success:
                 exit_code = int(r.metadata.get("returncode", 1))
-                print(
-                    f"❌ Phase 2 Tower {t_id} pipeline failed. Aborting pipeline."
-                )
+                print(f"❌ Phase 2 Tower {t_id} pipeline failed. Aborting pipeline.")
                 return exit_code
 
     print("\n🌐 PROCESSING GLOBAL AGGREGATION AND DELIVERABLE REPORTS")
@@ -434,7 +453,9 @@ def run_pipeline(
     comm_payload = working_dir / "commercial_report_payload.json"
     web_presentation = working_dir / "presentation" / "index.html"
 
-    print("\n🚀 PHASES 4 & 5: Executing Commercial Plan and Web Dashboard in parallel...")
+    print(
+        "\n🚀 PHASES 4 & 5: Executing Commercial Plan and Web Dashboard in parallel..."
+    )
 
     def _execute_phase_4() -> int:
         if (
@@ -459,13 +480,19 @@ def run_pipeline(
         return 0
 
     def _execute_phase_5() -> int:
-        if not force and web_presentation.exists() and web_presentation.stat().st_size > 0:
+        if (
+            not force
+            and web_presentation.exists()
+            and web_presentation.stat().st_size > 0
+        ):
             print(
                 "⏭️  PHASE 5: [Cache Bypass] Interactive Web Dashboard already generated. Skipping."
             )
             return 0
         print("🖥️ FASE 5: Composing Interactive Web Dashboard...")
-        web_script = repo_root / "src/assessment_engine/adapters/render_web_presentation.py"
+        web_script = (
+            repo_root / "src/assessment_engine/adapters/render_web_presentation.py"
+        )
         res = subprocess.run([python_bin, str(web_script), slug], cwd=repo_root)
         if res.returncode != 0:
             print("❌ Phase 5 Web presentation rendering failed.")
@@ -729,7 +756,9 @@ def run_lockin_test() -> int:
             return 1
 
 
-def run_rage_command(client: str, industry: str, tower_filter: str | None = None) -> int:
+def run_rage_command(
+    client: str, industry: str, tower_filter: str | None = None
+) -> int:
     """Executes the dynamic RAGE (Runtime Agentic Grounding & Evaluation) pipeline.
 
     Loads the dynamic frameworks, runs the grounding search agent with Google search,
@@ -779,7 +808,9 @@ def run_rage_command(client: str, industry: str, tower_filter: str | None = None
         return 1
 
 
-def run_audit_command(target: str | None = None, output_dir: str = "docs/audits") -> int:
+def run_audit_command(
+    target: str | None = None, output_dir: str = "docs/audits"
+) -> int:
     """Execute the unified multi-dimensional Soverik Quality Engine audit on the target project."""
     from assessment_engine.infrastructure.auditor.scanner import SoverikQualityEngine
 
@@ -792,7 +823,9 @@ def run_audit_command(target: str | None = None, output_dir: str = "docs/audits"
     print("\n" + "=" * 80)
     print("🏛️  SOVERIK UNIFIED QUALITY & DUE DILIGENCE AUDIT REPORT")
     print("=" * 80)
-    print(f"Project: {report.project_name:<20} | Score: {report.global_score}% | Grade: {report.global_grade}")
+    print(
+        f"Project: {report.project_name:<20} | Score: {report.global_score}% | Grade: {report.global_grade}"
+    )
     print("-" * 80)
     print(f"{'Dimension / Probe':<36} {'Key Metric':<28} {'Status'}")
     print("-" * 80)
@@ -822,7 +855,9 @@ def run_audit_command(target: str | None = None, output_dir: str = "docs/audits"
             elif p_key == "mutation_gate":
                 metric_str = f"{pr.score_pct}% aniquilados"
             elif p_key == "neurosymbolic_topology":
-                dead_islands = pr.metrics.get("dead_islands_count", pr.metrics.get("orphans_count", 0))
+                dead_islands = pr.metrics.get(
+                    "dead_islands_count", pr.metrics.get("orphans_count", 0)
+                )
                 metric_str = f"{dead_islands} dead islands / {pr.metrics.get('total_modules', 0)} mods"
             elif p_key == "ast_complexity":
                 metric_str = f"{pr.score_pct}% conformes"
@@ -835,9 +870,13 @@ def run_audit_command(target: str | None = None, output_dir: str = "docs/audits"
     passed_count = sum(1 for p in report.probes.values() if p.passed)
     total_count = len(report.probes)
     print("-" * 80)
-    print(f"Total Sondas Evaluadas: {passed_count}/{total_count} ({report.global_score}%)")
+    print(
+        f"Total Sondas Evaluadas: {passed_count}/{total_count} ({report.global_score}%)"
+    )
     print(f"Reporte Consolidado JSON: {target_path / output_dir / 'AUDIT_REPORT.json'}")
-    print(f"Certificado HTML Oficial: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}")
+    print(
+        f"Certificado HTML Oficial: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}"
+    )
     print("=" * 80 + "\n")
 
     return 0 if report.global_grade in ("A+", "A", "B") else 1
@@ -860,7 +899,9 @@ def main(argv: list[str] | None = None) -> None:
         "--client", required=True, help="Formal client name (e.g. 'CLIENTE')"
     )
     run_parser.add_argument(
-        "--slug", required=True, help="Lowercase client filesystem slug (e.g. 'cliente')"
+        "--slug",
+        required=True,
+        help="Lowercase client filesystem slug (e.g. 'cliente')",
     )
     run_parser.add_argument("--context", required=True, help="Path to context document")
     run_parser.add_argument(

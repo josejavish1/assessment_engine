@@ -210,7 +210,8 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
-  notes: "Puerta de entrada breve para agentes; no contiene verdad can\xF3nica nueva."
+  notes: Concise entry point and sovereign engineering rules for autonomous agents;
+    contains no new canonical truth.
   diataxis: how_to
   verification_mode: editorial
 - path: .github/copilot-instructions.md
@@ -228,8 +229,7 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
-  notes: "Adaptador espec\xEDfico para Copilot; no sustituye la documentaci\xF3n can\xF3\
-    nica."
+  notes: Agent adapter for GitHub Copilot; operational prompt injection constraints.
   diataxis: how_to
   verification_mode: editorial
 - path: .github/pull_request_template.md

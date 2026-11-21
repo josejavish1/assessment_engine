@@ -1,95 +1,99 @@
 ---
-path: docs/architecture/data-provenance-ontology.md
-kind: document
-title: Data Provenance Ontology & Extraction Heuristics
-doc_type: canonical
 status: Verified
 owner: docs-governance
+source_of_truth:
+- src/assessment_engine/infrastructure/epistemic_graph.py
+- src/assessment_engine/infrastructure/evidence_engine.py
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
-source_of_truth:
-- ../../src/assessment_engine/infrastructure/epistemic_graph.py
-- ../../src/assessment_engine/infrastructure/evidence_engine.py
-last_verified_against: 2026-11-12
-notes: Ontología de extracción y linaje de evidencias documentales a partir de PDFs
-  de origen.
+doc_type: canonical
 diataxis: explanation
 verification_mode: editorial
+notes: Technical specification of the data provenance ontology and evidence extraction heuristics.
 ---
 # Data Provenance Ontology & Extraction Heuristics
 
-Este documento define de manera formal la ontología de extracción de datos, linaje de procedencia (*data provenance*) y modelado de incertidumbre que utiliza el motor para estructurar evidencias a partir de fuentes documentales no estructuradas (como informes técnicos, inventarios de sistemas y auditorías en formato PDF).
+Canonical specification defining the formal data provenance ontology, evidence ingestion mechanics, and epistemic uncertainty modeling across `assessment-engine`.
 
 ---
 
-## 1. El Grafo Epistémico como Modelo de Verdad
+## 1. Epistemic Graph Architecture
 
-El motor de evaluación fundamenta su capacidad de auditoría en un **Grafo Epistémico** (`epistemic_graph.py`). A diferencia de una base de datos documental plana, un grafo epistémico representa los hallazgos técnicos como relaciones semánticas interconectadas que conectan la observación con la norma.
+The platform grounds all architectural assertions, technical gap diagnoses, and maturity scores in an event-sourced relational graph managed by `EpistemicGraph` (`epistemic_graph.py`) and populated by `EvidenceEngine` (`evidence_engine.py`):
 
-```text
-       [ Fuente PDF ]  <--- (Linaje / Provenance)
-             │
-             ▼
-      [ Evidencia (Nodo) ]
-             │
-             ├──────────────────────────┐
-             ▼                          ▼
-   [ Componente Técnico ]  <───>  [ Control Regulador ]
-                                   (ENS, ISO, DORA)
+```
+[ Raw Document: .docx / .pdf ] 
+             |
+             v (EvidenceEngine.ingest_file)
+    [ EvidenceFragment ]  (Content-Addressable L0 Anchor)
+             |
+             +----------------------------+
+             |                            |
+             v                            v
+     [ Technical Gap ] <--(VIOLATES)--> [ Regulatory Control ]
+             |                           (ENS, NIS2, DORA, ISO 27001)
+             v
+   [ Transformation Initiative ] <--(REQUIRES)--> [ Pre-requisite ]
 ```
 
-Cada hecho afirmado por el motor debe tener un nodo de evidencia asociado que actúe como ancla de validez legal e histórica.
+Every claim synthesized by an LLM MUST link directly to an underlying `EvidenceFragment` to guarantee zero-hallucination auditability.
 
 ---
 
-## 2. Ontología del Grafo de Evidencias
+## 2. Ontological Node & Edge Schema
 
-Definimos formalmente las entidades (*nodes*) y relaciones (*edges*) que estructuran la ontología de evidencias en el sistema:
-
-### 2.1 Clases de Nodos Epistémicos
-
-| Clase de Nodo | Atributos Críticos | Propósito en el Dominio |
+### 2.1 Core Node Classifications
+| Entity Class | Defining Attributes | Epistemic Role |
 |---|---|---|
-| `EvidenceNode` | `id`, `source_document`, `page_number`, `raw_quote`, `confidence_score` | Representa la cita exacta extraída del PDF origen que actúa como prueba de un hecho técnico o brecha. |
-| `SystemNode` | `id`, `name`, `network_segment`, `technology_stack` | Representa un componente de infraestructura o sistema físico auditado (ej. "Core DB", "CPD Principal"). |
-| `GapNode` | `id`, `title`, `severity`, `business_risk` | Identifica una brecha de seguridad o desalineación técnica observada en la infraestructura. |
-| `ControlNode` | `id`, `framework_code`, `domain`, `description` | Representa el estándar regulatorio o control objetivo (ej. "ENS-re.3.1", "ISO-27001-A.12.1"). |
+| `EvidenceFragment` | `fragment_id: str`, `source_file: str`, `heading_path: List[str]`, `content_hash: str`, `text: str`, `confidence_score: float` | Verbatim text extract from customer documentation acting as immutable evidence. |
+| `SystemEntity` | `entity_id: str`, `name: str`, `network_tier: str`, `technology_stack: List[str]` | Physical or logical infrastructure component audited in the engagement. |
+| `TechnicalGap` | `gap_id: str`, `pillar_id: str`, `severity: str`, `risk_exposure: float` | Discovered vulnerability, operational bottleneck, or architectural flaw. |
+| `RegulatoryControl`| `control_id: str`, `framework: str`, `clause: str`, `target_level: float` | Compliance requirement or industry standard rubric (e.g., CMMI, DORA). |
+| `InitiativeEntity` | `initiative_id: str`, `tower: str`, `sizing: str`, `horizon: str` | Proposed remediation project allocated to a specific delivery wave ($H_1, H_2, H_3$). |
 
-### 2.2 Relaciones de Trazabilidad (*Edges*)
-
-*   `SUPPORTED_BY` (`EvidenceNode` $\rightarrow$ `SystemNode` o `GapNode`): Certifica que una observación de infraestructura o vulnerabilidad está estrictamente respaldada por una cita textual en un PDF origen.
-*   `VIOLATES` (`GapNode` $\rightarrow$ `ControlNode`): Mapea una brecha de seguridad detectada directamente con el control de cumplimiento que se está incumpliendo.
-*   `COVERS` (`SystemNode` $\rightarrow$ `ControlNode`): Indica qué controles regulatorios están siendo implementados con éxito por un componente técnico.
+### 2.2 Relational Edge Grammar
+- $\langle \text{TechnicalGap} \rangle \xrightarrow{\text{SUPPORTED\_BY}} \langle \text{EvidenceFragment} \rangle$: Anchors an identified flaw to exact textual proof.
+- $\langle \text{TechnicalGap} \rangle \xrightarrow{\text{VIOLATES}} \langle \text{RegulatoryControl} \rangle$: Maps a technical deviation directly to the regulatory clause breached.
+- $\langle \text{SystemEntity} \rangle \xrightarrow{\text{COVERS}} \langle \text{RegulatoryControl} \rangle$: Certifies that an operational control is actively enforced by an existing system.
+- $\langle \text{InitiativeEntity} \rangle \xrightarrow{\text{REQUIRES}} \langle \text{InitiativeEntity} \rangle$: Establishes hard DAG wait-for constraints for topological execution sorting.
 
 ---
 
-## 3. Heurísticas de Linaje de Datos No Estructurados
+## 3. Evidence Extraction Pipeline
 
-La transformación de un reporte de PDF crudo a nodos epistémicos fuertemente tipados sigue un pipeline determinista en la capa de infraestructura:
+Raw multi-modal ingestion converts unstructured files into content-addressable fragments via deterministic heuristics:
 
-```text
-[ PDF de Origen ] ──(PyPDF/OCR)──> [ Bloques de Texto ] ──(Regex & AST Parsing)──> [Evidencias] ──(Pydantic)──> [Grafo Epistémico]
+```
+[ Unstructured Input ] ──> [ Block Iterator ] ──> [ Heading Stack Tracking ] ──> [ SHA-256 Hashing ] ──> [ Vault Storage ]
 ```
 
-### Reglas de Extracción de Procedencia:
-1.  **Mapeo de Coordenadas Físicas:** Cada nodo de evidencia (`EvidenceNode`) extraído debe almacenar la referencia exacta del origen:
-    *   `source_file`: Nombre del archivo PDF original (ej. `ANEXO_A_CPD_v1.2.pdf`).
-    *   `page_number`: Número de página física indexada.
-    *   `anchor_context`: Las 3 líneas de texto anteriores y posteriores al hallazgo para dar contexto al revisor humano.
-2.  **Identificación de Entidades Transversales:** Se aplica un resolutor de entidades (`entity_resolution.py`) para evitar la duplicidad de conceptos idénticos que se nombran de forma diferente en varios anexos (ej. "CPD Principal" vs. "Centro de Datos de Madrid").
+### 3.1 Extraction Heuristics
+1. **Hierarchical Context Tracking:** `_parse_docx` and `_parse_text` maintain an active heading stack ($H_1 \to H_2 \to H_3$). Every paragraph inherits its current parent heading path to preserve operational context.
+2. **Content-Addressable Deduplication:** Each extracted fragment computes a deterministic SHA-256 digest over normalized text (`unicodedata.normalize("NFC", text)`). Duplicate fragments across annexes are resolved implicitly without redundant storage.
+3. **Surrounding Context Anchoring:** Captures surrounding block boundaries to facilitate human forensic verification and multi-turn LLM reasoning.
 
 ---
 
-## 4. Cuantificación de la Confianza y Prevención del Drift
+## 4. Confidence Scoring Formulation
 
-Para evitar falsos positivos o "alucinaciones" por parte de los agentes de recolección dinámicos, cada pieza de evidencia recibe un índice de confianza basado en su modo de verificación:
+Evidence validity and epistemic certainty are quantified using deterministic scoring:
 
-$$\text{Confidence Score (CS)} = w_{\text{mode}} \times \left(1.0 - \frac{\text{churn\_rate}}{100}\right)$$
+$$\text{Confidence Score} = w_{\text{source}} \times w_{\text{extraction}} \times \left(1.0 - \text{decay}\right)$$
 
-Donde:
-*   `verification_mode: code` $\rightarrow$ Confianza $100\%$ ($1.0$). Verificado contra el código fuente ejecutable del proyecto.
-*   `verification_mode: workflow` $\rightarrow$ Confianza $90\%$ ($0.9$). Verificado por la ejecución exitosa de un pipeline de CI.
-*   **Freshness Gate:** Si un documento `Verified` supera la edad máxima permitida de 120 días sin reverificación manual, su nivel de confianza se degrada automáticamente a `0` y su estado baja a `Needs Review`.
+| Verification Factor | Assigned Weight | Criteria |
+|---|---|---|
+| **$w_{\text{source}}$** | $1.0$ (Primary Source) | Official customer architectural blueprints or configuration exports. |
+| | $0.8$ (Secondary Source) | Questionnaire transcripts or informal operational notes. |
+| **$w_{\text{extraction}}$** | $1.0$ (Exact Match) | Direct block-level verbatim extraction with validated heading stack. |
+| | $0.7$ (Inferred Extract) | LLM-synthesized claim derived from high-level RAPTOR tree clusters. |
+| **Freshness Decay** | $\text{age} / \text{max\_age}$ | Linearly degrades confidence when evidence age approaches `verified_max_age_days`. |
 
-Este modelo de metadatos asegura que la salud documental sea medible matemáticamente mediante cuadros de mando automáticos.
+---
+
+## 5. Architectural Invariants for Agents
+
+1. **Immutable Provenance:** Fragments stored in `evidence_vault.json` are append-only; retroactive text editing of stored fragments is strictly prohibited.
+2. **Citations Required:** Every `Finding` in `findings.json` and `blueprint_<tower>_payload.json` must reference at least one valid `fragment_id`.
+3. **Deterministic Persistence:** All graph transactions must record via `EpistemicGraph.append_event()` to maintain replayability and audit logging in SQLite.

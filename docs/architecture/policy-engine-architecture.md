@@ -2,76 +2,90 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/infrastructure/policy_engine.py
-- ../../engine_config/policies/
-- ../../tests/integration/test_policy_engine.py
-last_verified_against: 2026-11-12
+- src/assessment_engine/infrastructure/policy_engine.py
+- engine_config/policies
+- tests/integration/test_policy_engine.py
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: explanation
 verification_mode: code
+notes: Technical specification of the Sovereign Policy Engine interceptor and the 8 registered compiler policies.
 ---
 # Sovereign Policy Engine Architecture
 
-Este documento detalla la especificación técnica de la arquitectura del **Sovereign Policy Engine (Motor de Políticas Soberano)** de la plataforma.
-
-Su objetivo es actuar como el **guardarraíl determinista y de conformidad final** del sistema, interceptando los payloads semánticos generados por la Inteligencia Artificial y aplicando reglas lógicas rígidas de seguridad, de-duplicación y alineación estratégica de riesgos antes de la compilación de entregables.
+Canonical specification defining the architecture, compilation lifecycle, deterministic invariant checks, and registered policy passes of `SovereignPolicyEngine` (`src/assessment_engine/infrastructure/policy_engine.py`).
 
 ---
 
-## 1. Patrón Arquitectónico: Compilador de Políticas de Paso Único
+## 1. Interception Pattern: Single-Pass Deterministic Policy Compiler
 
-El Motor de Políticas no realiza sugerencias; es un **compilador determinista** que se ejecuta como un interceptor en la fase final de síntesis del blueprint (`run_tower_blueprint_engine.py`).
+`SovereignPolicyEngine` operates as a deterministic post-synthesis interceptor within the single-tower evaluation pipeline (`run_tower_blueprint_engine.py`). It ingests raw LLM-synthesized blueprint JSON, executes a sequential chain of 8 registered policy passes, and produces a sanitized, compliant blueprint payload prior to OpenXML AST compilation:
 
-Toma como entrada el payload JSON de la torre generado por el modelo de lenguaje, ejecuta de forma secuencial una suite de clases de políticas registradas, y devuelve el payload saneado, reestructurado e inyectado con controles obligatorios:
-
-```text
-===================================================================================================
-| AI BLUEPRINT PAYLOAD ➔ [ POLICY ENGINE COMPILER ] ➔ SANITIZED SECURE PAYLOAD ➔ DOCX RENDERER    |
-===================================================================================================
-|                                                                                                 |
-|   Políticas Registradas y Ejecutadas en Cascada:                                                |
-|                                                                                                 |
-|   1. Policy 1: Proyecto De-duplicación y Consolidación (DeduplicationPolicy):                  |
-|      - Escanea proyectos duplicados o con propósitos similares (ej: Platform Engineering)        |
-|        y los consolida en un único proyecto maestro bajo la torre correspondiente.               |
-|                                                                                                 |
-|   2. Policy 2: Re-secuenciación de Dependencias (SequencingPolicy):                             |
-|      - Modifica dinámicamente las duraciones y horizontes temporales (ej: fuerza que el plan     |
-|        de adopción vaya en H1 (Mes 1-2) y retrasa el piloto de Kubernetes a H2).                 |
-|                                                                                                 |
-|   3. Policy 3: Salvaguarda OT/SCADA (OtPerimeterPolicy):                                         |
-|      - Si se detecta un proyecto de SCADA o entornos industriales OT críticos, inyecta           |
-|        obligatoriamente el entregable y objetivo de "Diodo de Datos de Hardware".                |
-|                                                                                                 |
-`-------------------------------------------------------------------------------------------------'
+```
+[ Raw LLM Blueprint Payload ]
+             |
+             v
++---------------------------------------------------------------------------------------+
+| SOVEREIGN POLICY ENGINE COMPILER (policy_engine.py)                                   |
+| Intercepts payload and executes the 8 registered policy passes in sequential order:   |
+|                                                                                       |
+| 1. ClientSanitizationPolicy       --> Deep unescape & confidential scrubbing          |
+| 2. FairRiskPolicy                 --> Dual TCO + FAIR Monte Carlo Bayesian modeling   |
+| 3. DeduplicationPolicy            --> Consolidates cross-pillar project redundancy     |
+| 4. SequencingPolicy               --> Enforces chronological dependency waves (H1-H3) |
+| 5. OTPerimeterPolicy              --> Mandates hardware data diodes for SCADA/OT       |
+| 6. ArchiMateDeliverablesPolicy    --> Validates ArchiMate structural taxonomy         |
+| 7. BusinessCaseGroundingPolicy    --> Bounds financial sizing to corporate tiers      |
+| 8. ReverseTraceabilityPolicy      --> Enforces mandatory L0 evidence fragment lineage |
++---------------------------------------------------------------------------------------+
+             |
+             v
+[ Sanitized Blueprint SSOT: blueprint_<tower>_payload.json ]
+             |
+             v
+[ OpenXML AST Compilers: payload_to_ast.py + docx_compiler.py ]
 ```
 
 ---
 
-## 2. Implementación de Políticas Clave
+## 2. Registered Policy Specifications (`POLICY_REGISTRY`)
 
-### A. Política de De-duplicación y Fusión de Esfuerzos
-*   **Problema de la IA:** Los LLMs tienden a proponer el mismo proyecto genérico en múltiples pilares tecnológicos distintos (por ejemplo, "Migración a AWS" tanto en Cómputo como en Redes), fragmentando el presupuesto del cliente.
-*   **La Solución:** La regla busca similitudes conceptuales y semánticas. Borra los duplicados redundantes de los pilares satélites e inyecta un único proyecto maestro consolidado en el pilar de gobierno general (ej. Automatización y Autoservicio).
+The compiler executes eight immutable policy passes:
 
-### B. Política de Secuenciación Lógica de Cronogramas
-*   **Problema de la IA:** La IA carece de noción temporal de construcción real, sugiriendo habitualmente arrancar "Pilotos de Kubernetes" en el Mes 1 sin haber diseñado la "Política de Contenedores" previa.
-*   **La Solución:** Re-ordena las tareas de forma cronológica estricta:
-    *   Fase de Arranque (Mes 1-2): Planes estratégicos y gobernanza.
-    *   Horizonte 1 (Mes 1-6): Diseños de bases y pilotos.
-    *   Horizonte 2 (Mes 6-12): Implantaciones de producción masivas.
-
-### C. Salvaguarda Perimetral de Infraestructuras Críticas (OT)
-*   **Problema de la IA:** Los modelos de lenguaje desconocen la criticidad de seguridad de una red de transporte de energía SCADA, proponiendo de forma insegura "extraer telemetría de OT directa a la nube de AWS".
-*   **La Solución:** Si el motor de políticas detecta un proyecto asociado a SCADA u OT, inyecta de forma obligatoria el requerimiento técnico no funcional de **Diodos de Datos de Hardware unidireccionales**. Esto garantiza el aislamiento físico total de la red eléctrica frente a internet, cumpliendo con las normativas NIS2 y PIC oficiales.
+| Pass | Policy Class | Invariant Enforcement & Failure Remediation |
+|---|---|---|
+| **1** | `ClientSanitizationPolicy` | Recursively cleans Unicode escapes (`deep_unescape`) and strips inadvertent cross-tenant data leaks. |
+| **2** | `FairRiskPolicy` | Evaluates loss distributions using a dual TCO + FAIR actuarial model (10,000 Monte Carlo iterations) with SHA-256 stable seeds. Conjugates Gamma-Poisson (TEF) and Beta-Binomial (VULN) against `evidence_ledger.json`. |
+| **3** | `DeduplicationPolicy` | Detects semantically redundant initiatives scattered across distinct pillars (e.g., duplicate cloud migration tasks in Compute vs Networks) and merges them into a single master project under the primary governance pillar. |
+| **4** | `SequencingPolicy` | Fixes chronological hallucination in LLM planning. Mandates foundational governance in Horizon 1 ($M_{1}-M_{6}$) before permitting large-scale production deployments in Horizon 2 ($M_{6}-M_{12}$). |
+| **5** | `OTPerimeterPolicy` | Inspects initiative scopes for industrial SCADA, ICS, or OT keywords. Unconditionally injects physical hardware data diodes to guarantee unidirectional boundary isolation under NIS2 and Spanish PIC directives. |
+| **6** | `ArchiMateDeliverablesPolicy` | Validates that all initiative deliverables conform to standardized ArchiMate enterprise architecture taxonomy. |
+| **7** | `BusinessCaseGroundingPolicy` | Constrains capital expenditure and operational cost sizing against the client's financial tier declared in `client_intelligence.json`. |
+| **8** | `ReverseTraceabilityPolicy` | Verifies that every proposed remediation project directly links to at least one verified `Finding` in `findings.json`. Unanchored initiatives are pruned. |
 
 ---
 
-## 3. Integración con el Análisis FAIR (Factor Analysis of Information Risk)
+## 3. Actuarial Modeling & Bayesian Risk Integration
 
-El Motor de Políticas se alimenta de los perfiles de riesgo FAIR declarados de forma estructurada en `engine_config/policies/fair_risk_profiles.json`.
+The `FairRiskPolicy` integrates quantitative actuarial modeling directly into the policy compiler:
 
-Cruza las variables deterministas de **Frecuencia de Eventos de Amenaza (TEF)** y **Magnitud de Pérdida (LM)** para calcular la **Pérdida Anual Estimada (ALE)** de cada pilar técnico. Si el ALE supera el umbral de tolerancia financiera configurado, el motor de políticas eleva la prioridad de mitigación de la iniciativa y restringe las libertades del agente generador.
+### 3.1 Dual-Model Monte Carlo Simulation
+- **Iteration Bound:** Executes 10,000 Monte Carlo runs per technology pillar.
+- **Reproducibility:** Seeded via SHA-256 hash digests of client and tower identifiers to guarantee thread-safe, cryptographically stable outputs across runs.
+- **Conjugate Bayesian Updating:**
+  - Threat Event Frequency ($\text{TEF} \sim \text{Poisson}(\lambda)$): Prior $\Gamma(\alpha_0, \beta_0)$ updated to posterior $\Gamma(\alpha_0 + k, \beta_0 + 1)$.
+  - Vulnerability ($\text{VULN} \sim \text{Binomial}(n, p)$): Prior $\text{Beta}(\alpha_0, \beta_0)$ updated to posterior $\text{Beta}(\alpha_0 + x, \beta_0 + n - x)$.
+
+### 3.2 Dynamic Risk Threshold Escalation
+When calculated Annualized Loss Expectancy (ALE) exceeds client risk tolerances defined in `engine_config/policies/fair_risk_profiles.json`, the policy compiler automatically escalates initiative severity and overrides prompt suggestions.
+
+---
+
+## 4. Architectural Invariants for AI Agents
+
+1. **Deterministic Compilation:** Policies must execute as pure transformations on the input payload dictionary without network I/O or stochastic variance.
+2. **Reverse Traceability Enforcement:** An initiative lacking verified evidence citations must never pass `ReverseTraceabilityPolicy`.
+3. **Hard Perimeters for OT:** Any industrial system flagged under OT or SCADA requires physical unidirectional data diodes; logical or software firewalls alone are strictly rejected.

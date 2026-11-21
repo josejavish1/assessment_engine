@@ -2,50 +2,115 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/infrastructure/epistemic_graph_service.py
-- ../../engine_config/policies/epistemic_dependencies.json
-last_verified_against: 2026-11-12
+- src/assessment_engine/infrastructure/epistemic_graph.py
+- src/assessment_engine/infrastructure/epistemic_graph_service.py
+- engine_config/policies/epistemic_dependencies.json
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: explanation
 verification_mode: code
+notes: Technical specification of the Epistemic Graph Event Store and Loopy Causal Belief Network service.
 ---
 # Epistemic Knowledge Graph Architecture
 
-Este documento detalla la especificación técnica de la infraestructura del **Epistemic Knowledge Graph (Grafo de Conocimiento Epistémico)** del sistema.
-
-Su objetivo de diseño es actuar como el **cerebro de propagación de riesgos y dependencia causal** de la plataforma, modelando el holding tecnológico del cliente como un sistema vivo interconectado.
+Canonical specification defining the dual-tier graph architecture of `assessment-engine`: the SQLite event-sourced assertion store and the Loopy Causal Belief Network (LCBN) risk propagation engine.
 
 ---
 
-## 1. Patrón Arquitectónico: Loopy Causal Belief Network (LCBN)
+## 1. Dual-Tier Architectural Model
 
-El motor de grafos no utiliza topologías rígidas o simples DAGs (Directed Acyclic Graphs). Implementa una arquitectura **LCBN (Loopy Causal Belief Network)** sobre `NetworkX` para modelar la realidad física compleja de infraestructuras Tier 1 (donde existen bucles de realimentación continuos, ej. Redes T3 protege a SOC T5, y SOC T5 securiza a Redes T3).
+The Epistemic Graph decouples deterministic state persistence from causal graph inference:
 
-*   **Topología Declarativa Dinámica:** Las aristas y los pesos del grafo (dependencias causales de riesgo) no están acopladas en código. Se cargan de forma dinámica en tiempo de ejecución desde perfiles JSON (`engine_config/policies/epistemic_dependencies.json`) según el sector del cliente (ej. `critical_infrastructure`, `retail`).
-*   **Convergencia de Punto Fijo (Banach):** La propagación probabilística del riesgo a través de los ciclos cerrados de la red se resuelve matemáticamente mediante un algoritmo de contracción iterativa de punto fijo. El sistema absorbe los impactos en bucle y converge de forma segura a un equilibrio estable.
+```
++---------------------------------------------------------------------------------------+
+| INFERENCE & PROPAGATION LAYER: EpistemicGraphService (epistemic_graph_service.py)     |
+| - Loopy Causal Belief Network (NetworkX)                                              |
+| - Banach Fixed-Point Risk Propagation                                                 |
+| - Eigenvector Risk Centrality (ERC / Katz-PageRank)                                   |
+| - Counterfactual Simulation (do-calculus) & Analytical Backpropagation                |
++---------------------------------------------------------------------------------------+
+                                          ^
+                                          | (Reads Topology & Dependencies)
+                                          v
++---------------------------------------------------------------------------------------+
+| DECLARATIVE DEPENDENCY PROFILES: engine_config/policies/epistemic_dependencies.json   |
++---------------------------------------------------------------------------------------+
+                                          ^
+                                          | (Materializes Events & Assertions)
+                                          v
++---------------------------------------------------------------------------------------+
+| EVENT-SOURCED STORAGE LAYER: EpistemicGraph (epistemic_graph.py)                      |
+| - Append-only SQLite Event Ledger (epistemic_graph.db)                                |
+| - Subject-Predicate-Object Triplet Registry                                           |
+| - CQRS State Projections & Path-Traversal Guardrails                                  |
++---------------------------------------------------------------------------------------+
+```
 
 ---
 
-## 2. Unificación Matemática: PageRank de Centralidad de Riesgo (ERC)
+## 2. Loopy Causal Belief Network (LCBN) Engine
 
-El Grafo Epistémico logra la unificación sistémica del análisis estocástico de la **Fase 1 (MCDA Monte Carlo Fuzzer)** con la topología estructural de la **Fase 2 (BBN)**.
+Unlike acyclic DAGs, enterprise technology architectures contain bidirectional feedback loops (e.g., Network T3 secures SOC T5, while SOC T5 monitors Network T3). `EpistemicGraphService` manages cyclic dependencies through mathematical contraction:
 
-*   **La Ecuación Unificada:** El motor calcula el **Eigenvector Risk Centrality (ERC)**. Esto se logra ponderando la Matriz de Adyacencia ($W$) por las desviaciones estándar ($\sigma$) de Monte Carlo de cada torre técnica.
-*   **PageRank Adaptado (Katz Centrality):** Para evitar el colapso nilpotente de las redes dirigidas, se emplea una iteración de potencia asíncrona con un factor de amortiguación (Damping Factor $d = 0.85$). El resultado aísla de forma determinista la **Torre más frágil (SPOF)** de la organización, basándose conjuntamente en su inestabilidad estadística interna y en su carga de responsabilidad estructural.
+### 2.1 Banach Fixed-Point Risk Convergence
+Risk propagation across cyclic topologies is solved iteratively:
+
+$$R^{(t+1)} = \sigma\left(W \cdot R^{(t)} + R^{(0)}\right)$$
+
+Where $W$ is the weighted adjacency matrix loaded from `epistemic_dependencies.json`, $R^{(0)}$ represents baseline intrinsic risk, and $\sigma$ is a bounded sigmoid scaling function. Iteration executes until convergence:
+
+$$\|R^{(t+1)} - R^{(t)}\| < \text{tol} \quad (\text{default: } 10^{-6}, \text{max\_iter: } 100)$$
+
+### 2.2 Eigenvector Risk Centrality (ERC / Katz-PageRank)
+Combines empirical Monte Carlo variance with graph centrality to isolate the enterprise Single Point of Failure (SPOF):
+
+$$\vec{c} = d \cdot W^T \vec{c} + (1 - d) \cdot \vec{\sigma}_{\text{MonteCarlo}}$$
+
+- **Damping Factor ($d$):** Fixed at $0.85$ to prevent nilpotent matrix collapse.
+- **$\vec{\sigma}_{\text{MonteCarlo}}$:** Empirical standard deviation vector from single-tower risk fuzzer runs.
+- **SPOF Identification:** The node with $\max(c_i)$ designates the highest-priority architectural bottleneck.
+
+### 2.3 Counterfactual Interventions (Pearl do-calculus)
+Simulates hypothetical remediation scenarios:
+```python
+# Evaluates impact of artificial maturity uplift on dependent towers
+delta: Dict[str, Any] = service.simulate_counterfactual_intervention(
+    intrinsic_maturities=current_scores,
+    interventions={"T3": 4.5, "T5": 4.0}
+)
+```
+
+### 2.4 Causal Backpropagation & Online Learning
+The engine adjusts graph weights dynamically based on empirical audit discrepancies:
+1. Calculates Mean Squared Error (MSE) between a priori model estimates and a posteriori audit scores.
+2. Updates edge weights $W_{ij} \leftarrow W_{ij} - \eta \cdot \frac{\partial \text{MSE}}{\partial W_{ij}}$ with learning rate $\eta = 0.05$.
+3. Persists optimized weights atomically using `os.replace` to `epistemic_dependencies.json`.
 
 ---
 
-## 3. Auto-Calibración Evolutiva (Causal Backpropagation)
+## 3. SQLite Event Store Architecture (`epistemic_graph.py`)
 
-El sistema de grafos epistémicos es un sistema que aprende de sus errores de estimación.
-*   **Descenso de Gradiente Analítico:** Al contrastar las recomendaciones de madurez intrínseca generadas *A Priori* por el LLM con las madureces reales empíricas obtenidas *A Posteriori* en las auditorías de las torres técnicas, el sistema calcula el Error Cuadrático Medio (MSE) predictivo.
-*   **Actualización de Pesos:** El motor de backpropagation recalcula y optimiza las aristas del grafo para minimizar dicho error.
-*   **Guardado Atómico POSIX:** Los nuevos pesos asimilados se persisten físicamente de vuelta al archivo JSON declarativo (`epistemic_dependencies.json`) mediante reemplazos atómicos de sistema de archivos (`os.replace`). El Grafo se autoadapta y evoluciona de forma segura para cada sector corporativo.
+`EpistemicGraph` enforces transactional persistence and auditability:
+
+### 3.1 Event Ledger Schema
+- **`events` Table:**
+  - `event_id: TEXT PRIMARY KEY` (UUIDv4)
+  - `event_type: TEXT` (`ASSERTION_RECORDED`, `INITIATIVE_PROMOTED`, `DEPENDENCY_LINKED`)
+  - `entity_id: TEXT` (Canonical identifier)
+  - `payload: TEXT` (JSON-serialized event data)
+  - `timestamp: REAL` (Epoch seconds)
+
+### 3.2 Security & Integrity Controls
+- **Path-Traversal Guard:** `WorkspaceConfig.validate_storage_path()` blocks directory traversal attacks (`PathTraversalError`).
+- **Ledger Corruption Detection:** Replay policies verify database hash sequences, raising `LedgerCorruptionError` upon malformed entries.
 
 ---
 
-## 4. Visualización de Caminos Críticos de Fallo
-El analizador interno de NetworkX cuenta con algoritmos adaptativos para extraer los **Caminos de Propagación de Riesgo**. Incluso en arquitecturas totalmente cíclicas (sin un nodo origen explícito), el motor extrae dinámicamente las cascadas de fallo más severas (ej. `T6 -> T5 -> T2`) y su multiplicador de transferencia de riesgo acumulado, empaquetándolas en el dossier del cliente (`client_intelligence.json`).
+## 4. Architectural Invariants for AI Agents
+
+1. **Deterministic Convergence:** Graph propagation algorithms must guarantee finite execution through strict convergence thresholds ($\text{tol} = 10^{-6}$).
+2. **Atomic Weight Mutability:** Updates to `epistemic_dependencies.json` must execute via atomic file replacement to prevent corrupt configuration states during concurrent reads.
+3. **Event Replayability:** All projection states in the epistemic graph must be deterministically reconstructible from the SQLite event log.

@@ -1,235 +1,117 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/application/run_global_pipeline.py
-- ../../src/assessment_engine/application/build_global_report_payload.py
-- ../../src/assessment_engine/application/run_executive_refiner.py
-- ../../src/assessment_engine/application/run_commercial_pipeline.py
-- ../../src/assessment_engine/application/run_commercial_refiner.py
-- ../../src/assessment_engine/infrastructure/pipeline_runtime.py
-- ../../src/assessment_engine/domain/schemas/global_report.py
-- ../../src/assessment_engine/domain/schemas/commercial.py
-last_verified_against: 2026-05-02
+- src/assessment_engine/application/run_global_pipeline.py
+- src/assessment_engine/application/build_global_report_payload.py
+- src/assessment_engine/application/run_executive_refiner.py
+- src/assessment_engine/application/run_commercial_pipeline.py
+- src/assessment_engine/application/run_commercial_refiner.py
+- src/assessment_engine/infrastructure/pipeline_runtime.py
+- src/assessment_engine/domain/schemas/global_report.py
+- src/assessment_engine/domain/schemas/commercial.py
+- src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py
+- src/assessment_engine/adapters/render_commercial_report.py
+enforce_on_source_changes: true
+review_paths_on_source_change:
+- docs/architecture/global-commercial-pipelines.md
+- docs/architecture/critical-modules.md
+- docs/contracts/payload-render-boundaries.md
+- docs/contracts/artifact-contracts.md
+- docs/operations/pipeline-execution.md
+- docs/operations/pipeline-controls-runbook.md
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
+notes: Canonical architecture specification of the global consolidation and commercial strategy pipelines.
 ---
-# Global and commercial pipelines
-
-Tras completar una o varias torres, `assessment-engine` eleva el análisis hacia una vista ejecutiva global y luego hacia una explotación comercial interna.
-
-## Lectura empresarial
-
-Estas dos capas convierten diagnósticos técnicos dispersos en dos productos distintos:
-
-1. una **lectura de dirección** para priorizar transformación, riesgo y decisiones;
-2. una **lectura comercial interna** para convertir esa agenda de transformación en narrativa de cuenta y propuestas.
-
-Su objetivo no es descubrir una verdad nueva, sino **reagrupar y explotar** la verdad ya producida por las torres.
-
-## Pipeline global
-
-El orquestador principal es:
-
-- `src/assessment_engine/application/run_global_pipeline.py`
-
-Trabaja sobre:
-
-- `working/<client>/`
-
-### Qué valor aporta esta capa
-
-| Resultado | Para quién | Valor |
-|---|---|---|
-| `global_report_payload.json` | dirección / liderazgo tecnológico | consolida una lectura transversal del cliente |
-| `Informe_Ejecutivo_Consolidado_<client>.docx` | sponsor, CIO, programa de transformación | convierte múltiples torres en una agenda ejecutiva coherente |
-
-### Fases reales
-
-1. **Build Global Payload**
-   - script: `build_global_report_payload`
-   - salida: `global_report_payload.json`
-
-2. **Strategic Executive Refinement**
-   - script: `run_executive_refiner`
-   - reescribe el mismo `global_report_payload.json`
-
-3. **Generate Global Radar Chart**
-   - script: `generate_global_radar_chart`
-
-4. **Generate Executive Roadmap Visual**
-   - script: `generate_executive_roadmap_image`
-
-5. **Render Global DOCX**
-   - script: `render_global_report_from_template`
-   - salida final: `Informe_Ejecutivo_Consolidado_<client>.docx`
-
-### Nota operativa actual
-
-El orquestador global ya comparte con la capa comercial una base común de:
-
-- resolución de intérprete Python;
-- bootstrap de entorno;
-- propagación explícita del entorno validado a cada paso del pipeline.
-
-## Cómo se construye el payload global
-
-`build_global_report_payload.py` prioriza:
-
-1. blueprints modernos: `T*/blueprint_*_payload.json`
-
-El builder:
-
-- consolida `tower_summaries` y `heatmap`;
-- deriva riesgos estratégicos;
-- agrega iniciativas;
-- extrae principios de arquitectura e implicaciones operativas si existen;
-- genera la consolidación global exclusivamente desde blueprints de torre disponibles.
-
-Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. En la consolidación global, `build_global_report_payload.py` consume `src/assessment_engine/infrastructure/global_maturity_policy.py` para score, target, color y banda, y esa política global sigue delegando los umbrales cualitativos en `src/assessment_engine/infrastructure/maturity_band.py`. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación ni depender directamente de dos capas de traducción distintas para la misma banda.
-
-### Decisión arquitectónica relevante
-
-El builder global ya trabaja directamente sobre blueprints modernos sin fallback legacy en la ruta activa. Empresarialmente esto significa:
-
-- la consolidación global ya está pensada para descansar sobre la **verdad top-down por torre**;
-- el legado deja de condicionar la lectura global del cliente y queda relegado a superficies históricas o adaptadores explícitos.
-
-### Señalización operativa actual
-
-La consolidación global deja visible su lineage canónico en `_generation_metadata.source_version` del `global_report_payload.json`. En la ruta activa ese lineage ya debe expresar un modo `blueprint-only`.
-
-El runner smoke y el pipeline global ejercitan ya ese camino como comportamiento normal, de modo que cualquier dependencia residual de legado debe entenderse como deuda fuera del flujo principal, no como una variante soportada del día a día.
-
-## Refinado ejecutivo global
-
-`run_executive_refiner.py` toma el payload agregado y lo refina mediante varias iteraciones LLM:
-
-- `executive_summary`
-- `burning_platform`
-- `tower_bottom_lines`
-- `target_vision`
-- `execution_roadmap`
-- `executive_decisions`
-
-El resultado final sobrescribe el mismo archivo `global_report_payload.json`.
-
-### Qué traduce esta fase
-
-La refinación ejecutiva convierte señales técnicas agregadas en:
-
-- narrativa de plataforma de cambio;
-- riesgos sistémicos;
-- bottom lines por torre;
-- decisiones inmediatas para dirección;
-- visión objetivo y roadmap ejecutivo.
-
-Su aporte empresarial es hacer que el output deje de ser un simple agregado técnico y pase a ser un **vehículo de priorización**.
-
-En paralelo, la consolidación global y las vistas derivadas siguen dependiendo del dossier de `client_intelligence` como contexto estratégico compartido. Si ese contrato cambia, la lectura correcta es revisar global/commercial/web como consumidores acoplados del mismo contexto, no tratarlos como capas aisladas.
-
-## Pipeline comercial
-
-El orquestador principal es:
-
-- `src/assessment_engine/application/run_commercial_pipeline.py`
-
-Parte de:
-
-- `global_report_payload.json`
-
-Y genera:
-
-- `commercial_report_payload.json`
-- `Account_Action_Plan_<client>.docx`
-
-### Qué valor aporta la capa comercial
-
-| Resultado | Para quién | Valor |
-|---|---|---|
-| `commercial_report_payload.json` | equipos de cuenta y preventa | traduce el assessment a hipótesis comerciales accionables |
-| `Account_Action_Plan_<client>.docx` | stakeholders internos de venta/entrega | materializa narrativa, pipeline y propuestas proactivas |
-
-### Fases reales
-
-1. **Multi-Agent Commercial Refinement**
-   - script: `run_commercial_refiner`
-
-2. **Render Account Action Plan**
-   - script: `render_commercial_report`
-
-Igual que en la capa global, la ejecución actual reutiliza un runner común para evitar deriva entre preflight, variables de entorno y pasos hijos.
-
-## Contexto híbrido comercial
-
-`run_commercial_refiner.py` no se apoya solo en el payload global. También:
-
-- busca todos los `blueprint_*_payload.json` de torres;
-- construye un catálogo táctico por torre;
-- mezcla contexto estratégico global con detalle técnico por blueprint.
-
-Eso permite que la capa comercial cruce:
-
-- grandes iniciativas del roadmap global;
-- quick wins e iniciativas detectadas en torres;
-- deuda técnica y bottom lines ejecutivos por torre.
-
-En términos empresariales, esta mezcla evita dos extremos pobres:
-
-- una narrativa comercial desconectada de la realidad técnica;
-- un catálogo técnico sin traducción a oportunidad de cuenta.
-
-## Orquestación multi-agente comercial
-
-El refinador comercial organiza varias capas:
-
-1. **Global Account Director**
-   - estrategia de cuenta y resumen comercial
-2. **Enterprise Presales Architect**
-   - pipeline de oportunidades
-3. **Proposal orchestration**
-   - `Engagement Manager`
-   - `Lead Solutions Architect`
-   - `Delivery & Risk Director`
-   - `Sales Partner`
-
-El resultado incluye:
-
-- `intelligence_dossier`
-- `opportunities_pipeline`
-- `proactive_proposals`
-
-## Contratos principales
-
-| Artefacto | Contrato |
-|---|---|
-| `global_report_payload.json` | payload global refinado sobre esquemas de `global_report.py` |
-| `commercial_report_payload.json` | payload comercial basado en `commercial.py` |
-
-## Puntos de control y riesgo operativo
-
-| Punto | Qué protege | Riesgo si falla |
-|---|---|---|
-| `build_global_report_payload.py` | consolidación fiel de torres | la dirección recibe una visión parcial o distorsionada |
-| `run_executive_refiner.py` | calidad de narrativa ejecutiva | el output global queda técnico pero no accionable |
-| `run_commercial_refiner.py` | traducción a contexto de cuenta | la explotación comercial se desacopla del diagnóstico real |
-| renderers global/commercial | consistencia final de presentación | erosiona credibilidad, aunque no debería cambiar la verdad |
-
-## Relación con el flujo por torre
-
-El diseño actual depende de que las torres produzcan artefactos fiables. En especial:
-
-- el pipeline global prefiere blueprints por encima de artefactos legacy;
-- el pipeline comercial aprovecha los blueprints como catálogo táctico;
-- cuanto más completa y verificada sea la salida por torre, más coherente será la capa global/comercial.
-
-## Qué debería retener un lector empresarial
-
-1. la capa global **agrega y prioriza**;
-2. la capa comercial **explota y activa**;
-3. ninguna de las dos debería redefinir la realidad que ya fijó cada blueprint por torre;
-4. la calidad de estas capas depende directamente de la calidad y completitud del flujo top-down por torre.
+# Global and Commercial Pipelines Architecture
+
+Canonical specification defining the execution sequence, data contracts, multi-agent synthesis, and AST compilation of the Global Consolidation and Commercial Strategy pipelines.
+
+---
+
+## 1. Dual-Tier Value Chain
+
+Following single-tower blueprint generation, `assessment-engine` projects technical findings into two high-level business deliverables:
+
+```
+[ Active Tower Blueprints: workspaces/<client>/T*/blueprint_*_payload.json ]
+                                      |
+         +----------------------------+----------------------------+
+         |                                                         |
+         v (Global Consolidation)                                  v (Commercial Activation)
+run_global_pipeline.py                                    run_commercial_pipeline.py
+         |                                                         |
+         v                                                         v
+[ global_report_payload.json ]                            [ commercial_report_payload.json ]
+         |                                                         |
+         v (TomoAsisAstCompiler)                                   v (render_commercial_report)
+[ Tomo_1_Diagnostico_ASIS_<client>.docx ]                 [ Account_Action_Plan_<client>.docx ]
+```
+
+- **Global Pipeline:** Aggregates isolated tower blueprints into a cohesive portfolio diagnostic for C-level leadership (CIO/CTO).
+- **Commercial Pipeline:** Correlates transformation initiatives against NTT DATA rate cards and client budget envelopes to generate proactive pre-sales account plans.
+
+---
+
+## 2. Phase 2: Global Consolidation Pipeline
+
+Driven by `src/assessment_engine/application/run_global_pipeline.py`, this pipeline executes four deterministic stages:
+
+### Stage 2.1: Blueprint-First Payload Aggregation (`build_global_report_payload.py`)
+- **Input:** Inspects `workspaces/<client_id>/` to gather all valid `blueprint_<tower>_payload.json` files.
+- **Blueprint-Only Invariant:** Operates in strict `blueprint-only` mode (`source_version: "blueprint-only"`). Legacy AS-IS fragments are ignored.
+- **Consolidation Mechanics:**
+  - Extracts `tower_summaries` and cross-tower maturity heatmaps.
+  - Resolves CMMI maturity bands (1.0 to 5.0) via `global_maturity_policy.py` delegating to `maturity_band.py`.
+  - Aggregates macro risks, governance principles, and cross-cutting transformation initiatives.
+- **Output:** Writes initial `global_report_payload.json` validated against `src/assessment_engine/domain/schemas/global_report.py`.
+
+### Stage 2.2: Strategic Executive Refinement (`run_executive_refiner.py`)
+Executes sequential LLM refinement passes to editorialize technical findings into C-level language:
+1. `executive_summary`: High-level strategic elevator pitch and macro investment rationale.
+2. `burning_platform`: Systemic technological liabilities, unhedged operational risks, and regulatory exposure.
+3. `tower_bottom_lines`: Synthesized executive takeaway per technology domain.
+4. `target_vision` & `execution_roadmap`: 3-year phased transformation target states.
+5. `executive_decisions`: Prioritized list of immediate board-level approvals required.
+- **Mutation Invariant:** Refines `global_report_payload.json` in-place.
+
+### Stage 2.3: Quantitative Visuals Generation (`generate_tower_radar_chart.py`)
+Generates vector-grade multi-axis radar charts comparing baseline vs target maturity across all evaluated domains.
+
+### Stage 2.4: OpenXML AST Compilation (`TomoAsisAstCompiler`)
+Compiles refined `global_report_payload.json` directly into Microsoft Word:
+- **Module:** `src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py`.
+- **Output:** `Tomo_1_Diagnostico_ASIS_<client>.docx`.
+
+---
+
+## 3. Phase 3: Commercial Strategy Pipeline
+
+Driven by `src/assessment_engine/application/run_commercial_pipeline.py`, this pipeline maps technical gap remediations to sales opportunities:
+
+### Stage 3.1: Multi-Agent Commercial Refinement (`run_commercial_refiner.py`)
+- **Inputs:** Ingests refined `global_report_payload.json`, all active `blueprint_<tower>_payload.json` files, and `engine_config/rate_card.json`.
+- **Hierarchical Agent Personas:**
+  - **Global Account Director:** Formulates account-level positioning, executive relationship goals, and commercial win themes.
+  - **Enterprise Presales Architect:** Translates technical gaps into structured opportunity pipelines.
+  - **Delivery & Solutions Orchestrator:** Structures proactive project proposals with formal staffing models (Engagement Manager, Lead Architect, Delivery Director, Staff Engineers), effort day estimates, and sizing ($S, M, L, XL$).
+- **Output:** Emits `commercial_report_payload.json` validated against `src/assessment_engine/domain/schemas/commercial.py`.
+
+### Stage 3.2: Account Action Plan Compilation (`render_commercial_report.py`)
+- **Module:** `src/assessment_engine/adapters/render_commercial_report.py`.
+- **Output:** Compiles `Account_Action_Plan_<client>.docx`.
+
+---
+
+## 4. Architectural Invariants for AI Agents
+
+1. **Top-Down Monism:** Downstream global and commercial aggregators MUST NOT modify or recalculate single-tower maturity scores or risk metrics. Tower blueprints are immutable ground truth.
+2. **Schema Enforcement:** Every pipeline stage must pass strict Pydantic model validation (`GlobalReportPayload`, `CommercialReportPayload`) prior to invocation of compiler adapters.
+3. **Format Invariant:** Output deliverables compile strictly to Microsoft Word (`.docx`). Generation of PDF or ephemeral web presentations is strictly prohibited.
+4. **Environment Isolation:** Child pipeline processes must inherit validated environment variables and paths from `pipeline_runtime.py` without hardcoded fallback paths.
