@@ -488,7 +488,7 @@ class Volume1AsisASTCompiler:
         else:
             worst_sle_val = 0.0
             worst_sle_code = "N/A"
-            worst_sle_domain = str(t("unassessed_scope", locale=doc_lang, default="General Operational Perimeter"))
+            worst_sle_domain = str(t("unassessed_scope", locale=doc_lang))
 
         worst_incident_cost = worst_sle_val
         worst_incident_code = worst_sle_code
