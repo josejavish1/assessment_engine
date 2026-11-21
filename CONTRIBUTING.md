@@ -22,7 +22,7 @@ This guide establishes the mandatory engineering standards, AI-assisted workflow
 
 ---
 
-## 1. AI-Assisted Contribution Policy (SOTA 2026)
+## 1. AI-Assisted Contribution Policy
 
 All contributions—whether authored by human engineers, pair-programmed with LLMs (Claude Code, Cursor, Copilot), or generated via autonomous agent pipelines—must submit to the following governance rules:
 
