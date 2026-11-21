@@ -168,16 +168,16 @@ class DomainSemanticRouter:
     def _default_ontology_nodes(self) -> Dict[str, OntologyNode]:
         """Embedded fallback taxonomy space for generic IT assessments in 100% Technical English."""
         raw_defs = {
-            "T1": ("Data Center Facilities & Critical Infrastructure", ["data center", "datacenter", "facility", "facilities", "ups", "pdu", "chiller", "crac", "generator", "raised floor", "cabling", "physical security", "server room", "facility architecture", "enterprise architecture", "digital sovereignty"]),
+            "T1": ("Data Center Facilities & Critical Infrastructure", ["data center", "datacenter", "facility", "facilities", "ups", "pdu", "chiller", "crac", "generator", "raised floor", "cabling", "physical security", "server room", "facility architecture", "enterprise architecture", "digital sovereignty", "arquitectura empresarial", "soberan\u00eda digital"]),
             "T2": ("Hybrid Compute & Virtualization Platforms", ["virtualization", "hypervisor", "virtual machine", "compute cluster", "kubernetes", "container", "bare metal", "server hosts", "cloud compute", "servers", "cloud", "hci cluster", "hyperconverged"]),
             "T3": ("Enterprise Networks & Connectivity Architecture", ["network", "wan", "lan", "sd-wan", "core switch", "routing", "bgp", "ospf", "firewall", "mpls", "vpn"]),
-            "T4": ("Storage Systems, Data Platforms & Resilient Backups", ["storage", "san", "nas", "storage array", "lun", "enterprise storage", "block storage", "backup", "immutable storage", "lakehouse", "data governance", "dama"]),
+            "T4": ("Storage Systems, Data Platforms & Resilient Backups", ["storage", "san", "nas", "storage array", "lun", "enterprise storage", "block storage", "backup", "immutable storage", "lakehouse", "data governance", "dama", "artificial intelligence"]),
             "T5": ("Operational Resilience, Disaster Recovery & Failover Governance", ["business continuity", "resilience", "drp", "disaster recovery", "failover", "runbook", "cyber vault", "bcp"]),
             "T6": ("Cybersecurity Architecture & Identity Governance", ["security", "cyber", "active directory", "identity", "pam", "mfa", "edr", "siem", "soc", "rbac", "zero trust"]),
             "T7": ("ITSM, Observability & Service Management Operations", ["itsm", "servicenow", "jira", "cmdb", "change management", "incident management", "sla", "observability", "monitoring", "apm", "sre"]),
             "T8": ("FinOps, Software Licensing & Cloud Economics", ["finops", "cloud economics", "reserved instances", "software licensing", "cloud billing", "subscription"]),
             "T9": ("Digital Workplace & End-User Productivity", ["digital workplace", "modern workplace", "office 365", "teams", "intune", "endpoint", "laptop", "vdi", "citrix", "digital workspace", "end user compute", "workplace endpoints"]),
-            "T10": ("Industrial Systems, Core Operations & Plant Manufacturing", ["scada", "mes", "plc", "industrial ot", "dispatch gateway", "plant floor", "manufacturing", "dispatch", "legacy monolith", "mainframe execution", "monolithic legacy", "mainframe"]),
+            "T10": ("Industrial Systems, Core Operations & Plant Manufacturing", ["scada", "mes", "plc", "industrial ot", "dispatch gateway", "plant floor", "manufacturing", "dispatch", "legacy monolith", "mainframe execution", "monolithic legacy", "mainframe", "application modernization"]),
         }
         return {
             k: OntologyNode(node_id=k, name=name, boundary_tokens=tokens)
