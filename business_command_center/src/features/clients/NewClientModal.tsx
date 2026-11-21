@@ -1,23 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { clientSchema, type ClientFormValues } from './schema';
-import { createNewClientAssessment } from './actions';
+import React, { useState, useMemo } from 'react';
 import {
-  Building2,
   X,
-  Plus,
   Loader2,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
+  AlertTriangle,
   Globe,
-  Coins,
-  Layers,
-  FileText
+  ArrowRight
 } from 'lucide-react';
+import { createNewClientAssessment } from './actions';
+import { CANONICAL_ACCOUNTS } from '@/components/AccountsCatalogView';
 
 interface NewClientModalProps {
   isOpen: boolean;
@@ -26,251 +18,194 @@ interface NewClientModalProps {
 }
 
 export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientModalProps) {
+  const [companyName, setCompanyName] = useState('');
+  const [domain, setDomain] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-    reset,
-  } = useForm<ClientFormValues>({
-    resolver: zodResolver(clientSchema),
-    defaultValues: {
-      name: '',
-      slug: '',
-      sector: 'Banca & Finanzas',
-      country: 'Spain (ES)',
-      currency: 'EUR (€)',
-      standard: 'ENS High Category',
-      description: '',
-    },
-  });
+  const cleanDomain = useMemo(() => {
+    return domain
+      .trim()
+      .toLowerCase()
+      .replace(/https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0];
+  }, [domain]);
+
+  const duplicateAccount = useMemo(() => {
+    if (!cleanDomain) return null;
+    return CANONICAL_ACCOUNTS.find((acc) => {
+      const accDom = (acc.domain || '')
+        .trim()
+        .toLowerCase()
+        .replace(/https?:\/\//, '')
+        .replace(/^www\./, '')
+        .split('/')[0];
+      return accDom === cleanDomain;
+    });
+  }, [cleanDomain]);
 
   if (!isOpen) return null;
 
-  const onNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    const generatedSlug = val
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cleanDomain) {
+      setErrorMsg('Por favor introduzca el dominio web corporativo.');
+      return;
+    }
+
+    if (duplicateAccount) {
+      setErrorMsg(`El dominio ${cleanDomain} ya pertenece a ${duplicateAccount.name}. No se permiten cuentas duplicadas.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    // Auto-derive commercial name if omitted
+    const derivedName =
+      companyName.trim() ||
+      cleanDomain
+        .split('.')[0]
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    // Auto-derive clean slug
+    const derivedSlug = derivedName
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '');
-    setValue('slug', generatedSlug, { shouldValidate: true });
-  };
-
-  const onSubmit = async (values: ClientFormValues) => {
-    setIsSubmitting(true);
-    setErrorMsg(null);
 
     try {
-      const res = await createNewClientAssessment(values);
-      if (res.success && res.slug) {
-        reset();
-        onClientCreated(res.slug);
-        onClose();
-      } else {
-        setErrorMsg(res.message || 'Error al aprovisionar el cliente');
+      const res = await createNewClientAssessment({
+        name: derivedName,
+        slug: derivedSlug,
+        domain: cleanDomain,
+        sector: 'Servicios Corporativos',
+        country: cleanDomain.endsWith('.es') ? 'España (ES)' : cleanDomain.endsWith('.de') ? 'Alemania (DE)' : 'Internacional',
+        currency: cleanDomain.endsWith('.es') || cleanDomain.endsWith('.de') ? 'EUR (€)' : 'USD ($)',
+        standard: 'NIS2 / Critical Infrastructure',
+        description: `Expediente de cuenta para ${derivedName} (${cleanDomain}) inicializado.`,
+      });
+
+      if (!res.success) {
+        setErrorMsg(res.message || 'Error al inicializar la cuenta.');
+        return;
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Connection error');
+
+      onClientCreated(res.slug || derivedSlug);
+      onClose();
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Error de conexión al crear cuenta.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-[#0f141f] border border-white/[0.1] rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 relative">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-white tracking-wide">
-                High de New Expediente / Cliente
-              </h2>
-              <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                Physical provisioning in source_docs and registration in Supabase
-              </p>
-            </div>
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white border border-stone-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+        {/* Header (Exact BidStrategy KAIROS Architecture) */}
+        <div className="flex items-start justify-between border-b border-stone-100 pb-4">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-[#1d1d1f]">
+              Alta de Cuenta Estratégica
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-500 leading-relaxed font-sans">
+              Introduce el dominio web corporativo para inicializar el expediente de inteligencia de la cuenta.
+            </p>
           </div>
-
           <button
             onClick={onClose}
-            aria-label="Close modal"
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-stone-400 hover:text-stone-700 p-1 rounded-lg transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-            <span>{errorMsg}</span>
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+            {errorMsg}
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Nombre Corporativo */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
-                Legal Entity Name / Organization Corporativo *
-              </label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nombre Comercial (Opcional) */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-stone-700">
+              Nombre Comercial (Opcional)
+            </label>
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="ej. Telefónica, Repsol, CaixaBank"
+              className="w-full bg-[#fbfbfa] border border-stone-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#1d1d1f] placeholder-stone-400 focus:outline-none focus:bg-white focus:border-[#0072BC] focus:ring-2 focus:ring-[#0072BC]/10 transition-all font-sans"
+            />
+          </div>
+
+          {/* Dominio Web Corporativo (Obligatorio) */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-stone-700">
+              Dominio Web Corporativo (Obligatorio)
+            </label>
+            <div className="relative">
+              <Globe className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                aria-label="Legal Entity Name"
-                autoFocus
-                placeholder="Ej. Banco Santander Spain"
-                {...register('name', { onChange: onNameInput })}
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-              />
-              {errors.name && (
-                <p className="text-[11px] text-rose-400 font-mono">{errors.name.message}</p>
-              )}
-            </div>
-
-            {/* Slug Identificador */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
-                System Physical Slug * (On-disk directory name)
-              </label>
-              <input
-                type="text"
-                aria-label="System Physical Slug"
-                {...register('slug')}
-                placeholder="banco_santander_es"
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono"
-              />
-              {errors.slug && (
-                <p className="text-[11px] text-rose-400 font-mono">{errors.slug.message}</p>
-              )}
-            </div>
-
-            {/* Sector Industrial */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                <Layers className="h-3 w-3 text-blue-400" /> Sector Industrial *
-              </label>
-              <select
-                {...register('sector')}
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-all"
-              >
-                <option value="Banca & Finanzas">Banca & Finanzas</option>
-                <option value="Energy & Utilities">Energy & Utilities</option>
-                <option value="Healthcare & Pharma">Healthcare & Pharma</option>
-                <option value="Industria & Consumo">Industria & Consumo</option>
-                <option value="Public Sector">Public Sector</option>
-                <option value="Telco & Medium">Telco & Medium</option>
-              </select>
-            </div>
-
-            {/* Jurisdiction / Country */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                <Globe className="h-3 w-3 text-emerald-400" /> Country / Jurisdiction *
-              </label>
-              <select
-                {...register('country')}
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-all"
-              >
-                <option value="Spain (ES)">Spain (ES)</option>
-                <option value="Germany (DE)">Germany (DE)</option>
-                <option value="United Kingdom (UK)">United Kingdom (UK)</option>
-                <option value="United States (US)">United States (US)</option>
-                <option value="Japan (JP)">Japan (JP)</option>
-                <option value="Global / Multirregional">Global / Multirregional</option>
-              </select>
-            </div>
-
-            {/* Divisa */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                <Coins className="h-3 w-3 text-amber-400" /> Divisa Operativa *
-              </label>
-              <select
-                {...register('currency')}
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-all font-mono"
-              >
-                <option value="EUR (€)">EUR (€)</option>
-                <option value="USD ($)">USD ($)</option>
-                <option value="GBP (£)">GBP (£)</option>
-                <option value="JPY (¥)">JPY (¥)</option>
-              </select>
-            </div>
-
-            {/* Marco Normativo */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3 text-purple-400" /> Marco Normativo *
-              </label>
-              <select
-                {...register('standard')}
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-all"
-              >
-                <option value="ENS High Category">ENS High Category (Spain)</option>
-                <option value="DORA / Basel III">DORA / Basel III (Financiero)</option>
-                <option value="NIS2 / Critical Infrastructure">NIS2 / Critical Infrastructure (UE)</option>
-                <option value="DAMA DMBOK">DAMA DMBOK (Gobierno del Dato)</option>
-                <option value="HIPAA / Healthcare Privacy">HIPAA (Healthcare / US)</option>
-                <option value="ISO 27001">ISO 27001 (Internacional)</option>
-              </select>
-            </div>
-
-            {/* Description / Notes */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                <FileText className="h-3 w-3 text-slate-400" /> Alcance del Expediente / Observaciones
-              </label>
-              <textarea
-                {...register('description')}
-                rows={2}
-                placeholder="Technical RFP for infrastructure modernization and sovereign cybersecurity compliance..."
-                className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"
+                required
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="ej. repsol.com o caixabank.es"
+                className="w-full bg-[#fbfbfa] border border-stone-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#1d1d1f] placeholder-stone-400 focus:outline-none focus:bg-white focus:border-[#0072BC] focus:ring-2 focus:ring-[#0072BC]/10 transition-all font-sans"
               />
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
-            <span className="text-[10px] font-mono text-slate-500">
-              Deterministic physical and logical provisioning
-            </span>
-
-            <div className="flex items-center gap-2">
+          {/* Detección de duplicado en tiempo real */}
+          {duplicateAccount && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 space-y-1.5 animate-fadeIn">
+              <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Dominio ya registrado</span>
+              </div>
+              <p className="text-[11px] leading-relaxed">
+                El dominio <strong>{cleanDomain}</strong> ya pertenece a <strong>{duplicateAccount.name}</strong>. No se permiten cuentas duplicadas.
+              </p>
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                onClick={() => {
+                  onClose();
+                  onClientCreated(duplicateAccount.slug);
+                }}
+                className="text-[11px] font-bold text-[#0072BC] hover:underline flex items-center gap-1 pt-0.5 cursor-pointer"
               >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white transition-all shadow-md shadow-blue-600/30 disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Aprovisionando Expediente...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-3.5 w-3.5" />
-                    Registrar y Open Expediente
-                  </>
-                )}
+                <span>Abrir expediente de {duplicateAccount.name} →</span>
               </button>
             </div>
+          )}
+
+          {/* Botón de Acción Principal */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || !!duplicateAccount || !cleanDomain}
+              className="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-[#0072BC] hover:bg-[#0086dd] text-white flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Inicializando expediente...</span>
+                </>
+              ) : (
+                <>
+                  <span>Inicializar Cuenta</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </div>
         </form>
       </div>

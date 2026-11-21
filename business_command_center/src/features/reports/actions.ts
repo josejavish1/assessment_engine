@@ -2,9 +2,10 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { getSessionUser } from '@/lib/auth/session';
 
 const REPO_ROOT = path.resolve(process.cwd(), '..');
-const SIMULATION_DIR = path.join(REPO_ROOT, 'working', 'out', 'simulations');
+const SIMULATION_DIR = path.join(REPO_ROOT, 'workspaces', 'simulations');
 
 export interface ReportChapter {
   id: string;
@@ -30,8 +31,18 @@ export interface ReportData {
 
 export async function getReportPayload(clientSlug: string): Promise<{ success: boolean; data?: ReportData; error?: string }> {
   try {
-    const payloadPath = path.join(SIMULATION_DIR, clientSlug, 'approved_annex_payload.json');
-    const docxPath = path.join(SIMULATION_DIR, clientSlug, `Anexo_Tecnico_${clientSlug}.docx`);
+    const user = await getSessionUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Authentication session required' };
+    }
+
+    const safeSlug = clientSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    if (user.role === 'CLIENT' && user.clientSlug && user.clientSlug !== safeSlug) {
+      return { success: false, error: 'Forbidden: Access restricted to authorized tenant report' };
+    }
+
+    const payloadPath = path.join(SIMULATION_DIR, safeSlug, 'approved_annex_payload.json');
+    const docxPath = path.join(SIMULATION_DIR, safeSlug, `Anexo_Tecnico_${safeSlug}.docx`);
     
     let hasDocx = false;
     try {
@@ -98,10 +109,11 @@ export async function getReportPayload(clientSlug: string): Promise<{ success: b
         chapters,
       },
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to load online report for this client.';
     return {
       success: false,
-      error: err.message || 'Failed to load online report for this client.',
+      error: message,
     };
   }
 }

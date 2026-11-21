@@ -230,7 +230,16 @@
     "industry_default": "Enterprise Technology Infrastructure",
     "employees_abbr": "empl.",
     "annual_rev_abbr": "rev.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Client Accounts",
+    "nav_assessments": "Assessment Dossiers",
+    "nav_auto_ingestion": "Evidence Auto-Ingestion",
+    "nav_user_management": "User Management",
+    "btn_new_assessment": "New Assessment",
+    "btn_back_accounts": "Back to Accounts",
+    "btn_execute_pipeline": "Run Live Simulation",
+    "btn_clear_console": "Clear Console",
+    "status_pipeline_ready": "System initialized. Ready to dispatch actuarial pipelines.\n"
   },
   "es": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -463,7 +472,16 @@
     "industry_default": "Infraestructura Empresarial Estándar",
     "employees_abbr": "profesionales",
     "annual_rev_abbr": "facturación",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Cuentas de Clientes",
+    "nav_assessments": "Expedientes de Assessment",
+    "nav_auto_ingestion": "Auto-Ingesta Evidencias",
+    "nav_user_management": "Gestión de Usuarios",
+    "btn_new_assessment": "Nuevo Assessment",
+    "btn_back_accounts": "Volver a Cuentas",
+    "btn_execute_pipeline": "Ejecutar Simulación en Vivo",
+    "btn_clear_console": "Limpiar Consola",
+    "status_pipeline_ready": "Sistema inicializado. Listo para despachar pipelines actuariales.\n"
   },
   "it": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -696,7 +714,16 @@
     "industry_default": "Infrastruttura Aziendale Standard",
     "employees_abbr": "dip.",
     "annual_rev_abbr": "fatt.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Account Clienti",
+    "nav_assessments": "Dossier di Valutazione",
+    "nav_auto_ingestion": "Auto-Acquisizione Evidenze",
+    "nav_user_management": "Gestione Utenti",
+    "btn_new_assessment": "Nuova Valutazione",
+    "btn_back_accounts": "Torna agli Account",
+    "btn_execute_pipeline": "Esegui Simulazione dal Vivo",
+    "btn_clear_console": "Pulisci Console",
+    "status_pipeline_ready": "Sistema inizializzato. Pronto a inviare pipeline attuariali.\n"
   },
   "fr": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -929,7 +956,16 @@
     "industry_default": "Enterprise Technology Infrastructure",
     "employees_abbr": "empl.",
     "annual_rev_abbr": "rev.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Comptes Clients",
+    "nav_assessments": "Dossiers d'Évaluation",
+    "nav_auto_ingestion": "Auto-Ingestion des Preuves",
+    "nav_user_management": "Gestion des Utilisateurs",
+    "btn_new_assessment": "Nouvelle Évaluation",
+    "btn_back_accounts": "Retour aux Comptes",
+    "btn_execute_pipeline": "Exécuter la Simulation en Direct",
+    "btn_clear_console": "Effacer la Console",
+    "status_pipeline_ready": "Système initialisé. Prêt à exécuter les pipelines actuariels.\n"
   },
   "de": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -1162,7 +1198,16 @@
     "industry_default": "Enterprise Technology Infrastructure",
     "employees_abbr": "empl.",
     "annual_rev_abbr": "rev.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Kundenkonten",
+    "nav_assessments": "Assessment-Dossiers",
+    "nav_auto_ingestion": "Automatische Nachweiserfassung",
+    "nav_user_management": "Benutzerverwaltung",
+    "btn_new_assessment": "Neues Assessment",
+    "btn_back_accounts": "Zurück zu Konten",
+    "btn_execute_pipeline": "Live-Simulation ausführen",
+    "btn_clear_console": "Konsole leeren",
+    "status_pipeline_ready": "System initialisiert. Bereit zur Ausführung aktuarieller Pipelines.\n"
   },
   "pt": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -1395,7 +1440,16 @@
     "industry_default": "Infraestrutura Corporativa Padrão",
     "employees_abbr": "colab.",
     "annual_rev_abbr": "rec.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "Contas de Clientes",
+    "nav_assessments": "Dossiês de Avaliação",
+    "nav_auto_ingestion": "Auto-Ingestão de Evidências",
+    "nav_user_management": "Gestão de Usuários",
+    "btn_new_assessment": "Nova Avaliação",
+    "btn_back_accounts": "Voltar para Contas",
+    "btn_execute_pipeline": "Executar Simulação ao Vivo",
+    "btn_clear_console": "Limpar Console",
+    "status_pipeline_ready": "Sistema inicializado. Pronto para despachar pipelines atuariais.\n"
   },
   "ja": {
     "app_title": "FAST ASSESSMENT AS-IS",
@@ -1628,6 +1682,15 @@
     "industry_default": "Enterprise Technology Infrastructure",
     "employees_abbr": "empl.",
     "annual_rev_abbr": "rev.",
-    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2"
+    "default_regulatory_frameworks": "ISO/IEC 27001 · NIST CSF 2.0 · SOC 2",
+    "nav_client_accounts": "顧客アカウント",
+    "nav_assessments": "アセスメント台帳",
+    "nav_auto_ingestion": "証跡自動取り込み",
+    "nav_user_management": "ユーザー管理",
+    "btn_new_assessment": "新規アセスメント",
+    "btn_back_accounts": "アカウント一覧へ戻る",
+    "btn_execute_pipeline": "ライブシミュレーション実行",
+    "btn_clear_console": "コンソール消去",
+    "status_pipeline_ready": "システム初期化完了。保険数理パイプライン実行準備完了。\n"
   }
 }

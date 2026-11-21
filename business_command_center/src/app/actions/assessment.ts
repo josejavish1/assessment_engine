@@ -3,10 +3,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
+import { getSessionUser } from '@/lib/auth/session';
 
 const REPO_ROOT = path.resolve(process.cwd(), '..');
 const PYTHON_BIN = path.join(REPO_ROOT, '.venv', 'bin', 'python');
-const SIMULATION_DIR = path.join(REPO_ROOT, 'working', 'out', 'simulations');
+const SIMULATION_DIR = path.join(REPO_ROOT, 'workspaces', 'simulations');
 const SIMULATION_SUMMARY_PATH = path.join(SIMULATION_DIR, 'SIMULATION_SUMMARY.json');
 
 export type DeliverableFile = {
@@ -85,10 +86,27 @@ function getMetadataBySlug(slug: string) {
   }
 }
 
+interface RawSimulationItem {
+  archetype_id?: string;
+  client_slug?: string;
+  company_name?: string;
+  language?: string;
+  currency?: string;
+  generated_files?: string[];
+  checks_passed?: boolean;
+  total_loss_estimate?: number;
+  [key: string]: unknown;
+}
+
 export async function getSimulationSummary(): Promise<{ success: boolean; data?: SimulationArchetype[]; error?: string }> {
   try {
+    const user = await getSessionUser();
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Authentication session required' };
+    }
+
     const raw = await fs.readFile(SIMULATION_SUMMARY_PATH, 'utf-8');
-    const items: any[] = JSON.parse(raw);
+    const items: RawSimulationItem[] = JSON.parse(raw);
 
     // Scan physical working directories in SIMULATION_DIR to guarantee permanent dossier persistence
     try {
@@ -141,7 +159,10 @@ export async function getSimulationSummary(): Promise<{ success: boolean; data?:
           clientDir = path.dirname(item.generated_files[0]);
         }
 
-        const clientSlug = clientDir ? path.basename(clientDir) : item.archetype_id;
+        const clientSlug =
+          (clientDir ? path.basename(clientDir) : item.archetype_id) || item.client_slug || 'generic_client';
+        const archetypeId = item.archetype_id || clientSlug;
+        const companyName = item.company_name || clientSlug;
         const meta = getMetadataBySlug(clientSlug);
 
         // Read files metadata
@@ -195,11 +216,11 @@ export async function getSimulationSummary(): Promise<{ success: boolean; data?:
               globalBand = payloadData.executive_summary.global_band;
             }
             if (Array.isArray(payloadData.pillar_score_profile?.pillars)) {
-              pillars = payloadData.pillar_score_profile.pillars.map((p: any) => ({
-                pillar_label: p.pillar_label || 'Technology Pillar',
+              pillars = payloadData.pillar_score_profile.pillars.map((p: Record<string, unknown>) => ({
+                pillar_label: String(p.pillar_label || 'Technology Pillar'),
                 score_display: String(p.score_display || '3.0'),
-                maturity_band: p.maturity_band || 'Defined',
-                executive_reading: p.executive_reading || '',
+                maturity_band: String(p.maturity_band || 'Defined'),
+                executive_reading: String(p.executive_reading || ''),
                 target_maturity: 4,
               }));
             }
@@ -214,11 +235,16 @@ export async function getSimulationSummary(): Promise<{ success: boolean; data?:
 
         return {
           ...item,
+          archetype_id: archetypeId,
           client_slug: clientSlug,
+          company_name: companyName,
+          language: item.language || 'es',
+          currency: meta.currency || item.currency || 'EUR',
           sector: meta.sector,
           standard: meta.standard,
           country: meta.country,
-          currency: meta.currency,
+          checks_passed: item.checks_passed ?? true,
+          generated_files: item.generated_files || [],
           files_meta: filesMeta,
           ale_formatted: aleFormatted,
           p95_formatted: p95Formatted,
@@ -237,13 +263,29 @@ export async function getSimulationSummary(): Promise<{ success: boolean; data?:
       })
     );
 
-    return { success: true, data: enriched };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+    const filtered = (user.role === 'CLIENT' && user.clientSlug)
+      ? enriched.filter((item) => item.client_slug === user.clientSlug || item.archetype_id === user.clientSlug)
+      : enriched;
+
+    return { success: true, data: filtered };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
 
 export async function runFullEngineSimulation(): Promise<{ success: boolean; message: string; output?: string }> {
+  const user = await getSessionUser();
+  if (!user) {
+    return { success: false, message: 'Unauthorized: Authentication session required' };
+  }
+
+  if (user.role === 'CLIENT') {
+    return {
+      success: false,
+      message: 'Forbidden: Pipeline simulation requires NTT DATA Consultant or Admin privileges',
+    };
+  }
+
   return new Promise((resolve) => {
     const scriptPath = path.join(REPO_ROOT, 'scripts', 'simulate_multinational_archetypes.py');
     const proc = spawn(PYTHON_BIN, [scriptPath], {
