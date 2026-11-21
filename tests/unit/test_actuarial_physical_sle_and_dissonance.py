@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     BayesianFairCopulaEngine,
     EpistemicDissonanceRecord,
     FindingTelemetry,

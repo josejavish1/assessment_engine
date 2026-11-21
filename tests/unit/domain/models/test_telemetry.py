@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from assessment_engine.domain.actuarial.financial_profile import (
+from assessment_engine.domain.models.shared.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,
 )
@@ -76,7 +76,7 @@ def test_from_tenant_profile_fintech_derivation() -> None:
 
 def test_from_tenant_profile_manufacturing_derivation() -> None:
     profile = TenantFinancialProfile(
-        tenant_id="molins",
+        tenant_id="acme_corp",
         annual_revenue=Decimal("38000000.00"),
         industry_archetype=IndustryArchetype.PROCESS_MANUFACTURING_OT,
         currency_code="EUR",

@@ -15,7 +15,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from assessment_engine.domain.actuarial.financial_profile import (
+from assessment_engine.domain.models.shared.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,
 )

@@ -11,14 +11,13 @@ from __future__ import annotations
 import json
 import logging
 import math
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from assessment_engine.domain.actuarial.input_resolver import (
     ActuarialInputResolver,
     QuantificationStatus,
 )
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     BayesianFairCopulaEngine,
     FindingTelemetry,
     OperationalZone,
@@ -294,7 +293,7 @@ class CanonicalRiskOrchestrator:
         )
 
         # 3. Build reproduction manifest with explicit risk scope
-        from assessment_engine.domain.bayesian_fair_copula_engine import (
+        from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
             RiskScopeContext,
         )
 
@@ -476,8 +475,11 @@ class CanonicalRiskOrchestrator:
                     )
                 client_norm = str(client_id).strip()
                 code_lower = t_code.lower()
-                repo_root = Path(__file__).resolve().parents[4]
-                local_dir = repo_root / "working" / client_norm / t_code
+                from assessment_engine.infrastructure.runtime_paths import (
+                    resolve_working_dir,
+                )
+
+                local_dir = resolve_working_dir() / client_norm / t_code
                 local_path = local_dir / f"blueprint_{code_lower}_payload.json"
                 if local_path.exists():
                     try:

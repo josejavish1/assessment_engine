@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     BayesianFairCopulaEngine,
     FindingTelemetry,
     OperationalZone,
@@ -96,6 +96,48 @@ def test_deterministic_reproducibility_and_currency_agnosticism(
     assert run1.portfolio_var_99 == run2.portfolio_var_99
     assert run1.total_primary_ale == run2.total_primary_ale
     assert run1.total_secondary_ale == run2.total_secondary_ale
+
+
+from hypothesis import given, settings, strategies as st
+
+@settings(deadline=None)
+@given(
+    cmmi_low=st.floats(min_value=1.0, max_value=2.5),
+    cmmi_high=st.floats(min_value=3.5, max_value=5.0),
+    scale=st.floats(min_value=0.5, max_value=5.0),
+)
+def test_metamorphic_cmmi_monotonicity_copula(cmmi_low: float, cmmi_high: float, scale: float) -> None:
+    """Metamorphic Relation: Higher CMMI maturity must never yield higher ALE under identical conditions."""
+    base_hourly_rate = 10000.0
+    generic_enterprise_zones = {
+        "TIER_1": OperationalZone(
+            zone_id="TIER_1_MISSION_CRITICAL",
+            hourly_burn_rate=base_hourly_rate * 1.00,
+            max_annual_outage_hours=240.0,
+            secondary_loss_retention_factor=0.85,
+        ),
+        "TIER_2": OperationalZone(
+            zone_id="TIER_2_CORE_OPERATIONS",
+            hourly_burn_rate=base_hourly_rate * 0.65,
+            max_annual_outage_hours=360.0,
+            secondary_loss_retention_factor=0.85,
+        ),
+        "TIER_3": OperationalZone(
+            zone_id="TIER_3_EDGE_DISTRIBUTION",
+            hourly_burn_rate=base_hourly_rate * 0.40,
+            max_annual_outage_hours=480.0,
+            secondary_loss_retention_factor=0.85,
+        ),
+    }
+
+    findings_low = _create_sample_findings(generic_enterprise_zones, cmmi_level=cmmi_low, count=5, scale_factor=scale)
+    findings_high = _create_sample_findings(generic_enterprise_zones, cmmi_level=cmmi_high, count=5, scale_factor=scale)
+    
+    engine = BayesianFairCopulaEngine(num_simulations=100)
+    res_low = engine.evaluate_portfolio(findings_low, currency_code="USD")
+    res_high = engine.evaluate_portfolio(findings_high, currency_code="USD")
+    
+    assert res_high.total_portfolio_ale <= res_low.total_portfolio_ale, "Monotonicity violated: High CMMI resulted in higher ALE"
 
 
 def test_aumann_shapley_exact_additivity(
@@ -206,7 +248,7 @@ def test_operational_zone_validation_guards() -> None:
 def test_bayesian_entities_frozen_immutability() -> None:
     """Verify that Bayesian telemetry and entity dataclasses are strictly frozen."""
     import dataclasses
-    from assessment_engine.domain.bayesian_fair_copula_engine import (
+    from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
         EpistemicDissonanceRecord,
         OperationalZone,
         TenantFinancialTelemetry,
@@ -229,4 +271,40 @@ def test_bayesian_entities_frozen_immutability() -> None:
     zone = OperationalZone(zone_id="z1", hourly_burn_rate=10.0, max_annual_outage_hours=5.0)
     with pytest.raises(dataclasses.FrozenInstanceError):
         zone.hourly_burn_rate = 20.0  # type: ignore[misc]
+
+
+def test_outage_saturation_asymptote_strictly_bounded(
+    generic_enterprise_zones: dict[str, OperationalZone],
+) -> None:
+    """Proves physical absorbing barrier: primary loss must never exceed max_annual_outage_hours * burn_rate."""
+    zone = generic_enterprise_zones["TIER_1"]
+    finding = FindingTelemetry(
+        finding_id="F-CATASTROPHIC",
+        tower_id="T1",
+        title="Catastrophic Outage Finding",
+        cmmi_maturity=1.0,
+        zone=zone,
+        tef_pert_min=50.0,
+        tef_pert_mode=80.0,
+        tef_pert_max=120.0,
+        rto_hours_min=50.0,
+        rto_hours_mode=100.0,
+        rto_hours_max=200.0,
+        secondary_loss_mean=1000.0,
+    )
+    engine = BayesianFairCopulaEngine(num_simulations=512)
+    res = engine.evaluate_portfolio([finding], currency_code="EUR")
+    max_physical = zone.max_annual_outage_hours * zone.hourly_burn_rate
+    assert res.total_primary_ale <= max_physical, (
+        f"Physical saturation barrier violated: primary ALE {res.total_primary_ale} exceeded ceiling {max_physical}"
+    )
+
+
+def test_bayesian_fair_copula_engine_type_clean() -> None:
+    import subprocess
+    cmd = ["uv", "run", "mypy", "src/assessment_engine/domain/actuarial/bayesian_fair_copula_engine.py"]
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    assert res.returncode == 0, f"Mypy static typing failures detected:\n{res.stdout}"
+
+
 

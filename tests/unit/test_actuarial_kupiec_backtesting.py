@@ -15,7 +15,7 @@ import math
 import numpy as np
 from scipy import stats
 
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     BayesianFairCopulaEngine,
     FindingTelemetry,
     OperationalZone,

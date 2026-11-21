@@ -24,10 +24,54 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+# Bootstrap taxonomy catalog loader for domain layer
+try:
+    from assessment_engine.domain.taxonomy_resolver import (
+        register_taxonomy_catalog_loader,
+    )
+    from assessment_engine.infrastructure.json_taxonomy_catalog_loader import (
+        JsonTaxonomyCatalogLoader,
+    )
+    register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
+except Exception:
+    pass
+
 from assessment_engine.application.tools.dynamic_tower_dispatcher import (
     DynamicTowerDispatcher,
     TowerExecutionResult,
 )
+
+
+def build_economic_profile_from_cli_args(
+    currency: str | None = None,
+    country_code: str | None = None,
+    rate_multiplier: float | None = None,
+    disruption_rate: float | None = None,
+    rate_card_file: str | None = None,
+) -> Any | None:
+    """Builds a TenantEconomicProfile from CLI options if any economic argument was specified."""
+    if not any([currency, country_code, rate_multiplier is not None, disruption_rate is not None, rate_card_file]):
+        return None
+
+    import json
+
+    from assessment_engine.domain.models.global_context import TenantEconomicProfile
+
+    kwargs: dict[str, Any] = {}
+    if currency:
+        kwargs["currency"] = str(currency).strip().upper()
+    if country_code:
+        kwargs["country_code"] = str(country_code).strip().upper()
+    if rate_multiplier is not None:
+        kwargs["country_rate_multiplier"] = float(rate_multiplier)
+    if disruption_rate is not None:
+        kwargs["disruption_cost_per_hour"] = float(disruption_rate)
+
+    if rate_card_file and Path(rate_card_file).exists():
+        raw_card = json.loads(Path(rate_card_file).read_text(encoding="utf-8-sig"))
+        return TenantEconomicProfile.from_rate_card(raw_card, **kwargs)
+
+    return TenantEconomicProfile(**kwargs)
 
 
 def run_pipeline(
@@ -39,6 +83,7 @@ def run_pipeline(
     force: bool = False,
     concurrency: int = 6,
     language: str | None = None,
+    economic_profile: Any | None = None,
 ) -> int:
     """Executes the complete end-to-end assessment pipeline for a client.
 
@@ -51,12 +96,15 @@ def run_pipeline(
         force: If True, purges existing cache and forces full re-execution.
         concurrency: Maximum number of concurrent towers during DAG dispatch.
         language: Optional target language code (e.g. 'es', 'en', 'de', 'ja').
+        economic_profile: Optional injected TenantEconomicProfile.
 
     Returns:
         The exit code (0 for success).
     """
+    from assessment_engine.infrastructure.runtime_paths import resolve_client_dir
+
     repo_root = Path(__file__).resolve().parents[3]
-    working_dir = repo_root / "working" / slug
+    working_dir = resolve_client_dir(slug)
 
     from assessment_engine.infrastructure.localization import resolve_base_locale
 
@@ -99,6 +147,22 @@ def run_pipeline(
             f"📈 [Incremental Mode] Working directory: {working_dir} (preserving cache. Use --force to rebuild)."
         )
     working_dir.mkdir(parents=True, exist_ok=True)
+
+    if economic_profile is not None:
+        import json
+
+        profile_path = working_dir / "tenant_economic_profile.json"
+        try:
+            profile_path.write_text(
+                json.dumps(economic_profile.model_dump(mode="json"), indent=2),
+                encoding="utf-8",
+            )
+            print(
+                f"💼 [Economic Profile] Injected profile: currency={economic_profile.currency}, "
+                f"country={economic_profile.country_code}, mult={economic_profile.country_rate_multiplier}"
+            )
+        except Exception as ex:
+            logger.debug("[CLI] Error writing tenant_economic_profile.json: %s", ex)
 
     # Resolve interpreter
     python_bin = sys.executable
@@ -151,7 +215,7 @@ def run_pipeline(
             res = subprocess.run(ingest_cmd, cwd=repo_root)
         else:
             client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-            alt_rag_cache = repo_root / f"working/{client_id}/{slug}/raptor_tree.json"
+            alt_rag_cache = resolve_client_dir(client_id) / slug / "raptor_tree.json"
             if alt_rag_cache.exists() and alt_rag_cache.stat().st_size > 0:
                 print("⏭️ PHASE 0: Reusing prior RAG artifacts.")
                 res = subprocess.CompletedProcess(args=[], returncode=0)
@@ -323,7 +387,7 @@ def run_pipeline(
 
         for t_id, r in results.items():
             if not r.success:
-                exit_code = r.metadata.get("returncode", 1)
+                exit_code = int(r.metadata.get("returncode", 1))
                 print(
                     f"❌ Phase 2 Tower {t_id} pipeline failed. Aborting pipeline."
                 )
@@ -536,8 +600,12 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
     Returns:
         The exit code (0 for success).
     """
+    from assessment_engine.infrastructure.runtime_paths import (
+        resolve_client_dir,
+    )
+
     repo_root = Path(__file__).resolve().parents[3]
-    apex_dir = repo_root / "working/apex"
+    apex_dir = resolve_client_dir("apex")
     apex_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = apex_dir / "session.log"
@@ -602,7 +670,7 @@ def run_lockin_test() -> int:
         shutil_ignore = shutil.ignore_patterns(
             ".git",
             ".venv",
-            "working",
+            "workspaces",
             "__pycache__",
             ".pytest_cache",
             ".mypy_cache",
@@ -617,7 +685,7 @@ def run_lockin_test() -> int:
             if item.name in (
                 ".git",
                 ".venv",
-                "working",
+                "workspaces",
                 ".artifacts",
                 ".pytest_cache",
                 ".mypy_cache",
@@ -679,9 +747,10 @@ def run_rage_command(client: str, industry: str, tower_filter: str | None = None
     print(f" STARTING RAGE PIPELINE - CLIENT: {client} | INDUSTRY: {industry}")
     print("========================================================")
 
-    repo_root = Path(__file__).resolve().parents[3]
+    from assessment_engine.infrastructure.runtime_paths import resolve_client_dir
+
     slug = slugify(client)
-    working_dir = repo_root / "working" / slug
+    working_dir = resolve_client_dir(slug)
     working_dir.mkdir(parents=True, exist_ok=True)
 
     benchmarker = AgenticRageBenchmarker(client_id=slug, working_dir=working_dir)
@@ -769,7 +838,6 @@ def run_audit_command(target: str | None = None, output_dir: str = "docs/audits"
     print(f"Total Sondas Evaluadas: {passed_count}/{total_count} ({report.global_score}%)")
     print(f"Reporte Consolidado JSON: {target_path / output_dir / 'AUDIT_REPORT.json'}")
     print(f"Certificado HTML Oficial: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}")
-    print(f"Informe Maestro Due Diligence: {target_path / output_dir / 'AUDIT_RESULTS.md'}")
     print("=" * 80 + "\n")
 
     return 0 if report.global_grade in ("A+", "A", "B") else 1
@@ -820,6 +888,33 @@ def main(argv: list[str] | None = None) -> None:
         "--lang",
         default=None,
         help="Target language/locale code (e.g. 'es', 'en', 'de', 'ja'). Defaults to auto-detected context language.",
+    )
+    run_parser.add_argument(
+        "--currency",
+        default=None,
+        help="ISO 4217 reporting and accounting currency code (e.g. 'USD', 'EUR', 'GBP', 'JPY').",
+    )
+    run_parser.add_argument(
+        "--country-code",
+        default=None,
+        help="ISO 3166-1 alpha-2 or alpha-3 country code (e.g. 'US', 'ES', 'GB', 'JP').",
+    )
+    run_parser.add_argument(
+        "--rate-multiplier",
+        type=float,
+        default=None,
+        help="Geographic cost-of-labor purchasing-power multiplier [0.1, 10.0].",
+    )
+    run_parser.add_argument(
+        "--disruption-rate",
+        type=float,
+        default=None,
+        help="Authoritative hourly cost of downtime / operational disruption.",
+    )
+    run_parser.add_argument(
+        "--rate-card-file",
+        default=None,
+        help="Path to external custom rate card JSON file defining hourly_rates and margins.",
     )
 
     # APEX Daemon Manager
@@ -876,6 +971,13 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     if args.subcommand == "run":
+        econ_profile = build_economic_profile_from_cli_args(
+            currency=getattr(args, "currency", None),
+            country_code=getattr(args, "country_code", None),
+            rate_multiplier=getattr(args, "rate_multiplier", None),
+            disruption_rate=getattr(args, "disruption_rate", None),
+            rate_card_file=getattr(args, "rate_card_file", None),
+        )
         sys.exit(
             run_pipeline(
                 args.client,
@@ -886,6 +988,7 @@ def main(argv: list[str] | None = None) -> None:
                 force=args.force,
                 concurrency=args.concurrency,
                 language=args.language,
+                economic_profile=econ_profile,
             )
         )
     elif args.subcommand == "po-batch":

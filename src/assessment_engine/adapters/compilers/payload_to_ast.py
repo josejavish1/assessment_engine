@@ -428,20 +428,12 @@ from assessment_engine.adapters.compilers.ast_table_builders import (
     build_heatmap_mosaic as _build_heatmap_mosaic,
 )
 from assessment_engine.adapters.compilers.ast_table_builders import (
-    build_lm_scale_table as _build_lm_scale_table,
-)
-from assessment_engine.adapters.compilers.ast_table_builders import (
     build_regulatory_bullet as _build_regulatory_bullet,
 )
 from assessment_engine.adapters.compilers.ast_table_builders import (
     build_spof_bullet as _build_spof_bullet,
 )
-from assessment_engine.adapters.compilers.ast_table_builders import (
-    build_tef_scale_table as _build_tef_scale_table,
-)
 from assessment_engine.domain.actuarial_scale_calibrator import (
-    compute_dynamic_lm_brackets,
-    compute_dynamic_lm_thresholds,
     safe_float,
 )
 
@@ -1434,6 +1426,38 @@ def resolve_domain_introduction(
     }
 
 
+def _resolve_rates_catalog(ctx: dict[str, Any]) -> dict[str, Any]:
+    """Resolves country labor rates catalog from context or tenant profile, with safe fallback."""
+    rates = ctx.get("rates_catalog")
+    if rates and isinstance(rates, dict):
+        return rates
+
+    blueprint_data = ctx.get("blueprint_data", {})
+    if isinstance(blueprint_data, dict):
+        bp_rates = blueprint_data.get("rates_catalog")
+        if bp_rates and isinstance(bp_rates, dict):
+            return bp_rates
+        bp_profile = blueprint_data.get("tenant_economic_profile")
+        if isinstance(bp_profile, dict):
+            from assessment_engine.domain.models.global_context import (
+                TenantEconomicProfile,
+            )
+
+            profile = TenantEconomicProfile.model_validate(bp_profile)
+            return profile.to_rate_card_dict()
+
+    tenant_profile = ctx.get("tenant_profile")
+    if tenant_profile is not None:
+        if hasattr(tenant_profile, "to_rate_card_dict"):
+            return tenant_profile.to_rate_card_dict()
+        if isinstance(tenant_profile, dict):
+            return tenant_profile
+
+    from assessment_engine.infrastructure.config_loader import load_country_labor_rates
+
+    return load_country_labor_rates()
+
+
 class PayloadToASTBridge:
     """Translates structured JSON payloads and associated markdown modules into a unified Document Abstract Syntax Tree (AST).
     This process maintains semantic identity and structural alignment with the source content."""
@@ -1442,9 +1466,11 @@ class PayloadToASTBridge:
         self,
         brand_profile_path: str = "engine_config/brand_profile.json",
         locales_path: str = "engine_config/locales.json",
+        tenant_profile: Any = None,
     ):
         self.brand_profile_path = Path(brand_profile_path)
         self.locales_path = Path(locales_path)
+        self.tenant_profile = tenant_profile
         self.meta_lang = "en"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
@@ -1497,6 +1523,7 @@ class PayloadToASTBridge:
         approved_annex_path: str = "",
         override_locale: str | None = None,
         modules_dir: str | Path | None = None,
+        tenant_profile: Any = None,
     ) -> DocumentAST:
         """Consolidates information from input JSON files and associated Markdown/CSV modules
         to generate a complete Document Abstract Syntax Tree (AST)."""
@@ -1505,6 +1532,7 @@ class PayloadToASTBridge:
             approved_annex_path,
             override_locale=override_locale,
             modules_dir=modules_dir,
+            tenant_profile=tenant_profile,
         )
         self.meta_lang = ctx.get("meta_lang", "en")
         self.loc_data = {}
@@ -1570,6 +1598,7 @@ class PayloadToASTBridge:
         approved_annex_path: str,
         override_locale: str | None = None,
         modules_dir: str | Path | None = None,
+        tenant_profile: Any = None,
     ) -> dict[str, Any]:
         """Extract and prepare all context variables needed for DocumentAST compilation."""
         blueprint_file = Path(blueprint_payload_path)
@@ -1659,13 +1688,16 @@ class PayloadToASTBridge:
             blueprint_data.get("document_meta", {}).get("tower_id")
             or blueprint_data.get("document_meta", {}).get("tower_code")
             or blueprint_data.get("tower_id")
+            or blueprint_data.get("tower_code")
             or "T1"
         ).strip().upper()
 
         # Recalculate authoritative tower score directly from pillars and master matrix weights
         # to prevent frozen legacy scores from diverging from visible pillar values
         from assessment_engine.domain.scoring_engine import ScoringEngine
-        from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+        )
         try:
             p_scores_map = {}
             for p in blueprint_data.get("pillars_analysis", []):
@@ -1759,6 +1791,19 @@ class PayloadToASTBridge:
             "gs_val": gs_val,
             "formatted_global_score": formatted_global_score,
             "display_score_str": display_score_str,
+            "tenant_profile": tenant_profile or self.tenant_profile,
+            "rates_catalog": (
+                blueprint_data.get("rates_catalog")
+                or (
+                    (tenant_profile or self.tenant_profile).to_rate_card_dict()
+                    if hasattr(tenant_profile or self.tenant_profile, "to_rate_card_dict")
+                    else (
+                        (tenant_profile or self.tenant_profile)
+                        if isinstance(tenant_profile or self.tenant_profile, dict)
+                        else None
+                    )
+                )
+            ),
         }
 
     def _build_cover_and_toc(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
@@ -1893,9 +1938,10 @@ class PayloadToASTBridge:
         # COMPONENT A: 4-METRIC EXECUTIVE SCORECARD (PLACED FIRST UNDER HEADING 1 - BLUF)
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
-            from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
-            from assessment_engine.infrastructure.config_loader import load_country_labor_rates
-            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+            from assessment_engine.domain.services.chapter4_synthesizer import (
+                Chapter4Synthesizer,
+            )
+            rates_cat = _resolve_rates_catalog(ctx)
             synth = Chapter4Synthesizer.synthesize_chapter4(blueprint_data, context=ctx, rates_catalog=rates_cat)
         
         min_inaction = float(synth.get("total_status_quo_exposure_min") or 0.0)
@@ -1918,7 +1964,9 @@ class PayloadToASTBridge:
                     break
 
         if not primary_reg:
-            from assessment_engine.infrastructure.config_loader import load_regulatory_jurisdictions
+            from assessment_engine.infrastructure.config_loader import (
+                load_regulatory_jurisdictions,
+            )
             jurisdictions_catalog = load_regulatory_jurisdictions()
             tenant_country = str(doc_meta.get("country_code") or ctx.get("country_code") or "ES").strip()
             org_prof = blueprint_data.get("organization_profile") or {}
@@ -1973,7 +2021,9 @@ class PayloadToASTBridge:
         raw_verdict = str((blueprint_data.get("executive_snapshot") or {}).get("bottom_line") or "").strip()
         min_len = 25
 
-        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        from assessment_engine.infrastructure.localization import (
+            restore_locale_diacritics,
+        )
         if len(raw_verdict) >= min_len:
             verdict_text = raw_verdict
         else:
@@ -3324,7 +3374,7 @@ class PayloadToASTBridge:
             primary_arch = LossArchetypeType.AVAILABILITY_OUTAGE
 
         # Resolve canonical operational archetype from domain financial profile
-        from assessment_engine.domain.actuarial.financial_profile import (
+        from assessment_engine.domain.models.shared.financial_profile import (
             IndustryArchetype,
         )
 
@@ -3458,12 +3508,9 @@ class PayloadToASTBridge:
         from assessment_engine.domain.services.chapter4_synthesizer import (
             Chapter4Synthesizer,
         )
-        from assessment_engine.infrastructure.config_loader import (
-            load_country_labor_rates,
-        )
         synth = blueprint_data.get("chapter4_synthesis")
         if not synth:
-            rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+            rates_cat = _resolve_rates_catalog(ctx)
             synth = Chapter4Synthesizer.synthesize_chapter4(
                 blueprint_data,
                 context=ctx,
@@ -3606,7 +3653,7 @@ class PayloadToASTBridge:
         # Operational Stress Scenario (Worst-Case Single Outage Event) anchored directly in 4.1
         from assessment_engine.domain.actuarial.schemas import Chapter4SynthesisPayload
         raw_payload = blueprint_data.get("chapter4_monistic_payload")
-        rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+        rates_cat = _resolve_rates_catalog(ctx)
         if isinstance(raw_payload, dict):
             monistic_payload = Chapter4SynthesisPayload.model_validate(raw_payload)
         elif isinstance(raw_payload, Chapter4SynthesisPayload):
@@ -3620,18 +3667,13 @@ class PayloadToASTBridge:
         worst_case_min_str = format_currency(worst_case.lower_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
         worst_case_max_str = format_currency(worst_case.upper_bound, currency_symbol=currency, locale=meta_lang, decimals=0)
 
-        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang, default="Escenario de Estrés Operativo (Pérdida Máxima por Evento Único)")
+        stress_title = t("ch4_tail_scenario_subtitle", locale=meta_lang)
         stress_narrative = t(
             "ch4_stress_scenario_body",
             locale=meta_lang,
             tower_name=tower_name,
             worst_case_min=worst_case_min_str,
             worst_case_max=worst_case_max_str,
-            default=(
-                f"En caso de materialización simultánea de fallos en los componentes críticos de {tower_name}, "
-                f"el impacto económico puntual derivado de la parada de planta y la movilización de servicios de emergencia "
-                f"se sitúa en una horquilla estimada de ~{worst_case_min_str} a ~{worst_case_max_str} por incidente mayor."
-            ),
         )
         nodes.append(
             ParagraphNode(
@@ -3651,11 +3693,12 @@ class PayloadToASTBridge:
         is_critical = ctx["is_critical"]
         blueprint_data = ctx.get("blueprint_data", {})
 
-        from assessment_engine.domain.services.chapter4_synthesizer import Chapter4Synthesizer
         from assessment_engine.domain.actuarial.schemas import Chapter4SynthesisPayload
-        from assessment_engine.infrastructure.config_loader import load_country_labor_rates
+        from assessment_engine.domain.services.chapter4_synthesizer import (
+            Chapter4Synthesizer,
+        )
 
-        rates_cat = ctx.get("rates_catalog") or load_country_labor_rates()
+        rates_cat = _resolve_rates_catalog(ctx)
         raw_payload = blueprint_data.get("chapter4_monistic_payload")
         if isinstance(raw_payload, dict):
             monistic_payload = Chapter4SynthesisPayload.model_validate(raw_payload)
@@ -3729,7 +3772,9 @@ class PayloadToASTBridge:
 
         # Open FAIR Actuarial Vulnerability Derivation Note (Dynamically Derived)
         overall_score = _safe_float(blueprint_data.get("score") or blueprint_data.get("executive_summary", {}).get("score", 2.0))
-        from assessment_engine.domain.governance.scale_engine import GovernanceScaleEngine
+        from assessment_engine.domain.governance.scale_engine import (
+            GovernanceScaleEngine,
+        )
         scale_engine = GovernanceScaleEngine.get_instance()
         resolved_scale = scale_engine.resolve_maturity(overall_score, locale=str(meta_lang), translator=t)
         maturity_label = resolved_scale.label
@@ -3796,7 +3841,7 @@ class PayloadToASTBridge:
         out_range_str = f"~{format_currency(out_low, currency_symbol=currency, locale=meta_lang, decimals=0)} - {format_currency(out_high, currency_symbol=currency, locale=meta_lang, decimals=0)} / {yr_str}" if out_high > 0 else ""
 
         is_es = str(meta_lang).startswith("es")
-        base_title = t("ch4_sec3_title", locale=meta_lang, default="4.3. Catálogo de Fichas de Riesgo Técnico-Operativas")
+        base_title = t("ch4_sec3_title", locale=meta_lang)
         sec_4_3_title = f"{base_title} (Desglose de la Palanca 2: {out_range_str})" if (out_range_str and is_es) else (f"{base_title} (Lever 2 Breakdown: {out_range_str})" if out_range_str else base_title)
 
         nodes.append(
@@ -3807,11 +3852,7 @@ class PayloadToASTBridge:
             )
         )
 
-        intro_text = t(
-            "ch4_sec3_intro",
-            locale=meta_lang,
-            default="El registro de riesgos del estado actual descarta incidencias accesorias o de impacto menor, focalizándose exclusivamente en los riesgos estructurales de nivel superior (Tier 1 y Tier 2):",
-        )
+        intro_text = t("ch4_sec3_intro", locale=meta_lang)
         nodes.append(ParagraphNode(text=intro_text, font_size=9.5, space_after=6))
 
         reconcile_note = (
@@ -3965,7 +4006,7 @@ class PayloadToASTBridge:
                     CellNode(
                         text=(
                             f"**{t('ch4_card_block_event_loss', locale=meta_lang)}:** {formatted_ev}\n"
-                            f"*{t('ch4_fair_chain_label', locale=meta_lang, default='Cadena Actuarial O-FAIR') if is_es else 'O-FAIR Actuarial Chain'}:* {fair_chain_str}"
+                            f"*{t('ch4_fair_chain_label', locale=meta_lang)}:* {fair_chain_str}"
                         ),
                         font_size=8.0,
                         bg_color="F1F5F9",
@@ -3974,7 +4015,7 @@ class PayloadToASTBridge:
                     CellNode(
                         text=(
                             f"**{t('ch4_card_block_annual_exposure', locale=meta_lang)}:** {formatted_ann}\n"
-                            f"*{t('ch4_fair_formula_label', locale=meta_lang, default='Cálculo de Exposición') if is_es else 'Exposure Derivation'}:* {formula_str}"
+                            f"*{t('ch4_fair_formula_label', locale=meta_lang)}:* {formula_str}"
                         ),
                         font_size=8.0,
                         bg_color="F1F5F9",

@@ -545,7 +545,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         span = safe_max - safe_min
         alpha = 1.0 + 4.0 * (mode_clamped - safe_min) / span
         beta_p = 1.0 + 4.0 * (safe_max - mode_clamped) / span
-        return safe_min + stats.beta.ppf(u_samples, alpha, beta_p) * span
+        return np.asarray(
+            safe_min + stats.beta.ppf(u_samples, alpha, beta_p) * span,
+            dtype=np.float64,
+        )
 
     def _generate_student_t_copula_uniforms(
         self, findings: List[FindingTelemetry], rng: np.random.Generator
@@ -559,7 +562,10 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
             z = rng.standard_normal(size=(self.n_sims, 1))
             chi2_samples = rng.chisquare(df=self.copula_df, size=(self.n_sims, 1))
             t_samples = z / np.sqrt(chi2_samples / self.copula_df)
-            return np.clip(stats.t.cdf(t_samples, df=self.copula_df), 1e-6, 1.0 - 1e-6)
+            return np.asarray(
+                np.clip(stats.t.cdf(t_samples, df=self.copula_df), 1e-6, 1.0 - 1e-6),
+                dtype=np.float64,
+            )
 
         loadings = np.clip(
             np.array([f.shared_dependence_factor for f in findings], dtype=np.float64),
@@ -597,7 +603,7 @@ class BayesianFairCopulaEngine(RiskQuantificationPort):
         chi2_samples = rng.chisquare(df=self.copula_df, size=(self.n_sims, 1))
         t_samples = correlated_normals / np.sqrt(chi2_samples / self.copula_df)
         u_copula = stats.t.cdf(t_samples, df=self.copula_df)
-        return np.clip(u_copula, 1e-6, 1.0 - 1e-6)
+        return np.asarray(np.clip(u_copula, 1e-6, 1.0 - 1e-6), dtype=np.float64)
 
     def evaluate_portfolio(
         self, findings: List[FindingTelemetry], currency_code: str
@@ -1199,18 +1205,18 @@ def create_reproduction_manifest(
             "cvar_99": t_res.cvar_99,
             "worst_crisis_event": t_res.worst_crisis_event,
         }
-        for f in t_res.findings:
-            key = f"{t_id}:{f.finding_id}"
+        for finding_result in t_res.findings:
+            key = f"{t_id}:{finding_result.finding_id}"
             expected_findings[key] = {
-                "standalone_ale": f.standalone_ale,
-                "portfolio_allocated_ale": f.portfolio_allocated_ale,
-                "var_90": f.var_90,
-                "cvar_90": f.cvar_90,
-                "var_99": f.var_99,
-                "cvar_99": f.cvar_99,
-                "mean_vuln": f.mean_vuln,
-                "mean_lef": f.mean_lef,
-                "mean_sle": f.mean_sle,
+                "standalone_ale": finding_result.standalone_ale,
+                "portfolio_allocated_ale": finding_result.portfolio_allocated_ale,
+                "var_90": finding_result.var_90,
+                "cvar_90": finding_result.cvar_90,
+                "var_99": finding_result.var_99,
+                "cvar_99": finding_result.cvar_99,
+                "mean_vuln": finding_result.mean_vuln,
+                "mean_lef": finding_result.mean_lef,
+                "mean_sle": finding_result.mean_sle,
             }
 
     return PortfolioReproductionManifest(

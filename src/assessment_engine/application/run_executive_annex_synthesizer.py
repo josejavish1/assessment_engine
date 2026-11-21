@@ -656,9 +656,6 @@ def enrich_annex_payload(
     ale_p10 = round(global_fair_ale * 0.70, -3)
     ale_p90 = round(global_fair_ale * 1.30, -3)
 
-    from assessment_engine.adapters.generate_asis_markdown_modules import (
-        resolve_client_currency_context,
-    )
     from assessment_engine.infrastructure.localization import (
         format_currency,
         format_number,
@@ -668,9 +665,10 @@ def enrich_annex_payload(
     str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
     str_p10 = format_number(ale_p10, locale=doc_lang, decimals=0)
     str_p90 = format_number(ale_p90, locale=doc_lang, decimals=0)
-    
+
     client_name = getattr(blueprint.document_meta, "client", "generic_client")
-    currency_sym, _ = resolve_client_currency_context(client_name)
+
+    currency_sym = "€"
     if hasattr(blueprint.document_meta, "currency_symbol") and blueprint.document_meta.currency_symbol:
         currency_sym = blueprint.document_meta.currency_symbol
     elif hasattr(blueprint.document_meta, "currency") and blueprint.document_meta.currency:

@@ -25,6 +25,14 @@ from json import JSONDecodeError
 from pathlib import Path
 from typing import Any, Iterator
 
+# Bootstrap taxonomy catalog loader for domain layer
+try:
+    from assessment_engine.domain.taxonomy_resolver import register_taxonomy_catalog_loader
+    from assessment_engine.infrastructure.json_taxonomy_catalog_loader import JsonTaxonomyCatalogLoader
+    register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
+except Exception:
+    pass
+
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
 
@@ -53,8 +61,10 @@ BLUEPRINT_DOCX_PATTERN = os.environ.get(
 ANNEX_DOCX_PATTERN = os.environ.get("MCP_ANNEX_DOCX_PATTERN", "annex_*_final.docx")
 PLAN_GENERATED_MARKER = "Plan generated in "
 
+from assessment_engine.infrastructure.runtime_paths import resolve_workspaces_dir
+
 DEFAULT_JOBS_DB_PATH = Path(
-    os.environ.get("MCP_JOBS_DB_PATH", str(ROOT / "jobs.db"))
+    os.environ.get("MCP_JOBS_DB_PATH", str(resolve_workspaces_dir() / ".cache" / "jobs.db"))
 )
 DEFAULT_JOB_TTL_SECONDS = int(os.environ.get("MCP_JOB_TTL_SECONDS", "86400"))
 SQLITE_BUSY_TIMEOUT_MS = int(os.environ.get("MCP_SQLITE_BUSY_TIMEOUT_MS", "5000"))
@@ -294,9 +304,7 @@ class PersistentJobStore:
                         job_id, JobState.RUNNING, result=result
                     )
                 self.transition_state(job_id, JobState.RUNNING)
-                return self.transition_state(
-                    job_id, normalized_target, result=result
-                )
+                return self.transition_state(job_id, normalized_target, result=result)
 
             if (
                 existing.state == JobState.PENDING
@@ -305,9 +313,7 @@ class PersistentJobStore:
                 self.transition_state(job_id, JobState.RUNNING)
             return self.transition_state(job_id, normalized_target, result=result)
 
-    def set_result(
-        self, job_id: str, result: str, append: bool = False
-    ) -> JobRecord:
+    def set_result(self, job_id: str, result: str, append: bool = False) -> JobRecord:
         """Updates the result payload of an existing job or initializes a PENDING job."""
         now = time.time()
         with self._lock:
@@ -350,9 +356,7 @@ class PersistentJobStore:
         """Deletes a job record from the SQLite store."""
         with self._lock:
             with contextlib.closing(self._connect()) as conn:
-                cursor = conn.execute(
-                    "DELETE FROM jobs WHERE job_id = ?;", (job_id,)
-                )
+                cursor = conn.execute("DELETE FROM jobs WHERE job_id = ?;", (job_id,))
                 if cursor.rowcount == 0:
                     raise KeyError(job_id)
 
@@ -387,7 +391,9 @@ class PersistentJobStore:
 class _PersistentStatusMapProxy(collections.abc.MutableMapping[str, str]):
     """MutableMapping proxy backed by PersistentJobStore for backwards-compatible status access."""
 
-    def __init__(self, store: PersistentJobStore, return_fsm_names: bool = False) -> None:
+    def __init__(
+        self, store: PersistentJobStore, return_fsm_names: bool = False
+    ) -> None:
         self._store = store
         self._return_fsm_names = return_fsm_names
 
@@ -496,8 +502,9 @@ def _invoke_module_in_process(module_name: str, args: list[str]) -> str:
 
         try:
             sys.argv = [module_name] + list(args)
-            with contextlib.redirect_stdout(stdout_buf), contextlib.redirect_stderr(
-                stderr_buf
+            with (
+                contextlib.redirect_stdout(stdout_buf),
+                contextlib.redirect_stderr(stderr_buf),
             ):
                 module = importlib.import_module(module_name)
                 if hasattr(module, "main") and callable(module.main):
@@ -535,6 +542,7 @@ def _serialize_docx_worker(request: DocxRenderRequest) -> str:
         from assessment_engine.adapters.compilers.payload_to_ast import (
             compile_asis_docx_via_ast,
         )
+
         out_p = compile_asis_docx_via_ast(request.payload_json, request.output_docx)
         return f"Compiled via modern AST engine: {out_p}"
 
@@ -677,9 +685,7 @@ def _inspect_canonical_state(case_dir: Path) -> dict:
             "Annex",
         ),
         "deliverables": {
-            "blueprint_docx": _inspect_docx_artifact(
-                BLUEPRINT_DOCX_PATTERN, case_dir
-            ),
+            "blueprint_docx": _inspect_docx_artifact(BLUEPRINT_DOCX_PATTERN, case_dir),
             "annex_docx": _inspect_docx_artifact(ANNEX_DOCX_PATTERN, case_dir),
         },
     }
@@ -727,7 +733,10 @@ def _run_script(module_name: str, args: list[str]) -> str:
         from assessment_engine.adapters.compilers.payload_to_ast import (
             compile_asis_docx_via_ast,
         )
-        out_p = compile_asis_docx_via_ast(args[0], args[2] if len(args) > 2 else args[1])
+
+        out_p = compile_asis_docx_via_ast(
+            args[0], args[2] if len(args) > 2 else args[1]
+        )
         return f"Compiled via modern AST engine: {out_p}"
 
     if module_name in {
@@ -798,18 +807,21 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
         A string containing a success message concatenated with the standard
         output from the rendering engine.
     """
+    from pathlib import Path
+
     from assessment_engine.adapters.compilers.payload_to_ast import (
         compile_asis_docx_via_ast,
     )
-    from pathlib import Path
 
-    out_path = compile_asis_docx_via_ast(payload_json, output_docx)
+    out_path = compile_asis_docx_via_ast(payload_json, output_docx, doc_lang="en")
     size_bytes = Path(out_path).stat().st_size
     return f"Tower Document successfully rendered via AST Engine.\nPath: {out_path} ({size_bytes:,} bytes)"
 
 
 @mcp.tool()
-def compile_tower_annex_ast(payload_json: str, output_docx: str, doc_lang: str = "es") -> str:
+def compile_tower_annex_ast(
+    payload_json: str, output_docx: str, doc_lang: str = "es"
+) -> str:
     """Compiles a tower annex DOCX document directly via the Declarative AST Engine.
 
     Args:
@@ -820,10 +832,11 @@ def compile_tower_annex_ast(payload_json: str, output_docx: str, doc_lang: str =
     Returns:
         Confirmation message with output path and file size.
     """
+    from pathlib import Path
+
     from assessment_engine.adapters.compilers.payload_to_ast import (
         compile_asis_docx_via_ast,
     )
-    from pathlib import Path
 
     out_path = compile_asis_docx_via_ast(payload_json, output_docx, doc_lang=doc_lang)
     size_bytes = Path(out_path).stat().st_size
@@ -965,9 +978,7 @@ async def _background_run_plan(job_id: str, request_text: str) -> None:
                     plan_path = Path(request_dir) / "plan.json"
                     if plan_path.exists():
                         plan_data = plan_path.read_text(encoding="utf-8")
-                        result_payload = (
-                            f"Plan successfully generated.\nREQUEST_DIR={request_dir}\n{plan_data}"
-                        )
+                        result_payload = f"Plan successfully generated.\nREQUEST_DIR={request_dir}\n{plan_data}"
                         found_plan = True
                         break
             except (json.JSONDecodeError, IndexError, OSError) as ex:
@@ -977,9 +988,7 @@ async def _background_run_plan(job_id: str, request_text: str) -> None:
             result_payload = (
                 f"Error: Plan generated but path not found in logs.\nLogs: {out}"
             )
-        _JOB_STORE.transition_state(
-            job_id, JobState.COMPLETED, result=result_payload
-        )
+        _JOB_STORE.transition_state(job_id, JobState.COMPLETED, result=result_payload)
     except Exception as e:
         _JOB_STORE.transition_state(
             job_id, JobState.FAILED, result=f"Error executing orchestrator: {e}"

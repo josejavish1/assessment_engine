@@ -14,7 +14,7 @@ from assessment_engine.domain.actuarial.parameter_pack_loader import (
     ActuarialParameterPack,
     create_default_actuarial_parameter_pack,
 )
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     EpistemicDissonanceRecord,
     FindingTelemetry,
     OperationalZone,
@@ -842,14 +842,19 @@ class ActuarialInputResolver:
             try:
                 k_failures = int(raw_k)
                 n_trials = int(raw_n)
-                if k_failures >= 0 and n_trials > 0 and k_failures <= n_trials:
+            except (ValueError, TypeError):
+                has_audit_counts = False
+            else:
+                if k_failures > n_trials:
+                    raise ValueError(
+                        f"Audit failure count ({k_failures}) cannot exceed trial count ({n_trials})"
+                    )
+                if k_failures >= 0 and n_trials > 0:
                     k_source = ParameterSourceType.ASSESSMENT_PAYLOAD
                     n_source = ParameterSourceType.ASSESSMENT_PAYLOAD
                     audit_conf = ParameterConfidenceLevel.HIGH
                 else:
                     has_audit_counts = False
-            except (ValueError, TypeError):
-                has_audit_counts = False
         else:
             has_audit_counts = False
 

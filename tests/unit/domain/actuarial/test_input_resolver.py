@@ -8,7 +8,7 @@ from assessment_engine.domain.actuarial.input_resolver import (
     ActuarialInputResolver,
     QuantificationStatus,
 )
-from assessment_engine.domain.bayesian_fair_copula_engine import OperationalZone
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import OperationalZone
 from assessment_engine.domain.models.parameter_lineage import (
     ParameterConfidenceLevel,
     ParameterSourceType,
@@ -288,3 +288,23 @@ def test_valid_explicit_finding_produces_quantified_status(
         currency_code="EUR",
     )
     assert status == QuantificationStatus.QUANTIFIED
+
+
+def test_parse_strict_bool_numeric_and_strings() -> None:
+    """Verify parse_strict_bool handles numeric 0/1 and valid string booleans strictly."""
+    from assessment_engine.domain.actuarial.input_resolver import parse_strict_bool
+
+    assert parse_strict_bool(0) is False
+    assert parse_strict_bool(0.0) is False
+    assert parse_strict_bool(1) is True
+    assert parse_strict_bool(1.0) is True
+
+    assert parse_strict_bool("yes") is True
+    assert parse_strict_bool("no") is False
+
+    with pytest.raises(ValueError, match="Numeric value 2 cannot be unambiguously parsed"):
+        parse_strict_bool(2)
+
+    with pytest.raises(ValueError, match="Invalid boolean value"):
+        parse_strict_bool("invalid_bool")
+

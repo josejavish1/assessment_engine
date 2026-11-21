@@ -27,6 +27,7 @@ from assessment_engine.infrastructure.runtime_env import (
 )
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_blueprint_payload_path,
+    resolve_client_dir,
     resolve_tower_annex_template_path,
 )
 
@@ -383,7 +384,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
     else:
         logger.info("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
 
-    client_dir = Path("working") / cfg.client_slug
+    client_dir = resolve_client_dir(cfg.client_slug)
     client_intel_path = client_dir / "client_intelligence.json"
     industry_key = "default"
     if client_intel_path.exists():
@@ -798,40 +799,17 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
 
     async def run_blueprint_flow() -> None:
         if cfg.blueprint_payload_path.exists():
-            try:
-                import json
-
-                from assessment_engine.adapters.render_tower_blueprint import (
-                    render_blueprint,
-                )
-                from assessment_engine.domain.schemas.blueprint import (
-                    BlueprintPayload,
-                )
-
-                bp_data = json.loads(
-                    cfg.blueprint_payload_path.read_text(encoding="utf-8")
-                )
-                bp_payload = BlueprintPayload.model_validate(bp_data)
-                render_blueprint(
-                    payload=bp_payload,
-                    output_path=cfg.output_blueprint_docx,
-                    client_dir=cfg.case_dir.parent,
-                )
-            except Exception as ex:
-                logger.warning(
-                    f"[Pipeline] In-memory rendering of Blueprint failed: {ex}. Using subprocess fallback..."
-                )
-                await run_step_async(
-                    [
-                        cfg.python_bin,
-                        "-m",
-                        "assessment_engine.adapters.render_tower_blueprint",
-                        str(cfg.blueprint_payload_path),
-                        str(cfg.output_blueprint_docx),
-                    ],
-                    cfg.env,
-                    "Render: Tower Strategic Blueprint DOCX",
-                )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.adapters.render_tower_blueprint",
+                    str(cfg.blueprint_payload_path),
+                    str(cfg.output_blueprint_docx),
+                ],
+                cfg.env,
+                "Render: Tower Strategic Blueprint DOCX",
+            )
 
         if cfg.output_blueprint_docx.exists():
             import shutil
