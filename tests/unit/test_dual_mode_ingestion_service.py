@@ -1,17 +1,20 @@
-"""
-Unit and integration test suite for Phase 2: Dual-Mode Ingestion Service.
+"""Unit and integration test suite for Phase 2: Dual-Mode Ingestion Service.
+
 Tests parsing and ingestion of:
-1. Real context transcripts (.docx, .txt) -> evidence_vault.json & client_intelligence.json
-2. Real assessment matrices (.xlsx, .txt) -> digital_twin_state.json
+1. Synthetic context transcripts (.docx, .txt) -> evidence_vault.json & client_intelligence.json
+2. Synthetic assessment matrices (.xlsx, .txt) -> digital_twin_state.json
 3. Multipart HTTP endpoints on the live FastAPI app.
+Written in 100% Technical English.
 """
 
 from io import BytesIO
 from pathlib import Path
 
+import openpyxl
 import pytest
 from starlette.testclient import TestClient
 
+from assessment_engine.adapters.api.server import app
 from assessment_engine.application.services.ingestion_service import (
     AssessmentMatrixParserService,
     DocumentIngestionService,
@@ -20,32 +23,50 @@ from assessment_engine.infrastructure.storage.workspace_manager import (
     WorkspacePersistenceManager,
 )
 
-try:
-    from server import app
-except ImportError:
-    app = None
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SYNTHETIC_DIR = REPO_ROOT / "tests" / "test_data" / "synthetic_clients" / "uk_fintech"
 
 
 @pytest.fixture
 def temp_workspace(tmp_path: Path) -> WorkspacePersistenceManager:
-    return WorkspacePersistenceManager(root_dir=tmp_path / "working")
+    return WorkspacePersistenceManager(root_dir=tmp_path / "workspaces")
 
 
-def test_real_molins_matrix_excel_parsing(temp_workspace: WorkspacePersistenceManager):
-    """Test parsing the authentic client Excel matrix from source_docs/molins/."""
-    excel_path = REPO_ROOT / "source_docs" / "molins" / "Preguntas Fast Assessment Molins contestadas cliente.xlsx"
-    if not excel_path.is_file():
-        pytest.skip(f"Test asset not present: {excel_path}")
+@pytest.fixture
+def synthetic_matrix_excel_file(tmp_path: Path) -> Path:
+    """Generates a complete 10-tower Excel workbook fixture on the fly."""
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)  # remove default worksheet
 
+    for t_idx in range(1, 11):
+        ws = wb.create_sheet(title=f"T{t_idx} - Tower {t_idx}")
+        ws.append(["Title", "Code", "Domain", "Guidance", "Score"])
+        for p_idx in range(1, 6):
+            ws.append([
+                f"Pillar {p_idx} Question",
+                f"T{t_idx}.P{p_idx}.K1.PR1",
+                f"T{t_idx}",
+                "Production environment redundancy certified to Tier III standards",
+                3.5,
+            ])
+
+    xlsx_path = tmp_path / "synthetic_assessment_matrix.xlsx"
+    wb.save(xlsx_path)
+    return xlsx_path
+
+
+def test_synthetic_matrix_excel_parsing(
+    temp_workspace: WorkspacePersistenceManager,
+    synthetic_matrix_excel_file: Path,
+):
+    """Test parsing an assessment Excel matrix from a synthetic fixture."""
     service = AssessmentMatrixParserService(temp_workspace)
-    client_slug = "molins-test"
+    client_slug = "synthetic-excel-test"
 
     twin = service.ingest_assessment_matrix(
         client_slug=client_slug,
-        source_path=excel_path,
-        source_filename=excel_path.name,
+        source_path=synthetic_matrix_excel_file,
+        source_filename=synthetic_matrix_excel_file.name,
     )
 
     assert twin.client_slug == client_slug
@@ -61,14 +82,13 @@ def test_real_molins_matrix_excel_parsing(temp_workspace: WorkspacePersistenceMa
     assert persisted.overall_maturity_index == twin.overall_maturity_index
 
 
-def test_real_molins_matrix_txt_parsing(temp_workspace: WorkspacePersistenceManager):
-    """Test parsing the authentic client text response file from source_docs/molins/."""
-    txt_path = REPO_ROOT / "source_docs" / "molins" / "261014 Respuestas Test Molins.txt"
-    if not txt_path.is_file():
-        pytest.skip(f"Test asset not present: {txt_path}")
+def test_synthetic_matrix_txt_parsing(temp_workspace: WorkspacePersistenceManager):
+    """Test parsing a client text response file using repo synthetic client fixtures."""
+    txt_path = SYNTHETIC_DIR / "assessment_responses.txt"
+    assert txt_path.is_file(), f"Synthetic responses fixture missing: {txt_path}"
 
     service = AssessmentMatrixParserService(temp_workspace)
-    client_slug = "molins-txt-test"
+    client_slug = "synthetic-txt-test"
 
     twin = service.ingest_assessment_matrix(
         client_slug=client_slug,
@@ -78,18 +98,21 @@ def test_real_molins_matrix_txt_parsing(temp_workspace: WorkspacePersistenceMana
 
     assert twin.client_slug == client_slug
     assert "T1" in twin.towers
-    assert "T2" in twin.towers
     assert len(twin.towers["T1"].question_responses) > 0
 
+    # Verify physical file was written to disk
+    persisted = temp_workspace.load_digital_twin_state(client_slug)
+    assert persisted is not None
+    assert "T1" in persisted.towers
 
-def test_real_molins_transcript_docx_parsing(temp_workspace: WorkspacePersistenceManager):
-    """Test parsing the authentic context interview transcript from source_docs/molins/."""
-    docx_path = REPO_ROOT / "source_docs" / "molins" / "260721 Transcripción sesion de contexto de molins (Fairfly) 1.docx"
-    if not docx_path.is_file():
-        pytest.skip(f"Test asset not present: {docx_path}")
+
+def test_synthetic_transcript_docx_parsing(temp_workspace: WorkspacePersistenceManager):
+    """Test parsing an interview transcript using repo synthetic client fixtures."""
+    docx_path = SYNTHETIC_DIR / "transcription_interview_session.docx"
+    assert docx_path.is_file(), f"Synthetic transcript fixture missing: {docx_path}"
 
     service = DocumentIngestionService(temp_workspace)
-    client_slug = "molins-transcript-test"
+    client_slug = "synthetic-transcript-test"
 
     vault = service.ingest_context_transcript(
         client_slug=client_slug,
@@ -110,8 +133,6 @@ def test_real_molins_transcript_docx_parsing(temp_workspace: WorkspacePersistenc
 
 def test_api_multipart_ingestion_endpoints():
     """Verify live HTTP endpoints for uploading context documents and assessment matrices."""
-    if app is None:
-        pytest.skip("server module not present in repository")
     client = TestClient(app)
 
     # 1. Login

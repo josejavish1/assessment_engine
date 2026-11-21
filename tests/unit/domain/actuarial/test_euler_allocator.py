@@ -13,7 +13,7 @@ from assessment_engine.domain.actuarial.euler_allocator import (
 )
 
 
-def test_euler_allocation_10_towers_molins() -> None:
+def test_euler_allocation_10_towers_acme_corp() -> None:
     standalone_ales = {
         "T1": 62093.0,
         "T2": 104190.0,

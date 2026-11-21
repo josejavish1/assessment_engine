@@ -5,7 +5,7 @@ from __future__ import annotations
 from assessment_engine.domain.actuarial.downtime_calibrator import (
     ActuarialDowntimeCalibrator,
 )
-from assessment_engine.domain.actuarial.financial_profile import (
+from assessment_engine.domain.models.shared.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,
 )

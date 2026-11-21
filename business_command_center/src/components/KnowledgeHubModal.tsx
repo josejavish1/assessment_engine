@@ -8,12 +8,7 @@ import {
   AlertTriangle,
   X,
   FileText,
-  Clock,
-  ShieldCheck,
-  RefreshCw,
   Trash2,
-  Check,
-  ArrowRight,
   Loader2,
   FolderArchive
 } from 'lucide-react';
@@ -78,8 +73,8 @@ export function KnowledgeHubModal({
               result.push(new File([blob], rawName, { type: blob.type }));
             }
           }
-        } catch (err: any) {
-          console.error('Error descomprimiendo ZIP:', err);
+        } catch (err: unknown) {
+          console.error('Error descomprimiendo ZIP:', err instanceof Error ? err.message : String(err));
         }
       } else if (ALLOWED_EXTENSIONS_SET.has(ext)) {
         result.push(file);
@@ -147,10 +142,11 @@ export function KnowledgeHubModal({
         setItems((prev) =>
           prev.map((it) => (it.id === item.id ? { ...it, status: 'admitted', progress: 100 } : it))
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         setItems((prev) =>
           prev.map((it) =>
-            it.id === item.id ? { ...it, status: 'error', errorMsg: err.message } : it
+            it.id === item.id ? { ...it, status: 'error', errorMsg } : it
           )
         );
       }

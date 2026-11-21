@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from assessment_engine.domain.actuarial.financial_profile import (
+from assessment_engine.domain.models.shared.financial_profile import (
     IndustryArchetype,
     TenantFinancialProfile,
 )

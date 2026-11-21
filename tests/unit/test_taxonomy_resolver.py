@@ -140,6 +140,35 @@ def test_resolve_capability_name_in_o1(isolated_resolver: TaxonomyResolver) -> N
     assert res_ja == "プラットフォームセルフサービスおよびサービスカタログ"
 
 
+def test_resolve_capability_from_localized_input(isolated_resolver: TaxonomyResolver) -> None:
+    """Verify bidirectional capability resolution from localized input strings."""
+    res_from_de = isolated_resolver.resolve_capability_name(
+        "Redundanz der Doppelbus-Stromversorgung", locale="en", default=""
+    )
+    assert res_from_de == "Dual Bus Power Feed Redundancy"
+
+    res_from_fr = isolated_resolver.resolve_capability_name(
+        "Redondance d'Alimentation Double Bus", locale="de", default=""
+    )
+    assert res_from_fr == "Redundanz der Doppelbus-Stromversorgung"
+
+
+def test_leaf_kpis_index_bidirectional_resolution() -> None:
+    """Verify that leaf KPIs index correctly resolves capabilities across locales."""
+    kpis = {
+        "KPI-001": {
+            "pillar_id": "T1.P1",
+            "canonical": "Main Power Feed",
+            "en": "Main Power Feed",
+            "de": "Hauptstromversorgung",
+        }
+    }
+    catalog = {"T1": {"canonical_name": "Facilities", "pillars": {"T1.P1": {"canonical_name": "Power"}}}}
+    resolver = TaxonomyResolver(catalog, leaf_kpis_index=kpis)
+    res = resolver.resolve_capability_name("Hauptstromversorgung", locale="en", default="")
+    assert res == "Main Power Feed"
+
+
 def test_thread_safe_singleton_concurrency() -> None:
     """Verify that get_taxonomy_resolver is strictly thread-safe under parallel execution."""
     instances: list[TaxonomyResolver] = []

@@ -2,85 +2,91 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
-- ../../src/assessment_engine/domain/schemas/rubric.py
-- ../../engine_config/frameworks/
-- ../../tests/functional/test_agentic_benchmarker.py
-last_verified_against: 2026-11-12
+- src/assessment_engine/infrastructure/agentic_benchmarker.py
+- src/assessment_engine/domain/schemas/rubric.py
+- engine_config/frameworks
+- tests/functional/test_agentic_benchmarker.py
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: explanation
 verification_mode: code
+notes: Technical specification of the Runtime Agentic Grounding and Evaluation (RAGE) benchmarking subsystem.
 ---
-# RAGE (Runtime Agentic Grounding & Evaluation) Architecture
+# Runtime Agentic Grounding & Evaluation (RAGE) Architecture
 
-Este documento detalla la especificación técnica de la arquitectura de evaluación de precisión **RAGE (Runtime Agentic Grounding & Evaluation)** implementada en el motor.
-
-Su objetivo de diseño es erradicar de raíz el "vibe-scoring" (puntuación probabilística o estimaciones sesgadas de los modelos de lenguaje) sustituyéndolo por un **flujo de auditoría determinista, basado en evidencias físicas en tiempo real y gobernado por reglas matemáticas puras en Python**.
+Canonical specification defining the architecture, execution lifecycle, evidence caching, and deterministic evaluation of the **Runtime Agentic Grounding & Evaluation (RAGE)** benchmarking engine (`agentic_benchmarker.py`).
 
 ---
 
-## 1. El Flujo de Ejecución RAGE (Paso a Paso)
+## 1. Architectural Objective: Eradicating Stochastic Vibe-Scoring
 
-El motor opera de forma asíncrona y está estructurado en cuatro fases robustas e independientes:
+RAGE replaces subjective or non-deterministic LLM scoring with an **empirical, evidence-grounded, multi-agent evaluation pipeline**. The system decouples factual research from numerical scoring: language models perform bounded extraction and cross-examination, while pure-Python rule evaluators compute quantitative maturity scores:
 
-```text
-===================================================================================================
-| 1. OSINT SEARCH (Investigador) ➔ 2. EVIDENCE VAULT (Failsafe) ➔ 3. CROSS-EXAM (Forense) ➔ 4. SCORING |
-===================================================================================================
-|                                                                                                 |
-|   1. Búsqueda en Vivo (Google Search):                                                          |
-|      - El Agente Investigador formula consultas estructuradas basadas en las rúbricas JSON       |
-|        (ej. "ENS categoría alta requisitos oficiales BOE") según país/sector del cliente.        |
-|                                                                                                 |
-|   2. Descarga y Almacenamiento Seguro (EvidenceSnapshotter):                                    |
-|      - Las evidencias oficiales localizadas (PDFs, HTMLs del gobierno) se descargan físicamente  |
-|        en local bajo `working/{client}/evidence_cache/` para evitar el "Link-Rot".              |
-|                                                                                                 |
-|   3. Juicio de No Alucinación (Cross-Examination):                                               |
-|      - Un Agente Forense lee de forma aislada el texto extraído del PDF local de la bóveda      |
-|        y verifica si el hallazgo reportado por el investigador es 100% verídico y exacto.        |
-|                                                                                                 |
-|   4. Evaluación Matemática Determinista (Python Puro):                                          |
-|      - El motor de Python lee la regla matemática del JSON (ej: `score >= 60.0`) y calcula el    |
-|        score final de madurez de forma exacta sin intervención de la IA, guardando el estado     |
-|        en `benchmarks_snapshot.json`.                                                            |
-|                                                                                                 |
-`-------------------------------------------------------------------------------------------------'
+```
+[ Framework Rubrics: engine_config/frameworks/*.json ]
+                         |
+                         v
++---------------------------------------------------------------------------------------+
+| 1. OSINT RESEARCH AGENT (Vertex AI / Google Search)                                   |
+| - Formulates queries from rubric query_template parameterized by client industry/geo  |
++---------------------------------------------------------------------------------------+
+                         |
+                         v (Download Binary Assets)
++---------------------------------------------------------------------------------------+
+| 2. LOCAL EVIDENCE SNAPSHOTTER (EvidenceSnapshotter)                                   |
+| - Downloads source PDFs/HTMLs to workspaces/<client>/evidence_cache/ (Anti Link-Rot)   |
++---------------------------------------------------------------------------------------+
+                         |
+                         v (Isolated Text Extract)
++---------------------------------------------------------------------------------------+
+| 3. FORENSIC CROSS-EXAMINATION AGENT (Adversarial Verifier)                            |
+| - Cross-checks extracted metric against local cached text to assert 100% fidelity    |
++---------------------------------------------------------------------------------------+
+                         |
+                         v (Extracted Metric: e.g., adoption = 68.5%)
++---------------------------------------------------------------------------------------+
+| 4. DETERMINISTIC PYTHON EVALUATOR (No-LLM Math Engine)                                 |
+| - Evaluates mathematical conditions (ThresholdMapping: condition="adoption >= 60.0")  |
+| - Computes exact score and serializes benchmarks_snapshot.json                        |
++---------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 2. Componentes Críticos del Sistema
+## 2. Hexagonal Subsystem Mapping
 
-La arquitectura RAGE está desacoplada en tres capas lógicas bajo el patrón hexagonal:
+The RAGE engine separates domain schemas, execution harnesses, and declarative rules:
 
-### A. Capa de Dominio (Esquemas Pydantic Estrictos)
-*   **Fichero:** `src/assessment_engine/domain/schemas/rubric.py`
-*   **Rol:** Define las clases de datos que estructuran las rúbricas matemáticas:
-    *   `FrameworkRubric`: El contenedor raíz de la norma regulatoria (ej: DORA, ENS, DAMA).
-    *   `RubricRule`: Las reglas de evaluación, incluyendo umbrales numéricos de aprobación (`ThresholdMapping`).
-    *   `IndustryBenchmarksSnapshot`: El estado final e inmutable de la evaluación de todas las torres, con URL de origen, rastro de evidencia local y estado de validación forense.
+### A. Domain Contracts (`src/assessment_engine/domain/schemas/rubric.py`)
+- `FrameworkRubric`: Root container declaring standard regulatory specifications (e.g., ENS Alta, DORA, DAMA-DMBOK).
+- `RubricRule`: Binds a technology tower to an OSINT query template, target evaluation variable, and threshold mapping rules.
+- `ThresholdMapping`: Mathematical condition mapping an extracted variable to an exact maturity score (e.g., condition: `"adoption >= 50.0"`, score: `4.0`).
 
-### B. Capa de Infraestructura (Ejecutor Asíncrono)
-*   **Fichero:** `src/assessment_engine/infrastructure/agentic_benchmarker.py`
-*   **Rol:** El motor core asíncrono (`AgenticRageBenchmarker`):
-    *   Gestiona las llamadas asíncronas a Vertex AI para los agentes de investigación y forense.
-    *   Utiliza `EvidenceSnapshotter` para descargar y persistir de forma aséptica las evidencias en tu disco duro local.
-    *   Lanza la evaluación cruzada (*Cross-Examination*) y aplica la lógica matemática de umbrales en Python puro.
+### B. Infrastructure Engine (`src/assessment_engine/infrastructure/agentic_benchmarker.py`)
+- `AgenticRageBenchmarker`: Asynchronous orchestrator coordinating Vertex AI search grounding, physical asset download, and cross-examination.
+- `EvidenceSnapshotter`: Downloads and content-hashes official PDF/HTML reference documents, isolating them in `workspaces/<client_id>/evidence_cache/` to eliminate network link-rot.
 
-### C. Capa Declarativa (Rúbricas JSON)
-*   **Ficheros:** `engine_config/frameworks/{ens_alta, google_dora, dama_dmbok}.json`
-*   **Rol:** Definiciones puramente declarativas que aíslan la lógica regulatoria del código de Python. Permite añadir nuevos estándares o ajustar umbrales numéricos sin modificar una sola línea de código fuente.
+### C. Declarative Regulatory Frameworks (`engine_config/frameworks/`)
+Isolated JSON profiles declaring analytical rules:
+- `ens_alta.json`: Spanish National Security Scheme (Esquema Nacional de Seguridad - High Category).
+- `google_dora.json`: EU Digital Operational Resilience Act.
+- `dama_dmbok.json`: Data Management Body of Knowledge.
 
 ---
 
-## 3. Mitigación de Riesgos y Resiliencia (Failsafe Layers)
+## 3. Resilience & Failsafe Controls
 
-La arquitectura incorpora tres capas de tolerancia a fallos extremas para asegurar el delivery comercial continuo:
+1. **Local Evidence Snapshotting:** Physical persistence of source documents ensures reproducibility during offline execution and prevents external web outages from interrupting compilation.
+2. **Deterministic Python Scoring:** LLMs are strictly forbidden from emitting final numerical scores. Numerical scores derive solely from Python AST evaluation over extracted metrics.
+3. **Graceful Fallback Handlers:** If external OSINT fails or rate limits trigger, the engine logs a warning, falls back to `default_score`, and flags the resulting blueprint for human review (`Needs Review`).
 
-1.  **Caché de Evidencias Local:** Si el sitio web oficial de la norma (ej: FNMT Ceres) se cae en tiempo de ejecución, el motor lee el archivo pre-descargado de la carpeta `evidence_cache/` para garantizar la resiliencia offline.
-2.  **Límite de Presupuesto (FinOps Circuit Breaker):** Integrado nativamente con `ApexSentinel`. Si las llamadas de búsqueda o validación de los agentes superan el umbral en USD configurado, el motor detiene la ejecución de forma segura antes de incurrir en costos elevados de API.
-3.  **Mecanismo de Caída Seguro (Graceful Fallback):** Si un agente de búsqueda no puede conectarse a internet o el servicio de OSINT falla por completo, el motor activa la rúbrica de reserva (`fallback`), elevando un aviso de advertencia (`Needs Review`) y permitiendo que el pipeline de generación del Word continúe sin bloquearse.
+---
+
+## 4. Architectural Invariants for AI Agents
+
+1. **Decoupled Scoring:** All scoring transitions must evaluate via `ThresholdMapping` condition parsing in Python; LLM prompts must never contain scoring assignment instructions.
+2. **Local Asset Retention:** Every external citation in `benchmarks_snapshot.json` must be backed by a physically cached binary in `evidence_cache/`.
+3. **Zero-Hallucination Isolation:** The research agent formulating queries and the forensic agent cross-examining evidence must execute in decoupled, non-overlapping prompt contexts.

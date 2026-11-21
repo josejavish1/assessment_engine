@@ -2,191 +2,105 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
-- ../../src/assessment_engine/domain/schemas/blueprint.py
-- ../../src/assessment_engine/domain/schemas/global_report.py
-- ../../src/assessment_engine/domain/schemas/commercial.py
-- ../../src/assessment_engine/domain/schemas/rubric.py
-- ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
-- ../../src/assessment_engine/infrastructure/contract_utils.py
-- ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
-- ../../src/assessment_engine/adapters/render_tower_blueprint.py
-- ../../src/assessment_engine/adapters/render_global_report_from_template.py
-- ../../src/assessment_engine/adapters/render_commercial_report.py
-- ../../src/assessment_engine/adapters/render_web_presentation.py
-last_verified_against: 2026-11-12
+- src/assessment_engine/domain/schemas/annex_synthesis.py
+- src/assessment_engine/domain/schemas/blueprint.py
+- src/assessment_engine/domain/schemas/global_report.py
+- src/assessment_engine/domain/schemas/commercial.py
+- src/assessment_engine/domain/schemas/rubric.py
+- src/assessment_engine/infrastructure/agentic_benchmarker.py
+- src/assessment_engine/infrastructure/contract_utils.py
+- src/assessment_engine/adapters/compilers/payload_to_ast.py
+- src/assessment_engine/adapters/render_tower_blueprint.py
+- src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py
+- src/assessment_engine/adapters/render_commercial_report.py
+- src/assessment_engine/adapters/compilers/docx_compiler.py
+enforce_on_source_changes: true
+review_paths_on_source_change:
+- docs/contracts/payload-render-boundaries.md
+- docs/contracts/artifact-contracts.md
+- docs/architecture/tower-pipeline.md
+- docs/architecture/global-commercial-pipelines.md
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: reference
 verification_mode: schema
+notes: Canonical technical specification of the structural boundaries between JSON payloads, Pydantic schemas, and OpenXML AST compilers.
 ---
-# Payload, schema and renderer boundaries
+# Payload, Schema, and Presentation Compiler Boundaries
 
-Este documento establece y delimita formalmente las fronteras técnicas y de responsabilidad entre:
+Canonical specification defining the architectural boundaries, enforcement rigors, and responsibilities separating structured JSON payloads, Pydantic domain schemas, and OpenXML Abstract Syntax Tree (AST) presentation compilers.
 
-1.  **Payloads JSON** que expresan la verdad estructurada;
-2.  **Esquemas Pydantic** que gobiernan y tipan esa verdad;
-3.  **Renderizadores** que convierten esa verdad en archivos de presentación (DOCX o HTML).
+---
 
-## Regla principal
+## 1. Foundational Boundary Law: Zero Business Logic in Presentation Layers
 
-Los módulos de renderizado e interfaces de presentación no constituyen fuentes de verdad del sistema. Su alcance operacional se limita estrictamente a:
+Presentation compilers (`payload_to_ast.py`, `docx_compiler.py`, `tomo_asis_ast_compiler.py`, `render_commercial_report.py`) are strictly layout and serialization engines. They are **never sources of business truth**:
 
--   Cargar el payload estructurado;
--   Validarlo, normalizarlo y asegurar su conformidad semántica;
--   Compilar y formatear los datos bajo reglas de diseño estético para el entregable final.
+```
+[ Pydantic Domain Schemas: schemas/*.py ]
+                     |
+                     v (Validates)
+[ Structured JSON Payload: workspaces/<client>/ ]
+                     |
+                     v (Ingested Read-Only)
++---------------------------------------------------------------------------------------+
+| DECLARATIVE AST COMPILERS: adapters/compilers/                                        |
+| 1. payload_to_ast.py               --> Transforms JSON to Typed Document AST nodes    |
+| 2. docx_compiler.py                 --> Serializes AST into OpenXML .docx binaries    |
+| 3. tomo_asis_ast_compiler.py        --> Direct OpenXML assembly for Tomo 1 deliverable|
++---------------------------------------------------------------------------------------+
+                     |
+                     v (Strict OpenXML Binary Output)
+[ Word Deliverables: Anexo_*.docx, Tomo_1_*.docx, Account_Action_Plan_*.docx ]
+```
 
-La lógica de negocio y la validación de interfaces deben vivir de forma desacoplada y precedente, en la definición de payloads y esquemas de validación.
+### Absolute Operational Invariants:
+1. **No Metric Mutation:** Compilers format pre-computed data. Recalculating scores, recomputing loss expectations, or modifying quantitative maturity bands (`score -> band`) within a compiler is strictly prohibited.
+2. **Upstream Resolution:** All qualitative maturity band translations must execute deterministically upstream using `maturity_band.py` and `global_maturity_policy.py`.
+3. **Format Monism:** Presentation compilers compile exclusively to Microsoft Word (`.docx`). Generation of PDF or ephemeral web presentations is disabled.
 
-## Esquemas de Rigor de Validación (*Enforcement*)
+---
 
-El rigor en la validación de contratos varía según el canal de renderizado y el estado de transición del componente. Se definen tres niveles de tolerancia operativa:
+## 2. Compiler Boundary & Schema Mapping Matrix
 
-| Nivel | Comportamiento real | Casos de uso |
-|---|---|---|
-| **Estricto** | Invocación obligatoria de `model_validate(...)` o similar; interrupción inmediata del flujo (*transaction abort*) ante inconsistencias sintácticas o de tipado. | `render_tower_blueprint.py`, `render_global_report_from_template.py` |
-| **Tolerante** | Validación parcial mediante `model_construct(...)` con registro de desviaciones (*warning logs*), permitiendo la continuidad transitoria para compatibilidad con datos heredados. | Rutas heredadas o de compatibilidad explícita aún no endurecidas. |
-| **Implícito** | Consumo y mapeo dinámico del payload JSON sin instanciación formal de esquemas Pydantic en la capa de presentación. | `render_web_presentation.py` |
-
-Por consiguiente, el esquema Pydantic representa la definición de interfaz técnica objetivo, si bien ciertos presentadores admiten estados intermedios por requerimientos de retrocompatibilidad.
-
-## Mapa principal de acoplamiento
-
-| Capa | Payload | Esquema | Consumidor principal | Salida de presentación |
+| Pipeline Channel | Canonical JSON Payload | Pydantic Schema Model | Target Compiler Adapter | Output Binary Deliverable |
 |---|---|---|---|---|
-| Auditoría RAGE | `benchmarks_snapshot.json` | `IndustryBenchmarksSnapshot` | `run_tower_blueprint_engine.py`, web | Evidencias y marcas de madurez verificadas |
-| Torre ejecutiva | `approved_annex_<tower>.template_payload.json` | `AnnexPayload` | `render_tower_annex_from_template.py` | `annex_<tower>_<client>_final.docx` |
-| Torre estratégica | `blueprint_<tower>_payload.json` | `BlueprintPayload` | `render_tower_blueprint.py` | `Blueprint_Transformacion_<TOWER>_<client>.docx` |
-| Global ejecutiva | `global_report_payload.json` | `GlobalReportPayload` | `render_global_report_from_template.py` | `Informe_Ejecutivo_Consolidado_<client>.docx` |
-| Comercial interna | `commercial_report_payload.json` | `CommercialPayload` | `render_commercial_report.py` | `Account_Action_Plan_<client>.docx` |
-| Dashboard web | `global_report_payload.json` + `benchmarks_snapshot.json` + blueprints | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
+| **Tower Technical Annex** | `approved_annex_<tower>.template_payload.json` | `AnnexPayload` | `payload_to_ast.py` + `docx_compiler.py` | `Anexo_<tower>_ASIS_<client>.docx` |
+| **Tower Transformation Blueprint** | `blueprint_<tower>_payload.json` | `BlueprintPayload` | `render_tower_blueprint.py` | `Blueprint_Transformacion_<tower>_<client>.docx` |
+| **Global Executive Diagnostic** | `global_report_payload.json` | `GlobalReportPayload` | `tomo_asis_ast_compiler.py` | `Tomo_1_Diagnostico_ASIS_<client>.docx` |
+| **Commercial Strategy Plan** | `commercial_report_payload.json` | `CommercialReportPayload` | `render_commercial_report.py` | `Account_Action_Plan_<client>.docx` |
+| **Empirical Benchmarks** | `benchmarks_snapshot.json` | `IndustryBenchmarksSnapshot`| Ingested by `run_tower_blueprint_engine.py` | Grounding evidence in blueprints |
 
-## Contratos de interfaz por payload
+---
 
-### 1. Annex payload
+## 3. Separation of Responsibilities
 
--   **Archivo:** `approved_annex_<tower>.template_payload.json`
--   **Esquema:** `AnnexPayload`
--   **Render principal:** `render_tower_annex_from_template.py`
+### Permitted in Payloads & Domain Schemas:
+- Structural definition of fields, data types, and enum cardinality.
+- Pydantic validation rules (`@field_validator`, `@model_validator`).
+- Calculation of quantitative averages, risk distributions, and initiative prioritization.
+- Ingestion of client profile variables and provenance citations.
 
-Características de la frontera:
--   El sintetizador del anexo consume un subconjunto estructurado (*handover*) derivado del blueprint, el cual incluye puntuaciones cuantitativas, riesgos, directrices de inversión e iniciativas clave.
--   Métricas globales, alineaciones de madurez, brechas y propuestas críticas se computan determinísticamente a partir del blueprint antes del renderizado.
--   El renderizador carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex", mode="strict")`.
--   La compilación OpenXML del anexo emplea por defecto la variante de diseño semántico, dejando el modo de diseño heredado solo como opción de compatibilidad manual.
--   El linter interno aplica `normalize_annex_payload(...)` para uniformizar estructuras de datos.
+### Permitted in Presentation Compilers:
+- Layout construction: page margins, header/footer insertion, section breaks, and table grid layouts.
+- Typography: font styling, text sizing, bullet point formatting, and callout box borders.
+- Strict Hyphen Invariant: Enforcement of short hyphens (ASCII 0x2D), blocking em-dashes and en-dashes.
+- Image embedding: insertion of pre-generated vector radar chart binaries (`pillar_radar_chart.generated.png`).
 
-Conclusión:
--   `AnnexPayload` rige el contrato estructural estricto de la etapa.
--   La síntesis asistida por LLM aporta encuadre y lenguaje directivo, pero tiene estrictamente prohibido redefinir los hechos lógicos y técnicos heredados de la capa de blueprint.
--   El renderizador rechaza de forma determinista payloads inválidos.
+### Strictly Prohibited in Presentation Compilers:
+- Providing default fallbacks for missing business-critical metrics.
+- Re-scoring or re-weighting pillars.
+- Inventing new transformation initiatives omitted by upstream blueprints.
 
-### 2. Blueprint payload
+---
 
--   **Archivo:** `blueprint_<tower>_payload.json`
--   **Esquema:** `BlueprintPayload`
--   **Render principal:** `render_tower_blueprint.py`
+## 4. Contract Violation & Quality Gate Oracles
 
-Características de la frontera:
--   El renderizador carga el JSON y aplica la función `normalize_blueprint_payload_dict(...)`.
--   Posteriormente, valida la integridad del payload contra el esquema `BlueprintPayload.model_validate(...)`.
--   La presentación puede enriquecerse agregando datos de contexto desde `client_intelligence.json` y `approved_annex_<tower>.template_payload.json`.
+The boundary between payloads and compilers is enforced automatically:
 
-Conclusión:
--   El modelo de datos del blueprint tecnológico se consolida como la fuente de verdad primaria.
--   La agregación de contexto adicional asiste al formateo, pero en ningún caso altera la definición canónica del blueprint.
-
-### 3. Global report payload
-
--   **Archivo:** `global_report_payload.json`
--   **Esquema:** `GlobalReportPayload`
--   **Render principal:** `render_global_report_from_template.py`
-
-Características de la frontera:
--   Validación estricta sin tolerancia de fallos a través de `GlobalReportPayload.model_validate(...)`.
--   Consumo de secciones de síntesis previamente consolidadas y refinadas (`executive_summary`, `burning_platform`, `tower_bottom_lines`, `target_vision`, `execution_roadmap`, `executive_decisions`).
-
-Conclusión:
--   Representa la compuerta de calidad de mayor rigidez del pipeline.
--   El renderizador procesa el payload presumiendo coherencia directiva absoluta previa.
-
-### 4. Commercial payload
-
--   **Archivo:** `commercial_report_payload.json`
--   **Esquema:** `CommercialPayload`
--   **Render principal:** `render_commercial_report.py`
-
-Características de la frontera:
--   Carga estricta mediante `robust_load_payload(..., CommercialPayload, "Commercial Account Plan", mode="strict")`.
--   Estructuración semántica del plan de cuenta (`commercial_summary`, `gtm_strategy`, `stakeholder_matrix`, `opportunities_pipeline`, `proactive_proposals`, `intelligence_dossier`).
-
-Conclusión:
--   El renderizador comercial opera bajo un contrato explícito e inmutable, limitándose a proyectar la estrategia de cuenta consolidada en el payload.
-
-### 5. Dashboard web
-
--   **Entrada principal:** `global_report_payload.json`
--   **Entrada secundaria:** `blueprint_<tower>_payload.json` por torre activa
--   **Render principal:** `render_web_presentation.py`
-
-Características de la frontera:
--   No realiza validación estructural de esquemas mediante Pydantic en tiempo de renderizado.
--   Carece actualmente de una clase Pydantic de salida dedicada en la capa de renderizado.
--   Compone dinámicamente un grafo de datos intermedio (`nexus_data`) que amalgama la estrategia global, el mapa térmico de madurez, el cronograma estratégico de ejecución y la telemetría táctica de las torres.
-
-Conclusión:
--   La capa web constituye una vista derivada compuesta.
--   Su interfaz técnica permanece implícita en la lógica de compilación del renderizador; debe considerarse estrictamente como capa de presentación agregada y no como origen de datos.
-
-## Matriz de Gobierno de Renders
-
-| Renderizador | Payload rector | Directriz técnica |
-|---|---|---|
-| `render_tower_annex_from_template.py` | `AnnexPayload` | Formatea el anexo ejecutivo; admite normalizaciones semánticas no destructivas. |
-| `render_tower_blueprint.py` | `BlueprintPayload` | Proyecta el blueprint canónico; admite agregación pasiva de contexto. |
-| `render_global_report_from_template.py` | `GlobalReportPayload` | Validación de esquema al 100% libre de fallos (*strict parsing*). |
-| `render_commercial_report.py` | `CommercialPayload` | Consume la síntesis del plan de cuenta cerrado sin alteración lógica. |
-| `render_web_presentation.py` | Vista compuesta (Global + Blueprints) | Agregador dinámico de vistas; prohibido su uso como fuente de verdad. |
-
-## Reglas de Asignación de Responsabilidades
-
-### Competencias del Payload/Esquema
--   Definición estructural del contenido y cardinalidad de datos.
--   Tipado estricto y nombres de propiedades de transporte.
--   Gobernanza de metadatos de linaje, firma y versión.
-
-### Competencias del Renderizador
--   Diseño estético y de interfaz de usuario (*layout*, espaciados).
--   Estructuración tipográfica (bloques, viñetas, tablas de datos).
--   Ensamblado y compilación de binarios (OpenXML, HTML semántico).
-
-### Decisiones Prohibidas en el Renderizador
--   Determinación de lógicas cuantitativas o algoritmos de puntuación (*scoring*).
--   Resolución de políticas de madurez (`score -> band`).
--   Significado conceptual de los campos o interfaces de dominio.
-
-La resolución de métricas y traducción semántica (`score -> band`) debe ocurrir de forma determinista previa a la conformación del payload, consumiendo la política de madurez compartida de la plataforma. Si un renderizador detecta una propiedad faltante, debe resolverla invocando las utilidades compartidas del dominio, prohibiéndose la redefinición lógica local.
-
-## Desviaciones y Desafíos de Alineación
-
-1.  **Persistencia de normalizaciones transitorias:** Ciertos consumidores finales aplican transformaciones estructurales para subsanar vacíos o inconsistencias de datos heredados.
-2.  **Ausencia de validador de esquema explícito en capa web:** `render_web_presentation.py` procesa los datos basándose en contratos implícitos, careciendo de un esquema de salida validado por un modelo formal.
-3.  **Transición de Arquitectura:** El soporte residual de rutas de compatibilidad tolerante convive con la arquitectura estrictamente tipada del motor modernizado.
-
-Estas tensiones no invalidan el diseño canónico, pero constituyen el backlog de refactorización necesario para blindar completamente la frontera frente a capas estéticas.
-
-## Conclusiones de Auditoría
-
-1.  Los esquemas `AnnexPayload`, `BlueprintPayload`, `GlobalReportPayload` y `CommercialPayload` se encuentran definidos y plenamente alineados con los payloads descritos.
-2.  La cobertura de pruebas unitarias (`tests/integration/test_validate_contracts_schemas.py` y `tests/test_payload_validation.py`) certifica la correspondencia estructural de las interfaces técnicas.
-3.  La suite de humo (*smoke-tests*) valida exitosamente la compilación y consistencia lógica de los artefactos.
-
-## Protocolo ante Cambios en Interfaces
-
-Ante cualquier modificación de contratos o interfaces estéticas:
-1.  **Esquema Primero (Contract-First):** Modificar y validar la clase Pydantic correspondiente en `src/assessment_engine/domain/schemas/`.
-2.  **Origen (Productor):** Actualizar el script de preparación u orquestador que produce el payload de datos.
-3.  **Destino (Consumidor):** Adaptar y certificar las rutinas de compilación en el renderizador.
-4.  **Consistencia de Gobierno:** Actualizar este documento y la traza correspondiente en `docs/documentation-map.yaml`.
+1. **Pre-Render Validation:** Compilers execute strict schema verification (`model_validate()`) prior to AST generation. Payloads failing schema validation trigger immediate transaction aborts.
+2. **Deterministic Auto-Healing:** Pre-commit and CI gates execute `validate_contracts_schemas.py --autofix` to verify that Markdown contract tables perfectly match physical Pydantic model attributes.
+3. **AST Unit Testing:** Tests in `tests/integration/test_validate_contracts_schemas.py` assert structural correspondence between schemas and AST compiler classes.

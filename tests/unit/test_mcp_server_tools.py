@@ -17,6 +17,7 @@ from assessment_engine.domain.schemas.blueprint import BlueprintPayload
 
 # --- HELPER & INSPECTOR TESTS ---
 
+
 def test_read_json_file(tmp_path: Path):
     """Verify _read_json_file correctly handles UTF-8 BOM and standard JSON."""
     file = tmp_path / "data.json"
@@ -27,6 +28,7 @@ def test_read_json_file(tmp_path: Path):
 
 def test_summarize_validation_error():
     """Verify _summarize_validation_error extracts hierarchical error locations."""
+
     class DummyModel(BaseModel):
         name: str
         count: int = Field(gt=0)
@@ -43,20 +45,26 @@ def test_inspect_payload_artifact_missing_and_corrupt(tmp_path: Path):
     """Verify _inspect_payload_artifact reports missing, load error, and invalid schema."""
     # 1. Missing
     missing_path = tmp_path / "nonexistent.json"
-    state = mcp_mod._inspect_payload_artifact(missing_path, BlueprintPayload, "Blueprint")
+    state = mcp_mod._inspect_payload_artifact(
+        missing_path, BlueprintPayload, "Blueprint"
+    )
     assert state["status"] == "missing"
 
     # 2. Corrupt JSON
     corrupt_path = tmp_path / "corrupt.json"
     corrupt_path.write_text("{invalid_json", encoding="utf-8")
-    state = mcp_mod._inspect_payload_artifact(corrupt_path, BlueprintPayload, "Blueprint")
+    state = mcp_mod._inspect_payload_artifact(
+        corrupt_path, BlueprintPayload, "Blueprint"
+    )
     assert state["status"] == "error"
     assert "could not be loaded" in state["message"]
 
     # 3. Invalid schema
     invalid_path = tmp_path / "invalid.json"
     invalid_path.write_text(json.dumps({"invalid_key": "val"}), encoding="utf-8")
-    state = mcp_mod._inspect_payload_artifact(invalid_path, BlueprintPayload, "Blueprint")
+    state = mcp_mod._inspect_payload_artifact(
+        invalid_path, BlueprintPayload, "Blueprint"
+    )
     assert state["status"] == "invalid"
     assert "validation_errors" in state
 
@@ -66,14 +74,18 @@ def test_inspect_payload_artifact_valid_blueprint_and_annex():
     bp_fixture = Path("tests/test_data/blueprint_t2_payload.json")
     assert bp_fixture.exists()
 
-    bp_state = mcp_mod._inspect_payload_artifact(bp_fixture, BlueprintPayload, "Blueprint")
+    bp_state = mcp_mod._inspect_payload_artifact(
+        bp_fixture, BlueprintPayload, "Blueprint"
+    )
     assert bp_state["status"] == "valid"
     assert bp_state["tower_code"] == "T2"
 
     annex_fixture = Path("tests/test_data/approved_annex_t2.template_payload.json")
     assert annex_fixture.exists()
 
-    annex_state = mcp_mod._inspect_payload_artifact(annex_fixture, AnnexPayload, "Annex")
+    annex_state = mcp_mod._inspect_payload_artifact(
+        annex_fixture, AnnexPayload, "Annex"
+    )
     assert annex_state["status"] == "valid"
     assert annex_state["tower_code"] == "T2"
 
@@ -94,25 +106,45 @@ def test_inspect_docx_artifact(tmp_path: Path):
 
 def test_canonical_overall_status_matrix():
     """Verify status calculation across permutations of valid, invalid, and missing."""
-    assert mcp_mod._canonical_overall_status({
-        "blueprint_payload": {"status": "valid"},
-        "annex_payload": {"status": "valid"},
-    }) == "complete"
+    assert (
+        mcp_mod._canonical_overall_status(
+            {
+                "blueprint_payload": {"status": "valid"},
+                "annex_payload": {"status": "valid"},
+            }
+        )
+        == "complete"
+    )
 
-    assert mcp_mod._canonical_overall_status({
-        "blueprint_payload": {"status": "invalid"},
-        "annex_payload": {"status": "valid"},
-    }) == "invalid"
+    assert (
+        mcp_mod._canonical_overall_status(
+            {
+                "blueprint_payload": {"status": "invalid"},
+                "annex_payload": {"status": "valid"},
+            }
+        )
+        == "invalid"
+    )
 
-    assert mcp_mod._canonical_overall_status({
-        "blueprint_payload": {"status": "valid"},
-        "annex_payload": {"status": "missing"},
-    }) == "partial"
+    assert (
+        mcp_mod._canonical_overall_status(
+            {
+                "blueprint_payload": {"status": "valid"},
+                "annex_payload": {"status": "missing"},
+            }
+        )
+        == "partial"
+    )
 
-    assert mcp_mod._canonical_overall_status({
-        "blueprint_payload": {"status": "missing"},
-        "annex_payload": {"status": "missing"},
-    }) == "missing"
+    assert (
+        mcp_mod._canonical_overall_status(
+            {
+                "blueprint_payload": {"status": "missing"},
+                "annex_payload": {"status": "missing"},
+            }
+        )
+        == "missing"
+    )
 
 
 def test_inspect_legacy_state(tmp_path: Path):
@@ -125,7 +157,9 @@ def test_inspect_legacy_state(tmp_path: Path):
 
     # 2. Present risks
     (case_dir / "approved_risks.generated.json").write_text(
-        json.dumps({"status": "approved", "_approval_metadata": {"reviewer": "SecLead"}}),
+        json.dumps(
+            {"status": "approved", "_approval_metadata": {"reviewer": "SecLead"}}
+        ),
         encoding="utf-8",
     )
 
@@ -152,36 +186,59 @@ def test_run_script_success_and_failure():
 
 # --- MCP TOOL WRAPPER TESTS ---
 
+
 def test_build_tower_payload_tool():
     """Verify build_tower_payload MCP tool formats output."""
-    with patch("assessment_engine.mcp_server.execute_tower_build", new_callable=AsyncMock) as mock_run:
+    with patch(
+        "assessment_engine.mcp_server.execute_tower_build", new_callable=AsyncMock
+    ) as mock_run:
         mock_run.return_value = "Synthesizer output OK"
-        res = mcp_mod.build_tower_payload("input.json", "output.json", "Client Acme", "short")
-        assert "Payload construido con éxito" in res or "Payload successfully built" in res
+        res = mcp_mod.build_tower_payload(
+            "input.json", "output.json", "Client Acme", "short"
+        )
+        assert (
+            "Payload construido con éxito" in res or "Payload successfully built" in res
+        )
         assert "Synthesizer output OK" in res
 
 
-def test_render_tower_docx_tool():
+def test_render_tower_docx_tool(tmp_path: Path):
     """Verify render_tower_docx MCP tool delegates to renderer."""
-    with patch("assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock) as mock_render:
-        mock_render.return_value = "Rendered OK"
-        res = mcp_mod.render_tower_docx("payload.json", "template.docx", "out.docx")
-        assert "Documento de Torre renderizado con éxito" in res or "Tower Document successfully rendered" in res
+    dummy_out = tmp_path / "out.docx"
+    dummy_out.write_bytes(b"dummy docx bytes")
+    with patch(
+        "assessment_engine.adapters.compilers.payload_to_ast.compile_asis_docx_via_ast",
+        return_value=dummy_out,
+    ):
+        res = mcp_mod.render_tower_docx("payload.json", "template.docx", str(dummy_out))
+        assert (
+            "Tower Document successfully rendered" in res
+            or "Documento de Torre renderizado" in res
+        )
 
 
 def test_generate_radar_chart_tool():
     """Verify generate_radar_chart MCP tool calls chart generator."""
     with patch("assessment_engine.mcp_server._run_script", return_value="Chart OK"):
         res = mcp_mod.generate_radar_chart("payload.json")
-        assert "Gráfico generado con éxito" in res or "Chart successfully generated" in res
+        assert (
+            "Gráfico generado con éxito" in res or "Chart successfully generated" in res
+        )
 
 
 def test_render_commercial_docx_tool():
     """Verify render_commercial_docx MCP tool delegates to commercial reporter."""
-    with patch("assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock) as mock_render:
+    with patch(
+        "assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock
+    ) as mock_render:
         mock_render.return_value = "Commercial OK"
-        res = mcp_mod.render_commercial_docx("payload.json", "template.docx", "out.docx")
-        assert "Commercial report successfully rendered" in res or "Commercial report rendered" in res
+        res = mcp_mod.render_commercial_docx(
+            "payload.json", "template.docx", "out.docx"
+        )
+        assert (
+            "Commercial report successfully rendered" in res
+            or "Commercial report rendered" in res
+        )
 
 
 def test_get_tower_state_nonexistent_and_valid(tmp_path: Path):
@@ -205,12 +262,18 @@ async def test_start_and_check_plan_generation_flow(tmp_path: Path):
     """Verify async plan generation dispatch and status polling."""
     plan_dir = tmp_path / "generated_plan"
     plan_dir.mkdir()
-    (plan_dir / "plan.json").write_text(json.dumps({"title": "Strategic Plan"}), encoding="utf-8")
+    (plan_dir / "plan.json").write_text(
+        json.dumps({"title": "Strategic Plan"}), encoding="utf-8"
+    )
 
     orchestrator_log = f'{{"message": "Plan generated in {plan_dir}"}}\n'
 
-    with patch("assessment_engine.mcp_server._run_script", return_value=orchestrator_log):
-        start_res = await mcp_mod.start_plan_generation("Generar plan para Banco Santander")
+    with patch(
+        "assessment_engine.mcp_server._run_script", return_value=orchestrator_log
+    ):
+        start_res = await mcp_mod.start_plan_generation(
+            "Generar plan para Banco Santander"
+        )
         start_data = json.loads(start_res)
         job_id = start_data["job_id"]
         assert start_data["status"] == "started"
@@ -260,7 +323,9 @@ def test_check_action_gate_scenarios(tmp_path: Path):
     assert "error" in res
 
     # 3. Active
-    gate_file.write_text(json.dumps({"diagnosis": {"blast_radius": ["file.py"]}}), encoding="utf-8")
+    gate_file.write_text(
+        json.dumps({"diagnosis": {"blast_radius": ["file.py"]}}), encoding="utf-8"
+    )
     res = json.loads(mcp_mod.check_action_gate(str(tmp_path)))
     assert res["action_gate_active"] is True
     assert res["data"]["diagnosis"]["blast_radius"] == ["file.py"]
@@ -283,7 +348,9 @@ def test_authorize_action_gate_flow(tmp_path: Path):
             "proposed_cure": "Apply camelCase conversion",
         },
     }
-    (tmp_path / "reconciliation_summary.json").write_text(json.dumps(summary_data), encoding="utf-8")
+    (tmp_path / "reconciliation_summary.json").write_text(
+        json.dumps(summary_data), encoding="utf-8"
+    )
 
     plan_data = {
         "alternatives": [
@@ -329,3 +396,46 @@ def test_abort_and_revert_tool():
         res_fail = json.loads(mcp_mod.abort_and_revert())
         assert res_fail["success"] is False
         assert "Error reverting" in res_fail["message"]
+
+
+def test_register_economic_profile_tool(tmp_path: Path):
+    """Verify register_economic_profile tool validates and persists tenant profile."""
+    import shutil
+
+    from assessment_engine.infrastructure.runtime_paths import resolve_client_dir
+
+    client_name = "MCP Test Client"
+    slug = "mcp_test_client"
+    payload = {
+        "currency": "GBP",
+        "country_code": "GB",
+        "hourly_rates": {
+            "architect": 140.0,
+            "expert": 110.0,
+        },
+        "margins": {
+            "consulting": 0.50,
+        },
+        "country_rate_multiplier": 1.15,
+        "disruption_cost_per_hour": 9000.0,
+    }
+    try:
+        raw_res = mcp_mod.register_economic_profile(client_name, payload)
+        res = json.loads(raw_res)
+        assert res["success"] is True
+        assert res["profile"]["currency"] == "GBP"
+        assert res["profile"]["country_code"] == "GB"
+
+        client_dir = resolve_client_dir(slug)
+        assert (client_dir / "tenant_economic_profile.json").exists()
+
+        # Test invalid payload path
+        fail_res = json.loads(
+            mcp_mod.register_economic_profile(client_name, {"currency": "FAKE"})
+        )
+        assert fail_res["success"] is False
+        assert "Invalid economic payload" in fail_res["error"]
+    finally:
+        client_dir = resolve_client_dir(slug)
+        if client_dir.exists():
+            shutil.rmtree(client_dir, ignore_errors=True)

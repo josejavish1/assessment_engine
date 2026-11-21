@@ -16,6 +16,7 @@ from assessment_engine.infrastructure.client_intelligence import (
 from assessment_engine.infrastructure.runtime_paths import (
     ROOT,
     resolve_case_dir,
+    resolve_client_dir,
     resolve_client_intelligence_path,
 )
 from assessment_engine.infrastructure.text_utils import normalize_tower_name, slugify
@@ -47,8 +48,10 @@ def read_docx_text(path: Path) -> str:
     """
     with ZipFile(path) as archive:
         xml = archive.read("word/document.xml").decode("utf-8", errors="ignore")
+    xml = re.sub(r"</w:p>", "\n\n", xml)
     text = re.sub(r"<[^>]+>", " ", xml)
-    return re.sub(r"\s+", " ", text).strip()
+    lines = [re.sub(r"[ \t]+", " ", line).strip() for line in text.split("\n")]
+    return "\n".join(line for line in lines if line)
 
 
 def read_rtf_text(path: Path) -> str:
@@ -258,11 +261,14 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 }
             )
 
-    answers = MissingDataCircuitBreaker.inspect_and_filter_kpi_responses(
-        tower_id=args.tower,
-        expected_kpis=expected_kpis,
-        parsed_scores=parsed_scores,
-    )
+    if not parsed_scores:
+        answers: list[dict[str, Any]] = []
+    else:
+        answers = MissingDataCircuitBreaker.inspect_and_filter_kpi_responses(
+            tower_id=args.tower,
+            expected_kpis=expected_kpis,
+            parsed_scores=parsed_scores,
+        )
     for ans in answers:
         qid = ans["question_id"]
         ans["question_text"] = question_lookup.get(
@@ -299,7 +305,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
 
             logger.debug(f"[Fallback] Handled exception: {ex}")
 
-    storage_dir = Path(f"working/{client_slug}")
+    storage_dir = resolve_client_dir(client_slug)
     vault_path = storage_dir / "evidence_vault.json"
     tree_path = storage_dir / "raptor_tree.json"
 
@@ -323,8 +329,11 @@ def build_case_input(args: argparse.Namespace) -> dict:
             logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
 
     if not context_summary and context_text:
+        fragments = [p.strip() for p in re.split(r"\n+", context_text) if len(p.strip()) >= 20]
+        if not fragments:
+            fragments = [context_text]
         context_summary = EpistemicContextRouter.filter_context_for_tower(
-            args.tower, [context_text], max_chars=35000
+            args.tower, fragments, max_chars=35000
         )
 
     if not context_summary and tree_path.exists():
@@ -341,6 +350,9 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 )
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo raptor_tree: {ex}")
+
+    if not context_summary and context_text:
+        context_summary = context_text[:35000].strip()
     client_context = (
         build_client_context_packet(intel, tower_id=args.tower) if intel else {}
     )
@@ -351,8 +363,8 @@ def build_case_input(args: argparse.Namespace) -> dict:
         "date": datetime.now(timezone.utc).date().isoformat(),
         "assessment_mode": "Fast Assessment",
         "validation_state": "Exploratoria",
-        "language": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "es",
-        "doc_lang": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "es",
+        "language": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "en",
+        "doc_lang": intel.get("metadata", {}).get("lang") or intel.get("profile", {}).get("language") or "en",
         "tower_id": args.tower,
         "tower_name": normalize_tower_name(tower_definition["tower_name"]),
         "tower_purpose": tower_definition["purpose"],

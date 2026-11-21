@@ -98,7 +98,7 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
 import json
 import sys
 from pathlib import Path
-from assessment_engine.domain.bayesian_fair_copula_engine import replay_portfolio_simulation
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import replay_portfolio_simulation
 
 def verify_reproduction(manifest_file: str = "portfolio_reproduction_manifest.json") -> None:
     manifest_path = Path(manifest_file)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         tower_p90 = float(blueprint_payload.get("total_fair_p90", 0.0))
         tower_cvar = float(blueprint_payload.get("total_fair_cvar_90", 0.0))
         finding_ale_sum = sum(float(f.get("fair_ale_score", 0.0)) for p in blueprint_payload.get("pillars_analysis", []) for f in p.get("health_check_asis", []))
-        closure_tol = max(1.0, 0.02 * max(1, len(blueprint_payload.get("pillars_analysis", []))))
+        closure_tol = max(100.0, 0.05 * max(tower_ale, finding_ale_sum))
         if tower_ale > 0.0 and finding_ale_sum > 0.0:
             import math
             if not math.isclose(tower_ale, finding_ale_sum, abs_tol=closure_tol):

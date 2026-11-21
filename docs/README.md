@@ -2,10 +2,10 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../docs/documentation-map.yaml
-- ../src/assessment_engine/application/tools/validate_documentation_governance.py
-- ../.github/workflows/quality.yml
-last_verified_against: 2026-11-12
+- docs/documentation-map.yaml
+- src/assessment_engine/application/tools/validate_documentation_governance.py
+- .github/workflows/quality.yml
+last_verified_against: 2026-11-21
 applies_to:
 - repository
 doc_type: canonical
@@ -13,62 +13,95 @@ diataxis: explanation
 verification_mode: editorial
 notes: Documentation directory index and map overview.
 ---
-# Mapa maestro de documentación
+# Documentation Master Index
 
-Este directorio es la **entrada principal** para entender, navegar y mantener la documentación técnica de `assessment-engine`.
-
-Su propósito es orientar al lector hacia la sección adecuada de la base de conocimiento y mantener la visibilidad sobre cuáles piezas describen el estado operativo actual, cuáles son guías de mantenimiento operativo y cuáles representan contratos o arquitectura.
+This directory represents the **epistemic knowledge graph and canonical specification layer** of `assessment-engine`. It serves exclusively as the deterministic retrieval substrate for autonomous AI agents and execution runtimes.
 
 ---
 
-## 1. Jerarquía de verdad
+## 1. Single Source of Truth (SSOT) Axiomatic Hierarchy
 
-El repositorio opera bajo una estricta jerarquía de verdad de cuatro niveles para resolver contradicciones:
+When resolving epistemic dissonance, schema drift, or behavioral ambiguity across the codebase, agents MUST evaluate authority according to the strict total order:
 
-1.  **Código ejecutable:** Esquemas de Pydantic, suites de pytest, flujos de GitHub Actions y configuración física.
-2.  **Documentación canónica:** Contratos y especificaciones conceptuales alojados bajo `docs/` y el directorio raíz.
-3.  **Referencia derivada:** Inventarios autogenerados o reportes de análisis intermedios.
-4.  **Adaptadores de contexto:** Ficheros específicos de personalización para agentes de IA externos.
+$$\text{Code (L0)} \succ \text{Contracts (L1)} \succ \text{Architecture (L1)} \succ \text{Operations (L2)} \succ \text{Audits/Reference (L3)} \succ \text{Adapters (L4)}$$
 
-Si un documento narrativo contradice el comportamiento del código o de los contratos, **manda el repositorio ejecutable**.
-
----
-
-## 2. Mapa de navegación del árbol documental
-
-| Necesidad del Lector | Documento de Entrada Recomendado |
-|---|---|
-| Ubicar las políticas y reglas de calidad documental | [`ai/documentation-governance.md`](ai/documentation-governance.md) |
-| Comprender la arquitectura hexagonal a alto nivel | [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) |
-| Consultar especificaciones y topologías detalladas | [`architecture/README.md`](architecture/README.md) |
-| Consultar runbooks de ejecución y mantenimiento | [`operations/README.md`](operations/README.md) |
-| Revisar contratos de payload y de entrada de datos | [`contracts/artifact-contracts.md`](contracts/artifact-contracts.md) |
-| Ver la auditoría y traza de cambios de la plataforma | [`documentation_audit.md`](documentation_audit.md) |
-| Revisar el inventario de gobernanza máquina-legible | [`documentation-map.yaml`](documentation-map.yaml) |
+| Tier | Layer Classification | Concrete Artifacts | Epistemic Invariant |
+|---|---|---|---|
+| **L0** | Executable Runtime | `src/assessment_engine/domain/schemas/`, pytest suites, CI workflows | Immutable ground truth; overrides all prose and derived documentation. |
+| **L1** | Canonical Specifications | `docs/contracts/`, `docs/architecture/`, `docs/SYSTEM_ARCHITECTURE.md` | Formal design invariants, payload contracts, and system topology. |
+| **L2** | Operational Runbooks | `docs/operations/` | Deterministic CLI recipes, execution sequences, and recovery procedures. |
+| **L3** | Reference & Audits | `docs/reference/`, `docs/audits/` | Generated catalogs, forensic audit results, and historical certificates. |
+| **L4** | Agent Operational Adapters | `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` | Model-specific context injection limits; strictly prohibited from defining new truth. |
 
 ---
 
-## 3. Tipos documentales declarados
+## 2. Deterministic Subtree Routing Graph
 
-*   **`canonical`:** Describe el comportamiento, la arquitectura, el modelo de datos o las reglas oficiales del sistema.
-*   **`operational`:** Guías de trabajo paso a paso, manuales de instalación o runbooks de recuperación ante fallos.
-*   **`reference_generated`:** Inventarios derivados, listados autogenerados por el linter o reportes de métricas.
+Autonomous agents navigating this repository MUST route context retrieval according to the following directed mapping:
 
----
-
-## 4. Estado de gobernanza actual
-
-La integridad y alineación del corpus se mantienen mediante un **sistema integrado de conciliación y validación continua**:
-
-*   **Sincronización de Esquemas:** Cada confirmación (commit) verifica que los esquemas de datos del código de Python coincidan de forma idéntica con las especificaciones técnicas en las tablas Markdown de los contratos.
-*   **Conciliación Pre-commit:** Al ejecutar `git commit` de forma local, el validador formatea y reescribe de manera automática las tablas Markdown que presenten desviaciones antes de consolidar el cambio.
-*   **Validación Continua en CI/CD:** GitHub Actions ejecuta un flujo automatizado de calidad (`quality.yml`) para verificar la consistencia del código, ejecutar análisis estáticos y certificar el estado del repositorio.
+| Target Domain | Canonical Entrypoint | Invariant Scope | Primary Ground Truth Source |
+|---|---|---|---|
+| **System Architecture** | [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) | High-level data pipelines, hexagonal topology, execution boundaries | `src/assessment_engine/application/`, `src/assessment_engine/mcp_server.py` |
+| **Component Architecture** | [`architecture/README.md`](architecture/README.md) | Single-tower flows, RAGE engine, epistemic graphs, policy engine | `src/assessment_engine/domain/`, `src/assessment_engine/infrastructure/` |
+| **Data Contracts & Payloads** | [`contracts/artifact-contracts.md`](contracts/artifact-contracts.md) | Pydantic model schemas, OpenXML rendering boundaries, tower payloads | `src/assessment_engine/domain/schemas/` |
+| **Operational Procedures** | [`operations/README.md`](operations/README.md) | Environment setup, pipeline execution, CI/CD quality gates, triage | `pyproject.toml`, `.github/workflows/`, CLI entrypoints |
+| **Governance & Machine Policy** | [`ai/documentation-governance.md`](ai/documentation-governance.md) | Front matter metadata rules, freshness enforcement, verification modes | `docs/documentation-map.yaml`, `validate_documentation_governance.py` |
+| **Architecture Decision Records** | [`adr/README.md`](adr/README.md) | Immutable records of architectural decisions and invariants | System design & code invariants |
+| **Machine Registry** | [`documentation-map.yaml`](documentation-map.yaml) | YAML manifest of all governed files, owners, and dependency trees | Invariant check across repository via CI |
 
 ---
 
-## 5. Qué hacer ante dudas o contradicciones
+## 3. Mandatory Document Metadata Schema
 
-1.  Comprobar la ruta y el estado del documento en `docs/documentation-map.yaml`.
-2.  Inspeccionar las fuentes de verdad (`source_of_truth`) declaradas en el front matter del documento.
-3.  Contrastar la descripción prosa contra las firmas de código, tests o contratos de Pydantic correspondientes.
-4.  Si se detecta un desajuste o falta de claridad conceptual, tratar el documento como `Needs Review`.
+Every governed Markdown file in `docs/` MUST declare strict YAML front matter matching the following schema:
+
+```yaml
+---
+status: Verified | Needs Review | Draft | Deprecated
+owner: docs-governance | engineering | actuarial
+source_of_truth:
+  - relative/path/to/source/file_or_schema
+last_verified_against: YYYY-MM-DD
+applies_to:
+  - humans
+  - ai-agents
+  - repository
+doc_type: canonical | operational | reference_generated | archived
+diataxis: explanation | how_to | reference | tutorial
+verification_mode: schema | code | workflow | editorial | mixed
+---
+```
+
+---
+
+## 4. Automated Verification & Auto-Healing Pipeline
+
+Documentation validity is deterministically enforced by automated tools:
+
+1. **Governance & Link Integrity:**
+   ```bash
+   python src/assessment_engine/application/tools/validate_documentation_governance.py --repo-root . --documentation-map docs/documentation-map.yaml --today $(date -u +%F)
+   ```
+2. **Schema & Contract Auto-Healing:**
+   ```bash
+   python src/assessment_engine/application/tools/validate_contracts_schemas.py --repo-root . --documentation-map docs/documentation-map.yaml --autofix
+   ```
+3. **Executable Code Snippet Validation:**
+   ```bash
+   python src/assessment_engine/application/tools/validate_documentation_snippets.py --repo-root . --documentation-map docs/documentation-map.yaml
+   ```
+4. **Style & Linguistic Guardrails:**
+   ```bash
+   python src/assessment_engine/application/tools/lint_documentation_style.py --repo-root . --documentation-map docs/documentation-map.yaml
+   ```
+
+---
+
+## 5. Epistemic Drift Resolution Protocol
+
+When an agent detects a discrepancy between prose documentation and executable code:
+
+1. **Step 1 (Source Extraction):** Read `source_of_truth` declared in the target document front matter.
+2. **Step 2 (Structural Diff):** Compare Pydantic schema signatures or AST tokens against the documented Markdown tables.
+3. **Step 3 (Authoritative Reconciliation):** The code in `src/assessment_engine/` is ground truth. Apply automatic contract reconciliation via `validate_contracts_schemas.py --autofix` or downgrade status to `Needs Review`.
+4. **Step 4 (Anti-Hallucination Guard):** NEVER patch code to fit unverified documentation prose. Code changes require formal issue tracking and regression tests.

@@ -1,23 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import Image from 'next/image';
 import {
   Building2,
-  Globe,
   ShieldCheck,
   Activity,
   FileText,
   Download,
   UploadCloud,
   CheckCircle2,
-  Calendar,
-  ChevronDown,
   Printer,
   Plus,
-  ArrowRight,
-  Clock,
   Sparkles,
-  Layers,
   FileCheck
 } from 'lucide-react';
 import { type SimulationArchetype } from '@/app/actions/assessment';
@@ -51,65 +46,51 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
 
   const clientName = currentClient?.company_name || 'Cliente Corporativo';
 
-  // Subsidiaries & Periodic Assessments for the Corporate Client
-  const [subsidiaries, setSubsidiaries] = useState<SubsidiaryAssessment[]>([
-    {
+  const [customSubsidiaries, setCustomSubsidiaries] = useState<SubsidiaryAssessment[]>([]);
+
+  const subsidiaries = useMemo<SubsidiaryAssessment[]>(() => {
+    const baseFirst: SubsidiaryAssessment = {
       id: 'sub_1',
       name: `${clientName} · Sede Central`,
       country: currentClient?.country || 'Germany (DE)',
-      flag: '🇩🇪',
+      flag: currentClient?.country?.includes('ES') ? '🇪🇸' : currentClient?.country?.includes('DE') ? '🇩🇪' : '🌐',
       framework: currentClient?.standard || 'NIS2 / Critical Infrastructure',
       period: 'Q3 2026 (Oficial Certificado)',
       score: currentClient?.global_score || '2.9 / 5.0',
       band: currentClient?.global_band || 'Defined',
       ale: currentClient?.ale_formatted || '€131,574/yr',
       status: 'Certified',
-    },
-    {
-      id: 'sub_2',
-      name: `${clientName.split(' ')[0]} Austria Energy AG`,
-      country: 'Austria (AT)',
-      flag: '🇦🇹',
-      framework: 'DORA / Operational Resilience',
-      period: 'Q4 2026 (En Proceso)',
-      score: '3.4 / 5.0',
-      band: 'Managed',
-      ale: '€89,200/yr',
-      status: 'En Progreso',
-    },
-    {
-      id: 'sub_3',
-      name: `${clientName.split(' ')[0]} Offshore Wind B.V.`,
-      country: 'Netherlands (NL)',
-      flag: '🇳🇱',
-      framework: 'Directiva de Ciberseguridad Critical',
-      period: 'Q1 2027 (Planificado)',
-      score: 'Pending',
-      band: 'Initial Assessment',
-      ale: 'Por calcular',
-      status: 'Planificado',
-    },
-  ]);
+    };
 
-  useEffect(() => {
-    if (currentClient) {
-      setSubsidiaries((prev) => [
-        {
-          id: 'sub_1',
-          name: `${currentClient.company_name} · Sede Central`,
-          country: currentClient.country || 'Germany (DE)',
-          flag: currentClient.country?.includes('ES') ? '🇪🇸' : currentClient.country?.includes('DE') ? '🇩🇪' : '🌐',
-          framework: currentClient.standard || 'NIS2 / Critical Infrastructure',
-          period: 'Q3 2026 (Oficial Certificado)',
-          score: currentClient.global_score || '2.9 / 5.0',
-          band: currentClient.global_band || 'Defined',
-          ale: currentClient.ale_formatted || '€131,574/yr',
-          status: 'Certified',
-        },
-        ...prev.slice(1),
-      ]);
-    }
-  }, [currentClient?.company_name, currentClient?.global_score, currentClient?.ale_formatted]);
+    const baseRest: SubsidiaryAssessment[] = [
+      {
+        id: 'sub_2',
+        name: `${clientName.split(' ')[0]} Austria Energy AG`,
+        country: 'Austria (AT)',
+        flag: '🇦🇹',
+        framework: 'DORA / Operational Resilience',
+        period: 'Q4 2026 (En Proceso)',
+        score: '3.4 / 5.0',
+        band: 'Managed',
+        ale: '€89,200/yr',
+        status: 'En Progreso',
+      },
+      {
+        id: 'sub_3',
+        name: `${clientName.split(' ')[0]} Offshore Wind B.V.`,
+        country: 'Netherlands (NL)',
+        flag: '🇳🇱',
+        framework: 'Directiva de Ciberseguridad Critical',
+        period: 'Q1 2027 (Planificado)',
+        score: 'Pending',
+        band: 'Initial Assessment',
+        ale: 'Por calcular',
+        status: 'Planificado',
+      },
+    ];
+
+    return [baseFirst, ...baseRest, ...customSubsidiaries];
+  }, [currentClient, clientName, customSubsidiaries]);
 
   const activeSub = subsidiaries.find((s) => s.id === selectedSubId) || subsidiaries[0];
 
@@ -130,7 +111,7 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
       status: 'Planificado',
     };
 
-    setSubsidiaries((prev) => [...prev, newSub]);
+    setCustomSubsidiaries((prev) => [...prev, newSub]);
     setSelectedSubId(newSub.id);
     setRequestModalOpen(false);
     setNewSocietyName('');
@@ -278,7 +259,7 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'deliverables' | 'evidence')}
               className={`flex items-center gap-2 py-4 px-4 text-xs font-semibold border-b-2 transition-all ${
                 isActive
                   ? 'border-[#0072BC] text-[#0072BC] font-bold bg-blue-50/40'
@@ -307,9 +288,12 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
 
             <div className="flex items-center justify-center p-4 bg-[#fbfbfa] rounded-xl border border-stone-200/80 min-h-[380px]">
               {currentClient.radar_path ? (
-                <img
+                <Image
                   src={`/api/download?path=${encodeURIComponent(currentClient.radar_path)}`}
                   alt="Radar de Madurez Multidimensional"
+                  width={450}
+                  height={360}
+                  unoptimized
                   className="max-h-[360px] w-auto object-contain"
                 />
               ) : (

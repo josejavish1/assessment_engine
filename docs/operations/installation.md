@@ -2,88 +2,98 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../pyproject.toml
-- ../../uv.lock
-- ../../tests/unit/test_environment.py
-- ../../.github/workflows/ci.yml
-- ../../src/assessment_engine/infrastructure/runtime_env.py
-last_verified_against: 2026-11-12
+- pyproject.toml
+- uv.lock
+- tests/unit/test_environment.py
+- .github/workflows/ci.yml
+- src/assessment_engine/infrastructure/runtime_env.py
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
+notes: Canonical operational guide for local environment provisioning, dependency synchronization, and preflight verification.
 ---
-# Installation and environment setup
+# Environment Provisioning & Installation Guide
 
-Este documento describe y formaliza el protocolo estándar de instalación, configuración y aprovisionamiento del entorno local para el desarrollo y ejecución del motor.
+Canonical operational guide defining the deterministic setup, dependency synchronization, cloud credentials configuration, and preflight certification for the `assessment-engine` platform.
 
-## Parámetros Operacionales de Referencia
+---
 
--   **Entorno de Ejecución:** Python 3.11 constituido como la versión de referencia para la integración continua (CI).
--   **Empaquetado:** El proyecto define su empaquetado y especificaciones de dependencias primarias a través de `pyproject.toml`.
--   **Entorno Aislado:** El estándar operativo local requiere el aislamiento mediante un entorno virtual ubicado de forma determinista en `.venv/`.
--   **Credenciales de Proveedor Cloud:** El pipeline asistido por inteligencia artificial exige las variables de entorno `GOOGLE_CLOUD_PROJECT` y `GOOGLE_CLOUD_LOCATION` para la conexión y firma de llamadas a Vertex AI.
+## 1. System Requirements & Operational Baselines
 
-## Protocolo de Aprovisionamiento
+- **Runtime Engine:** Python 3.11.x pinned via `.python-version`.
+- **Package & Dependency Tooling:** `uv` (recommended for deterministic resolution) or `pip`.
+- **Dependency Definitions:** Abstract dependencies declared in `pyproject.toml` (PEP 517/621); concrete dependency tree frozen in `uv.lock`.
+- **Filesystem Sandbox:** Isolated local virtual environment located strictly at `.venv/`.
+- **Cloud Provider Credentials:** Google Cloud Vertex AI access authenticated via Service Account key or Application Default Credentials (ADC).
 
-El procedimiento estándar para el aprovisionamiento y despliegue del entorno virtual local se ejecuta de la siguiente manera:
+---
+
+## 2. Deterministic Provisioning Protocol
+
+Execute the automated synchronization command from the repository root:
 
 ```bash
 uv sync --all-groups
 ```
 
-Este comando inicializa `.venv/` en Python 3.11, resuelve el árbol de dependencias desde `uv.lock` de forma determinista e instala el paquete `assessment-engine` en modo editable.
+This single command deterministically executes:
+1. Virtual environment initialization at `.venv/` using Python 3.11.
+2. Complete dependency graph resolution from `uv.lock`.
+3. Editable installation of the `assessment_engine` package (`pip install -e .`), enabling absolute native namespace resolution (`from assessment_engine...`) without dynamic `sys.path` manipulation.
 
-## Justificación del Modo de Instalación Editable (`-e .`)
+---
 
-La suite de pruebas unitarias implementa un control explícito de importación de paquetes independientes del entorno de ejecución, prohibiéndose terminantemente la manipulación dinámica de rutas mediante `sys.path`. La instalación en modo editable (`-e .`) garantiza que el módulo `assessment_engine` sea plenamente visible bajo el namespace nativo absoluto sin requerir configuraciones locales excepcionales.
+## 3. Cloud Runtime Environment Configuration
 
-## Gobernanza de Variables de Env de Google Cloud
+Vertex AI LLM inference harnesses (`src/assessment_engine/infrastructure/runtime_env.py`) inspect the shell environment for authentication variables:
 
-Los pipelines de evaluación por torre validan obligatoriamente la presencia de:
--   `GOOGLE_CLOUD_PROJECT`
--   `GOOGLE_CLOUD_LOCATION`
+| Environment Variable | Default Fallback Value | Purpose |
+|---|---|---|
+| `GOOGLE_CLOUD_PROJECT` | `sub403o4u0q5` | Target Google Cloud project hosting Vertex AI foundation model endpoints. |
+| `GOOGLE_CLOUD_LOCATION` | `europe-west1` | Target Google Cloud compute region for low-latency inference. |
+| `GOOGLE_APPLICATION_CREDENTIALS`| `~/.secrets/sa-key.json` | Filesystem path to the GCP service account credentials key. |
 
-El cargador de entorno de la plataforma (`runtime_env.py`) declara como valores pasivos por defecto:
--   `GOOGLE_CLOUD_PROJECT=sub403o4u0q5`
--   `GOOGLE_CLOUD_LOCATION=europe-west1`
+To export custom credentials in local sub-shells:
+```bash
+export GOOGLE_CLOUD_PROJECT="my-gcp-project-id"
+export GOOGLE_CLOUD_LOCATION="europe-west1"
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"
+```
 
-En caso de que las variables ya se encuentren definidas en el entorno de la sub-shell, el cargador de configuración las respeta y asume como prioritarias; en su defecto, el runtime actual poblará de forma pasiva los valores por defecto especificados.
+---
 
-## Protocolo de Certificación Pre-vuelo
+## 4. Preflight Certification Oracles
 
-### 1. Pruebas de Entorno
-Para verificar que el aislamiento y el mapeo del paquete se completaron con éxito, ejecute:
+Following environment provisioning, autonomous agents and operators MUST execute the three-stage preflight certification:
+
+### Stage 4.1: Environment Import Sanity Check
+Asserts that virtual environment mapping and core dependency libraries (`openpyxl`, `pydantic`) resolve natively:
 ```bash
 python -m pytest tests/unit/test_environment.py -q
 ```
 
-### 2. Certificación de la Suite de Pruebas Unitarias
-Para certificar la integridad técnica de todos los componentes, ejecute:
+### Stage 4.2: Full Regression Test Suite
+Executes the comprehensive unit and integration verification suites:
 ```bash
-python -m pytest tests/ -q
+pytest tests/ -q
 ```
 
-### 3. Simulacro en Seco del Smoke-test (*Dry-run*)
-Para validar la orquestación y regeneración de artefactos sin realizar llamadas externas a APIs, ejecute:
+### Stage 4.3: Canonical Smoke Dry-Run
+Verifies physical pipeline orchestration and OpenXML deliverable assembly without invoking external network LLMs:
 ```bash
 python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 ```
-Este simulacro en seco (*dry-run*) forma parte de los controles de gobernanza activa del repositorio y certifica que el entorno es capaz de procesar y compilar el pipeline global canónico de forma íntegra, absteniéndose de requerir lógicas de retrocompatibilidad heredadas.
 
-## Resolución de Dependencias: `pyproject.toml` vs `uv.lock`
+---
 
-1.  **`pyproject.toml`:** Especifica el metapaquete del motor y declara la firma de dependencias abstractas obligatorias para el empaquetado (PEP 517/621).
-2.  **`uv.lock`:** Bloquea y congela un árbol determinista universal de desarrollo, testing y CI, garantizando reproducibilidad exacta sin duplicidades de ficheros exportados.
+## 5. Provisioning Acceptance Invariants (Definition of Done)
 
-El pipeline de CI y el entorno local se aprovisionan consumiendo `uv.lock` mediante `uv sync --all-groups`.
-
-## Estado Final de Éxito de Aprovisionamiento
-
-Tras completar el aprovisionamiento de manera exitosa, el sistema debe certificar la disponibilidad de las siguientes capacidades:
-1.  **Importación Absoluta:** Importación nativa de `assessment_engine` desde cualquier sub-shell del entorno virtual.
-2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `python -m pytest`.
-3.  **Ejecución de Módulos:** Lanzamiento directo de utilidades y orquestadores a través de `python -m assessment_engine.application.<modulo>`.
-4.  **Compilación de Recursos:** Resolución de rutas físicas y compilación exitosa de plantillas OpenXML `.docx` y plantillas de renderizado integradas en el paquete.
+The environment setup is certified as `Fulfilled` when all four invariants hold:
+1. **Absolute Importability:** `python -c "import assessment_engine"` executes with return code `0`.
+2. **Zero Test Regressions:** `pytest tests/unit/` passes with 100% green status.
+3. **Dry-Run Readiness:** `regenerate_smoke_artifacts --dry-run` completes without missing template exceptions.
+4. **Pre-commit Gate Active:** Git pre-commit hooks installed via `pre-commit install`.

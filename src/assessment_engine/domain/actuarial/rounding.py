@@ -10,8 +10,8 @@ Implements the Argon Actuarial Rounding Policy:
 
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import List, Sequence, Union
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from typing import List, Mapping, Optional, Sequence, Union
 
 
 def compute_step_quantum(val: Decimal) -> Decimal:
@@ -31,20 +31,22 @@ def compute_step_quantum(val: Decimal) -> Decimal:
     exponent = int(val.adjusted())
     base_power = Decimal(10) ** exponent
 
-    if exponent <= 3:      # < 10,000
+    if exponent <= 3:  # < 10,000
         return Decimal("50")
-    elif exponent == 4:    # [10,000 .. 100,000)
+    elif exponent == 4:  # [10,000 .. 100,000)
         return Decimal("250") if val < Decimal("25000") else Decimal("1000")
-    elif exponent == 5:    # [100,000 .. 1,000,000)
+    elif exponent == 5:  # [100,000 .. 1,000,000)
         return Decimal("5000")
-    elif exponent == 6:    # [1,000,000 .. 10,000,000)
+    elif exponent == 6:  # [1,000,000 .. 10,000,000)
         return Decimal("25000")
     else:
         # Scales invariantly for multi-billion or high-denomination currencies (JPY/KRW):
         return base_power / Decimal("100")
 
 
-def round_to_actuarial_significance(raw_amount: Union[int, str, Decimal, float, None]) -> int:
+def round_to_actuarial_significance(
+    raw_amount: Union[int, str, Decimal, float, None],
+) -> int:
     """Rounds a raw monetary amount to its actuarially significant quantum.
 
     Eliminates false precision (cents, single euros, and spurious trailing digits).
@@ -68,6 +70,7 @@ def round_to_actuarial_significance(raw_amount: Union[int, str, Decimal, float, 
 
 import hashlib
 
+
 def _resolve_allocation_quantum(target_total_ale: int, card_count: int) -> int:
     """Determines the largest clean actuarial quantum that divides target_total_ale."""
     if card_count <= 0 or target_total_ale <= 0:
@@ -77,7 +80,11 @@ def _resolve_allocation_quantum(target_total_ale: int, card_count: int) -> int:
 
     # Cascade down clean actuarial divisors to avoid 1-unit remainder artifacts
     for q in (ideal_quantum, 1000, 500, 250, 100, 50, 25, 10, 5):
-        if q <= ideal_quantum and target_total_ale % q == 0 and (target_total_ale // q) >= card_count:
+        if (
+            q <= ideal_quantum
+            and target_total_ale % q == 0
+            and (target_total_ale // q) >= card_count
+        ):
             return q
     return 1
 
@@ -86,7 +93,7 @@ def allocate_subadditive_ale_to_cards(
     target_total_ale: int,
     standalone_ales: Sequence[Union[int, float, Decimal]],
     preserve_quanta: bool = True,
-    card_ids: Optional[Sequence[str]] = None
+    card_ids: Optional[Sequence[str]] = None,
 ) -> List[int]:
     """Apportions a portfolio-adjusted sub-additive Outage ALE across individual risk cards.
 
@@ -100,7 +107,9 @@ def allocate_subadditive_ale_to_cards(
     for a in standalone_ales:
         try:
             d = Decimal(str(a))
-            clean_ales.append(d if (d.is_finite() and d > Decimal("0")) else Decimal("0"))
+            clean_ales.append(
+                d if (d.is_finite() and d > Decimal("0")) else Decimal("0")
+            )
         except (InvalidOperation, ValueError, TypeError):
             clean_ales.append(Decimal("0"))
 
@@ -114,8 +123,7 @@ def allocate_subadditive_ale_to_cards(
         else 1
     )
     target_units = target_total_ale // unit_quantum
-    target_dec = Decimal(str(target_units))
-    
+
     # 1. Non-Zero Floor Guard Pre-allocation
     floor_units = []
     available_units = target_units
@@ -125,23 +133,28 @@ def allocate_subadditive_ale_to_cards(
             available_units -= 1
         else:
             floor_units.append(0)
-    
+
     # Re-evaluate quotas based on remaining units
-    gross_sum_rem = sum(a for i, a in enumerate(clean_ales) if floor_units[i] >= 0) # all active
+    gross_sum_rem = sum(
+        a for i, a in enumerate(clean_ales) if floor_units[i] >= 0
+    )  # all active
     if available_units > 0 and gross_sum_rem > 0:
-        exact_quotas = [(a * Decimal(str(available_units))) / gross_sum_rem for a in clean_ales]
+        exact_quotas = [
+            (a * Decimal(str(available_units))) / gross_sum_rem for a in clean_ales
+        ]
     else:
         exact_quotas = [Decimal("0") for _ in clean_ales]
 
     integer_parts = [int(q) for q in exact_quotas]
-    
+
     def get_lexicographic_hash(idx: int) -> str:
         if card_ids and idx < len(card_ids):
             return hashlib.sha256(str(card_ids[idx]).encode()).hexdigest()
         return f"{idx:04d}"
 
     remainders = [
-        (q - Decimal(integer_parts[idx]), get_lexicographic_hash(idx), idx) for idx, q in enumerate(exact_quotas)
+        (q - Decimal(integer_parts[idx]), get_lexicographic_hash(idx), idx)
+        for idx, q in enumerate(exact_quotas)
     ]
 
     discrepancy = available_units - sum(integer_parts)
@@ -240,7 +253,7 @@ def harmonize_integer_weights_dual_constraint(
 
 def allocate_portfolio_euler_subadditivity(
     single_event_max_ale: Union[int, float, Decimal],
-    tower_risk_weights: dict[str, Union[int, float, Decimal]],
+    tower_risk_weights: Mapping[str, Union[int, float, Decimal]],
     annual_revenue: Union[int, float, Decimal],
 ) -> dict[str, int]:
     """GATE-30.4: Actuarial Sub-Additivity Bound & Multi-Tower Euler Allocation.

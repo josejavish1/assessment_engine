@@ -19,9 +19,28 @@ entries:
   source_of_truth:
   - src/assessment_engine/infrastructure/epistemic_graph.py
   - src/assessment_engine/infrastructure/evidence_engine.py
-  last_verified_against: '2026-11-12'
-  notes: Ontología de extracción y linaje de evidencias documentales a partir de PDFs
-    de origen.
+  last_verified_against: '2026-11-21'
+  notes: Technical specification of the data provenance ontology and evidence extraction
+    heuristics.
+  diataxis: explanation
+  verification_mode: editorial
+- path: docs/architecture/csqa-framework.md
+  kind: document
+  title: Continuous Software Quality Assurance (CSQA) Framework
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - .github/workflows/quality.yml
+  - pyproject.toml
+  - tests/architecture/
+  - src/assessment_engine/application/tools/
+  last_verified_against: '2026-11-21'
+  notes: Continuous Software Quality Assurance (CSQA) architectural fitness functions
+    and mutation gates.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/architecture/business-command-center-portal.md
@@ -36,26 +55,30 @@ entries:
   source_of_truth:
   - business_command_center/package.json
   - business_command_center/src/app/actions/assessment.ts
-  last_verified_against: '2026-10-29'
-  notes: Arquitectura composable del portal web comercial Tier-1 con Next.js, Refine.dev y autenticación criptográfica local soberana.
+  last_verified_against: '2026-11-21'
+  notes: Technical specification of the Business Command Center commercial portal
+    architecture.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/architecture/security-boundaries.md
   kind: document
   title: Sovereign Isolation & Access Control Boundaries
   doc_type: canonical
-  status: Needs Review
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
   - ai-agents
   source_of_truth:
+  - src/assessment_engine/infrastructure/runtime_paths.py
+  - src/assessment_engine/infrastructure/ai_client.py
   - src/assessment_engine/mcp_server.py
-  last_verified_against: '2026-06-27'
-  notes: Fronteras de seguridad y aislamiento soberano para la ejecución efímera del
-    motor.
+  - src/assessment_engine/infrastructure/epistemic_graph.py
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the sovereign isolation, tenant vaults,
+    and security boundaries.
   diataxis: explanation
-  verification_mode: editorial
+  verification_mode: code
 - path: docs/operations/resilience-and-fallbacks.md
   kind: document
   title: Resilience Playbook and FMEA
@@ -68,9 +91,9 @@ entries:
   source_of_truth:
   - src/assessment_engine/infrastructure/ai_client.py
   - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-  last_verified_against: '2026-11-12'
-  notes: Runbook de mitigación, políticas de tolerancia a fallos y FMEA simple para
-    la ejecución con APIs.
+  last_verified_against: '2026-11-21'
+  notes: Operational runbook and FMEA failure mode analysis for cloud API resilience
+    and deterministic failovers.
   diataxis: how_to
   verification_mode: code
 - path: README.md
@@ -108,7 +131,8 @@ entries:
   - pyproject.toml
   - .github/workflows/quality.yml
   last_verified_against: '2026-11-12'
-  notes: Tier-1 engineering contribution guidelines, AI-assisted development policy, and testing discipline.
+  notes: Tier-1 engineering contribution guidelines, AI-assisted development policy,
+    and testing discipline.
   diataxis: how_to
   verification_mode: editorial
 - path: docs/README.md
@@ -123,9 +147,24 @@ entries:
   - docs/documentation-map.yaml
   - src/assessment_engine/application/tools/validate_documentation_governance.py
   - .github/workflows/quality.yml
-  last_verified_against: '2026-11-12'
+  last_verified_against: '2026-11-21'
   notes: Documentation directory index and map overview.
   diataxis: explanation
+  verification_mode: editorial
+- path: docs/ai/README.md
+  kind: document
+  title: AI Agent Governance Specifications Index
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/ai/documentation-governance.md
+  last_verified_against: '2026-11-21'
+  notes: Canonical index and routing map for AI agent governance and context adapters.
+  diataxis: reference
   verification_mode: editorial
 - path: docs/ai/documentation-governance.md
   kind: document
@@ -152,8 +191,8 @@ entries:
   - docs/ai/documentation-governance.md
   - docs/README.md
   - .github/pull_request_template.md
-  last_verified_against: '2026-11-12'
-  notes: Política central neutral; los adaptadores por agente remiten aquí.
+  last_verified_against: '2026-11-21'
+  notes: Central neutral documentation governance policy.
   diataxis: explanation
   verification_mode: mixed
 - path: AGENTS.md
@@ -171,7 +210,8 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
-  notes: Puerta de entrada breve para agentes; no contiene verdad canónica nueva.
+  notes: Concise entry point and sovereign engineering rules for autonomous agents;
+    contains no new canonical truth.
   diataxis: how_to
   verification_mode: editorial
 - path: .github/copilot-instructions.md
@@ -189,7 +229,7 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
-  notes: Adaptador específico para Copilot; no sustituye la documentación canónica.
+  notes: Agent adapter for GitHub Copilot; operational prompt injection constraints.
   diataxis: how_to
   verification_mode: editorial
 - path: .github/pull_request_template.md
@@ -208,7 +248,7 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/engineering-quality-gates.md
   last_verified_against: '2026-11-12'
-  notes: Checklist para forzar revisión del impacto documental en cada PR.
+  notes: Pull request checklist enforcing mandatory documentation impact reviews.
   diataxis: how_to
   verification_mode: workflow
 - path: .github/CODEOWNERS
@@ -227,7 +267,7 @@ entries:
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
   last_verified_against: '2026-11-12'
-  notes: Ownership mínimo de la documentación canónica y la gobernanza.
+  notes: Minimal codeownership specification for canonical documentation and governance.
   diataxis: reference
   verification_mode: editorial
 - path: .github/workflows/docs-governance.yml
@@ -262,8 +302,8 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - src/assessment_engine/application/tools/run_incremental_quality_gate.py
   last_verified_against: '2026-11-12'
-  notes: Workflow que ejecuta la puerta incremental de calidad sobre la superficie
-    viva del proyecto.
+  notes: Continuous integration workflow executing the incremental quality gate across
+    modified project surfaces.
   diataxis: reference
   verification_mode: workflow
 - path: .github/workflows/typing.yml
@@ -281,8 +321,8 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - src/assessment_engine/application/tools/run_incremental_typecheck.py
   last_verified_against: '2026-11-12'
-  notes: Workflow que ejecuta el gate incremental de tipado sobre la superficie viva
-    del proyecto.
+  notes: Continuous integration workflow executing incremental strict Mypy typechecking
+    across modified project surfaces.
   diataxis: reference
   verification_mode: workflow
 - path: .github/workflows/orchestrator-pr-reconcile.yml
@@ -299,8 +339,8 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - .github/scripts/reconcile_prs.sh
   last_verified_against: 2026-06-25
-  notes: Workflow que rebasea ramas de PR abiertas no draft contra main tras cambios
-    en main o ejecución manual; no reanuda resume-pr ni ejecuta agentes.
+  notes: Continuous integration workflow auto-rebasing open non-draft PR branches
+    against main post-merge or manual dispatch.
   diataxis: reference
   verification_mode: workflow
 - path: .github/scripts/orchestrator-gemini-executor.sh
@@ -316,8 +356,7 @@ entries:
   - docs/operations/product-owner-orchestrator.md
   - .github/scripts/orchestrator-gemini-executor.sh
   last_verified_against: 2026-06-25
-  notes: Wrapper de executor Gemini disponible en el repo; no está cableado por el
-    reconciliador actual de PRs.
+  notes: Gemini CLI executor wrapper script for autonomous task execution.
   diataxis: reference
   verification_mode: workflow
 - path: docs/SYSTEM_ARCHITECTURE.md
@@ -334,10 +373,8 @@ entries:
   - src/assessment_engine/application
   - src/assessment_engine/mcp_server.py
   - src/assessment_engine/domain/schemas
-  last_verified_against: '2026-11-12'
-  notes: Vista canónica de alto nivel contrastada contra pipelines, MCP, schemas y
-    artefactos reales; deja explícita la tensión entre flujo top-down y superficies
-    legacy.
+  last_verified_against: '2026-11-21'
+  notes: Canonical high-level system architecture specification.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture
@@ -356,7 +393,7 @@ entries:
   - src/assessment_engine/domain/schemas/
   - tests/
   last_verified_against: '2026-11-12'
-  notes: Nuevo destino para repartir arquitectura en piezas más mantenibles.
+  notes: Canonical architecture specifications collection.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/architecture/README.md
@@ -375,26 +412,25 @@ entries:
   - src/assessment_engine/mcp_server.py
   - src/assessment_engine/domain/schemas
   - tests
-  last_verified_against: '2026-11-12'
-  notes: Punto de entrada de la carpeta architecture; util, pero todavia en consolidacion
-    y migracion desde SYSTEM_ARCHITECTURE.md.
+  last_verified_against: '2026-11-21'
+  notes: Architecture directory index and canonical component specification map.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/architecture/assessment_factory_flow.md
+- path: docs/architecture/assessment-factory-flow.md
   kind: document
   title: Assessment factory flow specification
   doc_type: canonical
-  status: Needs Review
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
   - ai-agents
   source_of_truth:
-  - docs/README.md
-  - docs/documentation-map.yaml
-  last_verified_against: '2026-11-12'
-  notes: Describe una arquitectura de detalle muy aspiracional frente al estado actual
-    del repo; no debe leerse como implementacion verificada.
+  - src/assessment_engine/application
+  - src/assessment_engine/infrastructure
+  - src/assessment_engine/adapters/compilers
+  last_verified_against: '2026-11-21'
+  notes: End-to-end technical specification of the assessment factory execution flow.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/strategy/enterprise-governance-2026.md
@@ -406,17 +442,17 @@ entries:
   applies_to:
   - src/assessment_engine/infrastructure
   source_of_truth:
-  - docs/strategy/VISION.md
-  last_verified_against: '2026-11-12'
-  notes: Describes the The Apex governance layer with Doctor, Verification, and Liability
-    Signer agents.
+  - docs/strategy/vision.md
+  last_verified_against: '2026-11-21'
+  notes: Strategic vision and architecture for The Apex autonomous governance, immune
+    verification, and compliance signing.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/tower-pipeline.md
   kind: document
   title: Tower pipeline architecture
   doc_type: canonical
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -436,16 +472,16 @@ entries:
   - docs/contracts/artifact-contracts.md
   - docs/operations/pipeline-execution.md
   - docs/operations/pipeline-controls-runbook.md
-  last_verified_against: '2026-11-12'
-  notes: Pieza arquitectonica util y cercana al codigo, pero todavia en consolidacion
-    documental antes de volver a Verified.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the single-tower evaluation pipeline
+    lifecycle.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/global-commercial-pipelines.md
   kind: document
   title: Global and commercial pipelines architecture
   doc_type: canonical
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -459,6 +495,8 @@ entries:
   - src/assessment_engine/infrastructure/pipeline_runtime.py
   - src/assessment_engine/domain/schemas/global_report.py
   - src/assessment_engine/domain/schemas/commercial.py
+  - src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py
+  - src/assessment_engine/adapters/render_commercial_report.py
   enforce_on_source_changes: true
   review_paths_on_source_change:
   - docs/architecture/global-commercial-pipelines.md
@@ -467,9 +505,9 @@ entries:
   - docs/contracts/artifact-contracts.md
   - docs/operations/pipeline-execution.md
   - docs/operations/pipeline-controls-runbook.md
-  last_verified_against: '2026-11-12'
-  notes: Pieza util para entender la elevacion global/comercial, pero todavia en consolidacion
-    antes de considerarla plenamente verificada.
+  last_verified_against: '2026-11-21'
+  notes: Canonical architecture specification of the global consolidation and commercial
+    strategy pipelines.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/client-intelligence.md
@@ -492,9 +530,9 @@ entries:
   - src/assessment_engine/application/run_commercial_refiner.py
   - src/assessment_engine/domain/prompts/intelligence_prompts.py
   - src/assessment_engine/domain/prompts/commercial_prompts.py
-  last_verified_against: '2026-11-12'
-  notes: Define el dossier compartido `client_intelligence.json`, su contrato pragmático
-    v3, compatibilidad hacia atrás y puntos reales de consumo en tower/global/commercial.
+  last_verified_against: '2026-11-21'
+  notes: Architecture specification of the shared client intelligence dossier and
+    downstream consumption.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/critical-modules.md
@@ -520,9 +558,9 @@ entries:
   - src/assessment_engine/application/run_commercial_refiner.py
   - src/assessment_engine/adapters/render_commercial_report.py
   - src/assessment_engine/adapters/compilers/docx_compiler.py
-  last_verified_against: '2026-11-12'
-  notes: Mapa de responsabilidades, inputs/outputs y riesgos de los módulos críticos
-    que sostienen el flujo principal.
+  last_verified_against: '2026-11-21'
+  notes: Functional matrix, data contracts, and failure modes of critical execution
+    modules.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/contracts/artifact-contracts.md
@@ -550,9 +588,9 @@ entries:
   - src/assessment_engine/adapters/render_commercial_report.py
   - src/assessment_engine/adapters/compilers/docx_compiler.py
   - docs/contracts/payload-render-boundaries.md
-  last_verified_against: '2026-11-12'
-  notes: Define los artefactos principales del sistema como contratos operativos y
-    explica productores, consumidores, señales de salud y riesgos si derivan.
+  last_verified_against: '2026-11-21'
+  notes: Canonical reference specification of artifact contracts, lifecycle producers,
+    consumers, and validation gates.
   diataxis: reference
   verification_mode: schema
 - path: docs/operations/pipeline-controls-runbook.md
@@ -584,9 +622,9 @@ entries:
   - docs/operations/pipeline-controls-runbook.md
   - docs/operations/pipeline-execution.md
   - docs/operations/troubleshooting-working.md
-  last_verified_against: '2026-11-12'
-  notes: Runbook operativo util, pero dependiente de baseline y comportamiento cambiante
-    de ejecucion; requiere reverificacion periodica.
+  last_verified_against: '2026-11-21'
+  notes: Canonical operational runbook for pipeline controls, health telemetry, symptom
+    diagnostics, and disaster recovery.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/architecture/mcp-mode.md
@@ -601,9 +639,9 @@ entries:
   source_of_truth:
   - src/assessment_engine/mcp_server.py
   - src/assessment_engine/application
-  last_verified_against: '2026-11-12'
-  notes: Documenta el modo servidor, su inspección canónica basada en blueprint/annex
-    y la compatibilidad legacy residual solo como diagnóstico secundario.
+  last_verified_against: '2026-11-21'
+  notes: Canonical architecture specification of the FastMCP tool server and agentic
+    execution protocol.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/working-artifacts.md
@@ -629,9 +667,9 @@ entries:
   - src/assessment_engine/application/run_commercial_refiner.py
   - src/assessment_engine/application/run_intelligence_harvesting.py
   - src/assessment_engine/application/generate_tower_radar_chart.py
-  last_verified_against: '2026-11-12'
-  notes: Mapa de artefactos en working/, su linaje y su papel canónico, derivado o
-    legacy; la ruta principal ya queda claramente blueprint-first.
+  last_verified_against: '2026-11-21'
+  notes: Canonical inventory, classification, and lineage of all workspace and working
+    directory artifacts.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/operations
@@ -654,9 +692,7 @@ entries:
   - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - tests/
   last_verified_against: '2026-11-12'
-  notes: Base operativa ya consolidada para ejecución, smoke y troubleshooting; la
-    instalación y la operación principal están contrastadas contra CI y validación
-    local.
+  notes: Canonical operational guides and runbooks collection.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/operations/installation.md
@@ -674,9 +710,9 @@ entries:
   - tests/unit/test_environment.py
   - .github/workflows/ci.yml
   - src/assessment_engine/infrastructure/runtime_env.py
-  last_verified_against: '2026-11-12'
-  notes: Onboarding técnico del entorno local y sus dependencias, incluyendo la validación
-    mínima del smoke canónico en seco.
+  last_verified_against: '2026-11-21'
+  notes: Canonical operational guide for local environment provisioning, dependency
+    synchronization, and preflight verification.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/engineering-quality-gates.md
@@ -718,9 +754,9 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - docs/operations/README.md
   - docs/README.md
-  last_verified_against: '2026-11-12'
-  notes: Define la puerta incremental de calidad y tipado, además de las reglas para
-    bajar disciplina de implementación y coherencia de dominio a código, tests y workflows.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the automated engineering quality gates
+    and static analysis checks.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/agentic-development-workflow.md
@@ -756,9 +792,9 @@ entries:
   - docs/operations/engineering-quality-gates.md
   - docs/operations/README.md
   - docs/README.md
-  last_verified_against: '2026-11-12'
-  notes: Define el flujo spec-first, el alcance mínimo y el tipo de review esperado
-    cuando se programa con agentes de IA.
+  last_verified_against: '2026-11-21'
+  notes: Canonical operational guide defining the spec-first agentic software development
+    workflow.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/product-owner-orchestrator.md
@@ -797,9 +833,9 @@ entries:
   - docs/operations/agentic-development-workflow.md
   - docs/operations/README.md
   - docs/README.md
-  last_verified_against: '2026-11-12'
-  notes: Documenta un MVP local real, pero todavia mezcla capacidad actual, objetivos
-    de watcher y automatizacion futura.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the Product Owner to Pull Request autonomous
+    orchestration engine.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/ci-cd-workflows.md
@@ -818,9 +854,9 @@ entries:
   - .github/workflows/orchestrator-pr-reconcile.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
-  last_verified_against: '2026-11-12'
-  notes: Vista util de workflows, pero con alto riesgo de deriva cuando cambian jobs,
-    triggers o automatizaciones auxiliares.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the GitHub Actions CI/CD automation
+    workflows and quality gates.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/signing-commits-policy.md
@@ -831,11 +867,12 @@ entries:
   owner: docs-governance
   applies_to:
   - humans
+  - ai-agents
   source_of_truth:
   - README.md
-  last_verified_against: '2026-11-12'
-  notes: Politica razonable, pero no documenta de forma verificable el enforcement
-    real del repo ni su estado de activacion.
+  last_verified_against: '2026-11-21'
+  notes: Canonical security policy and operational guide for cryptographic commit
+    signing and author verification.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/assessment-coherence-remediation.md
@@ -850,9 +887,9 @@ entries:
   source_of_truth:
   - src/assessment_engine/application/run_tower_blueprint_engine.py
   - src/assessment_engine/domain/schemas/blueprint.py
-  last_verified_against: '2026-11-12'
-  notes: Politica y proceso utiles, pero mas normativos que verificados frente a un
-    workflow mecanico concreto del repo.
+  last_verified_against: '2026-11-21'
+  notes: Operational runbook and diagnostic triage protocol for resolving cross-artifact
+    assessment coherence defects.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/README.md
@@ -868,9 +905,8 @@ entries:
   - .github/workflows
   - src/assessment_engine/application
   - .
-  last_verified_against: '2026-11-12'
-  notes: Indice operativo util, pero no debe interpretarse como validacion implicita
-    de toda la carpeta operations.
+  last_verified_against: '2026-11-21'
+  notes: Central operations manual index and deterministic runbook routing matrix.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/pipeline-execution.md
@@ -895,9 +931,9 @@ entries:
   review_paths_on_source_change:
   - docs/operations/pipeline-execution.md
   - docs/operations/pipeline-controls-runbook.md
-  last_verified_against: '2026-11-12'
-  notes: Guia operativa cercana a los entrypoints reales, pero aun demasiado acoplada
-    a estado runtime y baseline como para mantener Verified.
+  last_verified_against: '2026-11-21'
+  notes: Canonical operational runbook for executing the physical pipeline entrypoints
+    across all assessment phases.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/operations/troubleshooting-working.md
@@ -917,9 +953,9 @@ entries:
   - src/assessment_engine/application/run_commercial_pipeline.py
   - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
   - docs/architecture/working-artifacts.md
-  last_verified_against: '2026-11-12'
-  notes: Guia de troubleshooting util, pero muy dependiente del baseline presente
-    y de artefactos que pueden cambiar entre sesiones.
+  last_verified_against: '2026-11-21'
+  notes: Operational playbook for troubleshooting workspace scratchpads and reproducing
+    canonical smoke test fixtures.
   diataxis: how_to
   verification_mode: workflow
 - path: docs/contracts
@@ -936,9 +972,7 @@ entries:
   - tests/integration/test_validate_contracts_schemas.py
   - docs/architecture/working-artifacts.md
   last_verified_against: '2026-11-12'
-  notes: 'Colección mixta: incluye un documento de fronteras ya verificado y varias
-    piezas de diseño/plantilla todavía en Draft o Needs Review para el informe largo
-    y la evolución del anexo.'
+  notes: Canonical data contracts and schema specifications collection.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/contracts/payload-render-boundaries.md
@@ -969,13 +1003,12 @@ entries:
   - docs/contracts/artifact-contracts.md
   - docs/architecture/tower-pipeline.md
   - docs/architecture/global-commercial-pipelines.md
-  last_verified_against: '2026-11-12'
-  notes: Auditado contra schemas y renderizadores; documenta el handover determinista
-    blueprint->annex y el endurecimiento actual de annex, commercial y synthesizer
-    frente a contratos inválidos.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the structural boundaries between JSON
+    payloads, Pydantic schemas, and OpenXML AST compilers.
   diataxis: reference
   verification_mode: schema
-- path: docs/contracts/tower_blueprint_payload.md
+- path: docs/contracts/tower-blueprint-payload.md
   kind: document
   title: Tower blueprint payload contract
   doc_type: canonical
@@ -986,12 +1019,11 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/domain/schemas/blueprint.py
-  last_verified_against: '2026-11-12'
-  notes: Contrato directo del payload blueprint por torre, alineado con el schema
-    Pydantic vigente.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the BlueprintPayload Pydantic data contract.
   diataxis: reference
   verification_mode: schema
-- path: docs/contracts/tower_annex_payload.md
+- path: docs/contracts/tower-annex-payload.md
   kind: document
   title: Tower annex payload contract
   doc_type: canonical
@@ -1002,16 +1034,15 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/domain/schemas/annex_synthesis.py
-  last_verified_against: '2026-11-12'
-  notes: Contrato directo del payload annex por torre, alineado con el schema Pydantic
-    vigente.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the AnnexPayload Pydantic data contract.
   diataxis: reference
   verification_mode: schema
-- path: docs/contracts/tower_annex_design.md
+- path: docs/contracts/tower-annex-design.md
   kind: document
   title: Tower annex target design
   doc_type: canonical
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -1021,9 +1052,9 @@ entries:
   - src/assessment_engine/application/run_executive_annex_synthesizer.py
   - src/assessment_engine/adapters/compilers/payload_to_ast.py
   - docs/contracts/payload-render-boundaries.md
-  last_verified_against: '2026-11-12'
-  notes: Diseno objetivo del anexo de torre; util para evolucion editorial, pero no
-    describe una implementacion cerrada extremo a extremo.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the executive Tower Annex document structure
+    and AST layout.
   diataxis: reference
   verification_mode: schema
 - path: src/assessment_engine/application/tools/validate_documentation_governance.py
@@ -1039,7 +1070,8 @@ entries:
   - docs/documentation-map.yaml
   - docs/ai/documentation-governance.md
   last_verified_against: '2026-11-12'
-  notes: Script de validación para metadata documental, rutas y reglas de automatización.
+  notes: Automated validation script for documentation metadata, links, freshness,
+    and rules.
   diataxis: reference
   verification_mode: code
 - path: src/assessment_engine/application/tools/run_incremental_quality_gate.py
@@ -1056,8 +1088,8 @@ entries:
   - .github/workflows/quality.yml
   - pyproject.toml
   last_verified_against: '2026-11-12'
-  notes: Runner que calcula los ficheros Python cambiados en la superficie viva y
-    les aplica ruff check y format-check.
+  notes: Incremental quality runner calculating changed Python files and applying
+    Ruff check and format-check.
   diataxis: reference
   verification_mode: code
 - path: src/assessment_engine/application/tools/run_incremental_typecheck.py
@@ -1075,8 +1107,8 @@ entries:
   - pyproject.toml
   - uv.lock
   last_verified_against: '2026-11-12'
-  notes: Runner que calcula los ficheros Python cambiados en la superficie viva y
-    les aplica mypy de forma incremental.
+  notes: Incremental typecheck runner calculating changed Python files and executing
+    Mypy incrementally.
   diataxis: reference
   verification_mode: code
 - path: src/assessment_engine/application/tools/run_product_owner_orchestrator.py
@@ -1095,8 +1127,8 @@ entries:
   - src/assessment_engine/domain/prompts/product_owner_prompts.py
   - src/assessment_engine/infrastructure/product_owner_models.py
   last_verified_against: '2026-11-12'
-  notes: CLI local que planifica una petición de negocio, la ejecuta por tareas sobre
-    un executor configurable y gobierna validación, PR y auto-merge.
+  notes: Local CLI planning business requests, executing tasks via configurable executors,
+    and governing PR validation.
   diataxis: reference
   verification_mode: code
 - path: GEMINI.md
@@ -1113,8 +1145,8 @@ entries:
   - docs/SYSTEM_ARCHITECTURE.md
   - src
   last_verified_against: '2026-11-12'
-  notes: Contiene conocimiento útil, pero ya no debe presentarse como fuente única
-    de verdad.
+  notes: Operational adapter for Gemini CLI; operational instructions for interactive
+    sessions.
   diataxis: how_to
   verification_mode: editorial
 - path: docs/reference/reference-reports.md
@@ -1133,7 +1165,7 @@ entries:
   notes: Historical executive deliverable benchmark reference (FNMT-CERES structure).
   diataxis: reference
   verification_mode: editorial
-- path: docs/audits/AUDIT_FRAMEWORK.md
+- path: docs/audits/audit-framework.md
   kind: document
   title: Unified audit framework (Soverik Quality Engine)
   doc_type: operational
@@ -1143,44 +1175,12 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - docs/audits/AUDIT_RESULTS.md
   - src/assessment_engine/application/cli.py
   - src/assessment_engine/infrastructure/auditor/scanner.py
   - src/assessment_engine/infrastructure/auditor/models.py
-  last_verified_against: '2026-11-12'
-  notes: Marco operativo unificado de auditoría para CLI y certificación multidimensional.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/audits/AUDIT_RESULTS.md
-  kind: document
-  title: Documentation audit results
-  doc_type: operational
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - docs
-  - src/assessment_engine
-  last_verified_against: '2026-11-12'
-  notes: Resultados de auditoría con valor histórico y de seguimiento; requieren reverificación
-    antes de tratarse como estado actual.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/audits/NEUROSYMBOLIC_CODEBASE_AUDIT_REPORT.md
-  kind: document
-  title: Neuro-symbolic codebase audit report
-  doc_type: operational
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - scripts/build_client_delivery_suite.py
-  - src/assessment_engine
-  last_verified_against: '2026-11-12'
-  notes: Informe exhaustivo de auditoría AST, cobertura dinámica y arbitraje de Gemini 4 Argon.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the unified 21-probe audit framework
+    and scoring algorithms.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/audits
@@ -1196,27 +1196,7 @@ entries:
   - docs/
   - src/assessment_engine/
   last_verified_against: 2026-06-25
-  notes: Material de auditoría y backlog; útil para seguimiento, pero no debe leerse
-    como verdad actual sin reverificación.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/documentation_audit.md
-  kind: document
-  title: Documentation audit trail
-  doc_type: operational
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - docs
-  - humans
-  - ai-agents
-  source_of_truth:
-  - docs/documentation-map.yaml
-  - docs/README.md
-  - docs/ai/documentation-governance.md
-  last_verified_against: '2026-11-12'
-  notes: Lectura narrativa del estado documental; no debe afirmar completitud mientras
-    el inventario siga en revision.
+  notes: Audit framework and due diligence compliance collection.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/architecture/rage-architecture.md
@@ -1233,9 +1213,9 @@ entries:
   - src/assessment_engine/domain/schemas/rubric.py
   - engine_config/frameworks
   - tests/functional/test_agentic_benchmarker.py
-  last_verified_against: '2026-11-12'
-  notes: Especificación técnica y diseño de la arquitectura asíncrona de evaluación
-    factual RAGE.
+  last_verified_against: '2026-11-21'
+  notes: Technical specification of the Runtime Agentic Grounding and Evaluation (RAGE)
+    benchmarking subsystem.
   diataxis: explanation
   verification_mode: code
 - path: docs/architecture/policy-engine-architecture.md
@@ -1251,9 +1231,9 @@ entries:
   - src/assessment_engine/infrastructure/policy_engine.py
   - engine_config/policies
   - tests/integration/test_policy_engine.py
-  last_verified_against: '2026-11-12'
-  notes: Especificación técnica y diseño de las políticas de de-duplicación, secuenciación
-    y salvaguarda OT del Motor de Políticas.
+  last_verified_against: '2026-11-21'
+  notes: Technical specification of the Sovereign Policy Engine interceptor and the
+    8 registered compiler policies.
   diataxis: explanation
   verification_mode: code
 - path: docs/architecture/epistemic-graph-architecture.md
@@ -1267,13 +1247,14 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/infrastructure/epistemic_graph.py
-  - src/assessment_engine/infrastructure/policy_engine.py
-  last_verified_against: '2026-11-12'
-  notes: Especificación técnica y diseño de la infraestructura Event Sourcing y base
-    de datos CQRS del Grafo de Conocimiento.
+  - src/assessment_engine/infrastructure/epistemic_graph_service.py
+  - engine_config/policies/epistemic_dependencies.json
+  last_verified_against: '2026-11-21'
+  notes: Technical specification of the Epistemic Graph Event Store and Loopy Causal
+    Belief Network service.
   diataxis: explanation
   verification_mode: code
-- path: docs/contracts/rage_rubric_payload.md
+- path: docs/contracts/rage-rubric-payload.md
   kind: document
   title: RAGE Framework Rubric JSON Contract
   doc_type: canonical
@@ -1285,12 +1266,12 @@ entries:
   source_of_truth:
   - src/assessment_engine/domain/schemas/rubric.py
   - engine_config/frameworks
-  last_verified_against: '2026-11-12'
-  notes: Especificación técnica del contrato JSON declarativo de las rúbricas de evaluación
-    del motor RAGE.
+  last_verified_against: '2026-11-21'
+  notes: Canonical technical specification of the declarative RAGE framework rubric
+    JSON contract.
   diataxis: reference
   verification_mode: schema
-- path: docs/strategy/VISION.md
+- path: docs/strategy/vision.md
   kind: document
   title: 'Architectural Vision: The Sovereign Agentic OS'
   doc_type: canonical
@@ -1301,12 +1282,12 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/infrastructure/epistemic_graph.py
-  last_verified_against: '2026-11-12'
-  notes: Estrella del Norte y visión de largo plazo del motor de agentes y el Grafo
-    Epistémico.
+  last_verified_against: '2026-11-21'
+  notes: Strategic vision and 3-5 year North Star for the Sovereign Agentic OS and
+    Epistemic Graph.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/strategy/ROADMAP.md
+- path: docs/strategy/roadmap.md
   kind: document
   title: 'Product & Infrastructure Roadmap: The Sovereign Engine'
   doc_type: canonical
@@ -1318,13 +1299,14 @@ entries:
   source_of_truth:
   - docs/operations/engineering-quality-gates.md
   - src/assessment_engine/mcp_server.py
-  last_verified_against: '2026-11-12'
-  notes: Hoja de ruta unificada del producto bajo el estándar Now, Next, Later.
+  last_verified_against: '2026-11-21'
+  notes: Thematic product and infrastructure roadmap structured across Now, Next,
+    and Later horizons.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/operations/streaming-sentinel-guide.md
   kind: document
-  title: 'Guía de Operación: Streaming Sentinel (On-Demand Mode)'
+  title: Streaming Sentinel Operations Guide
   doc_type: operational
   status: Verified
   owner: docs-governance
@@ -1333,9 +1315,193 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/infrastructure/streaming_sentinel.py
-  last_verified_against: '2026-11-12'
-  notes: Manual operativo, diseño, comandos de sincronización y mitigación de tokens para el Sentinel de Streaming.
+  last_verified_against: '2026-11-21'
+  notes: Operational guide, architectural design, and FinOps token shields for Streaming
+    Sentinel on-demand evidence ingestion.
   diataxis: how_to
+  verification_mode: editorial
+- path: docs/adr
+  kind: collection
+  title: Architecture Decision Records
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/SYSTEM_ARCHITECTURE.md
+  last_verified_against: '2026-11-21'
+  notes: Architecture Decision Records collection.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/adr/README.md
+  kind: document
+  title: Architecture Decision Records Index
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/SYSTEM_ARCHITECTURE.md
+  - docs/contracts/payload-render-boundaries.md
+  last_verified_against: '2026-11-21'
+  notes: Master index and governance policy for Architecture Decision Records (ADRs).
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/adr/0001-exclusive-docx-monism.md
+  kind: document
+  title: ADR 0001 Exclusive Word DOCX Monism
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/contracts/payload-render-boundaries.md
+  - src/assessment_engine/adapters/compilers/docx_compiler.py
+  last_verified_against: '2026-11-21'
+  notes: ADR 0001 accepting exclusive Word DOCX monism and permanently disabling PDF
+    and HTML presentations.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/adr/0002-sqlite-epistemic-graph-wal.md
+  kind: document
+  title: ADR 0002 SQLite Epistemic Graph WAL
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/epistemic_graph.py
+  last_verified_against: '2026-11-21'
+  notes: ADR 0002 accepting local SQLite in WAL mode for epistemic event graph persistence.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/adr/0003-single-pass-policy-compiler.md
+  kind: document
+  title: ADR 0003 Single-Pass Policy Compiler
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/policy_engine.py
+  - docs/architecture/policy-engine-architecture.md
+  last_verified_against: '2026-11-21'
+  notes: ADR 0003 accepting single-pass deterministic policy compilation via SovereignPolicyEngine.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/contracts/mcp-tool-schemas.md
+  kind: document
+  title: FastMCP Server Tool Schemas Contract
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/mcp_server.py
+  - docs/architecture/mcp-mode.md
+  last_verified_against: '2026-11-21'
+  notes: Canonical JSON-RPC schema contracts and tool definitions for the FastMCP
+    Model Context Protocol service.
+  diataxis: reference
+  verification_mode: schema
+- path: docs/reference/data-dictionary.md
+  kind: document
+  title: Canonical Data Dictionary & Ontological Glossary
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - engine_config/governance_scales.json
+  - src/assessment_engine/domain/actuarial/schemas.py
+  - src/assessment_engine/domain/schemas/blueprint.py
+  - src/assessment_engine/domain/maturity_band.py
+  last_verified_against: '2026-11-21'
+  notes: Canonical data dictionary and ontological glossary defining actuarial metrics,
+    CMMI scales, and governance concepts.
+  diataxis: reference
+  verification_mode: schema
+- path: docs/contracts/README.md
+  kind: document
+  title: Data Contracts and Schemas Index
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/contracts/artifact-contracts.md
+  - docs/contracts/payload-render-boundaries.md
+  last_verified_against: '2026-11-21'
+  notes: Canonical index and routing map for data contracts, Pydantic schemas, and
+    tool specifications.
+  diataxis: reference
+  verification_mode: schema
+- path: docs/strategy/README.md
+  kind: document
+  title: Strategic Horizons & Vision Index
+  doc_type: canonical
+  status: Needs Review
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/strategy/vision.md
+  - docs/strategy/roadmap.md
+  last_verified_against: '2026-11-21'
+  notes: Canonical index and routing map for strategic vision, architectural roadmap,
+    and governance layers.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/reference/README.md
+  kind: document
+  title: Reference Catalogs & Glossaries Index
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/reference/data-dictionary.md
+  - docs/reference/reference-reports.md
+  last_verified_against: '2026-11-21'
+  notes: Canonical index and routing map for reference catalogs, data dictionaries,
+    and deliverable baselines.
+  diataxis: reference
+  verification_mode: editorial
+- path: docs/audits/README.md
+  kind: document
+  title: Audits & Forensic Telemetry Index
+  doc_type: operational
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/audits/audit-framework.md
+  - src/assessment_engine/application/cli.py
+  last_verified_against: '2026-11-21'
+  notes: Canonical index and operational routing for the audit framework, automated
+    probes, and certification deliverables.
+  diataxis: reference
   verification_mode: editorial
 automation_rules:
 - name: architecture-changes
@@ -1392,27 +1558,6 @@ coverage:
   - GEMINI.md
   - .github/copilot-instructions.md
   - docs/**/*.md
-  exclude:
-  - docs/reference/generated/legacy-gemini/**
-  - docs/strategy/**
-  - docs/audits/**
-  - docs/architecture/RFC_*.md
-  - docs/architecture/*ARGON*.md
-  - docs/architecture/SOTA_*.md
-  - docs/architecture/LEAN_*.md
-  - docs/architecture/ZERO_*.md
-  - docs/architecture/ROBUST_*.md
-  - docs/architecture/FINAL_*.md
-  - docs/architecture/DEEP_*.md
-  - docs/architecture/USER_OBSERVATIONS*.md
-  - docs/architecture/*PLAN*.md
-  - docs/architecture/*VERDICT*.md
-  - docs/architecture/*BLUEPRINT*.md
-  - docs/architecture/*RESOLUTION*.md
-  - docs/architecture/RED_TEAM_*.md
-  - docs/architecture/UNIVERSAL_*.md
-  - docs/architecture/ACADEMIC_*.md
-  - docs/architecture/ULTIMATE_*.md
-  - docs/architecture/*AUDIT*.md
+  exclude: []
 freshness:
   verified_max_age_days: 180

@@ -31,6 +31,15 @@ def test_compute_tower_score_invalid_weights():
     with pytest.raises(ValueError, match="Pillar weights must sum to 1.0 or 100"):
         ScoringEngine.compute_tower_score(p_scores, p_weights)
 
+def test_compute_tower_score_with_excluded_pillar_renormalization():
+    # 5 pillars: 4 active with score 4.0, 1 excluded with 0.0
+    p_scores = [Decimal("4.0"), Decimal("4.0"), Decimal("4.0"), Decimal("4.0"), Decimal("0.0")]
+    p_weights = [Decimal("20"), Decimal("20"), Decimal("20"), Decimal("20"), Decimal("20")]
+
+    result = ScoringEngine.compute_tower_score(p_scores, p_weights)
+    # The active 4 pillars must re-normalize to 25% each, preserving the 4.00 score without zero dilution
+    assert result == Decimal("4.00")
+
 def test_generate_audit_trail():
     tower_id = "T1"
     kpi_ledger = {

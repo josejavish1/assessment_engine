@@ -2,129 +2,117 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../pyproject.toml
-- ../../tests/integration/test_validate_contracts_schemas.py
-- ../../src/assessment_engine/application/run_tower_pipeline.py
-- ../../src/assessment_engine/application/run_global_pipeline.py
-- ../../src/assessment_engine/application/run_commercial_pipeline.py
-- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-- ../architecture/working-artifacts.md
-last_verified_against: 2026-11-12
+- pyproject.toml
+- tests/integration/test_validate_contracts_schemas.py
+- src/assessment_engine/application/run_tower_pipeline.py
+- src/assessment_engine/application/run_global_pipeline.py
+- src/assessment_engine/application/run_commercial_pipeline.py
+- src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+- docs/architecture/working-artifacts.md
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
+notes: Operational playbook for troubleshooting workspace scratchpads and reproducing canonical smoke test fixtures.
 ---
-# Troubleshooting `working/` and Smoke Artifacts Playbook
+# Workspace Troubleshooting & Smoke Artifacts Playbook
 
-Este manual de operaciones unifica el diagnóstico, la resolución de fallos y el **playbook de regeneración reproducible de artefactos de humo (`smoke_ivirma`)** para restaurar el entorno cuando se presentan inconsistencias lógicas o fallas de validación en el directorio temporal `working/`.
-
----
-
-## 1. El Estado de Conformidad (*Baseline State*)
-
-La suite de pruebas unitarias de contratos y entregables (`test_validate_contracts_schemas.py` y `test_payload_validation.py`) consume artefactos de datos reales de prueba previamente compilados en lugar de instanciar mocks puramente desacoplados.
-
-Para el verde absoluto de la suite, se exige la presencia física de los siguientes artefactos en tu disco local:
-
-*   `working/smoke_ivirma/T5/blueprint_t5_payload.json`
-*   `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json`
-*   `working/smoke_ivirma/T5/Blueprint_Transformacion_T5_smoke_ivirma.docx`
-*   `working/smoke_ivirma/T5/annex_t5_smoke_ivirma_final.docx`
-*   `working/smoke_ivirma/global_report_payload.json`
-*   `working/smoke_ivirma/commercial_report_payload.json`
-*   `working/smoke_ivirma/presentation/index.html`
-
-Si estos archivos son eliminados, alterados o sufren derivas contractuales, los tests del sistema fallarán o se ignorarán.
+Canonical operational playbook establishing diagnostic triage protocols, physical scratchpad recovery, and reproducible smoke test regeneration (`smoke_ivirma`) across `assessment-engine`.
 
 ---
 
-## 2. Protocolo de Diagnóstico Rápido
+## 1. Compliance Baseline State (`smoke_ivirma`)
 
-Si registras un fallo en pytest, ejecuta estas aserciones de diagnóstico físico:
+Contract tests (`test_validate_contracts_schemas.py`) and golden master regression suites consume real pre-compiled test payloads from disk. For the test suite to pass with 100% green status, the following baseline artifacts must physically exist on the local filesystem:
 
-### A. Inspección de Estructura de Trabajo General
-```bash
-find working -maxdepth 3 -type f | sort
+```text
+working/smoke_ivirma/
+├── global_report_payload.json
+├── commercial_report_payload.json
+├── Tomo_1_Diagnostico_ASIS_smoke_ivirma.docx
+├── Account_Action_Plan_smoke_ivirma.docx
+└── T5/
+    ├── blueprint_t5_payload.json
+    ├── approved_annex_t5.template_payload.json
+    ├── Blueprint_Transformacion_T5_smoke_ivirma.docx
+    └── annex_t5_smoke_ivirma_final.docx
 ```
 
-### B. Inspección del Perfil de Cliente
+If these baseline artifacts are accidentally deleted, altered, or corrupted, integration test suites will fail.
+
+---
+
+## 2. Rapid Diagnostic Inspection
+
+When encountering unexpected test failures in workspace contracts, execute these physical filesystem checks:
+
+### Inspect Workspace Directory Layout:
 ```bash
-find working/smoke_ivirma -maxdepth 2 -type f | sort
+find working/smoke_ivirma -maxdepth 3 -type f | sort
+```
+
+### Inspect Single-Tower Payload Schema Validity:
+```bash
+python src/assessment_engine/application/tools/validate_contracts_schemas.py \
+  --repo-root . \
+  --documentation-map docs/documentation-map.yaml
 ```
 
 ---
 
-## 3. Playbook de Regeneración de Artefactos de Humo
+## 3. Smoke Artifacts Regeneration Playbook
 
-Si constatas la ausencia, alteración o desactualización del baseline, utiliza el runner dedicado de la plataforma para regenerarlo de forma idéntica y trazable.
+When baseline fixtures are missing or modified, use the platform's deterministic regeneration runner:
 
-### Comando Base (Aprovisionamiento Estándar):
+### A. Standard Baseline Regeneration:
+Regenerates client `smoke_ivirma`, tower `T5`, and scenario `baseline` using deterministic seed `42`:
 ```bash
 python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
-*Por defecto, este comando regenera el cliente `smoke_ivirma`, torre `T5` y escenario `baseline` usando la semilla determinista `42`.*
 
----
-
-### Variantes Operativas y Casos de Uso Avanzados:
-
-#### A. Simulación Rápida en Seco (*Dry-run*):
-Para validar la orquestación y regeneración de artefactos sin realizar llamadas costosas ni consumir tokens de la API de Vertex AI:
+### B. Dry-Run Preflight Simulation:
+Validates pipeline wiring and AST layout compilation without making external Vertex AI calls:
 ```bash
 python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
 ```
-*Este modo sustituye las salidas de la IA por estructuras sintácticamente perfectas vacías para validar que el pipeline de compilación no tenga roturas lógicas.*
 
-#### B. Ejecución Fuera de Línea (*Air-gapped / Local-only*):
-Si no dispones de conexión a internet o el proveedor de Cloud sufre una interrupción temporal del servicio, puedes regenerar el baseline local desactivando por completo las llamadas a LLMs:
+### C. Air-Gapped / Offline Execution:
+If offline or if external cloud providers experience outages, regenerate the local baseline from static caches:
 ```bash
 python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
-*Este modo utiliza un caché de respuestas y plantillas almacenado de forma segura en `templates/` para simular la ejecución de forma 100% offline.*
 
-#### C. Regeneración con Consolidación Global, Comercial y Web:
-Para ejecutar una prueba de humo de integración de extremo a extremo que valide la cascada de compilación completa:
-```bash
-python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
-```
-
-#### D. Pruebas Multi-Torre en Escenarios Personalizados:
-Para validar el comportamiento del motor bajo una topología compleja con múltiples especialidades tecnológicas:
+### D. Full End-to-End Consolidated Smoke Suite:
+Regenerates single-tower, global consolidation, and commercial strategy deliverables in a single pass:
 ```bash
 python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
-  --client vodafone_demo \
-  --scenario vodafone-public \
-  --towers T2 T3 T5 \
-  --with-global --with-commercial --with-web
+  --with-global \
+  --with-commercial
 ```
 
 ---
 
-## 4. Validación de Acceso a Google Cloud / Vertex AI
+## 4. Google Cloud / Vertex AI Connectivity Triage
 
-Si deseas validar las cuotas, credenciales y conexión con Vertex AI antes de lanzar una regeneración con IA:
+To validate credentials, active project IDs, and API quotas before launching LLM-assisted regeneration:
 
 ```bash
 python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
-### Resolución de Errores Comunes de Acceso Cloud:
-*   **Error:** `GoogleDefaultCredentialsError` / `PermissionDenied` en la llamada generativa.
-*   **Solución:**
-    1.  Verificar que las credenciales locales estén inicializadas de forma activa en la sub-shell actual:
-        ```bash
-        gcloud auth application-default login
-        ```
-    2.  Si tu red local restringe la conexión con los servidores de Google, conmutar la ejecución utilizando el flag `--local-only`.
-
----
-
-## 5. Directrices de Mantenimiento ante Cambios en Código
-
-Cuando realices modificaciones en el motor (como alterar la lógica de scoring o expandir Pydantic schemas) que rompan de forma legítima el baseline antiguo:
-1.  **Regenera el Baseline:** Lanza `python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web` para compilar los nuevos payloads conformes.
-2.  **Verifica en Verde:** Corre la suite de tests (`pytest tests/`) para asegurar que el rastro de aserciones transicione con éxito al estado verde brillante.
-3.  **Garantiza la Coherencia Transversal:** Verifica que no se hayan introducido divergencias métricas entre el scoring de Python y el storytelling de los Word compilados en la carpeta temporal.
+### Common Authentication Triage:
+- **Symptom:** `GoogleDefaultCredentialsError` or `PermissionDenied`.
+- **Remedy:**
+  1. Re-authenticate local Application Default Credentials:
+     ```bash
+     gcloud auth application-default login
+     ```
+  2. Confirm `GOOGLE_CLOUD_PROJECT` is exported:
+     ```bash
+     export GOOGLE_CLOUD_PROJECT="sub403o4u0q5"
+     export GOOGLE_CLOUD_LOCATION="europe-west1"
+     ```
+  3. If cloud access remains unavailable, switch to offline mode (`--local-only`).

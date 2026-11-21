@@ -39,6 +39,14 @@ jobs:
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA"
 
+      - name: Architectural Dependency Graph (Import Linter)
+        run: |
+          lint-imports --no-logo
+
+      - name: Advanced Mutation Testing (Domain Layer >= 85%)
+        run: |
+          python -c "from pathlib import Path; from assessment_engine.infrastructure.auditor.probes.mutation_gate import run_mutation_gate_probe; res = run_mutation_gate_probe(Path('.')); import sys; sys.exit(0 if res.passed else 1)"
+
       - name: Architectural Fitness Function (Golden Paths)
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}

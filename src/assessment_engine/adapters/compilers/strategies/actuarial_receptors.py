@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import logging
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 from assessment_engine.domain.actuarial.receptor_allocator import (
     ActuarialVectorAllocator,
@@ -309,7 +312,7 @@ class AvailabilityOutageStrategy(BaseReceptorStrategy):
         arch = ctx.operational_archetype.upper()
         beta_map = ctx.loc_branch.get("annex_ch4_context_beta", {})
 
-        from assessment_engine.domain.actuarial.financial_profile import (
+        from assessment_engine.domain.models.shared.financial_profile import (
             IndustryArchetype,
         )
         resolved_arch = IndustryArchetype.from_str(arch)

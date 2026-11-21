@@ -12,7 +12,7 @@ from assessment_engine.domain.actuarial.finding_archetype_resolver import (
 )
 from assessment_engine.domain.actuarial.input_resolver import ActuarialInputResolver
 from assessment_engine.domain.actuarial.euler_allocator import EulerPortfolioAllocator
-from assessment_engine.domain.bayesian_fair_copula_engine import OperationalZone
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import OperationalZone
 from assessment_engine.domain.taxonomy.archetype_registry import LossArchetypeType
 
 
@@ -79,7 +79,7 @@ def test_tier_a_operational_friction_circuit_breaker(standard_operational_zone: 
     hc = {
         "id": "HC-LOG-01",
         "title": "Linux Root Partition Log Saturation",
-        "finding": "Saturacion de espacio en disco por ficheros de log sin rotar alertando a 1GB.",
+        "finding": "Disk space saturation due to unrotated log files alerting at 1GB.",
         "recovery_time_hours": 8.0,  # Erroneous 8-hour factory outage
     }
     inputs, telemetry, _ = ActuarialInputResolver.resolve_finding_inputs(

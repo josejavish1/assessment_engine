@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import { existsSync, realpathSync } from 'fs';
 import path from 'path';
+import { getSessionUser } from '@/lib/auth/session';
 
 const REPO_ROOT = path.resolve(process.cwd(), '..');
 
 const ALLOWED_ROOT_DIRS: readonly string[] = [
-  path.resolve(REPO_ROOT, 'working', 'out'),
+  path.resolve(REPO_ROOT, 'workspaces'),
   path.resolve(REPO_ROOT, 'deliverables'),
 ];
 
@@ -43,6 +44,11 @@ function isPathWithinAllowedRoots(targetPath: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized: Authentication session required' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const rawFileParam = searchParams.get('path') || searchParams.get('file');
   const viewMode = searchParams.get('view');
@@ -61,6 +67,33 @@ export async function GET(req: NextRequest) {
       { error: 'Access denied: Requested resource is outside authorized output boundaries.' },
       { status: 403 }
     );
+  }
+
+  // Tenant isolation for external clients
+  if (user.role === 'CLIENT') {
+    if (!user.clientSlug) {
+      return NextResponse.json(
+        { error: 'Forbidden: Client account is missing assigned tenant boundary.' },
+        { status: 403 }
+      );
+    }
+
+    const tenantWorkspace = path.resolve(REPO_ROOT, 'workspaces', user.clientSlug);
+    const tenantSimulation = path.resolve(REPO_ROOT, 'workspaces', 'simulations', user.clientSlug);
+    const relWorkspace = path.relative(tenantWorkspace, candidatePath);
+    const relSim = path.relative(tenantSimulation, candidatePath);
+
+    const isWithinTenantWorkspace =
+      relWorkspace !== '' && !relWorkspace.startsWith('..') && !path.isAbsolute(relWorkspace);
+    const isWithinTenantSim =
+      relSim !== '' && !relSim.startsWith('..') && !path.isAbsolute(relSim);
+
+    if (!isWithinTenantWorkspace && !isWithinTenantSim) {
+      return NextResponse.json(
+        { error: 'Forbidden: Access restricted to authorized tenant deliverables.' },
+        { status: 403 }
+      );
+    }
   }
 
   try {
@@ -95,7 +128,8 @@ export async function GET(req: NextRequest) {
         'X-Content-Type-Options': 'nosniff',
       },
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'File not found' }, { status: 404 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'File not found';
+    return NextResponse.json({ error: message }, { status: 404 });
   }
 }

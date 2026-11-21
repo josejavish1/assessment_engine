@@ -1,12 +1,25 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import path from 'path';
+import { getSessionUser } from '@/lib/auth/session';
 
 const REPO_ROOT = path.resolve(process.cwd(), '..');
 const PYTHON_BIN = path.join(REPO_ROOT, '.venv', 'bin', 'python');
 const SCRIPT_PATH = path.join(REPO_ROOT, 'scripts', 'simulate_multinational_archetypes.py');
 
-export async function GET(req: NextRequest) {
+export async function GET() {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized: Authentication session required' }, { status: 401 });
+  }
+
+  if (user.role === 'CLIENT') {
+    return NextResponse.json(
+      { error: 'Forbidden: Pipeline simulation requires NTT DATA Consultant or Admin privileges' },
+      { status: 403 }
+    );
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -37,7 +50,11 @@ export async function GET(req: NextRequest) {
         env: process.env,
       });
 
-      safeEnqueue(encoder.encode(`[${new Date().toLocaleTimeString()}] [PIPELINE] Dispatching actuarial simulation across all archetypes...\n`));
+      safeEnqueue(
+        encoder.encode(
+          `[${new Date().toLocaleTimeString()}] [PIPELINE] Dispatching actuarial simulation across all archetypes...\n`
+        )
+      );
 
       proc.stdout.on('data', (chunk) => {
         safeEnqueue(chunk);
@@ -48,22 +65,18 @@ export async function GET(req: NextRequest) {
       });
 
       proc.on('close', (code) => {
-        if (code === 0) {
-          safeEnqueue(encoder.encode(`\n[${new Date().toLocaleTimeString()}] [OK] Pipeline completado exitosamente. All los arquetipos y entregables actualizados.\n`));
-        } else {
-          safeEnqueue(encoder.encode(`\n[${new Date().toLocaleTimeString()}] [ERROR] Pipeline terminated with error code ${code}.\n`));
-        }
+        safeEnqueue(encoder.encode(`\n[${new Date().toLocaleTimeString()}] [PIPELINE] Execution completed with status code ${code}.\n`));
         safeClose();
       });
 
       proc.on('error', (err) => {
-        safeEnqueue(encoder.encode(`\n[${new Date().toLocaleTimeString()}] [ERROR] Execution error: ${err.message}\n`));
+        safeEnqueue(encoder.encode(`\n[${new Date().toLocaleTimeString()}] [ERROR] Process spawn failure: ${err.message}\n`));
         safeClose();
       });
     },
   });
 
-  return new Response(stream, {
+  return new NextResponse(stream, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Transfer-Encoding': 'chunked',

@@ -2,140 +2,141 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../docs/operations/agentic-development-workflow.md
-- ../../pyproject.toml
-- ../../uv.lock
-- ../../.github/workflows/quality.yml
-- ../../.github/workflows/typing.yml
-- ../../.github/pull_request_template.md
-- ../../AGENTS.md
-- ../../.github/copilot-instructions.md
-- ../../src/assessment_engine/infrastructure/global_maturity_policy.py
-- ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
-- ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
-- ../../tests/integration/test_policy_engine.py
-last_verified_against: 2026-11-12
+- docs/operations/agentic-development-workflow.md
+- pyproject.toml
+- uv.lock
+- .github/workflows/quality.yml
+- .github/workflows/typing.yml
+- .github/pull_request_template.md
+- AGENTS.md
+- .github/copilot-instructions.md
+- src/assessment_engine/infrastructure/global_maturity_policy.py
+- src/assessment_engine/application/tools/run_incremental_quality_gate.py
+- src/assessment_engine/application/tools/run_incremental_typecheck.py
+- tests/integration/test_policy_engine.py
+review_when_source_changes:
+- docs/operations/agentic-development-workflow.md
+- pyproject.toml
+- uv.lock
+- .github/workflows/quality.yml
+- .github/workflows/typing.yml
+- .github/pull_request_template.md
+- AGENTS.md
+- .github/copilot-instructions.md
+- src/assessment_engine/infrastructure/global_maturity_policy.py
+- src/assessment_engine/application/tools/run_incremental_quality_gate.py
+- src/assessment_engine/application/tools/run_incremental_typecheck.py
+- tests/integration/test_policy_engine.py
+review_paths_on_source_change:
+- docs/operations/engineering-quality-gates.md
+- docs/operations/README.md
+- docs/README.md
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
+notes: Canonical technical specification of the automated engineering quality gates and static analysis checks.
 ---
-# Engineering quality gates
+# Engineering Quality Gates & Static Analysis Checks
 
-Este documento establece y define las compuertas de calidad (*quality gates*) aplicadas de forma automatizada sobre el ciclo de vida del motor. Su propósito es asegurar que cualquier cambio de código se someta a análisis estáticos de calidad y tipado estricto, complementando las pruebas de comportamiento y verificaciones de coherencia documental.
+Canonical operational specification defining the automated quality gates, static typing checks, architectural fitness tests, and audit probes enforcing codebase integrity across `assessment-engine`.
 
-## Alcance de Validación (Superficie Activa)
+---
 
-Las compuertas automáticas restringen sus análisis estrictamente a la superficie de desarrollo activa del repositorio:
+## 1. Active Verification Surface
 
--   `src/assessment_engine/domain/`
--   `tests/`
+Automated quality gates inspect changes across the active development surface:
 
-Se excluyen deliberadamente las rutas históricas, obsoletas o generadas pasivamente (como la documentación técnica archivada en `docs/reference/generated/legacy-gemini/`), de modo que la deuda técnica heredada y no operativa no obstruya la agilidad en la integración de la base de código viva.
+- `src/assessment_engine/domain/` (Entities, schemas, actuarial models)
+- `src/assessment_engine/application/` (Orchestrators, synthesizers, calculators)
+- `src/assessment_engine/adapters/` (OpenXML AST compilers, CLI entrypoints)
+- `src/assessment_engine/infrastructure/` (Clients, event store, config loaders)
+- `tests/` (Unit, integration, and architecture regression suites)
 
-## Regla central
+### Operational Invariant Axiom:
+Core business invariants, CMMI maturity scales, and data contracts MUST NOT reside solely in LLM prompt strings or manual code reviews. Every architectural invariant must be enforced by at least one executable gate:
+1. **Domain Policies:** Pure-Python modules encapsulating centralized business formulas.
+2. **Typed Pydantic Schemas:** Schema boundary validation (`validate_contracts_schemas.py`).
+3. **Automated Test Coverage:** Regression suites blocking semantic drift.
+4. **CI/CD Quality Checkpoints:** Automated GitHub Actions workflows blocking pull requests.
 
-Las invariantes lógicas y de negocio críticas del sistema no deben residir únicamente en prompts de LLMs, registros de memoria de equipo o listas de control manual. Es un requisito ineludible que cualquier regla transversal se materialice en uno o más de los siguientes mecanismos de validación deterministas:
+---
 
-1.  **Políticas y Utilidades de Dominio Compartidas (Domain Policies):** Centralización de la lógica de negocio en helpers desacoplados.
-2.  **Esquemas de Datos Tipados y Validaciones de Restricción:** Modelamiento estricto mediante clases Pydantic.
-3.  **Pruebas Unitarias e Integración Automatizadas:** Cobertura de tests para bloquear regresiones.
-4.  **Flujos de Verificación Continua (CI/CD Quality Checkpoints):** Validación de integración mediante GitHub Actions.
+## 2. The Four Executable Quality Gates
 
-Cualquier decisión estructural asociada a la resolución cuantitativa, coherencia narrativa, contratos de interfaz o renderizado de deliverables no puede depender de supuestos o disciplina manual de codificación; debe estar respaldada por un guardarraíl ejecutable. El desarrollo de estas soluciones debe basarse en una especificación mínima aprobada, tal como se detalla en [`agentic-development-workflow.md`](agentic-development-workflow.md).
+```
++---------------------------------------------------------------------------------------+
+| 1. INCREMENTAL QUALITY GATE (quality.yml / run_incremental_quality_gate.py)           |
+| - Ruff Linter: Syntax, complexity, and PEP compliance                                 |
+| - Ruff Formatter: Deterministic code formatting (--check)                             |
+| - Golden Path Check: Validates scaffolding compliance (templates/golden_paths)        |
+| - Import Linter: Layered architecture enforcement (blocks domain -> infrastructure)   |
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v
++---------------------------------------------------------------------------------------+
+| 2. INCREMENTAL TYPING GATE (typing.yml / run_incremental_typecheck.py)                |
+| - Strict Mypy typecheck on changed modules and direct dependents                      |
+| - Blocks implicit Any casts and untyped signatures                                    |
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v
++---------------------------------------------------------------------------------------+
+| 3. DOMAIN COHERENCE GATE (tests/integration/test_policy_engine.py)                     |
+| - Centralized maturity resolution via maturity_band.py                                |
+| - Cross-tower consistency asserting zero metric divergence between blueprints & annexes|
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v
++---------------------------------------------------------------------------------------+
+| 4. COMPREHENSIVE AUDIT SUITE (python -m assessment_engine.application.cli audit)       |
+| - 21 Automated Probes: SAST, Shannon entropy secrets, mutation score, AST reachability|
+| - Generates docs/audits/AUDIT_REPORT.json and AUDIT_CERTIFICATE.html                  |
++---------------------------------------------------------------------------------------+
+```
 
-## Gates ejecutables actuales
+---
 
-### 1. Calidad Estática Incremental
-El workflow `.github/workflows/quality.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
+## 3. Local Execution Recipes
 
-El proceso de verificación realiza las siguientes operaciones secuenciales:
-1.  **Determinación de Delta de Cambios:** Identificación de archivos modificados empleando diffs de Git entre `base_sha` y `head_sha`.
-2.  **Filtrado de Ámbito Activo:** Selección exclusiva de rutas dentro de la superficie viva, descartando archivos eliminados en el árbol de trabajo actual.
-3.  **Análisis Estático (Linter):** Ejecución de `ruff check` sobre el delta de archivos modificados.
-4.  **Validación de Estilo (Formatter):** Inspección de formato empleando `ruff format --check`.
+Prior to pushing changes or opening a pull request, operators and autonomous agents MUST execute the local incremental quality checks:
 
-Este enfoque incremental bloquea de manera proactiva la introducción de nueva deuda técnica sin requerir la refactorización inmediata de los componentes históricos del repositorio.
+### Incremental Quality Gate (Linting, Formatting & Golden Path):
+```bash
+python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
+  --repo-root . \
+  --base-sha origin/main \
+  --head-sha HEAD
+```
 
-### 2. Tipado Estático Incremental
-El workflow `.github/workflows/typing.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
+### Incremental Static Typing (Mypy):
+```bash
+python src/assessment_engine/application/tools/run_incremental_typecheck.py \
+  --repo-root . \
+  --base-sha origin/main \
+  --head-sha HEAD
+```
 
-Este job reutiliza el mismo delta de cambios y ejecuta el análisis estático de tipos (`mypy`) exclusivamente sobre los archivos modificados dentro de `src/assessment_engine/domain/**` y `tests/**`. El objetivo de este checkpoint no es exigir la tipificación completa del código heredado de forma inmediata, sino blindar el crecimiento del sistema garantizando que cada nueva adición o modificación se adhiera al sistema de tipos estáticos.
+### Targeted Module Testing:
+```bash
+python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
+  --repo-root . \
+  --path src/assessment_engine/domain/schemas/blueprint.py \
+  --path tests/unit/test_config_registry.py
+```
 
-### 3. Coherencia de Dominio
-Para prevenir la duplicidad semántica de políticas y la fragmentación lógica (*split-brain*), los parámetros transversales de puntuación (*score*), bandas de madurez, gradientes cromáticos y metas cualitativas se encuentran consolidados.
-
-El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/integration/test_policy_engine.py`.
-
-### 4. Auditoría Multidimensional Soverik (CLI Unificado)
-La compuerta integral de certificación y due diligence se ejecuta localmente o en CI mediante:
-
+### Full Audit Probe Suite:
 ```bash
 python -m assessment_engine.application.cli audit
 ```
 
-Evalúa 21 sondas automatizadas que consolidan en un único paso:
-- Seguridad estática (SAST/DAST) y detección de secretos por entropía Shannon.
-- Cobertura de código productivo (exigencia Tier-1 >= 65.0%).
-- Calidad de aserciones en tests unitarios (ratio de aserciones fuertes >= 80.0%).
-- Resistencia a mutaciones sintácticas bajo norma ISO/IEC/IEEE 29119.
-- Topología AST y detección de módulos huérfanos o código muerto (NetworkX).
-- Complejidad ciclomática ISO 25010 y ausencia de violaciones CWE-391.
+---
 
-Genera automáticamente los informes `docs/audits/AUDIT_REPORT.json`, `docs/audits/AUDIT_CERTIFICATE.html` y actualiza `docs/audits/AUDIT_RESULTS.md`. Los detalles de especificación de sondas están documentados en [`AUDIT_FRAMEWORK.md`](../audits/AUDIT_FRAMEWORK.md).
+## 4. Architectural Invariants for AI Agents
 
-## Reglas de implementación del proyecto
-
--   **Reutilización Imperativa:** Consumir siempre helpers, esquemas de datos y utilidades de dominio compartidas antes de duplicar lógicas de cálculo o formateo.
--   **No Ocultación:** Toda lógica de negocio y de reporting técnico de alta relevancia debe codificarse de forma determinista en Python, prohibiéndose su ocultación exclusiva dentro de prompts de modelos de lenguaje.
--   **Alineamiento Multidimensional:** Ante cambios en contratos o interfaces de payload, actualizar de forma obligatoria las suites de pruebas unitarias y la documentación canónica asociada.
--   **Consistencia Directiva:** Si se modifican parámetros asociados al score, bandas de madurez, targets u otros elementos cliente-facing, es obligatorio sincronizar y certificar los tests en `tests/integration/test_policy_engine.py`.
--   **Aislamiento de Legado:** Prohibido emplear carpetas de compatibilidad heredada, archivos obsoletos o código muerto como fuente de verdad técnica para nuevas implementaciones.
-
-## Relación con la revisión humana
-
-Las compuertas automáticas constituyen condiciones necesarias pero no suficientes para la integración:
-
--   El checklist de `.github/pull_request_template.md` exige la certificación explícita de impacto de calidad e integridad documental antes de la fusión.
--   Dicho template incluye una sección dedicada de **assessment coherence checks** para Pull Requests que modifiquen componentes de scoring, payloads canónicos, prompts de LLM o el dossier estratégico `client_intelligence`.
--   `AGENTS.md` y `.github/copilot-instructions.md` dirigen a las inteligencias artificiales a someterse a esta disciplina de calidad pre-vuelo antes de generar código.
--   El orquestador de pull requests (`.github/workflows/orchestrator-pr-reconcile.yml`), cuando está operativo, actúa coordinando los reintentos de análisis estáticos y validaciones de estado, garantizando que el pipeline de fusión respete rigurosamente todas las compuertas del repositorio.
-
-## Ejecución local recomendada
-
-Para certificar localmente los archivos modificados en una rama de trabajo, ejecute:
-
-```bash
-python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
-  --repo-root . \
-  --path src/assessment_engine/application/tools/run_incremental_quality_gate.py \
-  --path tests/integration/test_validate_contracts_schemas.py
-
-python src/assessment_engine/application/tools/run_incremental_typecheck.py \
-  --repo-root . \
-  --path src/assessment_engine/application/build_global_report_payload.py \
-  --path tests/integration/test_policy_engine.py
-
-python -m pytest \
-  tests/integration/test_policy_engine.py \
-  tests/integration/test_validate_contracts_schemas.py -q
-```
-
-*Nota: La ejecución local de compuertas incrementales complementa, pero no sustituye, la obligación de ejecutar la suite de pruebas unitarias (`pytest`) del proyecto antes de confirmar los cambios.*
-
-## Estrategia de Endurecimiento Futuro
-
-Conforme la base de código viva avance en su consolidación, las compuertas de calidad se endurecerán bajo las siguientes directrices:
-1.  **Ampliación del Tipado:** Elevar el análisis de MyPy de nivel incremental (*fichero modificado*) a nivel de módulos y paquetes completos en `domain` y `application`.
-2.  **Endurecimiento de Coherencia:** Ampliar los tests de coherencia cruzada para englobar aserciones semánticas en la capa comercial, alineamiento térmico y correspondencia directa en payloads web.
-3.  **Validación Arquitectónica Estricta:** Incorporar análisis de dependencias de importación para blindar la estructura hexagonal, previniendo acoplamientos prohibidos entre adaptadores e infraestructura.
-
-## Protección de Rama (`main`)
-
-Para garantizar la estabilidad del repositorio y la integridad del proceso de integración, la rama `main` está protegida con las siguientes reglas a nivel de GitHub:
-
-1.  **No se permiten commits directos:** Todo cambio debe integrarse a través de un Pull Request, asegurando que pasa por el proceso de revisión y validación.
-2.  **Se requieren verificaciones de estado (Status Checks):** Un Pull Request no puede ser fusionado si alguno de los jobs de CI/CD configurados (como `quality` y `typing`) ha fallado.
-3.  **Sincronización obligatoria con `main`:** Un Pull Request no puede ser fusionado si no está actualizado con el último commit de la rama `main`. Esto previene conflictos y asegura que las pruebas se ejecutan sobre la versión más reciente del código.
+1. **Gate Immutability:** Agents must never alter rule configurations in `pyproject.toml` (`[tool.ruff]`, `[tool.mypy]`, `[tool.importlinter]`) to bypass failing checks. Code must adapt to the gates, never the reverse.
+2. **Zero Suppression Hacks:** Disabling warnings via `# type: ignore`, `# noqa`, or casting to `Any` without explicit human authorization is strictly prohibited.
+3. **Deterministic Business Logic:** All quantitative calculations (averages, maturity mappings, risk distributions) must be executed in Python domain code, never inside LLM system prompts.

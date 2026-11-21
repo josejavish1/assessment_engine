@@ -53,12 +53,14 @@ dependencies = [
 dev = [
     "duckduckgo-search>=8.0.0",
     "hypothesis>=6.100.0",
+    "import-linter>=2.17",
     "libcst>=1.4.0",
     "mypy>=1.10.0",
     "playwright>=1.45.0",
     "pre-commit>=3.7.0",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-cov>=7.1.0",
     "pytest-mock>=3.14.0",
     "pytest-xdist>=3.5.0",
     "ruff>=0.5.0",
@@ -66,6 +68,7 @@ dev = [
 
 [project.scripts]
 assessment-engine = "assessment_engine.application.cli:main"
+assessment-api = "assessment_engine.adapters.api.server:main"
 po-run = "assessment_engine.application.tools.run_product_owner_orchestrator:main"
 
 [tool.ruff]
@@ -83,9 +86,11 @@ convention = "google"
 # Exclude tests from strict docstring and commented-out code checks
 "tests/**/*.py" = ["D", "ERA"]
 "src/assessment_engine/**/*.py" = ["D", "ERA"]
+"src/assessment_engine/adapters/compilers/payload_to_ast.py" = ["F841"]
 
 [tool.mypy]
 python_version = "3.11"
+plugins = ["pydantic.mypy"]
 mypy_path = "src"
 check_untyped_defs = true
 disallow_untyped_defs = true
@@ -96,7 +101,7 @@ no_implicit_optional = true
 strict_optional = true
 namespace_packages = true
 explicit_package_bases = true
-exclude = ["working/", "src/assessment_engine/application/tools/"]
+exclude = ["workspaces/", "src/assessment_engine/application/tools/", "tests/diagnostics/"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -118,13 +123,18 @@ module = [
     "yaml.*",
     "pytest.*",
     "pytest_mock.*",
+    "openpyxl",
+    "openpyxl.*",
+    "scipy",
+    "scipy.*",
+    "server",
     "zipfile.*"
 ]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"
-ignore_errors = true
+disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = "assessment_engine.*"
@@ -132,12 +142,19 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-norecursedirs = [".git", ".venv", "working", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
+norecursedirs = [".git", ".venv", "workspaces", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
 addopts = "-ra -q -n auto --dist loadgroup"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 markers = [
-    "contract: marks tests that validate data contracts between pipeline stages"
+    "contract: marks tests that validate data contracts between pipeline stages",
+    "unit: marks isolated unit tests targeting domain, application, or adapter components",
+    "integration: marks integration tests spanning multiple subsystems or IO boundaries",
+    "architecture: marks architectural invariance, AST purity, and governance tests",
+    "functional: marks end-to-end and functional validation tests",
+    "calibration: marks multi-vertical and benchmark calibration suites",
+    "certification: marks formal mathematical and actuarial certification suites",
+    "slow: marks resource-heavy tests (e.g. headless LibreOffice DOCX compilation, full Monte Carlo sweeps)",
 ]
 filterwarnings = [
     "ignore::UserWarning:google.adk.features._feature_decorator",
@@ -145,3 +162,44 @@ filterwarnings = [
     "ignore::FutureWarning:google.api_core.*",
     "ignore::FutureWarning:google.cloud.*",
 ]
+
+[tool.assessment_engine]
+mutation_score_threshold = 85.0
+
+[tool.importlinter]
+root_packages = ["assessment_engine"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+id = "hexagonal-domain-isolation"
+name = "Domain layer isolation (hexagonal core)"
+type = "forbidden"
+source_modules = ["assessment_engine.domain"]
+forbidden_modules = [
+    "assessment_engine.infrastructure",
+    "assessment_engine.adapters",
+    "assessment_engine.application",
+    "requests",
+    "httpx",
+    "aiohttp",
+    "socket",
+    "sqlalchemy",
+    "boto3",
+]
+
+[[tool.importlinter.contracts]]
+id = "application-adapters-isolation"
+name = "Application must not import Adapters directly"
+type = "forbidden"
+source_modules = ["assessment_engine.application"]
+forbidden_modules = [
+    "assessment_engine.adapters",
+]
+
+[[tool.importlinter.contracts]]
+id = "acyclic-domain-architecture"
+name = "Domain must not have circular dependencies between siblings"
+type = "acyclic_siblings"
+ancestors = ["assessment_engine.domain"]
+
+

@@ -19,8 +19,8 @@
 
 - [docs/contracts/artifact-contracts.md](docs/contracts/artifact-contracts.md): Data boundary contracts between pipeline execution modules.
 - [docs/contracts/payload-render-boundaries.md](docs/contracts/payload-render-boundaries.md): OpenXML rendering boundaries and visual styles policies.
-- [docs/contracts/tower_blueprint_payload.md](docs/contracts/tower_blueprint_payload.md): Technical Pydantic model contracts for single-tower blueprint JSON objects.
-- [docs/contracts/tower_annex_payload.md](docs/contracts/tower_annex_payload.md): Pydantic schema contracts for executive annex synthesis JSON objects.
+- [docs/contracts/tower-blueprint-payload.md](docs/contracts/tower-blueprint-payload.md): Technical Pydantic model contracts for single-tower blueprint JSON objects.
+- [docs/contracts/tower-annex-payload.md](docs/contracts/tower-annex-payload.md): Pydantic schema contracts for executive annex synthesis JSON objects.
 
 ## Operations & DevOps
 
@@ -34,6 +34,6 @@
 
 ## Optional
 
-- [docs/strategy/ROADMAP.md](docs/strategy/ROADMAP.md): Product and infrastructure roadmap.
-- [docs/contracts/tower_annex_design.md](docs/contracts/tower_annex_design.md): Structure, typography, and styling constraints for Microsoft Word Tower Annex documents.
+- [docs/strategy/roadmap.md](docs/strategy/roadmap.md): Product and infrastructure roadmap.
+- [docs/contracts/tower-annex-design.md](docs/contracts/tower-annex-design.md): Structure, typography, and styling constraints for Microsoft Word Tower Annex documents.
 - [docs/architecture/working-artifacts.md](docs/architecture/working-artifacts.md): Specifications of temporary and cached artifacts stored under the /working/ directory.

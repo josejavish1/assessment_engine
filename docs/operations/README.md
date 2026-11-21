@@ -2,71 +2,58 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../.github/workflows/
-- ../../src/assessment_engine/application/
-- ../../
-last_verified_against: 2026-11-12
+- .github/workflows
+- src/assessment_engine/application
+- .
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
 doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
+notes: Central operations manual index and deterministic runbook routing matrix.
 ---
-# Manual de operaciones
+# Operations Manual Index & Runbook Matrix
 
-Este directorio centraliza la documentación de instalación, operación y mantenimiento de `assessment-engine`.
+Canonical operational index providing deterministic routing to environment provisioning, pipeline execution recipes, CI/CD quality gates, and failure triage runbooks across `assessment-engine`.
 
-Su valor principal es servir como **índice operativo**. No todas las guías aquí tienen el mismo nivel de verificación; el lector debe usar siempre el estado de gobernanza de cada documento y contrastar con entrypoints reales, workflows y validadores.
+---
 
-## Alcance
+## 1. Operational Invariant Axiom
 
-Aquí deben vivir:
+When executing system maintenance or diagnosing anomalies, autonomous agents and operators MUST prioritize authority according to the total order:
 
-- instalación y preparación del entorno;
-- ejecución de pipelines y controles operativos;
-- validaciones de calidad y tipado;
-- runbooks y troubleshooting;
-- workflows de desarrollo asistido por agentes.
+$$\text{Executable Code \& Workflows } (L_0) \succ \text{Operational Runbooks } (L_2) \succ \text{Historical Notes } (L_3)$$
 
-No debe leerse este índice como certificación de que todo `docs/operations/` está `Verified`.
+If a command or parameter in a runbook contradicts the physical script interface, the script's `argparse` / `--help` specification is the immutable ground truth.
 
-## Piezas operativas especialmente estables hoy
+---
 
-- [`agentic-development-workflow.md`](./agentic-development-workflow.md)
-- [`engineering-quality-gates.md`](./engineering-quality-gates.md)
+## 2. Master Runbook Routing Matrix
 
-Estas dos piezas son la base más fiable para trabajo asistido por agentes y para cambios de código con gates obligatorios.
+| Operational Domain | Runbook Entrypoint | Primary Objective | Authoritative Verification Source |
+|---|---|---|---|
+| **Environment Provisioning** | [`installation.md`](installation.md) | Virtual environment bootstrap, Python 3.11 setup, and Google Cloud Vertex AI credentials. | `pyproject.toml`, `.assessment_env.sh` |
+| **CI/CD Pipelines** | [`ci-cd-workflows.md`](ci-cd-workflows.md) | Automated GitHub Actions execution (`quality.yml`, `docs-governance.yml`, `ci.yml`). | `.github/workflows/` |
+| **Agentic Workflow** | [`agentic-development-workflow.md`](agentic-development-workflow.md) | Spec-first change discipline, anti-vibe coding protocols, and PR reconciliation. | `AGENTS.md`, `.github/copilot-instructions.md` |
+| **Quality Gates** | [`engineering-quality-gates.md`](engineering-quality-gates.md) | Incremental Ruff formatting, Mypy strict typing, and import-linter dependency bounds. | `run_incremental_quality_gate.py` |
+| **Commit Integrity** | [`signing-commits-policy.md`](signing-commits-policy.md) | Cryptographic GPG/SSH commit signature standards and branch protection. | Repository security configuration |
+| **Pipeline Execution** | [`pipeline-execution.md`](pipeline-execution.md) | Standard CLI execution syntax for tower, global, and commercial pipelines. | `run_tower_pipeline.py`, `run_global_pipeline.py` |
+| **Execution Controls** | [`pipeline-controls-runbook.md`](pipeline-controls-runbook.md) | Stage resumption (`--start-from`), timeout management, and process confinement. | `pipeline_runtime.py` |
+| **PO Orchestrator** | [`product-owner-orchestrator.md`](product-owner-orchestrator.md) | High-level autonomous product owner orchestrator and backlog management. | `run_product_owner_orchestrator.py` |
+| **Streaming Sentinel** | [`streaming-sentinel-guide.md`](streaming-sentinel-guide.md) | Asynchronous filesystem event watcher and dynamic RAPTOR tree updater. | `streaming_sentinel.py` |
+| **Triage & Smoke Tests** | [`troubleshooting-working.md`](troubleshooting-working.md) | Scratchpad recovery, missing payload triage, and smoke test regeneration. | `regenerate_smoke_artifacts.py` |
+| **Data Coherence** | [`assessment-coherence-remediation.md`](assessment-coherence-remediation.md) | Automated detection and repair of metric divergence across intermediate payloads. | `run_autonomous_remediation.py` |
+| **Resilience & FMEA** | [`resilience-and-fallbacks.md`](resilience-and-fallbacks.md) | Rate limit backoff, API circuit breakers, and offline snapshot fallbacks. | `ai_client.py`, `agentic_benchmarker.py` |
 
-## Piezas que requieren lectura más cuidadosa
+---
 
-- [`product-owner-orchestrator.md`](./product-owner-orchestrator.md): útil, pero aún mezclada con capacidad objetivo y capacidad realmente verificada.
-- [`pipeline-execution.md`](./pipeline-execution.md) y otras guías de ejecución: deben contrastarse con entrypoints, helpers y validadores actuales si se van a usar como base de cambio.
+## 3. Standard Operational Lifecycle for Agents
 
-## Índice de Documentos Operativos
+Autonomous agents executing operational tasks MUST adhere to the following sequence:
 
-### 1. Entorno y Configuración
--   **[`installation.md`](./installation.md):** Guía completa para configurar el entorno de desarrollo local desde cero.
--   **[`ci-cd-workflows.md`](./ci-cd-workflows.md):** Descripción técnica detallada de los workflows de GitHub Actions.
-
-### 2. Ciclo de Vida del Desarrollo
--   **[`agentic-development-workflow.md`](./agentic-development-workflow.md):** Proceso de desarrollo asistido por agentes, desde la especificación hasta el Pull Request.
--   **[`engineering-quality-gates.md`](./engineering-quality-gates.md):** Define los controles de calidad incrementales (Ruff, Mypy) que se aplican en el pipeline.
--   **[`signing-commits-policy.md`](./signing-commits-policy.md):** Política y guía para la firma de commits.
-
-### 3. Ejecución y Orquestación
--   **[`pipeline-execution.md`](./pipeline-execution.md):** Instrucciones para ejecutar los pipelines de generación de artefactos.
--   **[`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md):** Runbook para gestionar y monitorizar la ejecución de los pipelines.
--   **[`product-owner-orchestrator.md`](./product-owner-orchestrator.md):** Cómo utilizar el orquestador de alto nivel para automatizar tareas complejas.
-
-### 4. Mantenimiento y Resolución de Problemas
--   **[`troubleshooting-working.md`](./troubleshooting-working.md):** Manual para diagnosticar, resolver problemas comunes en `working/` y playbook para la regeneración reproducible de pruebas de humo.
--   **[`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md):** Guía para reparar problemas de coherencia en los datos generados.
-
-## Regla de uso
-
-Si una operación concreta depende de comandos, rutas, variables de entorno o comportamiento de CI, usa esta carpeta solo como punto de entrada y valida el detalle contra:
-
-- `src/assessment_engine/application/**`
-- `.github/workflows/**`
-- tests o herramientas de validación relacionados
+1. **Preflight Environment Validation:** Verify Python 3.11 `.venv` activation and Vertex AI environment variables (`GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`).
+2. **Quality Gate Compliance:** Execute incremental quality checks (`run_incremental_quality_gate.py`) before submitting any change.
+3. **Deterministic Execution:** Use explicit module execution (`python -m assessment_engine.application.<module>`) with validated CLI flags.
+4. **Post-Flight Validation:** Verify compiled deliverables using physical format inspection (`docx.Document`) asserting zero structural corruption.

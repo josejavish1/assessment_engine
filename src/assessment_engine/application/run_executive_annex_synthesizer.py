@@ -62,7 +62,9 @@ def derive_maturity_band(score: float, locale: str | None = None) -> str:
     """Derive maturity band according to architectural specification."""
     from assessment_engine.infrastructure.localization import t
 
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale, translator=t)["label"]
+    return resolve_maturity_band(
+        score, ANNEX_MATURITY_BANDS, locale=locale, translator=t
+    )["label"]
 
 
 def infer_initiative_priority(
@@ -92,16 +94,21 @@ def infer_initiative_priority(
         or (project.get("business_case") if isinstance(project, dict) else "")
     ).lower()
     is_direct_mitigation = (
-        "direct mitigation" in b_case.lower() or "critical vulnerability" in b_case.lower() or "mitigacion" in b_case.lower()
+        "direct mitigation" in b_case.lower()
+        or "critical vulnerability" in b_case.lower()
+        or "mitigacion" in b_case.lower()
     )
     import json
 
     from assessment_engine.infrastructure.runtime_paths import ROOT
+
     dur_cfg = {}
     p_dur = ROOT / "engine_config/locales_asis_annex.json"
     if p_dur.exists():
         try:
-            dur_cfg = json.loads(p_dur.read_text(encoding="utf-8")).get("duration_priority_keywords", {})
+            dur_cfg = json.loads(p_dur.read_text(encoding="utf-8")).get(
+                "duration_priority_keywords", {}
+            )
         except (OSError, ValueError, KeyError) as ex:
             logger.debug("[Config] Duration priority keywords loading failed: %s", ex)
 
@@ -368,7 +375,9 @@ def derive_priority_initiatives(
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
-            priority = infer_initiative_priority(project, locale=target_locale, pillar_score=pillar.score)
+            priority = infer_initiative_priority(
+                project, locale=target_locale, pillar_score=pillar.score
+            )
             ranked.append(
                 (
                     PRIORITY_RANK.get(priority, 1),
@@ -429,7 +438,13 @@ def _format_pillar_kpis_narrative(
     locale: str,
 ) -> str:
     prose = [
-        t("asis_pillar_kpis_narrative", locale=locale, pillar_name=pillar_name, band=band, formatted_score=formatted_score)
+        t(
+            "asis_pillar_kpis_narrative",
+            locale=locale,
+            pillar_name=pillar_name,
+            band=band,
+            formatted_score=formatted_score,
+        )
     ]
     if stable_caps:
         prose.append(
@@ -457,21 +472,28 @@ def _format_pillar_gaps_narrative(gaps_findings: list[Any], locale: str) -> str:
         if br:
             main_risks.append(br.split(".")[0] + ".")
 
-    gaps_str = (
-        " ".join(main_gaps)
-        or t("asis_pillar_default_gap", locale=locale)
-    )
+    gaps_str = " ".join(main_gaps) or t("asis_pillar_default_gap", locale=locale)
     risks_str = " ".join(main_risks) or t("asis_pillar_default_risk", locale=locale)
-    return t("asis_pillar_gaps_narrative", locale=locale, gaps_str=gaps_str, risks_str=risks_str)
+    return t(
+        "asis_pillar_gaps_narrative",
+        locale=locale,
+        gaps_str=gaps_str,
+        risks_str=risks_str,
+    )
 
 
-def _format_pillar_score_justification(formatted_score: str, worst_cap: str, locale: str) -> str:
-    return t("asis_pillar_score_justification", locale=locale, formatted_score=formatted_score, worst_cap=worst_cap)
-
-
-def derive_pillar_executive_reading(
-    pillar: Any, locale: str, idx: int = 0
+def _format_pillar_score_justification(
+    formatted_score: str, worst_cap: str, locale: str
 ) -> str:
+    return t(
+        "asis_pillar_score_justification",
+        locale=locale,
+        formatted_score=formatted_score,
+        worst_cap=worst_cap,
+    )
+
+
+def derive_pillar_executive_reading(pillar: Any, locale: str, idx: int = 0) -> str:
     """Derive pillar executive reading with modular structure and low cognitive complexity."""
     score = pillar.score
     band = derive_maturity_band(score, locale=locale)
@@ -483,7 +505,12 @@ def derive_pillar_executive_reading(
 
     findings = pillar.health_check_asis or []
     if not findings:
-        empty_kpis = t("asis_pillar_empty_kpis", locale=locale, band=band, formatted_score=formatted_score)
+        empty_kpis = t(
+            "asis_pillar_empty_kpis",
+            locale=locale,
+            band=band,
+            formatted_score=formatted_score,
+        )
         empty_gaps = t("asis_pillar_empty_gaps", locale=locale)
         empty_just = t("asis_pillar_empty_justification", locale=locale)
         return (
@@ -516,10 +543,18 @@ def derive_pillar_executive_reading(
 
     v_idx = idx % 3
     kpis_text = _format_pillar_kpis_narrative(
-        pillar.pilar_name, band, formatted_score, stable_caps, gaps_caps, v_idx, locale=locale
+        pillar.pilar_name,
+        band,
+        formatted_score,
+        stable_caps,
+        gaps_caps,
+        v_idx,
+        locale=locale,
     )
     gaps_text = _format_pillar_gaps_narrative(gaps_findings, locale=locale)
-    justification_text = _format_pillar_score_justification(formatted_score, worst_cap, locale=locale)
+    justification_text = _format_pillar_score_justification(
+        formatted_score, worst_cap, locale=locale
+    )
 
     return (
         f"**{hdr_kpis}**\n{kpis_text}\n\n"
@@ -656,9 +691,6 @@ def enrich_annex_payload(
     ale_p10 = round(global_fair_ale * 0.70, -3)
     ale_p90 = round(global_fair_ale * 1.30, -3)
 
-    from assessment_engine.adapters.generate_asis_markdown_modules import (
-        resolve_client_currency_context,
-    )
     from assessment_engine.infrastructure.localization import (
         format_currency,
         format_number,
@@ -668,12 +700,17 @@ def enrich_annex_payload(
     str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
     str_p10 = format_number(ale_p10, locale=doc_lang, decimals=0)
     str_p90 = format_number(ale_p90, locale=doc_lang, decimals=0)
-    
-    client_name = getattr(blueprint.document_meta, "client", "generic_client")
-    currency_sym, _ = resolve_client_currency_context(client_name)
-    if hasattr(blueprint.document_meta, "currency_symbol") and blueprint.document_meta.currency_symbol:
+
+    currency_sym = "€"
+    if (
+        hasattr(blueprint.document_meta, "currency_symbol")
+        and blueprint.document_meta.currency_symbol
+    ):
         currency_sym = blueprint.document_meta.currency_symbol
-    elif hasattr(blueprint.document_meta, "currency") and blueprint.document_meta.currency:
+    elif (
+        hasattr(blueprint.document_meta, "currency")
+        and blueprint.document_meta.currency
+    ):
         currency_sym = blueprint.document_meta.currency
     fmt_ale = f"~{str_ale} {currency_sym}/year (Typical range: {str_p10} {currency_sym} to {str_p90} {currency_sym})"
 
@@ -773,9 +810,9 @@ def build_synthesis_prompt(
     ).lower()
     target_language = resolve_target_language_name(doc_lang)
 
-    current_date_str = (
-        format_date_localized(locale=doc_lang).upper()
-    )  # Standard uppercase month and year
+    current_date_str = format_date_localized(
+        locale=doc_lang
+    ).upper()  # Standard uppercase month and year
     active_strategic_range = f"{current_year - 1}-{current_year + 3}"  # e.g., 2026-2030
     future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}"  # e.g., 2028-2030/2031
     obsolete_strategic_range = (

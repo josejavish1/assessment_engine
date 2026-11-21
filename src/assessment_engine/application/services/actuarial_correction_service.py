@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional, Tuple
 from assessment_engine.application.services.canonical_risk_orchestrator import (
     CanonicalRiskOrchestrator,
 )
-from assessment_engine.domain.bayesian_fair_copula_engine import (
+from assessment_engine.domain.actuarial.bayesian_fair_copula_engine import (
     PortfolioReproductionManifest,
 )
 from assessment_engine.domain.models.parameter_lineage import (

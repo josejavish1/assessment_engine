@@ -172,7 +172,7 @@ def test_persistent_job_store_deep_nesting_and_multithread(tmp_path: Path) -> No
     def use_conn() -> int:
         cur = conn.cursor()
         cur.execute("SELECT count(*) FROM jobs;")
-        return cur.fetchone()[0]
+        return int(cur.fetchone()[0])
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         future = executor.submit(use_conn)

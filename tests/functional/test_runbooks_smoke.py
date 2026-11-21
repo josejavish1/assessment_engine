@@ -1,11 +1,13 @@
 # golden-path: ignore
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
+import pytest
 
 
+@pytest.mark.slow
 def test_runbook_commands_dry_runs(tmp_path: Path):
     # Retrieve the absolute repo root
     repo_root = Path(__file__).resolve().parents[2]

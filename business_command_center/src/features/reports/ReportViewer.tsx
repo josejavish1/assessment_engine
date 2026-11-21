@@ -2,23 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  FileText,
   Download,
   CheckCircle2,
   AlertCircle,
   Loader2,
   Sparkles,
-  ArrowRight,
   Send,
   MessageSquare,
-  BookOpen,
-  Award,
-  Layers,
   ChevronRight,
   Printer,
   FileQuestion
 } from 'lucide-react';
-import { getReportPayload, type ReportData, type ReportChapter } from './actions';
+import { getReportPayload, type ReportData } from './actions';
 import { sendWarRoomTacticalMessage } from '@/app/actions/war_room';
 
 interface ReportViewerProps {
@@ -67,8 +62,8 @@ export function ReportViewer({ clientSlug, clientName }: ReportViewerProps) {
           text: res.error || 'Error al registrar el ajuste.',
         });
       }
-    } catch (err: any) {
-      setFeedbackMsg({ type: 'error', text: err.message || 'Connection error' });
+    } catch (err: unknown) {
+      setFeedbackMsg({ type: 'error', text: err instanceof Error ? err.message : 'Connection error' });
     } finally {
       setIsSubmittingSuggestion(false);
     }

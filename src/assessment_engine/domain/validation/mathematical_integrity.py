@@ -62,6 +62,8 @@ def assert_tower_mathematical_integrity(
 
     tower_score_raw = tower_payload.get("score")
     if tower_score_raw is None:
+        tower_score_raw = tower_payload.get("exact_score")
+    if tower_score_raw is None:
         raise MathematicalIntegrityViolation(f"[{tower_id}] Missing root 'score' attribute.")
 
     tower_score_dec = _parse_finite_decimal(tower_score_raw, f"[{tower_id}] root 'score'")

@@ -216,3 +216,16 @@ def test_invalid_pillar_weights_sum(valid_tower: TowerDefinition, valid_profile:
         )
 
     assert "pillar weights sum to 0.9000, expected 1.0" in str(exc_info.value)
+
+
+def test_domain_ontology_registry_validate_triple() -> None:
+    """Verifies that domain OntologyRegistry correctly validates registered vs unregistered triples."""
+    from assessment_engine.domain.ontology_registry import OntologyRegistry as DomainRegistry
+
+    registry = DomainRegistry()
+    assert len(registry.predicates) > 0
+    valid_predicate = registry.predicates[0]
+
+    assert registry.validate_triple("NODE_A", valid_predicate, "NODE_B") is True
+    assert registry.validate_triple("NODE_A", "UNREGISTERED_PREDICATE_XYZ", "NODE_B") is False
+

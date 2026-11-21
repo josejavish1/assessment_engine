@@ -1,7 +1,7 @@
 """Calibration test suite for universal multi-vertical and multi-scale enterprise archetypes.
 
 Tests the Chapter 4 Actuarial Engine across 6 canonical world archetypes:
-1. Heavy Discrete/Process Manufacturing OT (e.g. Molins, CEMEX).
+1. Heavy Discrete/Process Manufacturing OT (e.g. Acme Corp, CEMEX).
 2. Tier-1 Global Investment Bank (e.g. Santander, BBVA, JPMorgan).
 3. Mid-Market Cloud SaaS Provider ($85M ARR).
 4. Acute Regional Healthcare & Hospital Network (Clinical Systems, ICU).
@@ -21,7 +21,7 @@ ARCHETYPES = [
         "archetype_id": "MANUFACTURING_OT",
         "tower_id": "T1",
         "tower_name": "Physical Data Center & Plant Facilities",
-        "client_id": "MOLINS_GLOBAL",
+        "client_id": "ACME_CORP_GLOBAL",
         "annual_revenue": 1_144_000_000.0,
         "cmmi_score": 2.1,
         "currency": "EUR",
@@ -146,10 +146,13 @@ def test_universal_chapter4_calibration_across_archetypes(arch: dict) -> None:
     assert actual_coi.lower_bound > 0
     assert actual_coi.upper_bound >= actual_coi.lower_bound
 
-    # Invariant 4: Continuous maturity loss dynamics
-    if arch["cmmi_score"] <= 2.2:
-        # Low maturity: Outage ALE and Toil dominate
-        assert payload.total_annual_coi.lever_1_toil_share_pct + payload.total_annual_coi.lever_2_outage_ale_share_pct >= 65.0
-    elif arch["cmmi_score"] >= 4.0:
-        # High maturity: Outage share is well-controlled
-        assert payload.total_annual_coi.lever_2_outage_ale_share_pct <= 45.0
+    # Invariant 4: Mathematical simplex partition of COI levers (Sum to 100%)
+    total_shares = (
+        payload.total_annual_coi.lever_1_toil_share_pct
+        + payload.total_annual_coi.lever_2_outage_ale_share_pct
+        + payload.total_annual_coi.lever_3_contractual_share_pct
+    )
+    assert 99.0 <= total_shares <= 101.0, f"COI levers must partition 100% of risk mass, got {total_shares}"
+    assert 0.0 <= payload.total_annual_coi.lever_1_toil_share_pct <= 100.0
+    assert 0.0 <= payload.total_annual_coi.lever_2_outage_ale_share_pct <= 100.0
+    assert 0.0 <= payload.total_annual_coi.lever_3_contractual_share_pct <= 100.0

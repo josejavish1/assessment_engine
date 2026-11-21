@@ -2,11 +2,11 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../src/assessment_engine/domain/
-- ../src/assessment_engine/application/
-- ../src/assessment_engine/mcp_server.py
-- ../src/assessment_engine/domain/schemas/
-last_verified_against: 2026-11-12
+- src/assessment_engine/domain
+- src/assessment_engine/application
+- src/assessment_engine/mcp_server.py
+- src/assessment_engine/domain/schemas
+last_verified_against: 2026-11-21
 applies_to:
 - humans
 - ai-agents
@@ -16,163 +16,138 @@ verification_mode: mixed
 ---
 # System Architecture: Assessment Engine
 
-> **Status:** verified high-level canonical overview.
->
-> This file gives the global picture of the current architecture. The more focused canonical breakdown now lives under [`docs/architecture/`](architecture/README.md), especially for tower flow, global/commercial flow, MCP mode, and `working/` artifacts.
-
-## 1. Vision & Core Principles
-
-The `assessment-engine` is a document generation factory designed to produce structured technological assessment deliverables. The engine implements a Python-orchestrated, LLM-assisted execution pipeline to process raw evaluation telemetry and structured evidence into a series of coherent, consistent reports, spanning deep technical blueprints and executive-level consolidations.
-
-The system is governed by several key architectural principles:
-
--   **Top-Down Flow:** High-level documents (e.g., an executive summary) are exclusively derived from more detailed documents (e.g., a technical blueprint). This eliminates "split-brain" contradictions by ensuring all summary artifacts inherit data directly from their parent technical blueprints.
--   **Contract-First:** Communication between pipeline stages is strictly governed by Pydantic schemas. This enforces explicit, typed data contracts at every transition point.
--   **Python Orchestration, AI Operation:** Control flow, topological sorting, and execution boundaries are managed deterministically by Python. Large Language Models are employed as functional executors for textual synthesis and reasoning tasks, operating strictly within the schemas defined by their contracts.
--   **Decoupled Rendering:** Content generation (semantic payload assembly) is decoupled from the presentation layers (compilation to `.docx` or `.html` files).
--   **Service-Oriented / Dual-Mode Operation:** The system operates either as a linear batch CLI pipeline or as an asynchronous Model Context Protocol (MCP) server, exposing capabilities as typed tools.
+Canonical architectural specification of the `assessment-engine` platform. This document defines the system topology, execution boundaries, data pipelines, and strict engineering invariants for autonomous AI agents and runtime systems.
 
 ---
 
-## 2. High-Level Architecture & Data Flow
+## 1. Architectural Topology: Ports and Adapters (Hexagonal)
 
-The dominant production flow is **top-down**: tower blueprints act as the main source of truth, and client-level artifacts are derived from them. Around that flow, the repo exposes one optional enrichment step and one secondary service surface:
+The platform strictly decouples domain logic, deterministic pipeline orchestration, and presentation compilation into clear hexagonal layers:
 
-- **Optional client intelligence harvesting** creates `client_intelligence.json` before tower analysis.
-- **Primary pipeline mode** runs tower, global, commercial, and web generation from the command line.
-- **Secondary MCP mode** exposes selected operations as tools, but still reflects part of the legacy section-based model.
-
-```text
-========================================================================================================================
-| INPUTS + OPTIONAL ENRICHMENT                                                                                        |
-========================================================================================================================
-|                                                                                                                      |
-|   [ Customer Files: .docx, .txt ]                                                                                    |
-|   (Responses, Business Context, etc.)                                                                                |
-|                                                                                                                      |
-|   [ Methodological Config: .json ]                                                                                   |
-|   (Located in /engine_config)                                                                                        |
-|                                                                                                                      |
-|   Optional upstream enrichment:                                                                                      |
-|   - run_intelligence_harvesting.py --> [ client_intelligence.json ]                                                  |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-                                                     |
-                                                     V
-========================================================================================================================
-| PHASE 1: TOWER ANALYSIS PIPELINE (per-Tower)                                                                         |
-| Orchestrator: run_tower_pipeline.py                                                                                  |
-========================================================================================================================
-|                                                                                                                      |
-|   1. Data Preparation (Deterministic):                                                                               |
-|      - build_case_input.py         --> [ case_input.json ]                                                           |
-|      - build_evidence_ledger.py    --> [ evidence_ledger.json ]                                                      |
-|      - run_scoring.py              --> [ scoring_output.json ]                                                       |
-|      - run_evidence_analyst.py     --> [ findings.json ]                                                             |
-|                                                                                                                      |
-|   2. Core AI Analysis (Creation of the Single Source of Truth):                                                      |
-|      - run_tower_blueprint_engine.py --> [ blueprint_Txx_payload.json ]  <--- (THE SINGLE SOURCE OF TRUTH)            |
-|                                                                                                                      |
-|   3. Synthesis & Rendering (Derivation from the Source of Truth):                                                    |
-|      - run_executive_annex_synthesizer.py --> [ approved_annex_txx.template_payload.json ]                          |
-|      - render_tower_blueprint.py          --> [ Blueprint_Txx.docx ]                                                 |
-|      - render_tower_annex_from_template.py --> [ Annex_Txx.docx ]                                                    |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-                                                     |
-                                                     V (Gathers multiple blueprint_payloads)
-========================================================================================================================
-| PHASE 2: GLOBAL & COMMERCIAL PIPELINES                                                                               |
-| Orchestrators: run_global_pipeline.py, run_commercial_pipeline.py                                                    |
-========================================================================================================================
-|                                                                                                                      |
-|   1. Global Aggregation:                                                                                             |
-|      - build_global_report_payload.py --> [ global_report_payload.json ]                                             |
-|                                                                                                                      |
-|   2. Global & Commercial AI Refinement:                                                                              |
-|      - run_executive_refiner.py    --> [ global_report_payload.json ] (refined in place)                            |
-|      - run_commercial_refiner.py   --> [ commercial_report_payload.json ] (Uses *all* blueprints + global report)    |
-|                                                                                                                      |
-|   3. Final Deliverable Rendering:                                                                                    |
-|      - render_global_report_from_template.py --> [ Informe_Ejecutivo_Consolidado_<client>.docx ]                    |
-|      - render_commercial_report.py --> [ Account_Action_Plan_<client>.docx ]                                         |
-|      - render_web_presentation.py  --> [ working/<client>/presentation/index.html ]                                 |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-
+```
++---------------------------------------------------------------------------------------+
+|                                ADAPTERS & PRESENTATION                                |
+|  CLI (cli.py)  |  FastMCP Server (mcp_server.py)  |  AST Compilers (docx_compiler.py) |
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v (Drives)
++---------------------------------------------------------------------------------------+
+|                                  APPLICATION LAYER                                    |
+| Orchestrators: run_tower_pipeline.py, run_global_pipeline.py, run_commercial_pipeline.py|
+| Synthesizers:  run_tower_blueprint_engine.py, run_executive_annex_synthesizer.py      |
+| Computation:   build_case_input.py, run_scoring.py, run_evidence_analyst.py           |
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v (Enforces)
++---------------------------------------------------------------------------------------+
+|                                    DOMAIN LAYER                                       |
+| Schemas:   blueprint.py, global_report.py, commercial_report.py, workspace_contracts.py|
+| Actuarial: bayesian_fair_copula_engine.py, euler_allocator.py, downtime_calibrator.py |
+| Taxonomy:  finding_archetype_resolver.py, scale_engine.py                             |
++---------------------------------------------------------------------------------------+
+                                          |
+                                          v (Calls)
++---------------------------------------------------------------------------------------+
+|                                INFRASTRUCTURE LAYER                                   |
+| AI Client:       Vertex AI (Gemini 3.1 Pro Preview) via ai_client.py                  |
+| Epistemic Graph: SQLite Event-Sourcing Ledger (epistemic_graph.py)                     |
+| Storage:         WorkspaceManager (workspaces/<client_id>/, working/out/)             |
+| Declarative Config: engine_config/ (enterprise_registry, locales, taxonomy)           |
++---------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 3. Pipeline Phases in Detail
+## 2. Core Architectural Invariants
 
-For the current canonical breakdown, also see:
+Autonomous agents operating on this codebase MUST uphold the following architectural axioms:
 
-- [`architecture/tower-pipeline.md`](architecture/tower-pipeline.md)
-- [`architecture/global-commercial-pipelines.md`](architecture/global-commercial-pipelines.md)
-- [`architecture/mcp-mode.md`](architecture/mcp-mode.md)
-- [`architecture/working-artifacts.md`](architecture/working-artifacts.md)
-
--   **Optional Upstream Enrichment: Client Intelligence.** `run_intelligence_harvesting.py` generates `working/<client>/client_intelligence.json`. This dossier encapsulates organizational context, enabling downstream LLM prompts to align with client-specific terminology and structures if present, but the main pipelines do not require it to exist for every run.
-
--   **Phase 1: Tower Analysis.** This is the core engine. For each technology domain (Tower), deterministic preparation modules generate `case_input.json`, `evidence_ledger.json`, `scoring_output.json`, and `findings.json`. Following this, `run_tower_blueprint_engine.py` aggregates these inputs to generate `blueprint_<tower>_payload.json` via LLM-guided synthesis. This file acts as the single source of truth for the tower. Subsequent steps, such as `run_executive_annex_synthesizer.py`, derive specialized payloads (e.g., `approved_annex_<tower>.template_payload.json`) directly from this blueprint before compilation to DOCX.
-
--   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json` from those blueprints. The active path is now blueprint-first without legacy fallback in the global builder. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
-
--   **Phase 3: Commercial Consolidation.** `run_commercial_refiner.py` uses both the refined global payload and all available tower blueprints to create `commercial_report_payload.json`, which is then rendered to `Account_Action_Plan_<client>.docx`.
-
--   **Phase 4: Web Presentation.** `render_web_presentation.py` derives a client-facing HTML dashboard from `global_report_payload.json` plus tower blueprints, writing `working/<client>/presentation/index.html`.
+1. **Top-Down Monism (SSOT):** High-level deliverables (Tomo 1 Consolidated Diagnostic, Commercial Action Plan) derive strictly from detailed tower blueprints (`blueprint_<tower>_payload.json`). Direct calculation or mutation of business metrics in presentation layers is strictly prohibited.
+2. **Contract-First Boundaries:** Every inter-module transition is mediated by typed Pydantic models declared in `src/assessment_engine/domain/schemas/`.
+3. **Deterministic Orchestration, LLM Synthesis:** Topological sorting, file I/O, data validation, and numerical modeling (TCO + FAIR Monte Carlo) execute deterministically in Python. LLMs function exclusively as bounded semantic synthesis engines constrained by JSON schemas.
+4. **Exclusive DOCX Monism:** All customer-facing deliverables compile strictly to Microsoft Word (`.docx`) through the OpenXML AST compiler (`docx_compiler.py`, `tomo_asis_ast_compiler.py`). Generation of PDF or ephemeral web presentations is strictly prohibited.
+5. **Zero-Entropy Ephemeral Isolation:** Dynamic execution artifacts must isolate in `working/out/<client_id>/` or `workspaces/<client_id>/`. Source trees and documentation folders must remain free of transient outputs.
 
 ---
 
-## 4. Operating Modes
+## 3. End-to-End Pipeline Execution DAG
 
-The system is designed to be used in two distinct modes:
+The execution lifecycle transitions through three sequential, dependency-ordered phases:
 
--   **1. Pipeline Mode:** The primary batch execution path. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`, and `run_commercial_pipeline.py`) execute the sequence of deterministic and LLM-assisted steps linearly, ensuring transactional consistency and artifact caching.
-
--   **2. Model Context Protocol (MCP) Mode:** Exposes select pipeline tasks as tools. This mode facilitates integration with developer environments and agentic loops, although certain tool surfaces retain compatibility with legacy structures. (The `mcp_server.py` script exposes selected capabilities as tools via FastMCP, e.g., `get_tower_state` which inspects legacy `approved_asis/generated` style artifacts).
+```
+[Customer Evidence: .docx, .txt, .xlsx] + [Methodological Config: engine_config/]
+                                 |
+                                 v (Optional Upstream Enrichment)
+             run_intelligence_harvesting.py --> [ client_intelligence.json ]
+                                 |
++--------------------------------v-----------------------------------------------------+
+| PHASE 1: SINGLE-TOWER EVALUATION PIPELINE (run_tower_pipeline.py --tower Txx)         |
++--------------------------------------------------------------------------------------+
+| 1. build_case_input.py           --> [ case_input.json ]                             |
+| 2. financial_scale_calibrator.py --> [ financial_scale.json ]                        |
+| 3. run_scoring.py                --> [ scoring_output.json ]                         |
+| 4. run_evidence_analyst.py       --> [ findings.json ]                               |
+| 5. run_sota_researcher.py        --> Ingests external industry benchmarks            |
+| 6. run_tower_blueprint_engine.py --> [ blueprint_Txx_payload.json ] (TOWER SSOT)     |
+| 7. run_executive_annex_synthesizer.py --> [ approved_annex_Txx.template_payload.json]|
+| 8. payload_to_ast.py + docx_compiler.py --> [ Annex_Txx_ASIS.docx, Blueprint_Txx.docx]|
++--------------------------------------------------------------------------------------+
+                                 |
+            (Collects all completed blueprint_Txx_payload.json)
+                                 |
++--------------------------------v-----------------------------------------------------+
+| PHASE 2: GLOBAL CONSOLIDATION PIPELINE (run_global_pipeline.py)                      |
++--------------------------------------------------------------------------------------+
+| 1. build_global_report_payload.py  --> [ global_report_payload.json ]                 |
+| 2. run_executive_refiner.py        --> Refines executive narrative in-place          |
+| 3. TomoAsisAstCompiler             --> [ Tomo_1_Diagnostico_ASIS_<client>.docx ]     |
++--------------------------------------------------------------------------------------+
+                                 |
++--------------------------------v-----------------------------------------------------+
+| PHASE 3: COMMERCIAL STRATEGY PIPELINE (run_commercial_pipeline.py)                   |
++--------------------------------------------------------------------------------------+
+| 1. run_commercial_refiner.py      --> [ commercial_report_payload.json ]             |
+| 2. render_commercial_report.py    --> [ Account_Action_Plan_<client>.docx ]          |
++--------------------------------------------------------------------------------------+
+```
 
 ---
 
-## 5. Component Map
+## 4. Execution Surfaces
 
-The project is organized into several key component types. The legacy per-file reference is now archived under `docs/reference/generated/legacy-gemini/`, but canonical narrative documentation should now live under `docs/architecture/`, `docs/operations/`, `docs/contracts/`, and related top-level docs.
+The platform provides two formal execution entrypoints:
 
--   **Orchestrators:** Scripts defining the execution sequence and managing task state (e.g., `run_tower_pipeline.py`).
--   **Preparation & Computation:** Deterministic scripts calculating quantitative metrics, sorting topologies, and compiling input telemetry (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
--   **LLM-Assisted Synthesis & Refinement:** Scripts leveraging models for domain analysis, structural drafting, and stylistic consolidation under strict schema constraints (e.g., `run_tower_blueprint_engine.py`, `run_commercial_refiner.py`).
--   **Renderers & Compilers:** Modules mapping Pydantic-validated JSON payloads into presentation formats such as OpenXML `.docx` or semantic `.html` (e.g., `render_global_report_from_template.py`).
--   **Prompt Templates:** Versioned, structured text templates defining agent boundaries, execution instructions, and output schemas.
--   **Data Contracts (Schemas):** Strict Pydantic models that validate and structure every intermediate payload exchanged between modules.
--   **Core Utilities (`infrastructure/`):** Common modules for LLM API invocation, configuration parsing, logging, and string utilities.
--   **Verification & Lifecycle:** Preflight verification scripts, automated smoke-test generators, and test suites.
+### A. Batch Pipeline Mode (CLI)
+Automated CLI suite driven by `cli.py` or standalone application scripts:
+```bash
+# Execute single-tower end-to-end evaluation
+python -m assessment_engine.application.run_tower_pipeline --tower T1 --client acme_corp
 
----
+# Execute global consolidation across all towers
+python -m assessment_engine.application.run_global_pipeline acme_corp
 
-## 6. Declarative Engine Configuration & Latent Infrastructure
+# Execute commercial refiner and account action plan
+python -m assessment_engine.application.run_commercial_pipeline acme_corp
+```
 
-The behavior of the execution pipeline is driven declaratively via files inside the `engine_config/` directory. This allows fine-tuning and policy enforcement without code alterations.
-
-To preserve institutional knowledge and support upcoming roadmap phases, the system maintains several highly valuable **latent design artifacts** under this directory. These represent planned infrastructure that should not be deleted, as they outline the future path of the engine's capabilities:
-
--   **OPA Rego Policy Validation (`engine_config/policies/ontology/vendor_constraints.rego`):**
-    -   **Status:** Planned / Latent Infrastructure.
-    -   **Description:** Implements strict Open Policy Agent (Rego) syntax to enforce semantic constraints on generated claims and technological drivers. It acts as a safety barrier to prevent competitor "hallucination collisions" (e.g., mixing exclusive market rivals or preventing false entities like "Microsoft AWS").
-    -   **Roadmap Integration:** Planned for integration into the core Policy Engine (`policy_engine.py`) to programmatically validate synthesized payloads before compilation.
--   **Differentiated Content Rendering Modes (`engine_config/render_modes/tower_annex_modes.json`):**
-    -   **Status:** Planned / Latent Infrastructure.
-    -   **Description:** Specifies quantitative boundaries (e.g., maximum word counts, headlines, key message limits) for different deliverables depending on the requested target profile (such as `standard_high_value` or `executive_light`).
-    -   **Roadmap Integration:** Scheduled to be loaded dynamically by downstream generation and refinement engines to programmatically enforce narrative verbosity profiles based on the selected mode.
+### B. Model Context Protocol (FastMCP) Mode
+The service layer exposes typed tools for external LLM orchestrators via FastMCP (`src/assessment_engine/mcp_server.py`):
+- `get_tower_state`: Inspects generated payloads and compilation readiness.
+- `run_tower_stage`: Executes discrete pipeline sub-tasks (scoring, evidence analysis, blueprint synthesis).
+- `inspect_evidence_ledger`: Queries the epistemic graph and forensic assertions.
 
 ---
 
-## 7. Historical Context: The "Legacy" Architecture
+## 5. Declarative Engine Configuration (`engine_config/`)
 
-The `_legacy` folders in the `scripts` and `docs` directories contain the previous version of the architecture.
+All methodological baselines, industry weights, labor rates, and question rubrics reside declaratively in `engine_config/`:
 
--   **Asynchronous Parallel Drafting (Bottom-Up):** The legacy architecture generated report sections (`AS-IS`, `TO-BE`, `GAP`) in isolated, parallel processes, merging them at compilation via `assemble_tower_annex.py`.
--   **Logical Coherence Failure (Split-Brain):** Since sections were generated in isolation, they lacked contextual cohesion. The resulting gap analysis often diverged from the baseline state, producing contradictory narratives.
--   **Deterministic Derivation (Top-Down):** The blueprint-first model generates a unified, detailed technical blueprint as the absolute source of truth. All summary sheets, roadmap items, and commercial deliverables are derived directly from this single payload, guaranteeing consistency by design.
-
-Understanding this evolution is key to understanding the rationale behind the current system's structure.
+| Configuration Catalog | Purpose in Pipeline |
+|---|---|
+| `enterprise_registry.json` | Multitenant client profiles, legal identifiers, currency locales, and risk tolerances. |
+| `governance_scales.json` | CMMI maturity level rubrics (1.0 to 5.0) and quantitative scoring thresholds. |
+| `country_labor_rates.json` | Blended hourly engineering and operational labor rates for TCO/ROI modeling. |
+| `rate_card.json` | NTT DATA staffing grades and service cost modeling. |
+| `locales.json` | Declarative multilingual catalog for customer deliverables (English default, Spanish optional). |
+| `taxonomy/` | Ontological mapping of technical domains, finding archetypes, and vulnerability clusters. |
+| `policies/` | FAIR loss event distributions and jurisdictional sovereignty guardrails. |

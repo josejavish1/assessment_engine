@@ -67,3 +67,30 @@ def test_resolve_maturity_band_supports_shared_annex_and_global_policies() -> No
 def test_resolve_maturity_band_requires_at_least_one_band() -> None:
     with pytest.raises(ValueError, match="At least one maturity band is required"):
         resolve_maturity_band(3.0, ())
+
+
+def test_resolve_maturity_band_rejects_booleans() -> None:
+    from assessment_engine.domain.exceptions import InvalidScoreError
+    with pytest.raises(InvalidScoreError) as exc_info:
+        resolve_maturity_band(True, ANNEX_MATURITY_BANDS)
+    assert exc_info.value.context["score"] == 1.0
+
+    with pytest.raises(InvalidScoreError) as exc_info2:
+        resolve_maturity_band(False, ANNEX_MATURITY_BANDS)
+    assert exc_info2.value.context["score"] == 0.0
+
+
+def test_resolve_maturity_interval_levels() -> None:
+    """Verify that actuarial resolve_maturity_interval maps scores to exact canonical levels."""
+    from assessment_engine.domain.actuarial.maturity_band import resolve_maturity_interval
+
+    interval_low = resolve_maturity_interval(1.5)
+    assert interval_low.level == 1
+
+    interval_mid = resolve_maturity_interval(3.2)
+    assert interval_mid.level == 3
+
+    interval_high = resolve_maturity_interval(4.8)
+    assert interval_high.level == 5
+
+

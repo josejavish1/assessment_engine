@@ -34,11 +34,11 @@ from assessment_engine.infrastructure.auditor.scanner import SoverikQualityEngin
 
 def test_shannon_entropy_calculation() -> None:
     assert calculate_shannon_entropy("aaaaaaaaaaaaaaaaaaaa") < 1.0
-    assert 2.0 <= calculate_shannon_entropy("esta es una descripcion en lenguaje normal") <= 3.9
+    assert 2.0 <= calculate_shannon_entropy("this is a description in standard plain language") <= 3.9
     hex_key = "9f8a3c2b1e4d5a6b7c8d9e0f1a2b3c4d"
     assert calculate_shannon_entropy(hex_key) >= 3.6
     assert is_high_entropy_secret(hex_key) is True
-    assert is_high_entropy_secret("Descripción comercial para la tienda online") is False
+    assert is_high_entropy_secret("Commercial description for the online web store") is False
 
 
 def test_universal_auditor_clean_project(tmp_path: Path) -> None:

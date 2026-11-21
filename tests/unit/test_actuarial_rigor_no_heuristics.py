@@ -10,14 +10,15 @@ from assessment_engine.infrastructure.evolution.epistemic_distiller import Epist
 from assessment_engine.infrastructure.policies.fair_risk import FairRiskPolicy
 
 
-def test_fair_risk_secondary_fine_not_clamped_to_downtime():
+def test_fair_risk_secondary_fine_not_clamped_to_downtime(tmp_path: Path):
     """Verify that statutory regulatory fines under NIS2/GDPR are NOT artificially clamped
     to 8 hours of internal IT downtime (hourly * 8.0)."""
     client_id = "test_statutory_client"
     os.environ["ASSESSMENT_CLIENT_ID"] = client_id
 
-    case_dir = Path(f"working/{client_id}/T2")
+    case_dir = tmp_path / client_id / "T2"
     case_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["ASSESSMENT_CASE_DIR"] = str(case_dir)
     custom_profile_path = case_dir / "custom_risk_profile.json"
 
     # Small client (hourly cost = 200 €/h) with 2,000,000 € statutory fine cap
@@ -66,8 +67,8 @@ def test_fair_risk_secondary_fine_not_clamped_to_downtime():
             f"Expected statutory fine exposure > 5,000 €, but got {finding['fair_max_score']:,.2f} €"
         )
     finally:
-        if Path(f"working/{client_id}").exists():
-            shutil.rmtree(Path(f"working/{client_id}"))
+        os.environ.pop("ASSESSMENT_CASE_DIR", None)
+        os.environ.pop("ASSESSMENT_CLIENT_ID", None)
 
 
 def test_epistemic_distiller_sector_aligned_leaders():
