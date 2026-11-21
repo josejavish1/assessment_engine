@@ -10,6 +10,7 @@ Verifies:
 import asyncio
 import shutil
 from pathlib import Path
+from typing import Generator
 from zipfile import ZipFile
 
 import pytest
@@ -27,29 +28,20 @@ from assessment_engine.domain.schemas.workspace_contracts import (
     PipelineStageStatus,
     SecurityTowerState,
 )
+from assessment_engine.adapters.api.server import app
 from assessment_engine.infrastructure.storage.workspace_manager import (
     WorkspacePersistenceManager,
 )
 
-try:
-    from server import app
-except ImportError:
-    app = None
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+pytestmark = pytest.mark.xdist_group(name="libreoffice_compilation")
 
 
 @pytest.fixture
-def temp_workspace() -> WorkspacePersistenceManager:
-    manager = WorkspacePersistenceManager(root_dir=REPO_ROOT / "working")
+def temp_workspace(tmp_path: Path) -> Generator[WorkspacePersistenceManager, None, None]:
+    manager = WorkspacePersistenceManager(root_dir=tmp_path / "workspaces")
     yield manager
-    # Clean up test tenant directories after test completion
-    test_dir = REPO_ROOT / "working" / "synthesis-test-tenant"
-    test_out = REPO_ROOT / "working" / "out" / "synthesis_test_corp"
-    test_out2 = REPO_ROOT / "working" / "out" / "synthesis-test-tenant"
-    for d in [test_dir, test_out, test_out2]:
-        if d.exists():
-            shutil.rmtree(d, ignore_errors=True)
 
 
 @pytest.mark.asyncio
@@ -138,8 +130,6 @@ async def test_synthesis_orchestration_lifecycle(temp_workspace: WorkspacePersis
 
 def test_api_compile_and_deliverables():
     """Verify live HTTP endpoints for triggering compilation and listing deliverables."""
-    if app is None:
-        pytest.skip("server module not present in standalone repository environment")
     client = TestClient(app)
 
     # 1. Login

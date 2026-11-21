@@ -161,12 +161,16 @@ def test_build_tower_payload_tool():
         assert "Synthesizer output OK" in res
 
 
-def test_render_tower_docx_tool():
+def test_render_tower_docx_tool(tmp_path: Path):
     """Verify render_tower_docx MCP tool delegates to renderer."""
-    with patch("assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock) as mock_render:
-        mock_render.return_value = "Rendered OK"
-        res = mcp_mod.render_tower_docx("payload.json", "template.docx", "out.docx")
-        assert "Documento de Torre renderizado con éxito" in res or "Tower Document successfully rendered" in res
+    dummy_out = tmp_path / "out.docx"
+    dummy_out.write_bytes(b"dummy docx bytes")
+    with patch(
+        "assessment_engine.adapters.compilers.payload_to_ast.compile_asis_docx_via_ast",
+        return_value=dummy_out,
+    ):
+        res = mcp_mod.render_tower_docx("payload.json", "template.docx", str(dummy_out))
+        assert "Tower Document successfully rendered" in res or "Documento de Torre renderizado" in res
 
 
 def test_generate_radar_chart_tool():

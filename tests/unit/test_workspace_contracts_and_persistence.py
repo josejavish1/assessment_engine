@@ -5,6 +5,7 @@ and physical workspace integration in working/[client_slug]/.
 """
 
 import json
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -27,19 +28,15 @@ from assessment_engine.domain.schemas.workspace_contracts import (
     RegulatoryFrameworkSpec,
     SecurityTowerState,
 )
+from assessment_engine.adapters.api.server import app
 from assessment_engine.infrastructure.storage.workspace_manager import (
     WorkspacePersistenceManager,
 )
 
-try:
-    from server import app
-except ImportError:
-    app = None
-
 
 @pytest.fixture
 def temp_workspace(tmp_path: Path) -> WorkspacePersistenceManager:
-    return WorkspacePersistenceManager(root_dir=tmp_path / "working")
+    return WorkspacePersistenceManager(root_dir=tmp_path / "workspaces")
 
 
 def test_client_dossier_v3_strict_validation():
@@ -192,9 +189,7 @@ def test_atomic_persistence_lifecycle(temp_workspace: WorkspacePersistenceManage
 
 
 def test_api_intake_persists_physical_workspace():
-    """Verify that submit_intake on the live FastAPI app writes physical files to working/[client_slug]/."""
-    if app is None:
-        pytest.skip("server module not present in standalone repository environment")
+    """Verify that submit_intake on the live FastAPI app writes physical files to workspaces/[client_slug]/."""
     client = TestClient(app)
 
     # 1. Login to obtain token
@@ -241,8 +236,10 @@ def test_api_intake_persists_physical_workspace():
     client_slug = data["client_slug"]
     assert client_slug in ["atomic-test-enterprise", "atomic_test_enterprise"]
 
-    # 3. Verify physical files were created in working/[client_slug]/
-    client_dir = Path("working") / client_slug
+    # 3. Verify physical files were created in workspaces/[client_slug]/
+    from assessment_engine.infrastructure.runtime_paths import resolve_client_dir
+
+    client_dir = resolve_client_dir(client_slug)
     assert client_dir.is_dir()
     assert (client_dir / "client_intelligence.json").is_file()
     assert (client_dir / "digital_twin_state.json").is_file()
@@ -253,3 +250,7 @@ def test_api_intake_persists_physical_workspace():
         dossier_data = json.load(f)
     assert dossier_data["legal_entity_name"] == "Atomic Test Enterprise"
     assert dossier_data["financials"]["annual_revenue_amount"] == 890.0
+
+    # Cleanup test artifacts
+    if client_dir.exists():
+        shutil.rmtree(client_dir, ignore_errors=True)

@@ -4,7 +4,7 @@ Validates:
 1. Ingestion of raw inputs (transcription .docx and responses .txt) via build_case_input.
 2. In-scope towers parse positive scores while out-of-scope towers short-circuit with 0 answers.
 3. Industry profile mapping resolves to supported engine profiles.
-4. Absolute zero-hardcoding and negative assertion: zero Molins contamination and correct currency bindings.
+4. Absolute zero-hardcoding and negative assertion: zero Acme Corp contamination and correct currency bindings.
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 import pytest
 
 from assessment_engine.application.build_case_input import build_case_input
@@ -20,9 +21,9 @@ from assessment_engine.infrastructure.config_loader import map_industry_to_profi
 ROOT = Path(__file__).resolve().parents[2]
 SYNTHETIC_DIR = ROOT / "tests" / "test_data" / "synthetic_clients"
 
-pytestmark = pytest.mark.xdist_group(name="starling_compilation")
+pytestmark = pytest.mark.xdist_group(name="libreoffice_compilation")
 
-CONTROL_CLIENTS: list[dict[str, any]] = [
+CONTROL_CLIENTS: list[dict[str, Any]] = [
     {
         "id": "uk_fintech",
         "name": "Starling Bank",
@@ -77,7 +78,7 @@ CONTROL_CLIENTS: list[dict[str, any]] = [
 
 
 @pytest.mark.parametrize("client_spec", CONTROL_CLIENTS, ids=[c["id"] for c in CONTROL_CLIENTS])
-def test_synthetic_client_raw_fixtures_exist(client_spec: dict[str, any]):
+def test_synthetic_client_raw_fixtures_exist(client_spec: dict[str, Any]):
     """Verify that all raw source fixtures exist and are non-empty."""
     client_dir = SYNTHETIC_DIR / client_spec["id"]
     responses_file = client_dir / "assessment_responses.txt"
@@ -94,13 +95,13 @@ def test_synthetic_client_raw_fixtures_exist(client_spec: dict[str, any]):
     assert intel_data["metadata"]["currency_symbol"] == client_spec["currency_symbol"]
     assert intel_data["metadata"]["lang"] == client_spec["locale"]
 
-    # Negative assertion: zero Molins contamination in synthetic dossiers
+    # Negative assertion: zero Acme Corp contamination in synthetic dossiers
     intel_raw = json.dumps(intel_data)
-    assert "molins" not in intel_raw.lower(), f"Contamination detected in {client_spec['id']} intelligence."
+    assert "acme_corp" not in intel_raw.lower(), f"Contamination detected in {client_spec['id']} intelligence."
 
 
 @pytest.mark.parametrize("client_spec", CONTROL_CLIENTS, ids=[c["id"] for c in CONTROL_CLIENTS])
-def test_synthetic_client_in_scope_towers_ingestion(client_spec: dict[str, any]):
+def test_synthetic_client_in_scope_towers_ingestion(client_spec: dict[str, Any]):
     """Verify that every in-scope tower successfully parses non-zero scores and transcript summary."""
     client_dir = SYNTHETIC_DIR / client_spec["id"]
     responses_file = client_dir / "assessment_responses.txt"
@@ -119,11 +120,11 @@ def test_synthetic_client_in_scope_towers_ingestion(client_spec: dict[str, any])
         assert len(case_data["context_summary"]) > 100, f"Expected non-empty context summary for {tower_id}"
 
         # Verify negative assertion in generated case data
-        assert "molins" not in case_data["client"].lower()
+        assert "acme_corp" not in case_data["client"].lower()
 
 
 @pytest.mark.parametrize("client_spec", CONTROL_CLIENTS, ids=[c["id"] for c in CONTROL_CLIENTS])
-def test_synthetic_client_out_of_scope_towers_short_circuit(client_spec: dict[str, any]):
+def test_synthetic_client_out_of_scope_towers_short_circuit(client_spec: dict[str, Any]):
     """Verify that out-of-scope towers parse exactly zero answers, allowing clean pipeline short-circuit."""
     client_dir = SYNTHETIC_DIR / client_spec["id"]
     responses_file = client_dir / "assessment_responses.txt"
@@ -141,7 +142,7 @@ def test_synthetic_client_out_of_scope_towers_short_circuit(client_spec: dict[st
 
 
 @pytest.mark.parametrize("client_spec", CONTROL_CLIENTS, ids=[c["id"] for c in CONTROL_CLIENTS])
-def test_synthetic_client_industry_profile_resolution(client_spec: dict[str, any]):
+def test_synthetic_client_industry_profile_resolution(client_spec: dict[str, Any]):
     """Verify that each client's industry maps to an existing industry profile without unhandled fallback."""
     client_dir = SYNTHETIC_DIR / client_spec["id"]
     intel_file = client_dir / "client_intelligence.json"
@@ -158,8 +159,9 @@ def test_synthetic_client_industry_profile_resolution(client_spec: dict[str, any
     assert "industry" in profile_data or "industry_name" in profile_data or "risk_multipliers" in profile_data
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("client_spec", CONTROL_CLIENTS, ids=[c["id"] for c in CONTROL_CLIENTS])
-def test_compile_client_deliverable_purity(client_spec: dict[str, any]):
+def test_compile_client_deliverable_purity(client_spec: dict[str, Any]):
     """Verify that compiling each benchmark client produces a pure, valid DOCX with zero cross-tenant contamination."""
     import re
     import docx
@@ -169,13 +171,13 @@ def test_compile_client_deliverable_purity(client_spec: dict[str, any]):
     docx_path = res[0] if isinstance(res, tuple) else res
     assert docx_path.name.endswith(".docx") and docx_path.stat().st_size >= 50_000
 
-    doc = docx.Document(docx_path)
+    doc = docx.Document(str(docx_path))
     full_text = "\n".join(p.text for p in doc.paragraphs) + "\n".join(
         "\n".join(c.text for c in r.cells) for t in doc.tables for r in t.rows
     )
 
-    # 1. Zero Molins cross-contamination
-    assert "molins" not in full_text.lower(), f"Found 'Molins' string in {client_spec['id']} deliverable"
+    # 1. Zero Acme Corp cross-contamination
+    assert "acme_corp" not in full_text.lower(), f"Found 'Acme Corp' string in {client_spec['id']} deliverable"
 
     # 2. Zero industrial weighbridge / cement leaks
     assert "weighbridge" not in full_text.lower(), f"Found 'weighbridge' string in {client_spec['id']} deliverable"

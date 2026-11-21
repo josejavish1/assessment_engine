@@ -3,15 +3,11 @@ Unit test suite verifying the self-service API server, authentication flow, and 
 """
 from __future__ import annotations
 
+from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-try:
-    from server import app
-except ImportError:
-    app = None
-
-pytestmark = pytest.mark.skipif(app is None, reason="server module not present in repository")
+from assessment_engine.adapters.api.server import app
 
 
 @pytest.fixture
@@ -122,7 +118,7 @@ def test_resolve_context_domain_and_free_text(client: TestClient) -> None:
 
 
 def test_deliverable_download(client: TestClient) -> None:
-    res = client.get("/api/assessment/deliverables/Molins_202610_Tomo_1_Diagnostico_ASIS.docx")
+    res = client.get("/api/assessment/deliverables/Acme Corp_202610_Tomo_1_Diagnostico_ASIS.docx")
     assert res.status_code == 200
     assert "application/vnd.openxmlformats-officedocument.wordprocessingml.document" in res.headers["content-type"]
     assert len(res.content) > 0
